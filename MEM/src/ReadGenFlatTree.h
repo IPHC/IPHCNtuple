@@ -88,7 +88,7 @@ class ReadGenFlatTree {
   std::vector<float>* genJet_E;
 
   Float_t nJet25_Recl;
-  Float_t max_Lep_eta, MT_met_lep1, mindr_lep1_jet, mindr_lep2_jet, LepGood_conePt0, LepGood_conePt1;
+  Float_t max_Lep_eta, MT_met_lep1, mindr_lep1_jet, mindr_lep2_jet, LepGood_conePt0, LepGood_conePt1, met, avg_dr_jet;
   Float_t signal_2lss_TT_MVA;
   Float_t signal_2lss_TTV_MVA;
   Float_t signal_3l_TT_MVA;
@@ -170,6 +170,8 @@ class ReadGenFlatTree {
   TBranch* b_LepGood_conePt0;
   TBranch* b_LepGood_conePt1;
   TBranch* b_nJet25_Recl;
+  TBranch* b_met;
+  TBranch* b_avg_dr_jet;
 
   TBranch* b_signal_2lss_TT_MVA;
   TBranch* b_signal_2lss_TTV_MVA;
@@ -1385,14 +1387,16 @@ void ReadGenFlatTree::InitializeMEMRun(string InputFileName){
   tInput->SetBranchAddress("multilepton_mETcov11",&multilepton_mETcov11,&b_multilepton_mETcov11);
   tInput->SetBranchAddress("multilepton_Ptot",&multilepton_Ptot_ptr,&b_multilepton_Ptot);
 
-  tInput->SetBranchAddress("nJet25_Recl",&nJet25_Recl,&b_nJet25_Recl);
-  tInput->SetBranchAddress("max_Lep_eta",&max_Lep_eta,&b_max_Lep_eta);
-  tInput->SetBranchAddress("MT_met_lep1",&MT_met_lep1,&b_MT_met_lep1);
-  tInput->SetBranchAddress("mindr_lep1_jet",&mindr_lep1_jet,&b_mindr_lep1_jet);
-  tInput->SetBranchAddress("mindr_lep2_jet",&mindr_lep2_jet,&b_mindr_lep2_jet);
-  tInput->SetBranchAddress("LepGood_conePt0",&LepGood_conePt0,&b_LepGood_conePt0);
-  tInput->SetBranchAddress("LepGood_conePt1",&LepGood_conePt1,&b_LepGood_conePt1);
-  
+  tInput->SetBranchAddress("nJet25_Recl",     &nJet25_Recl,      &b_nJet25_Recl      );
+  tInput->SetBranchAddress("max_Lep_eta",     &max_Lep_eta,      &b_max_Lep_eta      );
+  tInput->SetBranchAddress("MT_met_lep1",     &MT_met_lep1,      &b_MT_met_lep1      );
+  tInput->SetBranchAddress("mindr_lep1_jet",  &mindr_lep1_jet,   &b_mindr_lep1_jet   );
+  tInput->SetBranchAddress("mindr_lep2_jet",  &mindr_lep2_jet,   &b_mindr_lep2_jet   );
+  tInput->SetBranchAddress("LepGood_conePt0", &LepGood_conePt0,  &b_LepGood_conePt0  );
+  tInput->SetBranchAddress("LepGood_conePt1", &LepGood_conePt1,  &b_LepGood_conePt1  );
+  tInput->SetBranchAddress("met",             &met,              &b_met              ); 
+  tInput->SetBranchAddress("avg_dr_jet",      &avg_dr_jet,       &b_avg_dr_jet       ); 
+
   tInput->SetBranchAddress("signal_2lss_TT_MVA",&signal_2lss_TT_MVA,&b_signal_2lss_TT_MVA);
   tInput->SetBranchAddress("signal_2lss_TTV_MVA",&signal_2lss_TTV_MVA,&b_signal_2lss_TTV_MVA);
   tInput->SetBranchAddress("signal_3l_TT_MVA",&signal_3l_TT_MVA,&b_signal_3l_TT_MVA);
@@ -1868,13 +1872,15 @@ void ReadGenFlatTree::InitializeMEMRun(string InputFileName){
   tOutput->Branch("mc_mem_ttvjj_tth_likelihood_max",&mc_mem_ttvjj_tth_likelihood_max,"mc_mem_ttvjj_tth_likelihood_max/D");
   tOutput->Branch("mc_mem_ttvjj_tth_likelihood_avg",&mc_mem_ttvjj_tth_likelihood_avg,"mc_mem_ttvjj_tth_likelihood_avg/D");
 
-  tOutput->Branch("nJet25_Recl",&nJet25_Recl,"nJet25_Recl/F");
-  tOutput->Branch("max_Lep_eta",&max_Lep_eta,"max_Lep_eta/F");
-  tOutput->Branch("MT_met_lep1",&MT_met_lep1,"MT_met_lep1/F");
-  tOutput->Branch("mindr_lep1_jet",&mindr_lep1_jet,"mindr_lep1_jet/F");
-  tOutput->Branch("mindr_lep2_jet",&mindr_lep2_jet,"mindr_lep2_jet/F");
-  tOutput->Branch("LepGood_conePt0",&LepGood_conePt0,"LepGood_conePt0/F");
-  tOutput->Branch("LepGood_conePt1",&LepGood_conePt1,"LepGood_conePt1/F");
+  tOutput->Branch("nJet25_Recl",     &nJet25_Recl,     "nJet25_Recl/F"     );
+  tOutput->Branch("max_Lep_eta",     &max_Lep_eta,     "max_Lep_eta/F"     );
+  tOutput->Branch("MT_met_lep1",     &MT_met_lep1,     "MT_met_lep1/F"     );
+  tOutput->Branch("mindr_lep1_jet",  &mindr_lep1_jet,  "mindr_lep1_jet/F"  );
+  tOutput->Branch("mindr_lep2_jet",  &mindr_lep2_jet,  "mindr_lep2_jet/F"  );
+  tOutput->Branch("LepGood_conePt0", &LepGood_conePt0, "LepGood_conePt0/F" );
+  tOutput->Branch("LepGood_conePt1", &LepGood_conePt1, "LepGood_conePt1/F" );
+  tOutput->Branch("met",             &met,             "met/F"             );
+  tOutput->Branch("avg_dr_jet",      &avg_dr_jet,      "avg_dr_jet/F"      );
 
   tOutput->Branch("signal_2lss_TT_MVA",&signal_2lss_TT_MVA,"signal_2lss_TT_MVA/F");
   tOutput->Branch("signal_2lss_TTV_MVA",&signal_2lss_TTV_MVA,"signal_2lss_TTV_MVA/F");
