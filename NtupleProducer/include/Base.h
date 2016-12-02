@@ -13,7 +13,6 @@ class Base : public TObject
         virtual ~Base();
 
         template< class BR >
-
             bool CHECK(BR br)
             {
                 bool res = false;
@@ -22,7 +21,6 @@ class Base : public TObject
                     if( idx < br->size() )
                         res = true;
                 }
-
                 return res;
             }
 

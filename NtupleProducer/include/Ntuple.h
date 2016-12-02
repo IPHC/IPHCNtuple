@@ -13,6 +13,7 @@
 #include "TFile.h"
 #include "TTree.h"
 #include "TChain.h"
+#include "TString.h"
 
 class Ntuple
 {
@@ -31,7 +32,7 @@ class Ntuple
         std::vector<TriggerObj>* NtTriggerObj;
 
         void Init();
-
+ 
         void setBranchAddress();
         void createVar();
         void clearVar();
@@ -43,7 +44,7 @@ class Ntuple
 
         TTree*  m_tree;
         TChain* m_chain;
-	std::string _fname_out;
+		std::string _fname_out;
 };
 
 #endif

@@ -46,11 +46,23 @@ class Event : public Base
         float mc_weight()                   {return _mc_weight;};
         float mc_ptHat()                    {return _mc_ptHat;};
         int mc_pu_trueNumInt()              {return _mc_pu_trueNumInt;};
-  
-        int ev_trigger_pass()               {return _trigger_pass;};
-        int ev_trigger_pass_byname()        {return _trigger_pass_byname;};
-        int ev_trigger_pass_byname_1()      {return _trigger_pass_byname_1;};
-        int ev_trigger_pass_byname_1_noDz() {return _trigger_pass_byname_1_noDz;};
+       
+        bool  is_TRIGm()    {return  _TRIGm;   };
+        bool  is_TRIGe()    {return  _TRIGe;   };
+        bool  is_TRIGmTk()  {return  _TRIGmTk; };
+        bool  is_TRIGee()   {return  _TRIGee;  };
+        bool  is_TRIGmm()   {return  _TRIGmm;  };
+        bool  is_TRIGme()   {return  _TRIGme;  };
+        bool  is_TRIGem()   {return  _TRIGem;  };
+        bool  is_TRIGmmTk() {return  _TRIGmmTk;};
+        bool  is_TRIGeee()  {return  _TRIGeee; };
+        bool  is_TRIGmme()  {return  _TRIGmme; };
+        bool  is_TRIGeem()  {return  _TRIGeem; };
+        bool  is_TRIGmmm()  {return  _TRIGmmm; };
+        bool  is_TRIGee_noDz()  {return  _TRIGee_noDz;   };
+        bool  is_TRIGmm_noDz()  {return  _TRIGmm_noDz;   };
+        bool  is_TRIGmmTk_noDz(){return  _TRIGmmTk_noDz; };
+
 
         int tth_channel()                   {return _tth_channel;};
 
@@ -94,11 +106,24 @@ class Event : public Base
         float _mc_weight;
         float _mc_ptHat;
         int   _mc_pu_trueNumInt;
+        
+	bool _TRIGm;
+	bool _TRIGe;
+	bool _TRIGmTk;	
+        bool _TRIGee;
+	bool _TRIGmm;
+	bool _TRIGme; 
+	bool _TRIGem;
+	bool _TRIGmmTk;
+        bool _TRIGeee;
+	bool _TRIGmme;
+	bool _TRIGeem;
+	bool _TRIGmmm;
+        bool _TRIGee_noDz;
+        bool _TRIGmm_noDz;
+        bool _TRIGmmTk_noDz;
 
-        int   _trigger_pass;
-        int   _trigger_pass_byname;
-        int   _trigger_pass_byname_1;
-        int   _trigger_pass_byname_1_noDz;
+
 
         float _disc_TT;
 

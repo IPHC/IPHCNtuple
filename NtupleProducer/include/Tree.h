@@ -73,7 +73,7 @@ class Tree {
         vector<std::string> *mc_pdfweightIds;
 
 
-	// ####################################
+        // ####################################
         // #   ____  _ _                      #
         // #  |  _ \(_) | ___   _   _ _ __    #
         // #  | |_) | | |/ _ \ | | | | '_ \   #
@@ -113,6 +113,15 @@ class Tree {
         vector<float>   *el_E;
         vector<float>   *el_looseCBId;
         vector<float>   *el_mediumCBId;
+
+    	//NEW:
+      	vector<float>   *el_full5x5_sigmaIetaIeta  ;
+       	vector<int>     *el_expectedMissingInnerHits;
+       	vector<bool>    *el_tightCBId;
+       	vector<bool>    *el_vetoCBId;
+        vector<float>   *el_IoEmIoP;
+        vector<float>   *el_ooEmooP;
+
         vector<int>     *el_numberOfLostHits;
         vector<float>   *el_gsfTrack_PV_dxy;
         vector<float>   *el_gsfTrack_PV_dz;
@@ -170,6 +179,7 @@ class Tree {
         vector<float>   *el_lepMVA_jetNDauChargedMVASel;
         vector<float>   *el_lepMVA_Moriond16;
         vector<int>     *el_isGsfCtfScPixChargeConsistent;
+        vector<int>     *el_isGsfScPixChargeConsistent;
         vector<int>     *el_passConversionVeto;
         vector<float>   *el_deltaEtaSuperClusterTrackAtVtx;
         vector<float>   *el_deltaPhiSuperClusterTrackAtVtx;
@@ -182,7 +192,7 @@ class Tree {
         vector<float>   *el_sigmaIetaIeta;
         vector<float>   *el_superCluster_eta;
         vector<float>   *el_correctedEcalEnergy;
-	vector<float>   *el_ecalEnergy;
+        vector<float>   *el_ecalEnergy;
         vector<float>   *el_eSuperClusterOverP;
         vector<float>   *el_trackMomentumError;
 
@@ -233,7 +243,10 @@ class Tree {
         vector<float>   *mu_globalTrack_dxyError;
         vector<float>   *mu_globalTrack_dzError;
         vector<float>   *mu_globalTrack_normalizedChi2;
-        vector<float>   *mu_combinedQuality_chi2LocalPosition;
+
+	    vector<int>     *mu_globalTrack_numberOfValidMuonHits; //new
+
+	    vector<float>   *mu_combinedQuality_chi2LocalPosition;
         vector<float>   *mu_combinedQuality_trkKink;
         vector<int>     *mu_hasInnerTrack;
         vector<float>   *mu_innerTrack_dxy;
@@ -243,8 +256,9 @@ class Tree {
         vector<float>   *mu_innerTrack_dxyError;
         vector<float>   *mu_innerTrack_dzError;
         vector<float>   *mu_innerTrack_validFraction;
-        vector<float>   *mu_bestTrack_dxy;
-        vector<float>   *mu_bestTrack_dz;
+        //New
+        vector<float>   *mu_bestTrack_PV_dxy;
+        vector<float>   *mu_bestTrack_PV_dz;
         vector<float>   *mu_bestTrack_dxyError;
         vector<float>   *mu_bestTrack_dzError;
         vector<float>   *mu_bestTrack_pt;
@@ -255,6 +269,13 @@ class Tree {
         vector<float>   *mu_pfIso03_sumNeutralHadronEt;
         vector<float>   *mu_pfIso03_sumPhotonEt;
         vector<float>   *mu_pfIso03_sumPUPt;
+
+        //New
+        vector<float>   *mu_pfIso04_sumChargedHadronPt;
+        vector<float>   *mu_pfIso04_sumNeutralHadronEt;
+        vector<float>   *mu_pfIso04_sumPhotonEt;
+        vector<float>   *mu_pfIso04_sumPUPt;
+
         vector<float>   *mu_lepMVA;
         vector<float>   *mu_lepMVA_miniRelIsoCharged;
         vector<float>   *mu_lepMVA_miniRelIsoNeutral;
@@ -275,6 +296,11 @@ class Tree {
         vector<float>   *mu_innerTrack_ptError;
         vector<float>   *mu_dB3D;
         vector<float>   *mu_edB3D;
+
+        //New
+        vector<int>     *mu_numberOfMatchedStations;
+        vector<int>     *mu_innerTrack_numberOfValidPixelHits;
+        vector<int>     *mu_innerTrack_trackerLayersWithMeasurement;
 
         // #########################
         // #  _____                #
@@ -324,9 +350,10 @@ class Tree {
         vector<float>   *tau_puCorrPtSum;
         vector<float>   *tau_againstMuonLoose3;
         vector<float>   *tau_againstMuonTight3;
-        vector<float>   *tau_againstElectronVLooseMVA5;
-        vector<float>   *tau_againstElectronLooseMVA5;
-        vector<float>   *tau_againstElectronMediumMVA5;
+        vector<float>   *tau_againstElectronVLooseMVA6;
+        vector<float>   *tau_againstElectronLooseMVA6;
+        vector<float>   *tau_againstElectronMediumMVA6;
+        vector<float>   *tau_againstElectronTightMVA6;
         vector<float>   *tau_pfEssential_jet_pt;
         vector<float>   *tau_pfEssential_jet_eta;
         vector<float>   *tau_pfEssential_jet_phi;
@@ -355,6 +382,7 @@ class Tree {
 
         Int_t           jet_n;
         vector<float>   *jet_pt;
+        vector<float>   *jet_Unc; //New
         vector<float>   *jet_eta;
         vector<float>   *jet_phi;
         vector<float>   *jet_m;
@@ -371,6 +399,14 @@ class Tree {
         vector<float>   *jet_electronEnergy;
         vector<float>   *jet_muonEnergy;
         vector<float>   *jet_photonEnergy;
+
+    	//NEW
+       	vector<float>   *jet_neutralHadronEnergyFraction;
+       	vector<float>   *jet_neutralEmEnergyFraction;
+       	vector<float>   *jet_chargedHadronEnergyFraction;
+       	vector<float>   *jet_muonEnergyFraction;
+       	vector<float>   *jet_chargedEmEnergyFraction;
+
         vector<float>   *jet_genJet_pt;
         vector<float>   *jet_genJet_eta;
         vector<float>   *jet_genJet_phi;
@@ -386,6 +422,11 @@ class Tree {
         //vector<int>     *jet_genParton_status;
         vector<int>     *jet_genParton_id;
         vector<float>   *jet_pileupJetId;
+
+        //New
+        vector<int>     *jet_chargedMultiplicity;
+        vector<int>     *jet_neutralMultiplicity;
+        vector<float>   *jet_jecFactorUncorrected;
 
         // #####################
         // #   __  __  ____    #
@@ -941,7 +982,7 @@ class Tree {
         TBranch        *b_mc_pdfweights;  //!
         TBranch        *b_mc_pdfweightIds;  //!
 
-	// ####################################
+        // ####################################
         // #   ____  _ _                      #
         // #  |  _ \(_) | ___   _   _ _ __    #
         // #  | |_) | | |/ _ \ | | | | '_ \   #
@@ -982,6 +1023,13 @@ class Tree {
         TBranch        *b_el_looseCBId;   //!
         TBranch        *b_el_mediumCBId;   //!
         TBranch        *b_el_numberOfLostHits;   //!
+
+	//New:
+ 	TBranch        *b_el_full5x5_sigmaIetaIeta;  //!
+ 	TBranch        *b_el_expectedMissingInnerHits;  //!
+ 	TBranch        *b_el_tightCBId;  //!
+ 	TBranch        *b_el_vetoCBId;  //!
+
         TBranch        *b_el_gsfTrack_PV_dxy;
         TBranch        *b_el_gsfTrack_PV_dz;
         TBranch        *b_el_ip3d;
@@ -1038,7 +1086,13 @@ class Tree {
         TBranch        *b_el_lepMVA_eta;   //!
         TBranch        *b_el_lepMVA_jetNDauChargedMVASel;   //!
         TBranch        *b_el_isGsfCtfScPixChargeConsistent;   //!
+        TBranch        *b_el_isGsfScPixChargeConsistent;
         TBranch        *b_el_passConversionVeto;   //!
+
+        //new
+        TBranch        *b_el_IoEmIoP;  //!
+        TBranch        *b_el_ooEmooP ;  //!
+
         TBranch        *b_el_deltaEtaSuperClusterTrackAtVtx;
         TBranch        *b_el_deltaPhiSuperClusterTrackAtVtx;
         TBranch        *b_el_see;
@@ -1050,7 +1104,7 @@ class Tree {
         TBranch        *b_el_sigmaIetaIeta;
         TBranch        *b_el_superCluster_eta;
         TBranch        *b_el_correctedEcalEnergy;
-	TBranch        *b_el_ecalEnergy;
+        TBranch        *b_el_ecalEnergy;
         TBranch        *b_el_eSuperClusterOverP;
         TBranch        *b_el_trackMomentumError;
 
@@ -1100,7 +1154,10 @@ class Tree {
         TBranch        *b_mu_globalTrack_dxyError;   //!
         TBranch        *b_mu_globalTrack_dzError;   //!
         TBranch        *b_mu_globalTrack_normalizedChi2;   //!
-        TBranch        *b_mu_combinedQuality_chi2LocalPosition;   //!
+
+	    TBranch        *b_mu_globalTrack_numberOfValidMuonHits;   //! //NEW
+
+	    TBranch        *b_mu_combinedQuality_chi2LocalPosition;   //!
         TBranch        *b_mu_combinedQuality_trkKink;   //!
         TBranch        *b_mu_hasInnerTrack;   //!
         TBranch        *b_mu_innerTrack_dxy;   //!
@@ -1110,8 +1167,9 @@ class Tree {
         TBranch        *b_mu_innerTrack_dxyError;   //!
         TBranch        *b_mu_innerTrack_dzError;   //!
         TBranch        *b_mu_innerTrack_validFraction;   //!
-        TBranch        *b_mu_bestTrack_dxy;   //!
-        TBranch        *b_mu_bestTrack_dz;   //!
+        //New
+        TBranch        *b_mu_bestTrack_PV_dxy;   //!
+        TBranch        *b_mu_bestTrack_PV_dz;   //!
         TBranch        *b_mu_bestTrack_dxyError;   //!
         TBranch        *b_mu_bestTrack_dzError;   //!
         TBranch        *b_mu_bestTrack_pt;
@@ -1122,8 +1180,19 @@ class Tree {
         TBranch        *b_mu_pfIso03_sumNeutralHadronEt;   //!
         TBranch        *b_mu_pfIso03_sumPhotonEt;   //!
         TBranch        *b_mu_pfIso03_sumPUPt;   //!
+
+        //New
+        TBranch        *b_mu_pfIso04_sumChargedHadronPt;   //!
+        TBranch        *b_mu_pfIso04_sumNeutralHadronEt;   //!
+        TBranch        *b_mu_pfIso04_sumPhotonEt;   //!
+        TBranch        *b_mu_pfIso04_sumPUPt;   //!
+
         TBranch        *b_mu_lepMVA;   //!
         TBranch        *b_mu_lepMVA_miniRelIsoCharged;
+
+
+
+
         TBranch        *b_mu_lepMVA_miniRelIsoNeutral;
         TBranch        *b_mu_lepMVA_jetPtRelv2;
         TBranch        *b_mu_lepMVA_neuRelIso;
@@ -1142,6 +1211,11 @@ class Tree {
         TBranch        *b_mu_innerTrack_ptError;   //!
         TBranch        *b_mu_dB3D;   //!
         TBranch        *b_mu_edB3D;   //!
+
+        //New
+        TBranch        *b_mu_numberOfMatchedStations;   //!
+        TBranch        *b_mu_innerTrack_numberOfValidPixelHits;   //!
+        TBranch        *b_mu_innerTrack_trackerLayersWithMeasurement;   //!
 
         // #########################
         // #  _____                #
@@ -1191,9 +1265,11 @@ class Tree {
         TBranch   *b_tau_puCorrPtSum;
         TBranch   *b_tau_againstMuonLoose3;
         TBranch   *b_tau_againstMuonTight3;
-        TBranch   *b_tau_againstElectronVLooseMVA5;
-        TBranch   *b_tau_againstElectronLooseMVA5;
-        TBranch   *b_tau_againstElectronMediumMVA5;
+        //AC8X
+        TBranch   *b_tau_againstElectronVLooseMVA6;
+        TBranch   *b_tau_againstElectronLooseMVA6;
+        TBranch   *b_tau_againstElectronMediumMVA6;
+        TBranch   *b_tau_againstElectronTightMVA6;
         TBranch   *b_tau_pfEssential_jet_pt;
         TBranch   *b_tau_pfEssential_jet_eta;
         TBranch   *b_tau_pfEssential_jet_phi;
@@ -1222,6 +1298,7 @@ class Tree {
 
         TBranch        *b_jet_n;   //!
         TBranch        *b_jet_pt;   //!
+        TBranch        *b_jet_Unc;   //! //new
         TBranch        *b_jet_eta;   //!
         TBranch        *b_jet_phi;   //!
         TBranch        *b_jet_m;   //!
@@ -1238,6 +1315,14 @@ class Tree {
         TBranch        *b_jet_electronEnergy;   //!
         TBranch        *b_jet_muonEnergy;   //!
         TBranch        *b_jet_photonEnergy;   //!
+
+    	//NEW
+    	TBranch        *b_jet_neutralHadronEnergyFraction;   //!
+    	TBranch        *b_jet_neutralEmEnergyFraction;   //!
+    	TBranch        *b_jet_chargedHadronEnergyFraction;   //!
+    	TBranch        *b_jet_muonEnergyFraction;   //!
+    	TBranch        *b_jet_chargedEmEnergyFraction;   //!
+
         TBranch        *b_jet_genJet_pt;   //!
         TBranch        *b_jet_genJet_eta;   //!
         TBranch        *b_jet_genJet_phi;   //!
@@ -1253,6 +1338,11 @@ class Tree {
         //TBranch      *b_jet_genParton_status; //!
         TBranch        *b_jet_genParton_id; //!
         TBranch        *b_jet_pileupJetId;   //!
+
+        //New
+        TBranch        *b_jet_chargedMultiplicity;
+        TBranch        *b_jet_neutralMultiplicity;
+        TBranch        *b_jet_jecFactorUncorrected;
 
         // #####################
         // #   __  __  ____    #

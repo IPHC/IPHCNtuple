@@ -25,10 +25,10 @@ void GenJet::read()
 void GenJet::init()
 {
 
-    _genJet_pt  = -666;
-    _genJet_eta = -666;
-    _genJet_phi = -666;
-    _genJet_E   = -666;
+    _genJet_pt  = -100;
+    _genJet_eta = -100;
+    _genJet_phi = -100;
+    _genJet_E   = -100;
     			 
 }
 

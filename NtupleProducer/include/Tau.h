@@ -24,20 +24,28 @@ class Tau : public Base
         void init();
 
         // kinematics
-        float E()         {return _E;};
-        float pt()        {return _pt;};
-        float eta()       {return _eta;};
-        float phi()       {return _phi;};
-        float m()         {return _m;};
-        int   charge()    {return _charge;};
-        int   id()        {return _id;};
+        float E()               {return _E;};
+        float pt()              {return _pt;};
+        float ptCor()           {return _ptCor;};
+        float ptUnc()           {return _ptUnc;};
+        float eta()             {return _eta;};
+        float phi()             {return _phi;};
+        float m()               {return _m;};
+        int   charge()          {return _charge;};
+        int   id()              {return _id;};
 
         // Id
-        bool isLoose()    {return _isLoose;};
+        bool isLoose()          {return _isLoose;};
+        bool isFakeableTTH()    {return _isFakeableTTH;};
+        bool isTightTTH()       {return _isTightTTH;};
+        float lepMVA_TTH()      {return _lepMVA_TTH;};
+        bool passTightCharge()  {return _passTightCharge;};
+        bool cutEventSel()      {return _cutEventSel;};
+        bool noLostHits()       {return _noLostHits;};
 
         // Variables for Id
-        float dxy()       {return _dxy;};
-        float dz()        {return _dz;};
+        float dxy()             {return _dxy;};
+        float dz()              {return _dz;};
 
         // Other variables
 
@@ -50,6 +58,8 @@ class Tau : public Base
         // General informations
         float _E;
         float _pt;
+        float _ptCor;
+        float _ptUnc;
         float _eta;
         float _phi;
         float _m;
@@ -60,7 +70,12 @@ class Tau : public Base
         float _dz;
 
         bool  _isLoose;
-
+        bool  _isFakeableTTH;
+        bool  _isTightTTH;
+        float _lepMVA_TTH;
+        bool _passTightCharge;
+        bool _cutEventSel;
+        bool _noLostHits;
 
         //-------------------------------
         // http://kskovpen.web.cern.ch/kskovpen/IPHCFlatTree/table_MantaRay-patch7_20150829.html
@@ -114,9 +129,11 @@ class Tau : public Base
 
         // electron discriminators
 
-        float _againstElectronVLooseMVA5;
-        float _againstElectronLooseMVA5;
-        float _againstElectronMediumMVA5;
+        //AC8X
+        float _againstElectronVLoose;
+        float _againstElectronLoose;
+        float _againstElectronMedium;
+        float _againstElectronTight;
 
         float _pfEssential_jet_pt;
         float _pfEssential_jet_eta;
