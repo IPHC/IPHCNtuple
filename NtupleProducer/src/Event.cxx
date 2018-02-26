@@ -66,12 +66,14 @@ void Event::read(bool isdata)
         if( ntP->trigger_pass->at(i) == 1) { currentpath = ntP->trigger_name->at(i); }
 
         // Single lepton
-        std::size_t e1    = currentpath.find("HLT_Ele27_eta2p1_WPLoose_Gsf_v"		               );
-        std::size_t e2    = currentpath.find("HLT_Ele35_WPLoose_Gsf_v"			                   );
+        std::size_t e1    = currentpath.find("HLT_Ele27_eta2p1_WPLoose_Gsf_v"		           );
+        std::size_t e2    = currentpath.find("HLT_Ele35_WPLoose_Gsf_v"			           );
         std::size_t e3    = currentpath.find("HLT_Ele27_WPTight_Gsf_v"                             );
         std::size_t e4    = currentpath.find("HLT_Ele25_eta2p1_WPTight_Gsf_v"                      );
-        std::size_t m1    = currentpath.find("HLT_IsoMu20_v"                                       );
-        std::size_t mTk1  = currentpath.find("HLT_IsoTkMu20_v"                                     );
+        std::size_t m1    = currentpath.find("HLT_IsoMu22_v"                                       ); //-- CHANGED THQ2016
+	//std::size_t m1    = currentpath.find("HLT_IsoMu20_v"                                       );
+        std::size_t mTk1  = currentpath.find("HLT_IsoTkMu22_v"                                     ); //-- CHANGED THQ2016
+	//std::size_t mTk1  = currentpath.find("HLT_IsoTkMu20_v"                                     );
         std::size_t m2    = currentpath.find("HLT_IsoMu22_eta2p1_v"                                );
         std::size_t mTk2  = currentpath.find("HLT_IsoTkMu22_eta2p1_v"                              );
         std::size_t m3    = currentpath.find("HLT_IsoMu24_v"                                       );
@@ -79,8 +81,10 @@ void Event::read(bool isdata)
 
         // Double lepton
         std::size_t ee    = currentpath.find("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v"         );
-        std::size_t me    = currentpath.find("HLT_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v"   );
-        std::size_t em    = currentpath.find("HLT_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL_v"    );
+        std::size_t me    = currentpath.find("HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_v"   ); //-- CHANGED THQ2016
+	//std::size_t me    = currentpath.find("HLT_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v"   );
+        std::size_t em    = currentpath.find("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v"    ); //-- CHANGED THQ2016
+	//std::size_t em    = currentpath.find("HLT_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL_v"    );
         std::size_t medZ  = currentpath.find("HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_DZ_v" );
         std::size_t emdZ  = currentpath.find("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v" );
         std::size_t mm    = currentpath.find("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v"               );
@@ -90,11 +94,12 @@ void Event::read(bool isdata)
         std::size_t eee   = currentpath.find("HLT_Ele16_Ele12_Ele8_CaloIdL_TrackIdL_v"             );
         std::size_t mme   = currentpath.find("HLT_DiMu9_Ele9_CaloIdL_TrackIdL_v"                   );
         std::size_t eem   = currentpath.find("HLT_Mu8_DiEle12_CaloIdL_TrackIdL_v"                  );
-        std::size_t mmm   = currentpath.find("HLT_TripleMu_5_3_3_v"                                );
+        std::size_t mmm   = currentpath.find("HLT_TripleMu_12_10_5_v"                                ); //-- CHANGED THQ2016
+	//std::size_t mmm   = currentpath.find("HLT_TripleMu_5_3_3_v"                                );
 
-        std::size_t ee_noDz   = currentpath.find("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v"	       );
+        std::size_t ee_noDz   = currentpath.find("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v"	   );
         std::size_t mm_noDz   = currentpath.find("HLT_Mu27_TrkIsoVVL_Mu8_TrkIsoVVL_v"	           );
-        std::size_t mmTk_noDz = currentpath.find("HLT_Mu27_TrkIsoVVL_TkMu8_TrkIsoVVL_v" 	       ); 
+        std::size_t mmTk_noDz = currentpath.find("HLT_Mu27_TrkIsoVVL_TkMu8_TrkIsoVVL_v" 	   ); 
         
         if(e1        != std::string::npos || e2   != std::string::npos || e3   != std::string::npos || e4 != std::string::npos )    { _TRIGe    = true ;}
         if(m1        != std::string::npos || m2   != std::string::npos || m2   != std::string::npos)                                { _TRIGm    = true ;}

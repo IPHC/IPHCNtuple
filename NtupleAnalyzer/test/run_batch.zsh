@@ -27,9 +27,9 @@ dout_f="/opt/sbg/scratch1/cms/ntonon/Analyzer_ntuples_tHq"
 runName="toy_${jName}"
 logName="log_${jName}"
 
-rm -rf ${dout_f}/${runName} #REMOVED /
+rm -rf ${dout_f}/${runName}
 mkdir ${dout_f} #NEW
-mkdir ${dout_f}/${runName} #REMOVED /
+mkdir ${dout_f}/${runName}
 rm -rf ${logName}
 mkdir ${logName}
 
@@ -51,9 +51,9 @@ echo $flist | while read line
 do
   jidx=0
   sample=$(echo $line | sed 's%.txt%%g')
-  dataset=$(echo $sample | sed 's%_ID..*%%g')
+  dataset=$(echo $sample | sed 's%__ID..*%%g') #CHANGED
   if [[ ! -d ${runName}/${dataset} ]]; then
-    mkdir ${dout_f}/${runName}/${dataset} #REMOVED /
+    mkdir ${dout_f}/${runName}/${dataset} 
   fi
   linexsec=$(grep $dataset $fxsec)
   nowe=$(echo $linexsec | awk '{print $3}')
@@ -79,6 +79,7 @@ do
     nmax=${nmax}
   fi
   
+  isdata=1 #FIXME
   
   fout=`echo ${runName}/${dataset}/${line}_${jidx} | sed 's%.txt%%g'`
   lout=`echo ${line}_${jidx} | sed 's%.txt%%g'`

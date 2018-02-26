@@ -35,6 +35,7 @@ class Lepton
         bool    noLostHits()        {return _noLostHits;};
 
         bool isFakeableTTH()        {return _isFakeableTTH;};
+	bool isLooseTTH()           {return _isLooseTTH;};
         bool isTightTTH()           {return _isTightTTH;};
 
         int charge()                {return _charge;};
@@ -59,7 +60,9 @@ class Lepton
             _charge             = lep->charge();
 
     	    _isFakeableTTH      = lep->isFakeableTTH();
-            _isTightTTH         = lep->isTightTTH();
+            if(isE || isMu) {_isLooseTTH = lep->isLooseTTH();}
+	    else {_isLooseTTH = true;} //isLooseTTH not implemented for tau
+	    _isTightTTH         = lep->isTightTTH();
             _lepMVA_TTH         = lep->lepMVA_TTH();
 
             _passTightCharge    = lep->passTightCharge();
@@ -85,6 +88,7 @@ class Lepton
         bool            _isMuon;
 
         bool            _isFakeableTTH;
+	bool            _isLooseTTH;
         bool            _isTightTTH;
         float           _lepMVA_TTH;
 

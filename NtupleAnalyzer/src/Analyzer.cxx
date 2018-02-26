@@ -67,7 +67,7 @@ int main(int argc, char *argv[])
     std::cout << "--doSystCombine=" << doSystCombine  << std::endl;
     std::cout << "--dataset=" << dataset  << std::endl;
 
-    TChain *thetree = 0;
+    //TChain *thetree = 0;
 
     // TTH Transfer Function analysis
 
@@ -88,20 +88,15 @@ int main(int argc, char *argv[])
 
     // TTbar...
   
-    //TTH BTag efficiency
-    //TTbarHiggsBTagEff *TTHanalysis = new TTbarHiggsBTagEff(fname,thetree,dataset,stream,outfile,nmax);
-    //TTHanalysis->createHistograms();
-    //TTHanalysis->Loop();
-    //TTHanalysis->writeHistograms();
-  
-    //TTH MEM analysis
-    TTbarHiggsMultileptonAnalysis* tHqAnalysis = new TTbarHiggsMultileptonAnalysis(fname,thetree,dataset,stream,outfile,isdata,doSystCombine,xsec,lumi,nowe,nmax);
-    // tHqAnalysis->InitLHCO(1,1); // to print LHCO files
-    tHqAnalysis->createHistograms();
+      
+    //tHq analysis
+    TTbarHiggsMultileptonAnalysis* tHqAnalysis = new TTbarHiggsMultileptonAnalysis(fname,dataset,stream,outfile,isdata,doSystCombine,xsec,lumi,nowe,nmax);
+    
+    //tHqAnalysis->createHistograms();
     
     tHqAnalysis->Loop();
     
     //tHqAnalysis->writeHistograms();
+    
     delete tHqAnalysis;
-
 }

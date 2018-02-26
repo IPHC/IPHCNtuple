@@ -1,0 +1,12 @@
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/Walrus-patch2/SingleMuon/Run2016B_23Sep2016_v3_MINIAOD/180215_133841/0005/output_5214.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/Walrus-patch2/SingleMuon/Run2016B_23Sep2016_v3_MINIAOD/180215_133841/0005/output_5215.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/Walrus-patch2/SingleMuon/Run2016B_23Sep2016_v3_MINIAOD/180215_133841/0005/output_5216.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/Walrus-patch2/SingleMuon/Run2016B_23Sep2016_v3_MINIAOD/180215_133841/0005/output_5217.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/Walrus-patch2/SingleMuon/Run2016B_23Sep2016_v3_MINIAOD/180215_133841/0005/output_5218.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/Walrus-patch2/SingleMuon/Run2016B_23Sep2016_v3_MINIAOD/180215_133841/0005/output_5219.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/Walrus-patch2/SingleMuon/Run2016B_23Sep2016_v3_MINIAOD/180215_133841/0005/output_5220.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/Walrus-patch2/SingleMuon/Run2016B_23Sep2016_v3_MINIAOD/180215_133841/0005/output_5221.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/Walrus-patch2/SingleMuon/Run2016B_23Sep2016_v3_MINIAOD/180215_133841/0005/output_5222.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/Walrus-patch2/SingleMuon/Run2016B_23Sep2016_v3_MINIAOD/180215_133841/0005/output_5223.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/Walrus-patch2/SingleMuon/Run2016B_23Sep2016_v3_MINIAOD/180215_133841/0005/output_5224.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/Walrus-patch2/SingleMuon/Run2016B_23Sep2016_v3_MINIAOD/180215_133841/0005/output_5225.root

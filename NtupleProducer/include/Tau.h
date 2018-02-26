@@ -37,6 +37,7 @@ class Tau : public Base
         // Id
         bool isLoose()          {return _isLoose;};
         bool isFakeableTTH()    {return _isFakeableTTH;};
+	bool isLooseTTH()    	{return _isLooseTTH;};
         bool isTightTTH()       {return _isTightTTH;};
         float lepMVA_TTH()      {return _lepMVA_TTH;};
         bool passTightCharge()  {return _passTightCharge;};
@@ -71,6 +72,7 @@ class Tau : public Base
 
         bool  _isLoose;
         bool  _isFakeableTTH;
+	bool  _isLooseTTH;
         bool  _isTightTTH;
         float _lepMVA_TTH;
         bool _passTightCharge;

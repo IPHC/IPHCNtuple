@@ -119,6 +119,7 @@ void Tau::init()
     _isLoose        = 0;
     _isFakeableTTH  = 0; //dummy !!!
     _isTightTTH     = 0; //dummy !!!
+    _isLooseTTH     = 0; //dummy !!!
     _lepMVA_TTH     = 0.; //dummy !!!
 
     // variables for Id

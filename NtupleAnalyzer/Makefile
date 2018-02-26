@@ -1,6 +1,7 @@
 # Makefile
 
-CC = g++ -g -Wno-writable-strings -Wno-write-strings -fsanitize=address -lTMVA
+#CC = g++ -g -Wno-writable-strings -Wno-write-strings -fsanitize=address -lTMVA
+CC = g++ -g -Wno-writable-strings -Wno-write-strings -lTMVA
 
 NTUPLEINC    = -I../NtupleProducer/include -I$(CMSSW_RELEASE_BASE)/src
 NTUPLELIB    = -L../NtupleProducer -L$(CMSSW_RELEASE_BASE)/lib/slc6_amd64_gcc530 -lCondFormatsJetMETObjects \
@@ -50,7 +51,7 @@ OBJ = TTbarHiggsMultileptonAnalysis.o \
 EXE = Analyzer
 
 all:  	     		$(EXE)
-			@rm -f *.o
+#@rm -f *.o
 
 $(EXE):     	 	$(OBJ) $@
 

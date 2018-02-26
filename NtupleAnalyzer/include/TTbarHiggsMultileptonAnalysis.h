@@ -46,126 +46,86 @@ class TTbarHiggsMultileptonAnalysis
     public:
 
         TTbarHiggsMultileptonAnalysis(); //Default constructor
-        TTbarHiggsMultileptonAnalysis(TString inputFileName, TChain *tree, TString sampleName, TString treeName, TString outputFileName, bool isdata, bool doSystCombine, float xsec, float lumi, int nowe, int nmax); //Constructor
+        TTbarHiggsMultileptonAnalysis(TString inputFileName, TString sampleName, TString treeName, TString outputFileName, bool isdata, bool doSystCombine, float xsec, float lumi, int nowe, int nmax); //Constructor
         ~TTbarHiggsMultileptonAnalysis(); //Destructor
 
-        void createHistograms();
-        void writeHistograms();
+        void ThreeLeptonSelection_THQ3l_SR(int evt); //NEW
+        void ThreeLeptonSelection_THQ3l_Training(int evt); //NEW
 
-        // void TwoLeptonsSameSignSelection_TTH2l(int evt);
-        // void TwoLeptonsSameSignSelection_ApplicationFakes(int evt);
-        // void TwoLeptonsSameSignSelection_ApplicationFlips(int evt);
-
-        // void TwoLeptonsSameSignSelection_LepMVA_sideband(int evt);
-        // void TwoLeptonsSameSignSelection_JetMultiplicity_sideband(int evt);
-        // void TwoLeptonsSameSignSelection_TTbar(int evt);
-
-        void ThreeLeptonSelection_TTH3l(int evt);
-        void ThreeLeptonSelection_THQ3l(int evt); //NEW
         void ThreeLeptonSelection_ApplicationFakes(int evt);
-
-        void ThreeLeptonSelection_CR_WZ(int evt);
-        void ThreeLeptonSelection_CR_WZ_ApplicationFakes(int evt);
-        void ThreeLeptonSelection_CR_WZrelaxed(int evt);
-        void ThreeLeptonSelection_TTZ(int evt);
-
-        void ThreeLeptonSelection_CR_Zl(int evt);
-
-        bool ThreeLeptonSelection_TTH3l_MC();
 
 
         TChain *fChain;   //!pointer to the analyzed TTree or TChain
 
-        std::vector<Event>    *vEvent     = new std::vector<Event>();
-        std::vector<Electron> *vElectron  = new std::vector<Electron>();
-        std::vector<Muon>     *vMuon      = new std::vector<Muon>();
-        std::vector<Tau>      *vTau       = new std::vector<Tau>();
-        std::vector<Jet>      *vJet       = new std::vector<Jet>();
-        std::vector<Truth>    *vTruth     = new std::vector<Truth>();
+        std::vector<Event>    *vEvent;
+        std::vector<Electron> *vElectron;
+        std::vector<Muon>     *vMuon;
+        std::vector<Tau>      *vTau;
+        std::vector<Jet>      *vJet;
+        std::vector<Truth>    *vTruth;
 
         std::vector<Lepton>   vLeptons;
+        std::vector<Lepton>   vSelectedLeptons;
         std::vector<Muon>	  vSelectedMuons;
         std::vector<Electron> vSelectedElectrons;
         std::vector<Tau>      vSelectedTaus;
-        std::vector<Lepton>   vSelectedLeptons;
+
         std::vector<Muon>	  vFakeMuons;     // inverted MVA cut
         std::vector<Electron> vFakeElectrons; // inverted MVA cut
         std::vector<Lepton>   vFakeLeptons;   // inverted MVA cut
-        std::vector<Lepton>   vInclusiveFakeLeptons;
-        std::vector<Jet>	  vSelectedNonBTagJets;
-        std::vector<Jet>	  vSelectedBTagJets;
-        std::vector<Jet>      vSelectedMediumBTagJets;
 
-        //CHANGED -- new categories
         std::vector<Jet>	  vSelectedJets; //All jets with pT>25
+
+        //New categories
         std::vector<Jet>	  vLooseBTagJets; //Loose-CSV jets (+pT/eta cuts)
         std::vector<Jet>      vLightJets; //Non-loose CSV jets (+pT/eta cuts)
+        std::vector<Lepton>   vFakeableLeptons;
+        std::vector<Lepton>   vLooseLeptons;
+        std::vector<Lepton>   vTightLeptons;
 
 
         int nLooseBJets;
         int nMediumBJets;
         int nForwardJets;
 
-        bool is_2lss_TTH_SR;
-        bool is_2lss_AppFakes_SR;
-        bool is_2lss_AppFlips_SR;
-        bool is_2lss_JM_SB;
-        bool is_2lss_LepMVA_SB;
         bool is_emu_TT_CR;
 
         bool is_3l_THQ_SR;    // THQ 3l analysis //NEW
-		bool is_3l_TTH_SR;    // TTH 3l analysis
+        bool is_3l_THQ_Training;    // THQ 3l analysis //NEW
         bool is_3l_AppFakes_SR;
-        bool is_3l_WZ_CR;     // WZ CR w/ 3l (selected) or more, no b-jets, Z peak
-        bool is_3l_WZrel_CR;  // WZ CR w/ 3l (loose) or more, no medium b-jets, Z peak
-        bool is_3l_TTZ_CR;    // TTZ 3l analysis (for the future..)
 
-        bool is_3l_TZQ_SR;
 
         // for sub-categorisation
-        int cat_ee_tau, cat_em_tau, cat_mm_tau, cat_tau;
-        int cat_ee_2lss_QF, cat_ee_2lss_FR;
-        int cat_em_2lss_QF, cat_em_2lss_FR;
-        int cat_mm_2lss_QF, cat_mm_2lss_FR;
-
-        int cat_ee, cat_em, cat_mm, cat_2ltau, cat_3l;
-        int cat_ee_fake, cat_em_fake, cat_mm_fake, cat_3l_fake;
-        int cat_ee_flip, cat_em_flip;
-        int is_2bTight;
-        float is_2bTight_float;
-
         bool cat_HtoWW, cat_HtoZZ, cat_Htott;
 
         int n_tight;
 
         bool is_trigger;
 
-        // for synchro
-        int stat_2lss_SR_ee, stat_2lss_SR_eetau,    stat_2lss_lepMVA_SB_ee,     stat_2lss_os_SB_ee,
-            stat_2lss_SR_em, stat_2lss_SR_emtau,    stat_2lss_lepMVA_SB_em,     stat_2lss_os_SB_em,
-            stat_2lss_SR_mm, stat_2lss_SR_mmtau,    stat_2lss_lepMVA_SB_mm,     stat_2lss_os_SB_mm,
-            stat_2lss_SR_tau, stat_2lss_fr_tau,
-            stat_3l_SR,      stat_3l_lepMVA_SB;
-
         float zero_btagSF;
         float zero_btagSF_up;
         float zero_btagSF_do;
 
-        virtual void     Init(TChain *tree);
-        virtual void     Loop();
+        void Init();
+        void InitEvent();
+        void InitTree();
+        void Loop();
 
         void initializeOutputTree();
         void selectBjets(std::string, int*, int*, bool);
         void fillOutputTree();
         void FillJetInfoOutputTree(int*, int, TLorentzVector*, TLorentzVector, float*, float, float*, float*, float, float*, float*, float, float, float);
 
-        // needed to print info in LHCO text format (madweight)
-        // void InitLHCO(int process_MC, int process_RECO);
-        // void PrintLHCOforMadweight_MC(int evt);
-        // void PrintLHCOforMadweight_RECO(int evt);
 
         float Phi_0_2Pi(float phi);
+        float Phi_MPi_Pi(float phi);
         float GetDeltaR(float eta1,float phi1,float eta2,float phi2);
+        //NEW
+        // TString Convert_Number_To_TString(double, int/*=10*/)
+        // double Convert_TString_To_Number(TString)
+        // bool Check_File_Existence(const TString&)
+
+
 
         TTree* tOutput;
         long int mc_event;
@@ -237,53 +197,29 @@ class TTbarHiggsMultileptonAnalysis
         Double_t multilepton_mETcov10;
         Double_t multilepton_mETcov11;
 
-        //NEW -- input variables for tHq2016 analysis
-        Double_t nJet25;
-        Double_t MaxEtaJet25;
-        Double_t totCharge;
-        Double_t nJetEta1 ;
-        Double_t detaFwdJetBJet;
-        Double_t detaFwdJet2BJet;
-        Double_t detaFwdJetClosestLep;
-        Double_t dphiHighestPtSPPair;
-        Double_t minDRll;
-        Double_t Lep3Pt;
+        //NEW -- input variables for tHq2016 analysis -- in SinglaExtractionMVA.cxx
+        // Double_t nJet25;
+        // Double_t MaxEtaJet25;
+        // Double_t totCharge;
+        // Double_t nJetEta1 ;
+        // Double_t detaFwdJetBJet;
+        // Double_t detaFwdJet2BJet;
+        // Double_t detaFwdJetClosestLep;
+        // Double_t dphiHighestPtSPPair;
+        // Double_t minDRll;
+        // Double_t Lep3Pt;
 
 
     private:
-
-        HistoManager * theHistoManager;
-
-        //Combine
-        HistoManager * histoManager_2lss_mm_0tau_bl_neg;
-        HistoManager * histoManager_2lss_mm_0tau_bt_neg;
-        HistoManager * histoManager_2lss_ee_0tau_bl_neg;
-        HistoManager * histoManager_2lss_ee_0tau_bt_neg;
-        HistoManager * histoManager_2lss_em_0tau_bl_neg;
-        HistoManager * histoManager_2lss_em_0tau_bt_neg;
-
-        HistoManager * histoManager_2lss_mm_0tau_bl_pos;
-        HistoManager * histoManager_2lss_mm_0tau_bt_pos;
-        HistoManager * histoManager_2lss_ee_0tau_bl_pos;
-        HistoManager * histoManager_2lss_ee_0tau_bt_pos;
-        HistoManager * histoManager_2lss_em_0tau_bl_pos;
-        HistoManager * histoManager_2lss_em_0tau_bt_pos;
-
-        HistoManager * histoManager_3l_bl_neg;
-        HistoManager * histoManager_3l_bt_neg;
-
-        HistoManager * histoManager_3l_bl_pos;
-        HistoManager * histoManager_3l_bt_pos;
-
-
         TFile * outputfile;
+
+        TFile *f_CSVwgt_HF, *f_CSVwgt_LF, *f_BTag_eff, *f_QFwgt, *f_FRwgt;
 
         TString _sampleName;
         TString _process; // Needed for Combine
         TString _outputFileName;
 
         bool _isdata;
-        bool _doSystCombine;
         float _xsec;
         float _lumi;
         int   _nowe; // number of weighted events
@@ -292,21 +228,12 @@ class TTbarHiggsMultileptonAnalysis
         TFile * _file_PVreweighting;
         TH1F* _h_PV;
 
-        // needed to print info in LHCO text format (madweight)
-
-        bool _printLHCO_MC;
-        int _processLHCO_MC;
         std::ofstream fout_MC;
 
-        bool _printLHCO_RECO;
-        int _processLHCO_RECO;
         std::ofstream fout_RECO;
 
-        std::string fline00 ;
         std::string del;
         std::string trig;
-        std::string fline0;
-
 };
 
 #endif

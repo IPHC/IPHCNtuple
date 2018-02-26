@@ -18,6 +18,7 @@ Lepton::Lepton()
     _isMuon             =  0;
     
     _isFakeableTTH      = false;
+    _isLooseTTH		= false;
     _isTightTTH         = false;
 
     _lepMVA_TTH         = 0.;

@@ -13,9 +13,10 @@ que="cms"
 
 export HOME=$(pwd)
 
-#--- UPDATE paths (DO NOT add '/' at the end)
 dout="/home-pbs/ntonon/tHq/CMSSW_8_0_20/src/ttH/NtupleProducer/test"
+
 dout_f="/opt/sbg/scratch1/cms/ntonon/ntuples_prod_tHq"
+
 
 echo "CMSSW_RELEASE_BASE" $CMSSW_RELEASE_BASE
 
@@ -24,8 +25,8 @@ logName="log${jName}"
 
 rm -rf ${logName}
 mkdir ${logName}
-#rm -rf ${dout_f}/${runName} #REMOVED -- don't remove dir. automatically
-mkdir ${dout_f} #NEW
+rm -rf ${dout_f}/${runName}
+mkdir ${dout_f}
 mkdir ${dout_f}/${runName}
 
 nmax=-1
@@ -48,7 +49,7 @@ do
   sample=$(echo $line | sed 's%.txt%%g')
   dataset=$(echo $sample | sed 's%_ID..*%%g')
   if [[ ! -d ${runName}/${dataset} ]]; then
-    mkdir ${runName} #Needed only to store run name (cf. below) ?
+    mkdir ${runName}
     mkdir ${runName}/${dataset}  
     mkdir ${dout_f}/${runName}/${dataset}
   fi
@@ -74,7 +75,7 @@ do
     nmax=${nmax}
   fi
   
-  isdata=1 # FIXME # FIXME
+  isdata=1 # --- FIXME ----
    
   fout=$(echo ${runName}/${dataset}/${line}_${jidx} | sed 's%.txt%%g')
   lout=$(echo ${line}_${jidx} | sed 's%.txt%%g')
@@ -87,8 +88,10 @@ do
 
 
   qsub -N ${dir} -q ${que} -o ${logName}/${sample}.log -j oe single_batch_job.sh \
--v dout=${dout},line2=${fpath}${line},fout=${fout},isdata=${isdata},sample=${sample},nmax=${nmax},dout_f=${dout_f}
+-v dout=${dout},line2=${fpath}${line},fout=${fout},isdata=${isdata},sample=${sample},nmax=${nmax},dout_f=${dout_f},dataset=${dataset}
 done
+
+#echo ${dataset}
 
 echo "going to sleep 2700 s (45 mn)"
 sleep 2700

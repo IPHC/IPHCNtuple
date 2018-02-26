@@ -8,12 +8,13 @@ export LD_LIBRARY_PATH=${cdir}:${NtupleDir}:${NtupleDir}/obj:$LD_LIBRARY_PATH
 --file input.txt \
 --tree Nt \
 --outfile ./output_tHq_MC \
---nmax 5000 \
---isdata 0 \
+--nmax -1  \
+--isdata 1 \
 --doSystCombine 0 \
 --nowe 3495652 \
 --xsec 0.7927 \
 --lumi 35.9 \
+--dataset DoubleEG_Run2016B_23Sep2016_v3_MINIAOD\
 
 #./../Analyzer \
 #--file input.txt \

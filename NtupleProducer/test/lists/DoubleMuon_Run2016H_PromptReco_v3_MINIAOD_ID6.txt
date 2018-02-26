@@ -1,0 +1,3 @@
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/Walrus-patch2/DoubleMuon/Run2016H_PromptReco_v3_MINIAOD/180201_120602/0000/output_97.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/Walrus-patch2/DoubleMuon/Run2016H_PromptReco_v3_MINIAOD/180201_120602/0000/output_98.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/Walrus-patch2/DoubleMuon/Run2016H_PromptReco_v3_MINIAOD/180201_120602/0000/output_99.root
