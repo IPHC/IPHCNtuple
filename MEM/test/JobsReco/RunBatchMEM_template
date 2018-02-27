@@ -19,6 +19,9 @@ rehash
 cd ${EXECDIR}
 eval `scram runtime -csh`
 
+cp SubGradient_h_ACLiC_dict_rdict.pcm ${LOCALDIR}/
+cp SubGradient_h.so ${LOCALDIR}/
+
 cd ${LOCALDIR}
 ${EXECDIR}/./test INPUTFILE NMIN NMAX --MEMRun DIR_JOBS/Jobs_OPTION/config.cfg > log_PROC_OPTION_NUM
 

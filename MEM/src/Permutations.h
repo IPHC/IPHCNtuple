@@ -18,6 +18,7 @@ class Permutations {
   bool computeHyp;
   
   int doMinimization;
+  int doEvaluationWithGen;
 
   bool doPermutationLep;
   bool doPermutationJet;
@@ -32,6 +33,8 @@ class Permutations {
   IntegrationResult resKin_maxKinFit;
   IntegrationResult resMEM_maxKinFit_Int;
   IntegrationResult resKin_maxKinFit_Int;
+  IntegrationResult resKin_evalGen;
+  IntegrationResult resKin_evalGenMax;
 
   std::vector<IntegrationResult> resMEM_all;
   std::vector<IntegrationResult> resMEM_all_JEC_up; 
@@ -52,12 +55,13 @@ class Permutations {
   Permutations();
   ~Permutations(); 
   void SetMultiLepton(MultiLepton*, HypIntegrator*);
-  int InitializeHyp(HypIntegrator*, int, int, string, int, string, int);
+  int InitializeHyp(HypIntegrator*, int, int, string, int, string, int, int);
   void LoopPermutations(HypIntegrator*);
 
   IntegrationResult GetMEMKinFitResult(HypIntegrator*, int);
   void GetMEMResult_Syst(HypIntegrator*, IntegrationResult**);
   IntegrationResult GetMEMResult(HypIntegrator*);
+  IntegrationResult GetMEMEvaluation_WithGen(HypIntegrator*);
 
   void UpdateAverageWeight(IntegrationResult*, std::vector<IntegrationResult>, bool, string);
 
@@ -98,9 +102,9 @@ void Permutations::SetMultiLepton(MultiLepton* multilepton_, HypIntegrator* hypI
   return;
 }
 
-int Permutations::InitializeHyp(HypIntegrator* hypIntegrator, int hyp, int nPointsHyp, string shyp, int doMinimization_, string JetChoice, int nPermutationJetSyst_){
+int Permutations::InitializeHyp(HypIntegrator* hypIntegrator, int hyp, int nPointsHyp, string shyp, int doMinimization_, string JetChoice, int doEvaluationWithGen_, int nPermutationJetSyst_){
 
-  cout << "InitializeHyp " << hyp << " (" << shyp << "), nPoints=" <<  nPointsHyp << " doMinimization="<<doMinimization_<<", JetChoice=" << JetChoice << ", nsyst="<<nPermutationJetSyst_<<endl;
+  cout << "InitializeHyp " << hyp << " (" << shyp << "), nPoints=" <<  nPointsHyp << " doMinimization="<<doMinimization_<<", JetChoice=" << JetChoice << ", nsyst="<<nPermutationJetSyst_<<" doEvaluationWithGen="<< doEvaluationWithGen_<<endl;
 
   nHypAllowed = 0;
   nNullResult = 0;
@@ -111,6 +115,8 @@ int Permutations::InitializeHyp(HypIntegrator* hypIntegrator, int hyp, int nPoin
   resMEM_maxKinFit.weight = 0;
   resKin_maxKinFit_Int.weight = 0;
   resMEM_maxKinFit_Int.weight = 0;
+  resKin_evalGen.weight = 0;
+  resKin_evalGenMax.weight = 0;
   if (nPermutationJetSyst_>=1) res_syst = new IntegrationResult[nPermutationJetSyst_];
 
   resMEM_all.clear();
@@ -151,6 +157,7 @@ int Permutations::InitializeHyp(HypIntegrator* hypIntegrator, int hyp, int nPoin
   HypothesisName = shyp;
 
   doMinimization = doMinimization_;
+  doEvaluationWithGen = doEvaluationWithGen_;
 
   nPermutationJetSyst = nPermutationJetSyst_;
 
@@ -256,6 +263,7 @@ void Permutations::LoopPermutations(HypIntegrator* hypIntegrator){
                for (unsigned int ij=0; ij<multiLepton.Jets.size(); ij++) cout << " Jet"<< ij<<"Pt="<<multiLepton.Jets.at(ij).P4.Pt(); cout<<endl;
 
                multiLepton.FillParticlesHypothesis(Hypothesis, &((*hypIntegrator).meIntegrator));
+	       if (doEvaluationWithGen==1)  multiLepton.FillUnknownVariables(Hypothesis);
                multiLepton.SwitchJetSyst(0);
 
 	       //Use MEM as kinematic fit, minimization from random initial value of integration variables
@@ -286,6 +294,15 @@ void Permutations::LoopPermutations(HypIntegrator* hypIntegrator){
 	       //MEM Systematics JEC/JER
                if (nPermutationJetSyst>=1) GetMEMResult_Syst(hypIntegrator, &res_syst);
 
+	       //cout << "doEvaluationWithGen="<<doEvaluationWithGen<<endl;
+	       //MEM evaluation with Gen level information
+	       if (doEvaluationWithGen==1) {
+		 resKin_evalGen = GetMEMEvaluation_WithGen(hypIntegrator);
+		 resKin_evalGen.weight /= xs;
+		 if (resKin_evalGen.weight >   resKin_evalGenMax.weight){ 
+		   resKin_evalGenMax = resKin_evalGen;
+		 }
+	       }
 	     }
 
 
@@ -319,6 +336,8 @@ void Permutations::LoopPermutations(HypIntegrator* hypIntegrator){
 
   if (resKin_maxKinFit.weight==0) resKin_maxKinFit.weight = 1e-300; 
   if (resKin_maxKinFit_Int.weight==0) resKin_maxKinFit_Int.weight = 1e-300;
+
+  if (resKin_evalGenMax.weight==0) resKin_evalGenMax.weight = 1e-300;
 
   UpdateAverageWeight(&resMEM_avgExl0, resMEM_all, true, "avg");
   UpdateAverageWeight(&resMEM_avgIncl0, resMEM_all, false, "avg");
@@ -430,6 +449,23 @@ void Permutations::GetMEMResult_Syst(HypIntegrator* hypIntegrator, IntegrationRe
     }
 
   return;
+}
+
+IntegrationResult Permutations::GetMEMEvaluation_WithGen(HypIntegrator* hypIntegrator){
+
+  IntegrationResult resEval;
+
+  (*hypIntegrator).meIntegrator->weight_max = 0;
+  
+  resEval = (*hypIntegrator).DoEvaluationWithGen(multiLepton.xVal);
+
+  if (!(resEval.weight>0)) {
+     resEval.weight = 0;
+  }
+
+  cout << "DOEVALUATION WITH GEN Hyp "<< HypothesisName  <<" -log(weight)=" << resEval.weight<<" Time(s)="<<resEval.time<<endl;
+
+  return resEval;
 }
 
 void Permutations::UpdateAverageWeight(IntegrationResult* ResAvg, std::vector<IntegrationResult> Res_all, bool doExclude0weight, string mode){

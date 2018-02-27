@@ -55,6 +55,8 @@ class MultiLepton
   vector<Particle> BjetsMatched;
   vector<Particle> Leptons;
   vector<Particle> LeptonsMatched;
+  vector<Particle> NeutrinosMatched;
+  vector<Particle> WMatched;
   vector<Particle> Jets;
   vector<Particle> AllJets;
   vector<Particle> JetsHighestPt;
@@ -70,6 +72,7 @@ class MultiLepton
 
   double *xL;
   double *xU;
+  double *xVal;
   int nParam;
 
   double mB;
@@ -94,6 +97,7 @@ class MultiLepton
   //int iperm_jsyst;
 
   int kCatJets;
+  int nparam;
 
   void FillParticle(string, int, TLorentzVector);
   void FillParticle(string, int, float, float, float, float, float, TLorentzVector);
@@ -102,7 +106,8 @@ class MultiLepton
   void FillParticleGen(string, int, int, TLorentzVector);
 
   void FillParticlesHypothesis(int, MEPhaseSpace**);   
-  
+  void FillUnknownVariables(int); 
+ 
   void DoSort(vector<Particle>*);
   int DoPermutation(vector<Particle>*);
   int DoPermutationLinear(string, vector<Particle>*);
@@ -147,6 +152,7 @@ MultiLepton::MultiLepton(){
   nParam = 15;
   xL = new double[nParam];
   xU = new double[nParam];
+  xVal = new double[nParam];
 
   mB = 4.7;
   JetTFfracmin = 0.65;//0.65; //next try 0.5 (5 sigma at 100 GeV for a 0.2*Egen gaussian width)
@@ -224,6 +230,8 @@ void MultiLepton::FillParticleMatched(string Type, float deltaR, int label, int 
 
   if (Type=="lepton") 	LeptonsMatched.push_back(p);
   if (Type=="jet") 	BjetsMatched.push_back(p);
+  if (Type=="neutrino") NeutrinosMatched.push_back(p);
+  if (Type=="w") 	WMatched.push_back(p);
   
   return;
 }
@@ -341,14 +349,37 @@ void MultiLepton::FillParticlesHypothesis(int kMode, MEPhaseSpace** meIntegrator
   (*meIntegrator)->transferFunctions->MeasuredVarForTF.Recoil_Px = -Ptot.Px();
   (*meIntegrator)->transferFunctions->MeasuredVarForTF.Recoil_Py = -Ptot.Py();
 
+  nparam = (*meIntegrator)->GetNumberIntegrationVar(kMode, kCatJets);
+
+
   ReadIntegrationBoundaries(kMode, meIntegrator);
 
   return;
 }
 
+void MultiLepton::FillUnknownVariables(int kMode){
+
+  if (kMode==kMEM_TTLL_TopAntitopDecay && kCatJets==kCat_3l_2b_2j){
+
+    xVal[0] = BjetsMatched[0].P4.E();
+    //xVal[1] = WMatched[0].M(); //mW or tW ?
+    xVal[1] = TMath::ATan((WMatched[0].P4.M()*WMatched[0].P4.M()-80.419*80.419)/(80.419*2.0476));
+    xVal[2] = BjetsMatched[1].P4.E();
+    xVal[3] = NeutrinosMatched[0].P4.Phi();
+    //xVal[4] = WMatched[1].M(); //mW or tW ?
+    xVal[4] = TMath::ATan((WMatched[1].P4.M()*WMatched[1].P4.M()-80.419*80.419)/(80.419*2.0476));
+
+   for (int i=0; i<nparam; i++) {
+     //if ((*meIntegrator)->verbosity>=1) 
+	cout << "Var "<<i<<" xVal="<<xVal[i]<<endl;
+   }
+
+  }
+}
+
 void MultiLepton::ReadIntegrationBoundaries(int kMode, MEPhaseSpace** meIntegrator){
 
-  int nparam = (*meIntegrator)->GetNumberIntegrationVar(kMode, kCatJets);
+  //int nparam = (*meIntegrator)->GetNumberIntegrationVar(kMode, kCatJets);
 
   for (int i=0; i<nparam; i++) {
      if ((*meIntegrator)->verbosity>=1) cout << "Var "<<i<<" xL="<<xL[i]<<" xU="<<xU[i]<<endl;

@@ -66,6 +66,8 @@ class HypIntegrator
   double* FindMinimizationiInitialValues(double*, double*);
   IntegrationResult DoMinimization(double*, double*,double*);
 
+  IntegrationResult DoEvaluationWithGen(double*);
+
   private:  
 };
 
@@ -305,6 +307,21 @@ IntegrationResult HypIntegrator::DoMinimization(double* xL, double* xU, double* 
   res.intvar = meIntegrator->weight_max_intvar;
 
   return res;  
+}
+
+IntegrationResult HypIntegrator::DoEvaluationWithGen(double* xVal)
+{
+  ResetCounters();
+ 
+  IntegrationResult res;
+ 
+  double click1 = std::clock();
+
+  res.weight = meIntegrator->Eval(xVal);  
+
+  res.time = ( std::clock() - click1 ) / (double) CLOCKS_PER_SEC;
+
+  return res;
 }
 
 void HypIntegrator::FillErrHist(TH1F** h){

@@ -1,10 +1,10 @@
 #!/bin/bash
 
 #Suffix of the subdirectory: jobs will be created in Jobs_${opt}, that should contain the config.cfg file 
-opt=test_tZqAllSamplesMoriondNew2_FakesNew2
+opt=testDelphesEvalGen
 
 #nEv events are run per job. Recommended nEv=6. If running also TTWJJ hyp, use nEv=1 (very slow).
-nEv=40
+nEv=200
 
 #LSF queue
 queue=1nd

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 #Suffix of the subdirectory: jobs will be created in Jobs_${opt}, that should contain the config.cfg file 
-opt=test_tZqAllSamplesMoriondNew2_FakesNew2_minus
+opt=testDelphesEvalGen
 
 while read line
 do

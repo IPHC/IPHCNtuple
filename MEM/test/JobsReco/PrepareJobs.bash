@@ -4,10 +4,10 @@
 #Environment variables LHAPDF and MEMEXECDIR (containing the executable) must be set
 
 #Suffix of the subdirectory: jobs will be created in Jobs_${opt}, that should contain the config.cfg file 
-opt=tZqAllSamplesEPSbMedium
+opt=testDelphesEvalGen
 
 #nEv events are run per job. Recommended nEv=6. If running also TTWJJ hyp, use nEv=1 (very slow).
-nEv=40
+nEv=200
 
 #LSF queue
 queue=1nd
@@ -29,7 +29,8 @@ do
   nJobs=$(($nEntries / $nEv ))
   echo nEntries=$nEntries nJobs=$nJobs
 
-  #nJobsMax=$((20000/$nEv))
+  #nJobsMax=1000
+  nJobsMax=$((20000/$nEv))
   #echo nJobsMax=$nJobsMax
 
   cp RunBatchMEM_template Jobs_${opt}/RunBatchMEM_${proc}_template

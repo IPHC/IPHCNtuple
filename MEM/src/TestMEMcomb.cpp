@@ -111,6 +111,7 @@ int main(int argc, char *argv[])
     //std::cout << "TEST XAVIER" << std::endl;
 
     int doMinimization = cfgParser.valDoMinimization;
+    int doEvaluationWithGen = cfgParser.valDoEvaluationWithGen;
 
     string JetChoice;
     cfgParser.LoadJetChoice(&JetChoice);
@@ -258,6 +259,10 @@ int main(int argc, char *argv[])
       tree.multilepton_mET = *tree.multilepton_mET_ptr;
       tree.multilepton_Ptot = *tree.multilepton_Ptot_ptr;
 
+      tree.multilepton_mET_Matched = *tree.multilepton_mET_Matched_ptr;
+      tree.multilepton_W1_P4_Matched = *tree.multilepton_W1_P4_Matched_ptr;
+      tree.multilepton_W2_P4_Matched = *tree.multilepton_W2_P4_Matched_ptr;
+
       //cout << "C"<<endl;
 
       tree.mc_mem_ttz_weight_logmean = 0;
@@ -272,6 +277,7 @@ int main(int argc, char *argv[])
       tree.mc_kin_ttz_weight_logmaxint = 0;
       tree.mc_mem_ttz_weight_kinmax = 0;
       tree.mc_mem_ttz_weight_kinmaxint = 0;
+      tree.mc_mem_ttz_weight_evalgenmax = 0;
       tree.mc_mem_ttz_weight_JEC_up = 0;
       tree.mc_mem_ttz_weight_JEC_down = 0;
       tree.mc_mem_ttz_weight_JER_up = 0;
@@ -525,7 +531,7 @@ int main(int argc, char *argv[])
 
      MEMpermutations[ih].SetMultiLepton(&multiLepton, &hypIntegrator);
 
-     initresult = MEMpermutations[ih].InitializeHyp(&hypIntegrator, hyp[ih], nPointsHyp[ih], shyp[ih], doMinimization, JetChoice, nPermutationJetSyst);
+     initresult = MEMpermutations[ih].InitializeHyp(&hypIntegrator, hyp[ih], nPointsHyp[ih], shyp[ih], doMinimization, JetChoice, doEvaluationWithGen, nPermutationJetSyst);
 
      if (initresult==1) MEMpermutations[ih].LoopPermutations(&hypIntegrator);
 
@@ -748,6 +754,7 @@ int main(int argc, char *argv[])
        tree.mc_kin_ttz_weight_logmaxint = log(MEMpermutations[index_hyp[0]].resKin_maxKinFit_Int.weight);
        tree.mc_mem_ttz_weight_kinmax = MEMpermutations[index_hyp[0]].resMEM_maxKinFit.weight;
        tree.mc_mem_ttz_weight_kinmaxint = MEMpermutations[index_hyp[0]].resMEM_maxKinFit_Int.weight;
+       tree.mc_mem_ttz_weight_evalgenmax = MEMpermutations[index_hyp[0]].resKin_evalGenMax.weight;
        //FillWeightVectors(MEMpermutations[index_hyp[0]], tree.MEAllWeights_TTLL, tree.MEAllWeights_TTLL_log);
        for (unsigned int ii=0; ii<MEMpermutations[index_hyp[0]].resKin_maxKinFit_Int.intvar.size(); ii++) tree.mc_kinInt_ttz_inputvars->push_back(MEMpermutations[index_hyp[0]].resKin_maxKinFit_Int.intvar.at(ii));
        for (unsigned int ii=0; ii<MEMpermutations[index_hyp[0]].resKin_maxKinFit.intvar.size(); ii++) tree.mc_kin_ttz_inputvars->push_back(MEMpermutations[index_hyp[0]].resKin_maxKinFit.intvar.at(ii));
