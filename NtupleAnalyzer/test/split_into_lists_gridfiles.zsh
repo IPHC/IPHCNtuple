@@ -10,7 +10,8 @@ liMC=($(/usr/bin/rfdir ${fpath} | egrep -v "$dataStr" | awk '{print $9}'))
 fpathDATAXRD=$(echo ${fpath} | sed "s%/dpm%root://sbgse1.in2p3.fr//dpm%g")
 fpathMCXRD=$(echo ${fpath} | sed "s%/dpm%root://sbgse1.in2p3.fr//dpm%g")
 
-nFilesDATA=20 # per job ?
+#--- Files per job
+nFilesDATA=40
 nFilesMC=20
 outDir="lists/"
 

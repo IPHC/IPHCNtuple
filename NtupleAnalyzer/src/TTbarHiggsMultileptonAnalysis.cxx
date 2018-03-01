@@ -1,4 +1,5 @@
 //ThreeLeptonSelection_THQ3l
+//TwoLeptonSelection_THQ2l
 
 #include "../include/TTbarHiggsMultileptonAnalysis.h"
 #include "TSystem.h"
@@ -18,7 +19,7 @@
 
 using namespace std;
 
-//Ccutflow vector -- new
+//Cutflow vector --> Count events for THQ_3l_SR selection, after each cut
 vector<double> v_cutflow(15);
 
 
@@ -101,7 +102,7 @@ void TTbarHiggsMultileptonAnalysis::Init()
     // Loading weight files and creating corrsponding histograms
 
     // b-tagging
-    std::string inputFileHF = "/opt/sbg/scratch1/cms/TTH/weight/csv_rwt_fit_hf_76x_2016_02_08.root"; //FIXME -- needs update ??
+    std::string inputFileHF = "/opt/sbg/scratch1/cms/TTH/weight/csv_rwt_fit_hf_76x_2016_02_08.root"; //-- needs update ??
     std::string inputFileLF = "/opt/sbg/scratch1/cms/TTH/weight/csv_rwt_fit_lf_76x_2016_02_08.root";
     f_CSVwgt_HF = new TFile ((inputFileHF).c_str());
     f_CSVwgt_LF = new TFile ((inputFileLF).c_str());
@@ -165,23 +166,30 @@ void TTbarHiggsMultileptonAnalysis::InitEvent()
     vSelectedJets.clear();
     vLooseBTagJets.clear();
     vLightJets.clear();
+    vLightJets_FwdPtCut.clear();
 
     weightfake = 0;
     weightflip = 0;
 
-    is_emu_TT_CR        = false;
-
-    is_3l_THQ_SR        = 0;
-    is_3l_THQ_Training  = 0;
-    is_3l_AppFakes_SR   = 0;
-
     signal_3l_TT_MVA = 0; signal_3l_TTV_MVA = 0;
+    signal_2lss_TT_MVA = 0; signal_2lss_TTV_MVA = 0;
 
-    cat_HtoWW       = 0;   cat_HtoZZ       = 0;   cat_Htott     = 0;
-
-    n_tight       = 0;
+    lep1Pt = 0; lep2Pt = 0; lep3Pt = 0; inv_mll = 0; hardestBjetPt = 0; hardestBjetEta = 0; fwdJetPt = 0;
 
     return;
+}
+
+//Some categories (e.g. 3l SR & Training) overlap, whereas all the others are orthogonal
+//---> Make sure that when we fill the TTree, only 1 category is TRUE !
+void TTbarHiggsMultileptonAnalysis::Reinit_Categories()
+{
+    is_3l_THQ_SR = false;
+    is_3l_THQ_Training = false;
+    is_3l_Z_CR = false;
+    is_3l_AppFakes_SR = false;
+    is_2l_THQ_SR = false;
+    is_2l_THQ_Training = false;
+    is_2l_EMU_CR = false;
 }
 
 
@@ -307,19 +315,10 @@ void TTbarHiggsMultileptonAnalysis::Loop()
             if ( !EM && !MM && !EE && M  &&           (mdataset ) ) is_trigger = true;
             if ( !EM && !MM && !EE && !M && E &&      (edataset ) ) is_trigger = true;
 
-			// cout<<"eedataset : "<<eedataset<<endl;
-			// cout<<" / EE : "<<EE;
-			// cout<<" / EM : "<<EM;
-			// cout<<" / MM : "<<MM;
-
-
-            if(is_trigger)
+            //The event will be rejected in sel. func., but counted
+            if(!is_trigger)
             {
-                weight *= 1;
-            }
-            else
-            {
-                weight *= 0;
+                weight = 0;
             }
         }
 
@@ -349,7 +348,6 @@ void TTbarHiggsMultileptonAnalysis::Loop()
             if(vMuon->at(imuon).isTightTTH() )
             {
                 vTightLeptons.push_back(l);
-                n_tight++;
             }
         }
 
@@ -382,7 +380,6 @@ void TTbarHiggsMultileptonAnalysis::Loop()
             {
                 if(!vElectron->at(ielectron).cutEventSel() || !vElectron->at(ielectron).noLostHits() ) {continue;} //conversion veto
                 vTightLeptons.push_back(l);
-                n_tight++;
             }
         }
 
@@ -435,7 +432,6 @@ void TTbarHiggsMultileptonAnalysis::Loop()
 
         nLooseBJets  = 0;
         nMediumBJets = 0;
-        nForwardJets = 0;
 
         for(unsigned int ijet=0; ijet < vJet->size() ; ijet++)
         {
@@ -458,17 +454,16 @@ void TTbarHiggsMultileptonAnalysis::Loop()
             else if(vJet->at(ijet).CSVv2() < 0.5426)
             {
                 vLightJets.push_back(vJet->at(ijet));
-                nForwardJets++;
 
-                //FIXME : cf. AN, should apply this cut. But then yield < yield from AN... !! Coincidence ? ASK
-                // if(fabs(vJet->at(ijet).eta() ) < 2.4)
-                // {
-                //     nForwardJets++;
-                // }
-                // else if(vJet->at(ijet).pt() > 40 && fabs(vJet->at(ijet).eta() ) > 2.4)
-                // {
-                //     nForwardJets++;
-                // }
+                // FIXME : cf. AN, should apply this cut. But then yield < yield from AN... !! Coincidence ? ASK
+                if(fabs(vJet->at(ijet).eta() ) < 2.4)
+                {
+                    vLightJets_FwdPtCut.push_back(vJet->at(ijet));
+                }
+                else if(vJet->at(ijet).pt() > 40 && fabs(vJet->at(ijet).eta() ) > 2.4)
+                {
+                    vLightJets_FwdPtCut.push_back(vJet->at(ijet));
+                }
             }
 
             //---------
@@ -477,35 +472,7 @@ void TTbarHiggsMultileptonAnalysis::Loop()
         }
 
 
-        // ###################################
-        // #  _____ ____  _   _ _____ _   _  #
-        // # |_   _|  _ \| | | |_   _| | | | #
-        // #   | | | |_) | | | | | | | |_| | #
-        // #   | | |  _ <| |_| | | | |  _  | #
-        // #   |_| |_| \_\\___/  |_| |_| |_| #
-        // #                                 #
-        // ###################################
 
-        if( !_isdata )
-        {
-            for(unsigned int itruth = 0; itruth < vTruth->at(0).mc_truth_label().size() ; itruth++)
-            {
-
-                //std::cout << vTruth->at(0).mc_truth_label().at(itruth) << std::endl;
-                if( vTruth->at(0).mc_truth_label().at(itruth) == 12 )
-                {   cat_HtoWW = true;
-                    //std::cout << "H to WW" << std::endl;
-                }
-                else if( vTruth->at(0).mc_truth_label().at(itruth) == 14 )
-                {   cat_HtoZZ = true;
-                    //std::cout << "H to ZZ" << std::endl;
-                }
-                else if( vTruth->at(0).mc_truth_label().at(itruth) == 16 )
-                {   cat_Htott = true;
-                    //std::cout << "H to tau tau" << std::endl;
-                }
-            }
-        }
 
         // ################################################################################
         // #  ____  ____    ____  ____ _____                   _       _     _            #
@@ -515,18 +482,6 @@ void TTbarHiggsMultileptonAnalysis::Loop()
         // # |_____|____/  |____/|____/ |_|     \_/ \__,_|_|  |_|\__,_|_.__/|_|\___||___/ #
         // #                                                                              #
         // ################################################################################
-
-        //-- Old ttH variables
-        max_Lep_eta     = 0. ;
-        nJet25_Recl     = 0  ;
-        mindr_lep1_jet  = 0. ;
-        mindr_lep2_jet  = 0. ;
-        met             = 0. ;
-        avg_dr_jet      = 0. ;
-        MT_met_lep1     = 0. ;
-        LepGood_conePt0 = 0. ;
-        LepGood_conePt1 = 0. ;
-        mhtJet25_Recl   = 0. ;
 
         //--- NEW -- tHq2016 vars
         nJet25 = 0.;
@@ -550,16 +505,14 @@ void TTbarHiggsMultileptonAnalysis::Loop()
         // #                                          #
         // ############################################
 
+
         ThreeLeptonSelection_THQ3l_SR(jentry);
         ThreeLeptonSelection_THQ3l_Training(jentry);
+        ThreeLeptonSelection_THQ3l_Z_CR(jentry);
 
-        //ThreeLeptonSelection_TTH3l(jentry);
-        //ThreeLeptonSelection_ApplicationFakes(jentry);
-        //ThreeLeptonSelection_CR_WZ(jentry);
-        //ThreeLeptonSelection_CR_WZ_ApplicationFakes(jentry);
-        //ThreeLeptonSelection_CR_WZrelaxed(jentry);
-        //ThreeLeptonSelection_TTZ(jentry);
-        //ThreeLeptonSelection_CR_Zl(jentry);
+        TwoLeptonSelection_THQ2l_SR(jentry);
+        TwoLeptonSelection_THQ2l_Training(jentry);
+        TwoLeptonSelection_THQ2l_EMU_OS_CR(jentry);
     }
 
 	ofstream file_out("cutflow.txt");
@@ -597,456 +550,12 @@ void TTbarHiggsMultileptonAnalysis::Loop()
                      ▀▀
 */
 
-
-
-/*
-
-//FIXME -- TESTING BACK PREVIOUS VERSION OF FUNCTION --> FS COUNT CORRECT ???
-
-void TTbarHiggsMultileptonAnalysis::ThreeLeptonSelection_THQ3l_SR(int evt)
-{
-	v_cutflow[0]++;
-
-    if(weight==0)         return; // For data not passing the relevant trigger, clean up the histograms from events with weight 0)
-    //if(vSelectedTaus.size()>0) return;
-
-    v_cutflow[1]++;
-
-
-    // ####################
-    // # Common selection #
-    // ####################
-
-    if(DEBUG)             std::cout << std::endl << " 3l ss SR ==================================================================" << std::endl;
-
-    bool nLep               = ( vSelectedLeptons.size()     >= 3 );
-    if(!nLep)               return;
-
-    v_cutflow[2]++;
-
-
-    if(DEBUG) std::cout << "nLep Ok... ";
-
-    bool nTight             = ( n_tight                     == 3 ); //CHANGED
-    if(!nTight)             return;
-
-    bool are_fullytight     =  ( vSelectedLeptons.at(0).isTightTTH()        && vSelectedLeptons.at(1).isTightTTH()      && vSelectedLeptons.at(2).isTightTTH()
-                              //&& vSelectedLeptons.at(0).passTightCharge()   && vSelectedLeptons.at(1).passTightCharge() && vSelectedLeptons.at(2).passTightCharge()
-                              && vSelectedLeptons.at(0).cutEventSel()       && vSelectedLeptons.at(1).cutEventSel()     && vSelectedLeptons.at(2).cutEventSel()
-                              && vSelectedLeptons.at(0).noLostHits()        && vSelectedLeptons.at(1).noLostHits()      && vSelectedLeptons.at(2).noLostHits()      );
-    // if(!are_fullytight)     return; //CHANGED
-    if(DEBUG) std::cout << "nTight Ok... ";
-
-
-    v_cutflow[3]++;
-
-
-    bool leading_lep_pt     = ( vSelectedLeptons.at(0).pt() > 25 );
-    if(!leading_lep_pt)     return;
-
-    if(DEBUG) std::cout << "leading_lep_pt Ok... ";
-
-    bool following_lep_pt   = ( (vSelectedLeptons.at(1).pt() > 15) && (vSelectedLeptons.at(2).pt() > 15) );
-    if(!following_lep_pt)   return;
-
-
-    if(DEBUG) std::cout << "following_lep_pt Ok... ";
-
-    bool nJets              = ( vSelectedJets.size()        >= 2 );
-    if(!nJets)              return;
-
-    v_cutflow[4]++;
-
-
-    bool nMediumBtag        = ( nMediumBJets                >= 1 );
-    if(!nMediumBtag)      return; //CHANGED
-
-    v_cutflow[5]++;
-
-    bool nForward        = ( nForwardJets                >= 1 );
-    if(!nForward)      return; //CHANGED
-
-    v_cutflow[6]++;
-
-
-    if(DEBUG) std::cout << "Btag Ok... ";
-
-    // Adding invariant mass cut on loose leptons pairs
-    bool pass_invariantemasscut = true;
-    for(int i=0; i<vLeptons.size()-1; i++)
-    {
-        for(int j=i+1; j<vLeptons.size(); j++)
-        {
-            if ( fabs( ( vLeptons.at(i).p4() + vLeptons.at(j).p4() ).M() ) < 12 )
-            { pass_invariantemasscut = false ;}
-        }
-    }
-    if(!pass_invariantemasscut) return;
-
-    v_cutflow[7]++;
-
-    if(DEBUG) std::cout << "invariantmasscut Ok... ";
-
-    // ##########
-    // # Z veto #
-    // ##########
-
-    bool pass_Zveto = true;
-    for(int i=0; i<vSelectedLeptons.size()-1; i++)
-    {
-        for(int j=i+1; j<vSelectedLeptons.size(); j++)
-        {
-            if (  ( vSelectedLeptons.at(i).id()     == -vSelectedLeptons.at(j).id()                             )
-               && ( vSelectedLeptons.at(i).charge() == -vSelectedLeptons.at(j).charge()                         )
-                    && ( fabs( ( vSelectedLeptons.at(i).p4() + vSelectedLeptons.at(j).p4() ).M() - 91.188) < 15 ) )
-            { pass_Zveto = false ;} //CHANGED //15 GeV window
-        }
-    }
-    if(!pass_Zveto)       return;
-
-    v_cutflow[8]++;
-
-
-    if(DEBUG) std::cout << "Zveto Ok... ";
-
-    // ##########
-    // # MET LD #
-    // ##########
-
-    float jet_px = 0, jet_py = 0, lepton_px = 0, lepton_py = 0, tau_px = 0, tau_py = 0, MHT = 0, met_ld = 0;
-
-    TLorentzVector jetp4;
-    for(int i=0; i<vSelectedJets.size(); i++)
-    {
-        jetp4.SetPtEtaPhiE(vSelectedJets.at(i).pt(), vSelectedJets.at(i).eta(), vSelectedJets.at(i).phi(), vSelectedJets.at(i).E());
-        jet_px = jet_px + jetp4.Px();
-        jet_py = jet_py + jetp4.Py();
-    }
-
-    for(int i=0; i<vSelectedLeptons.size(); i++)
-    {
-        lepton_px = lepton_px + vSelectedLeptons.at(i).p4().Px();
-        lepton_py = lepton_py + vSelectedLeptons.at(i).p4().Py();
-    }
-
-    TLorentzVector taup4;
-    for(int i=0; i<vSelectedTaus.size(); i++)
-    {
-        taup4.SetPtEtaPhiE(vSelectedTaus.at(i).pt(), vSelectedTaus.at(i).eta(), vSelectedTaus.at(i).phi(), vSelectedTaus.at(i).E());
-        tau_px = tau_px + taup4.Px();
-        tau_py = tau_py + taup4.Py();
-    }
-
-    MHT = sqrt( (jet_px + lepton_px + tau_px) * (jet_px + lepton_px + tau_px) + (jet_py + lepton_py + tau_py) * (jet_py + lepton_py + tau_py) );
-
-    met_ld = 0.00397 * vEvent->at(0).metpt() + 0.00265 * MHT;
-
-
-    if(DEBUG) std::cout << " MHT =  " << MHT << "MET = " << vEvent->at(0).metpt() << " met_ld = " << met_ld ;
-
-    // ########
-    // # SFOS #
-    // ########
-
-    bool isSFOS = false;
-    for(int i=0; i<vSelectedLeptons.size(); i++)
-    {
-        for(int j=0; j<vSelectedLeptons.size(); j++)
-        {
-            if (  ( i                           != j                            )
-                    && ( vSelectedLeptons.at(i).id() == -vSelectedLeptons.at(j).id() ) )
-            { isSFOS = true ;}
-        }
-    }
-
-
-    if(DEBUG) std::cout << std::endl << "nJets: " << vSelectedJets.size() << " met_ld: " << met_ld << " isSFOS " << isSFOS << std::endl;
-
-    // if(vSelectedJets.size() < 4 && (met_ld < (0.2 + 0.1 * isSFOS)) ) return; //CHANGED
-
-    if(DEBUG) std::cout << "nJets and met_ld Ok... ";
-
-    int sum_charges_3l = 0;
-    for(int i=0; i<3; i++)
-    {
-        sum_charges_3l = sum_charges_3l + vSelectedLeptons.at(i).charge();
-    }
-    if( fabs(sum_charges_3l) != 1 ) return;
-
-    v_cutflow[9]++;
-
-    if(DEBUG) std::cout << "sumOfCharges Ok... ";
-
-    // #################################
-    // # b-tagging nominal reweighting #
-    // #################################
-
-    std::vector<double> jetPts;
-    std::vector<double> jetEtas;
-    std::vector<double> jetCSVs;
-    std::vector<int>    jetFlavors;
-    int iSys = 0;
-    double wgt_csv, wgt_csv_def, wgt_csv_hf, wgt_csv_lf, wgt_csv_cf, new_weight;
-
-    for(int i=0; i<vSelectedJets.size(); i++)
-    {
-        jetPts.push_back(     vSelectedJets.at(i).pt()                );
-        jetEtas.push_back(    vSelectedJets.at(i).eta()               );
-        jetCSVs.push_back(    vSelectedJets.at(i).CSVv2()             );
-        jetFlavors.push_back( vSelectedJets.at(i).jet_hadronFlavour() );
-    }
-
-    wgt_csv_def = get_csv_wgt(jetPts, jetEtas, jetCSVs, jetFlavors, iSys, wgt_csv_hf, wgt_csv_lf, wgt_csv_cf);
-    new_weight = weight * wgt_csv_def; // weight = weight * wgt_csv_def;
-
-    // ##################################################################################################################################
-
-    // ##################################
-    // # b-tagging deriving systematics #
-    // ##################################
-
-    std::vector<double> weights_csv;
-    double wgt_csv_def_sys = 0;
-
-    for(int i=7; i<25; i++)
-    {
-        wgt_csv_def_sys = get_csv_wgt(jetPts, jetEtas, jetCSVs, jetFlavors, i, wgt_csv_hf, wgt_csv_lf, wgt_csv_cf)/wgt_csv_def;
-        weights_csv.push_back(wgt_csv_def_sys);
-    }
-
-    double min_weight_csv = *min_element(weights_csv.begin(),weights_csv.end());
-    double max_weight_csv = *max_element(weights_csv.begin(),weights_csv.end());
-
-    weight_csv_down = min_weight_csv;
-    weight_csv_up   = max_weight_csv;
-
-    // ##################################################################################################################################
-
-    is_3l_THQ_SR = 1;
-
-    // ####################################
-    // #  ____  ____    ____  ____ _____  #
-    // # |___ \|  _ \  | __ )|  _ \_   _| #
-    // #   __) | | | | |  _ \| | | || |   #
-    // #  / __/| |_| | | |_) | |_| || |   #
-    // # |_____|____/  |____/|____/ |_|   #
-    // #                                  #
-    // ####################################
-
-    // based on https://github.com/CERN-PH-CMG/cmgtools-lite/blob/0b47d4d1c50ea0e24ef0d9cf1c24c763e78c1bf0/TTHAnalysis/python/tools/kinMVA_2D_2lss_3l.py
-
-    // ======================================================================================================
-    // variables against ttbar
-
-    max_Lep_eta     = std::max( fabs(vSelectedLeptons.at(0).eta()), fabs(vSelectedLeptons.at(1).eta()) ) ;
-
-    MT_met_lep1     = sqrt( 2 * vSelectedLeptons.at(0).pt() * vEvent->at(0).metpt() * (1 - cos( vSelectedLeptons.at(0).phi() - vEvent->at(0).metphi() )));
-
-    nJet25_Recl     = vSelectedJets.size() ;
-    mhtJet25_Recl   = sqrt( (jet_px*jet_px) + (jet_py*jet_py) );
-
-    int njj = 0;
-    avg_dr_jet = 0.;
-    for (int ijet=0; ijet < vSelectedJets.size()-1 ; ijet++)
-    {
-        for (int kjet=ijet+1; kjet < vSelectedJets.size() ; kjet++)
-        {
-            avg_dr_jet += GetDeltaR( vSelectedJets.at(ijet).eta(), vSelectedJets.at(ijet).phi(), vSelectedJets.at(kjet).eta(), vSelectedJets.at(kjet).phi() );
-            njj++;
-        }
-    }
-    if ( njj > 0 ) avg_dr_jet = avg_dr_jet / njj;
-
-    mindr_lep1_jet = 1000.;
-    mindr_lep2_jet = 1000.;
-
-    for (int i=0; i<vSelectedJets.size(); i++)
-    {
-        if( DeltaRLeptonJet( vSelectedLeptons.at(0), vSelectedJets.at(i) ) < mindr_lep1_jet )
-        { mindr_lep1_jet = DeltaRLeptonJet( vSelectedLeptons.at(0), vSelectedJets.at(i) ); }
-        if( DeltaRLeptonJet( vSelectedLeptons.at(2), vSelectedJets.at(i) ) < mindr_lep2_jet )
-        { mindr_lep2_jet = DeltaRLeptonJet( vSelectedLeptons.at(2), vSelectedJets.at(i) ); }
-    }
-
-    signal_3l_TT_MVA    = mva_3l_tt->EvaluateMVA("BDTG method");
-
-    if( DEBUG ) std::cout << "Signal 3l TT MVA ok" << std::endl;
-
-    // ======================================================================================================
-    // variables against ttV
-
-    met             = vEvent->at(0).metpt() ;
-
-    LepGood_conePt0 = vSelectedLeptons.at(0).pt() ;
-    LepGood_conePt1 = vSelectedLeptons.at(2).pt() ;
-
-    signal_3l_TTV_MVA   = mva_3l_ttV->EvaluateMVA("BDTG method");
-
-    //std::cout << " signal 3l   TT MVA: "  << signal_3l_TT_MVA
-    //          << " signal 3l   TTV MVA: " << signal_3l_TTV_MVA << std::endl;
-
-    // ======================================================================================================
-    //variables from tHq2016
-    //NEW //FIXME
-    //NB : "forward jet" = most forward non-CSV loose jet
-
-    // double nJet25;
-    // double MaxEtaJet25;
-    // double totCharge;
-    // double nJetEta1 ;
-    // double detaFwdJetBJet;
-    // double detaFwdJet2BJet;
-    // double detaFwdJetClosestLep;
-    // double dphiHighestPtSPPair;
-    // double minDRll;
-    // double Lep3Pt;
-
-    nJet25 = 0.;
-    maxEtaJet25 = 0.;
-    lepCharge = 0.;
-    nJetEta1  = 0.;
-    dEtaFwdJetBJet = 0.;
-    dEtaFwdJet2BJet = 0.;
-    dEtaFwdJetClosestLep = 0.;
-    dPhiHighestPtSSPair = 0.;
-    minDRll = 0.;
-    Lep3Pt = 0.;
-
-    int ijet_forward=-1, ijet_hardest_btag=-1, ijet_2nd_hardest_btag=-1;
-    double tmp = -999;
-
-	//--- Find "forward jet"
-    for(int ijet=0; ijet<vLightJets.size(); ijet++)
-    {
-        if(fabs(vLightJets.at(ijet).eta()) > tmp)
-        {
-            tmp = fabs(vLightJets.at(ijet).eta());
-            ijet_forward = ijet;
-        }
-    }
-
-	//--- Find "hardest" and "second hardest" tagged jets
-    double pt1=0, pt2=0;
-    for(int ijet=0; ijet<vLooseBTagJets.size(); ijet++)
-    {
-        if(fabs(vLooseBTagJets.at(ijet).pt()) > pt1)
-        {
-            pt1 = fabs(vLooseBTagJets.at(ijet).pt());
-            ijet_2nd_hardest_btag = ijet_hardest_btag;
-            ijet_hardest_btag = ijet;
-        }
-        else if(fabs(vLooseBTagJets.at(ijet).pt()) > pt2)
-        {
-            pt2 = fabs(vLooseBTagJets.at(ijet).pt());
-            ijet_2nd_hardest_btag = ijet;
-        }
-    }
-
-
-
-	//--- Var1 : nof jets with pT>25 and |eta|<2.4
-    nJet25 = 0;
-    for(int ijet=0; ijet<vSelectedJets.size(); ijet++)
-    {
-        if(vSelectedJets.at(ijet).pt() > 25 && fabs(vSelectedJets.at(ijet).eta() ) < 2.4) {nJet25++;}
-    }
-
-    //--- Var2: max eta of any 'non-CSV-loose' jet
-    tmp = -999;
-    for(int ijet=0; ijet<vLightJets.size(); ijet++)
-    {
-        if(fabs(vLightJets.at(ijet).eta()) > tmp) {tmp = fabs(vLightJets.at(ijet).eta());}
-    }
-    maxEtaJet25 = tmp;
-
-	//--- Var3 : sum of leptons charges
-    lepCharge = vSelectedLeptons.at(0).charge() + vSelectedLeptons.at(1).charge() + vSelectedLeptons.at(2).charge();
-
-	//--- Var4 : nof 'non-csv-loose' jets with eta>1.0
-    nJetEta1 = 0;
-    for(int ijet=0; ijet<vLightJets.size(); ijet++)
-    {
-        if( fabs(vLightJets.at(ijet).eta() ) > 1.0) {nJetEta1++;}
-    }
-    nJetEta1 = tmp;
-
-	//--- Var5 : dEta between forward light jet and hardest tagged jet
-    dEtaFwdJetBJet = fabs( vLightJets.at(ijet_forward).eta() - vLooseBTagJets.at(ijet_hardest_btag).eta() );
-
-	//--- Var6 : dEta between forward and 2nd hardest tagged jet
-    if(ijet_2nd_hardest_btag < 0) {dEtaFwdJet2BJet = -1;}
-    else {dEtaFwdJet2BJet = fabs( vLightJets.at(ijet_forward).eta() - vLooseBTagJets.at(ijet_2nd_hardest_btag).eta() );}
-
-	//--- Var7 : dEta between forward light jet and closet lepton (angular dist.) //FIXME -- only distance in eta ?
-    dEtaFwdJetClosestLep = 0; tmp = 999;
-	TLorentzVector jet_tmp;
-	jet_tmp.SetPtEtaPhiE(vLightJets.at(ijet_forward).pt(), vLightJets.at(ijet_forward).eta(), vLightJets.at(ijet_forward).phi(), vLightJets.at(ijet_forward).E());
-    for(int ilep=0; ilep<vSelectedLeptons.size(); ilep++)
-    {
-		TLorentzVector lep_tmp;
-		lep_tmp.SetPtEtaPhiE(vSelectedLeptons.at(ilep).pt(), vSelectedLeptons.at(ilep).eta(), vSelectedLeptons.at(ilep).phi(), vSelectedLeptons.at(ilep).E());
-
-        if(jet_tmp.DeltaR(lep_tmp) < tmp) {dEtaFwdJetClosestLep = fabs( jet_tmp.Eta() - lep_tmp.Eta() ); tmp = jet_tmp.DeltaR(lep_tmp);}
-    }
-
-    //--- Var8 : dPhi of highest pT SS lepton pair (?)
-    if(vSelectedLeptons.at(0).charge()!=lepCharge) {dPhiHighestPtSSPair = fabs(vSelectedLeptons.at(1).phi() - vSelectedLeptons.at(2).phi() );}
-    else if(vSelectedLeptons.at(1).charge()!=lepCharge) {dPhiHighestPtSSPair = fabs(vSelectedLeptons.at(0).phi() - vSelectedLeptons.at(2).phi() );}
-    else {dPhiHighestPtSSPair = fabs(vSelectedLeptons.at(0).phi() - vSelectedLeptons.at(1).phi() );}
-
-    //--- Var9 : min. dR between any 2 leptons
-    minDRll = 999; tmp = 999;
-	TLorentzVector lep1, lep2, lep3;
-	lep1.SetPtEtaPhiE(vSelectedLeptons.at(0).pt(), vSelectedLeptons.at(0).eta(), vSelectedLeptons.at(0).phi(), vSelectedLeptons.at(0).E() );
-	lep2.SetPtEtaPhiE(vSelectedLeptons.at(1).pt(), vSelectedLeptons.at(1).eta(), vSelectedLeptons.at(1).phi(), vSelectedLeptons.at(1).E() );
-	lep3.SetPtEtaPhiE(vSelectedLeptons.at(2).pt(), vSelectedLeptons.at(2).eta(), vSelectedLeptons.at(2).phi(), vSelectedLeptons.at(2).E() );
-	if(lep1.DeltaR(lep2) < tmp) {minDRll = lep1.DeltaR(lep2); tmp = minDRll;}
-	if(lep1.DeltaR(lep3) < tmp) {minDRll = lep1.DeltaR(lep3); tmp = minDRll;}
-	if(lep2.DeltaR(lep3) < tmp) {minDRll = lep2.DeltaR(lep3); tmp = minDRll;}
-
-
-    //--- Var10 : pT of 3rd hardest lepton
-    Lep3Pt = vSelectedLeptons.at(2).pt();
-
-
-
-
-
-
-    // ======================================================================================================
-
-    if( DEBUG ) std::cout << "Signal 3l TTV MVA ok" << std::endl;
-
-    fillOutputTree();
-    // cout<<BOLD(FYEL("TREE FILLED !"))<<endl;
-
-    // if (_printLHCO_RECO) PrintLHCOforMadweight_RECO(evt);
-}
-
-
-
-*/
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-//NEW -------------------------------------------
-void TTbarHiggsMultileptonAnalysis::ThreeLeptonSelection_THQ3l_SR(int evt)
-{
 //---------------------------------------------------------------------------
+
+void TTbarHiggsMultileptonAnalysis::ThreeLeptonSelection_THQ3l_SR(int evt)
+{
+    Reinit_Categories();
+
 	v_cutflow[0]++;
 
     //If data doesn't pass trigger, weight=0
@@ -1067,20 +576,13 @@ void TTbarHiggsMultileptonAnalysis::ThreeLeptonSelection_THQ3l_SR(int evt)
 
     if(vTightLeptons.at(0).pt() < 25 || vTightLeptons.at(1).pt() < 15 || vTightLeptons.at(2).pt() < 15) {return;}
 
-    //cf. AN : electrons must have 0 lost hit & pass Conversion veto (always true for muons)
-    // bool are_fullytight = true;
-    // if(!vTightLeptons.at(0).isTightTTH() || !vTightLeptons.at(0).cutEventSel() || !vTightLeptons.at(0).noLostHits() ) {are_fullytight = false;}
-    // if(!vTightLeptons.at(1).isTightTTH() || !vTightLeptons.at(1).cutEventSel() || !vTightLeptons.at(1).noLostHits() ) {are_fullytight = false;}
-    // if(!vTightLeptons.at(2).isTightTTH() || !vTightLeptons.at(2).cutEventSel() || !vTightLeptons.at(2).noLostHits() ) {are_fullytight = false;}
-    // if(!are_fullytight) {return;} //done at selection level
-
     if(vSelectedJets.size() < 2) {return;}
     v_cutflow[4]++;
 
     if(nMediumBJets == 0) {return;}
     v_cutflow[5]++;
 
-    if(nForwardJets == 0)  {return;}
+    if(vLightJets_FwdPtCut.size() == 0)  {return;}
     v_cutflow[6]++;
 
     //Cleanup -- Veto if loose lepton pair with mll < 12
@@ -1099,22 +601,27 @@ void TTbarHiggsMultileptonAnalysis::ThreeLeptonSelection_THQ3l_SR(int evt)
     // ##########
     // # OSSF pair - Z veto #
     // ##########
-
     bool pass_Zveto = true;
+    float mll_tmp = 0;
     for(int i=0; i<vTightLeptons.size()-1; i++)
     {
         for(int j=i+1; j<vTightLeptons.size(); j++)
         {
-            if ( fabs(vTightLeptons.at(i).id()) == fabs(vTightLeptons.at(j).id()) && vTightLeptons.at(i).charge() == -vTightLeptons.at(j).charge() && (fabs( ( vTightLeptons.at(i).p4() + vTightLeptons.at(j).p4()).M() - 91.188) < 15 ) ) {pass_Zveto = false ;}
+            if( fabs(vTightLeptons.at(i).id()) == fabs(vTightLeptons.at(j).id()) && vTightLeptons.at(i).charge() == -vTightLeptons.at(j).charge() )
+            {
+                mll_tmp = (vTightLeptons.at(i).p4() + vTightLeptons.at(j).p4() ).M();
+                if( fabs(mll_tmp - 91.188) < 15) {pass_Zveto = false ;}
+            }
         }
     }
     if(!pass_Zveto)       return;
     v_cutflow[8]++;
 
 
+    is_3l_THQ_SR = 1; //3l SR category
 
 //---------------------------------------------------------------------------
-
+// ##################################################################################################################################
 
     // ##########
     // # MET LD #
@@ -1200,7 +707,6 @@ void TTbarHiggsMultileptonAnalysis::ThreeLeptonSelection_THQ3l_SR(int evt)
 
     wgt_csv_def = get_csv_wgt(jetPts, jetEtas, jetCSVs, jetFlavors, iSys, wgt_csv_hf, wgt_csv_lf, wgt_csv_cf);
     new_weight = weight * wgt_csv_def; // weight = weight * wgt_csv_def;
-    // ##################################################################################################################################
 
     // ##################################
     // # b-tagging deriving systematics #
@@ -1221,11 +727,7 @@ void TTbarHiggsMultileptonAnalysis::ThreeLeptonSelection_THQ3l_SR(int evt)
     weight_csv_down = min_weight_csv;
     weight_csv_up   = max_weight_csv;
 
-    // ##################################################################################################################################
-
-    is_3l_THQ_SR = 1;
-
-
+// ##################################################################################################################################
 
 
 
@@ -1240,9 +742,7 @@ void TTbarHiggsMultileptonAnalysis::ThreeLeptonSelection_THQ3l_SR(int evt)
 
     // based on https://github.com/CERN-PH-CMG/cmgtools-lite/blob/0b47d4d1c50ea0e24ef0d9cf1c24c763e78c1bf0/TTHAnalysis/python/tools/kinMVA_2D_2lss_3l.py
 
-
     //variables from tHq2016
-    //NEW //FIXME
     //NB : "forward jet" = most forward non-CSV loose jet
 
     // double nJet25;
@@ -1347,7 +847,11 @@ void TTbarHiggsMultileptonAnalysis::ThreeLeptonSelection_THQ3l_SR(int evt)
     Lep3Pt = vTightLeptons.at(2).pt();
 
 
-
+    //--- Fill additionnal variables, used for control only
+    lep1Pt = vFakeableLeptons.at(0).pt(); lep2Pt = vFakeableLeptons.at(1).pt(); lep3Pt = vFakeableLeptons.at(2).pt();
+    inv_mll = mll_tmp;
+    hardestBjetPt = vLooseBTagJets.at(ijet_hardest_btag).pt(); hardestBjetEta = vLooseBTagJets.at(ijet_hardest_btag).eta();
+    fwdJetPt = vLooseBTagJets.at(ijet_forward).pt();
 
     //--------------------------
     // PRINTOUT OF INFOS & INPUT VARS
@@ -1412,22 +916,15 @@ void TTbarHiggsMultileptonAnalysis::ThreeLeptonSelection_THQ3l_SR(int evt)
 
 
 
-
-
-
-//NEW -------------------------------------------
 void TTbarHiggsMultileptonAnalysis::ThreeLeptonSelection_THQ3l_Training(int evt)
 {
+    Reinit_Categories();
+
     if(weight==0) {return;}
 
     if(vFakeableLeptons.size() < 3) {return;}
 
-    // ##########
-    // # Z veto #
-    // ##########
-
     //-- Only consider the 3 hardest 'FakeableObject' leptons
-
     if(vFakeableLeptons.at(0).pt() < 20 || vFakeableLeptons.at(1).pt() < 10 || vFakeableLeptons.at(2).pt() < 10)
     {
         return;
@@ -1437,18 +934,31 @@ void TTbarHiggsMultileptonAnalysis::ThreeLeptonSelection_THQ3l_Training(int evt)
 
     if(nLooseBJets == 0) {return;}
 
-    if(nForwardJets == 0) {return;}
+    if(vLightJets.size() == 0) {return;}
 
+    // ##########
+    // # OSSF pair - Z veto #
+    // ##########
     bool pass_Zveto = true;
+    float mll_tmp = 0;
     for(int i=0; i<3; i++)
     {
         for(int j=i+1; j<3; j++)
         {
-            if(vFakeableLeptons.at(i).id() == -vFakeableLeptons.at(j).id() && vFakeableLeptons.at(i).charge() == -vFakeableLeptons.at(j).charge() && fabs((vFakeableLeptons.at(i).p4() + vFakeableLeptons.at(j).p4()).M() - 91.188) < 10 ) {pass_Zveto = false;}
+            if( fabs(vFakeableLeptons.at(i).id()) == fabs(vFakeableLeptons.at(j).id()) && vFakeableLeptons.at(i).charge() == -vFakeableLeptons.at(j).charge() )
+            {
+                mll_tmp = (vFakeableLeptons.at(i).p4() + vFakeableLeptons.at(j).p4() ).M();
+                if( fabs(mll_tmp - 91.188) < 15) {pass_Zveto = false ;}
+            }
         }
     }
     if(!pass_Zveto) {return;}
 
+
+    is_3l_THQ_Training = 1;
+
+
+// ##################################################################################################################################
     float jet_px = 0, jet_py = 0, lepton_px = 0, lepton_py = 0, tau_px = 0, tau_py = 0, MHT = 0, met_ld = 0;
 
     TLorentzVector jetp4;
@@ -1513,7 +1023,6 @@ void TTbarHiggsMultileptonAnalysis::ThreeLeptonSelection_THQ3l_Training(int evt)
 
     wgt_csv_def = get_csv_wgt(jetPts, jetEtas, jetCSVs, jetFlavors, iSys, wgt_csv_hf, wgt_csv_lf, wgt_csv_cf);
     new_weight = weight * wgt_csv_def; // weight = weight * wgt_csv_def;
-    // ##################################################################################################################################
 
     // ##################################
     // # b-tagging deriving systematics #
@@ -1534,10 +1043,7 @@ void TTbarHiggsMultileptonAnalysis::ThreeLeptonSelection_THQ3l_Training(int evt)
     weight_csv_down = min_weight_csv;
     weight_csv_up   = max_weight_csv;
 
-    // ##################################################################################################################################
-
-    is_3l_THQ_Training = 1;
-
+// ##################################################################################################################################
 
 
     // ####################################
@@ -1657,6 +1163,13 @@ void TTbarHiggsMultileptonAnalysis::ThreeLeptonSelection_THQ3l_Training(int evt)
     //--- Var10 : pT of 3rd hardest lepton
     Lep3Pt = vFakeableLeptons.at(2).pt();
 
+
+    //--- Fill additionnal variables, used for control only
+    lep1Pt = vFakeableLeptons.at(0).pt(); lep2Pt = vFakeableLeptons.at(1).pt(); lep3Pt = vFakeableLeptons.at(2).pt();
+    inv_mll = mll_tmp;
+    hardestBjetPt = vLooseBTagJets.at(ijet_hardest_btag).pt(); hardestBjetEta = vLooseBTagJets.at(ijet_hardest_btag).eta();
+    fwdJetPt = vLooseBTagJets.at(ijet_forward).pt();
+
     //--------------------------
     // PRINTOUT OF INFOS & INPUT VARS
     //--------------------------
@@ -1720,6 +1233,358 @@ void TTbarHiggsMultileptonAnalysis::ThreeLeptonSelection_THQ3l_Training(int evt)
 
 
 
+void TTbarHiggsMultileptonAnalysis::ThreeLeptonSelection_THQ3l_Z_CR(int evt)
+{
+    Reinit_Categories();
+
+    //If data doesn't pass trigger, weight=0
+    if(weight==0) {return;}
+
+    // ####################
+    // # Common selection #
+    // ####################
+
+    //At least 3 leptons
+    if(vFakeableLeptons.size() < 3) {return;}
+
+
+    //==3 tight leptons, pT cuts
+	if(vTightLeptons.size() != 3) {return;}
+
+    if( fabs(vTightLeptons.at(0).charge() + vTightLeptons.at(1).charge() + vTightLeptons.at(2).charge() ) != 1) {return;}
+
+    if(vTightLeptons.at(0).pt() < 25 || vTightLeptons.at(1).pt() < 15 || vTightLeptons.at(2).pt() < 15) {return;}
+
+    if(vSelectedJets.size() < 2) {return;}
+
+    if(nLooseBJets == 0) {return;}
+
+    if(vLightJets_FwdPtCut.size() == 0)  {return;}
+
+
+    //Cleanup -- Veto if loose lepton pair with mll < 12
+    bool pass_cleanup = true;
+    for(int i=0; i<vLooseLeptons.size()-1; i++)
+    {
+        for(int j=i+1; j<vLooseLeptons.size(); j++)
+        {
+            if( fabs( (vLooseLeptons.at(i).p4() + vLooseLeptons.at(j).p4()).M() ) < 12 ) {pass_cleanup = false;}
+        }
+    }
+    if(!pass_cleanup) {return;}
+
+
+    // ##########
+    // # OSSF pair - Z INVERTED veto (selection enriched in ttZ/tZ, WZ events)
+    // ##########
+    bool pass_inverted_Zveto = false;
+    float mll_tmp = 0;
+    for(int i=0; i<vTightLeptons.size()-1; i++)
+    {
+        for(int j=i+1; j<vTightLeptons.size(); j++)
+        {
+            if( fabs(vTightLeptons.at(i).id()) == fabs(vTightLeptons.at(j).id()) && vTightLeptons.at(i).charge() == -vTightLeptons.at(j).charge() )
+            {
+                mll_tmp = (vTightLeptons.at(i).p4() + vTightLeptons.at(j).p4() ).M();
+                if(fabs(mll_tmp - 91.188) < 15) {pass_inverted_Zveto = true ;}
+            }
+
+        }
+    }
+    if(!pass_inverted_Zveto) {return;}
+
+
+    is_3l_Z_CR = 1; //3l SR category
+
+//---------------------------------------------------------------------------
+// ##################################################################################################################################
+
+    // ##########
+    // # MET LD #
+    // ##########
+
+    float jet_px = 0, jet_py = 0, lepton_px = 0, lepton_py = 0, tau_px = 0, tau_py = 0, MHT = 0, met_ld = 0;
+
+    TLorentzVector jetp4;
+    for(int i=0; i<vSelectedJets.size(); i++)
+    {
+        jetp4.SetPtEtaPhiE(vSelectedJets.at(i).pt(), vSelectedJets.at(i).eta(), vSelectedJets.at(i).phi(), vSelectedJets.at(i).E());
+        jet_px = jet_px + jetp4.Px();
+        jet_py = jet_py + jetp4.Py();
+    }
+
+    for(int i=0; i<vTightLeptons.size(); i++)
+    {
+        lepton_px = lepton_px + vTightLeptons.at(i).p4().Px();
+        lepton_py = lepton_py + vTightLeptons.at(i).p4().Py();
+    }
+
+    TLorentzVector taup4;
+    for(int i=0; i<vSelectedTaus.size(); i++)
+    {
+        taup4.SetPtEtaPhiE(vSelectedTaus.at(i).pt(), vSelectedTaus.at(i).eta(), vSelectedTaus.at(i).phi(), vSelectedTaus.at(i).E());
+        tau_px = tau_px + taup4.Px();
+        tau_py = tau_py + taup4.Py();
+    }
+
+    MHT = sqrt( (jet_px + lepton_px + tau_px) * (jet_px + lepton_px + tau_px) + (jet_py + lepton_py + tau_py) * (jet_py + lepton_py + tau_py) );
+
+    met_ld = 0.00397 * vEvent->at(0).metpt() + 0.00265 * MHT;
+
+    if(DEBUG) std::cout << " MHT =  " << MHT << "MET = " << vEvent->at(0).metpt() << " met_ld = " << met_ld ;
+
+    // ########
+    // # SFOS #
+    // ########
+
+    bool isSFOS = false;
+    for(int i=0; i<vTightLeptons.size(); i++)
+    {
+        for(int j=0; j<vTightLeptons.size(); j++)
+        {
+            if (  ( i                           != j                            )
+                    && ( vTightLeptons.at(i).id() == -vTightLeptons.at(j).id() ) )
+            { isSFOS = true ;}
+        }
+    }
+
+    if(DEBUG) std::cout << std::endl << "nJets: " << vSelectedJets.size() << " met_ld: " << met_ld << " isSFOS " << isSFOS << std::endl;
+
+    // if(vSelectedJets.size() < 4 && (met_ld < (0.2 + 0.1 * isSFOS)) ) return; //CHANGED
+
+    if(DEBUG) std::cout << "nJets and met_ld Ok... ";
+
+    int sum_charges_3l = 0;
+    for(int i=0; i<3; i++)
+    {
+        sum_charges_3l = sum_charges_3l + vTightLeptons.at(i).charge();
+    }
+    // if( fabs(sum_charges_3l) != 1 ) return; //Cf. AN : triple charge consistency not required in 3l ?
+
+
+    // #################################
+    // # b-tagging nominal reweighting #
+    // #################################
+
+    std::vector<double> jetPts;
+    std::vector<double> jetEtas;
+    std::vector<double> jetCSVs;
+    std::vector<int>    jetFlavors;
+    int iSys = 0;
+    double wgt_csv, wgt_csv_def, wgt_csv_hf, wgt_csv_lf, wgt_csv_cf, new_weight;
+
+    for(int i=0; i<vSelectedJets.size(); i++)
+    {
+        jetPts.push_back(     vSelectedJets.at(i).pt()                );
+        jetEtas.push_back(    vSelectedJets.at(i).eta()               );
+        jetCSVs.push_back(    vSelectedJets.at(i).CSVv2()             );
+        jetFlavors.push_back( vSelectedJets.at(i).jet_hadronFlavour() );
+    }
+
+    wgt_csv_def = get_csv_wgt(jetPts, jetEtas, jetCSVs, jetFlavors, iSys, wgt_csv_hf, wgt_csv_lf, wgt_csv_cf);
+    new_weight = weight * wgt_csv_def; // weight = weight * wgt_csv_def;
+
+    // ##################################
+    // # b-tagging deriving systematics #
+    // ##################################
+
+    std::vector<double> weights_csv;
+    double wgt_csv_def_sys = 0;
+
+    for(int i=7; i<25; i++)
+    {
+        wgt_csv_def_sys = get_csv_wgt(jetPts, jetEtas, jetCSVs, jetFlavors, i, wgt_csv_hf, wgt_csv_lf, wgt_csv_cf)/wgt_csv_def;
+        weights_csv.push_back(wgt_csv_def_sys);
+    }
+
+    double min_weight_csv = *min_element(weights_csv.begin(),weights_csv.end());
+    double max_weight_csv = *max_element(weights_csv.begin(),weights_csv.end());
+
+    weight_csv_down = min_weight_csv;
+    weight_csv_up   = max_weight_csv;
+
+// ##################################################################################################################################
+
+
+
+    // ####################################
+    // #  ____  ____    ____  ____ _____  #
+    // # |___ \|  _ \  | __ )|  _ \_   _| #
+    // #   __) | | | | |  _ \| | | || |   #
+    // #  / __/| |_| | | |_) | |_| || |   #
+    // # |_____|____/  |____/|____/ |_|   #
+    // #                                  #
+    // ####################################
+
+    // based on https://github.com/CERN-PH-CMG/cmgtools-lite/blob/0b47d4d1c50ea0e24ef0d9cf1c24c763e78c1bf0/TTHAnalysis/python/tools/kinMVA_2D_2lss_3l.py
+
+    //variables from tHq2016
+    //NB : "forward jet" = most forward non-CSV loose jet
+
+    // double nJet25;
+    // double maxEtaJet25;
+    // double lepCharge;
+    // double nJetEta1 ;
+    // double dEtaFwdJetBJet;
+    // double dEtaFwdJet2BJet;
+    // double dEtaFwdJetClosestLep;
+    // double dPhiHighestPtSSPair;
+    // double minDRll;
+    // double Lep3Pt;
+
+    int ijet_forward=-1, ijet_hardest_btag=-1, ijet_2nd_hardest_btag=-1;
+    double tmp = -999;
+
+	//--- Find "forward jet"
+    for(int ijet=0; ijet<vLightJets.size(); ijet++)
+    {
+        if(fabs(vLightJets.at(ijet).eta()) > tmp)
+        {
+            tmp = fabs(vLightJets.at(ijet).eta());
+            ijet_forward = ijet;
+        }
+    }
+
+	//--- Find "hardest" and "second hardest" tagged jets
+    double pt1=0, pt2=0;
+    for(int ijet=0; ijet<vLooseBTagJets.size(); ijet++)
+    {
+        if(fabs(vLooseBTagJets.at(ijet).pt()) > pt1)
+        {
+            pt1 = fabs(vLooseBTagJets.at(ijet).pt());
+            ijet_2nd_hardest_btag = ijet_hardest_btag;
+            ijet_hardest_btag = ijet;
+        }
+        else if(fabs(vLooseBTagJets.at(ijet).pt()) > pt2)
+        {
+            pt2 = fabs(vLooseBTagJets.at(ijet).pt());
+            ijet_2nd_hardest_btag = ijet;
+        }
+    }
+
+
+
+	//--- Var1 : nof jets with pT>25 and |eta|<2.4
+    nJet25 = 0;
+    for(int ijet=0; ijet<vSelectedJets.size(); ijet++)
+    {
+        if(vSelectedJets.at(ijet).pt() > 25 && fabs(vSelectedJets.at(ijet).eta() ) < 2.4) {nJet25++;}
+    }
+
+    //--- Var2: max eta of any 'non-CSV-loose' jet
+    tmp = -999;
+    for(int ijet=0; ijet<vLightJets.size(); ijet++)
+    {
+        if(fabs(vLightJets.at(ijet).eta()) > tmp) {tmp = fabs(vLightJets.at(ijet).eta());}
+    }
+    maxEtaJet25 = tmp;
+
+	//--- Var3 : sum of leptons charges
+    lepCharge = vTightLeptons.at(0).charge() + vTightLeptons.at(1).charge() + vTightLeptons.at(2).charge();
+
+	//--- Var4 : nof 'non-csv-loose' jets with eta>1.0
+    nJetEta1 = 0;
+    for(int ijet=0; ijet<vLightJets.size(); ijet++)
+    {
+        if( fabs(vLightJets.at(ijet).eta() ) > 1.0) {nJetEta1++;}
+    }
+
+	//--- Var5 : dEta between forward light jet and hardest tagged jet
+    dEtaFwdJetBJet = fabs( vLightJets.at(ijet_forward).eta() - vLooseBTagJets.at(ijet_hardest_btag).eta() );
+
+	//--- Var6 : dEta between forward and 2nd hardest tagged jet
+    if(ijet_2nd_hardest_btag < 0) {dEtaFwdJet2BJet = -1;}
+    else {dEtaFwdJet2BJet = fabs( vLightJets.at(ijet_forward).eta() - vLooseBTagJets.at(ijet_2nd_hardest_btag).eta() );}
+
+	//--- Var7 : dEta between forward light jet and closet lepton (angular dist.)
+    dEtaFwdJetClosestLep = 0; tmp = 999;
+    for(int ilep=0; ilep<vTightLeptons.size(); ilep++)
+    {
+        if( fabs(vLightJets.at(ijet_forward).eta() - vTightLeptons.at(ilep).eta() ) < tmp) {dEtaFwdJetClosestLep = fabs(vLightJets.at(ijet_forward).eta() - vTightLeptons.at(ilep).eta() ); tmp = dEtaFwdJetClosestLep;}
+    }
+
+    //--- Var8 : dPhi of highest pT SS lepton pair (?)
+    if(vTightLeptons.at(0).charge()!=lepCharge) {dPhiHighestPtSSPair = fabs(Phi_MPi_Pi(vTightLeptons.at(1).phi() - vTightLeptons.at(2).phi() ) );}
+    else if(vTightLeptons.at(1).charge()!=lepCharge) {dPhiHighestPtSSPair = fabs( Phi_MPi_Pi(vTightLeptons.at(0).phi() - vTightLeptons.at(2).phi() ) );}
+    else {dPhiHighestPtSSPair = fabs( Phi_MPi_Pi(vTightLeptons.at(0).phi() - vTightLeptons.at(1).phi() ) );}
+
+    //--- Var9 : min. dR between any 2 leptons
+    minDRll = 999; tmp = 999;
+	TLorentzVector lep1, lep2, lep3;
+	lep1.SetPtEtaPhiE(vTightLeptons.at(0).pt(), vTightLeptons.at(0).eta(), vTightLeptons.at(0).phi(), vTightLeptons.at(0).E() );
+	lep2.SetPtEtaPhiE(vTightLeptons.at(1).pt(), vTightLeptons.at(1).eta(), vTightLeptons.at(1).phi(), vTightLeptons.at(1).E() );
+	lep3.SetPtEtaPhiE(vTightLeptons.at(2).pt(), vTightLeptons.at(2).eta(), vTightLeptons.at(2).phi(), vTightLeptons.at(2).E() );
+	if(lep1.DeltaR(lep2) < tmp) {minDRll = lep1.DeltaR(lep2); tmp = minDRll;}
+	if(lep1.DeltaR(lep3) < tmp) {minDRll = lep1.DeltaR(lep3); tmp = minDRll;}
+	if(lep2.DeltaR(lep3) < tmp) {minDRll = lep2.DeltaR(lep3); tmp = minDRll;}
+
+
+    //--- Var10 : pT of 3rd hardest lepton
+    Lep3Pt = vTightLeptons.at(2).pt();
+
+
+    //--- Fill additionnal variables, used for control only
+    lep1Pt = vFakeableLeptons.at(0).pt(); lep2Pt = vFakeableLeptons.at(1).pt(); lep3Pt = vFakeableLeptons.at(2).pt();
+    inv_mll = mll_tmp;
+    hardestBjetPt = vLooseBTagJets.at(ijet_hardest_btag).pt(); hardestBjetEta = vLooseBTagJets.at(ijet_hardest_btag).eta();
+    fwdJetPt = vLooseBTagJets.at(ijet_forward).pt();
+
+    //--------------------------
+    // PRINTOUT OF INFOS & INPUT VARS
+    //--------------------------
+
+    bool do_printout = false;
+
+    if(do_printout)
+    {
+        cout<<endl<<endl<<BOLD(FBLU("------------ EVENT -----------"))<<endl;
+
+        cout<<FYEL("--- Tagged Jets : ")<<endl;
+        for(int ijet=0; ijet<vLooseBTagJets.size(); ijet++)
+        {
+            cout<<ijet<<" pT = "<<vLooseBTagJets.at(ijet).pt()<<" / eta = "<<vLooseBTagJets.at(ijet).eta()<<" / phi = "<<vLooseBTagJets.at(ijet).phi()<<" / CSV = "<<vLooseBTagJets.at(ijet).CSVv2()<<endl;
+        }
+        cout<<"Hardest & 2nd hardest jets are "<<ijet_hardest_btag<<", "<<ijet_2nd_hardest_btag<<endl<<endl;
+
+        cout<<FYEL("--- Forward Jets : ")<<endl;
+        for(int ijet=0; ijet<vLightJets.size(); ijet++)
+        {
+            cout<<ijet<<" pT = "<<vLightJets.at(ijet).pt()<<" / eta = "<<vLightJets.at(ijet).eta()<<" / phi = "<<vLightJets.at(ijet).phi()<<" / CSV = "<<vLightJets.at(ijet).CSVv2()<<endl;
+        }
+        cout<<"Forwardest jet is "<<ijet_forward<<endl<<endl;
+
+        cout<<FYEL("--- Selected Leptons : ")<<endl;
+        for(int ilep=0; ilep<vTightLeptons.size(); ilep++)
+        {
+            cout<<ilep<<" pT = "<<vTightLeptons.at(ilep).pt()<<" / eta = "<<vTightLeptons.at(ilep).eta()<<" / phi = "<<vTightLeptons.at(ilep).phi()<<" : Charge = "<<vTightLeptons.at(ilep).charge()<<endl;
+        }
+
+        cout<<FYEL("--- Input variables : ")<<endl;
+
+        cout<<"nJet25 = "<<nJet25<<endl;
+        cout<<"maxEtaJet25 = "<<maxEtaJet25<<endl;
+        cout<<"lepCharge = "<<lepCharge<<endl;
+        cout<<"nJetEta1 = "<<nJetEta1 <<endl;
+        cout<<"dEtaFwdJetBJet = "<<dEtaFwdJetBJet<<endl;
+        cout<<"dEtaFwdJet2BJet = "<<dEtaFwdJet2BJet<<endl;
+        cout<<"dEtaFwdJetClosestLep = "<<dEtaFwdJetClosestLep<<endl;
+        cout<<"dPhiHighestPtSSPair = "<<dPhiHighestPtSSPair<<endl;
+        cout<<"minDRll = "<<minDRll<<endl;
+        cout<<"Lep3Pt = "<<Lep3Pt<<endl;
+
+        cout<<"------------------"<<endl<<endl;
+    }
+
+
+    //--- COMPUTE BDT OUTPUT from weight files
+    signal_3l_TT_MVA   = mva_3l_tt->EvaluateMVA("BDTG method");
+    signal_3l_TTV_MVA   = mva_3l_ttV->EvaluateMVA("BDTG method");
+    // ======================================================================================================
+
+
+    fillOutputTree();
+    // cout<<BOLD(FYEL("TREE FILLED !"))<<endl;
+}
 
 
 
@@ -1727,6 +1592,1035 @@ void TTbarHiggsMultileptonAnalysis::ThreeLeptonSelection_THQ3l_Training(int evt)
 
 
 
+void TTbarHiggsMultileptonAnalysis::TwoLeptonSelection_THQ2l_SR(int evt)
+{
+    Reinit_Categories();
+
+    //If data doesn't pass trigger, weight=0
+    if(weight==0) {return;}
+
+
+    // ####################
+    // # Common selection #
+    // ####################
+
+    //At least 2 leptons
+    if(vFakeableLeptons.size() < 2) {return;}
+
+
+    //==2 tight leptons
+	if(vTightLeptons.size() != 2) {return;}
+
+    //SS lepton pair
+    if(vTightLeptons.at(0).charge() * vTightLeptons.at(1).charge() < 0) {return;}
+
+    //Dilepton channel  : leptons need to pass tightCharge cut (dPt/pT>0.2 for muons, tightCharge>1 for ele)
+    if(!vTightLeptons.at(0).passTightCharge() ) {return;}
+    if(!vTightLeptons.at(1).passTightCharge() ) {return;}
+
+    //pT cuts
+    if(vTightLeptons.at(0).pt() < 25 || vTightLeptons.at(1).pt() < 15) {return;}
+
+    //Jet cuts
+    if(vSelectedJets.size() < 2) {return;}
+
+    if(nMediumBJets == 0) {return;}
+
+    if(vLightJets_FwdPtCut.size() == 0)  {return;}
+
+
+    //Cleanup -- Veto if loose lepton pair with mll < 12
+    bool pass_cleanup = true;
+    for(int i=0; i<vLooseLeptons.size()-1; i++)
+    {
+        for(int j=i+1; j<vLooseLeptons.size(); j++)
+        {
+            if( fabs( (vLooseLeptons.at(i).p4() + vLooseLeptons.at(j).p4()).M() ) < 12 ) {pass_cleanup = false;}
+        }
+    }
+    if(!pass_cleanup) {return;}
+
+    // ##########
+    // # OSSF pair - Z veto
+    // ##########
+    bool pass_Zveto = true;
+    if(fabs(vTightLeptons.at(0).id())==11 && fabs(vTightLeptons.at(1).id())==11)
+    {
+        if(fabs( (vTightLeptons.at(0).p4() + vTightLeptons.at(1).p4()).M() - 91.188) < 10) {pass_Zveto = false;}
+    }
+    if(!pass_Zveto) {return;}
+
+
+    is_2l_THQ_SR = 1; //2l SR category
+
+//---------------------------------------------------------------------------
+// ##################################################################################################################################
+
+    // ##########
+    // # MET LD #
+    // ##########
+
+    float jet_px = 0, jet_py = 0, lepton_px = 0, lepton_py = 0, tau_px = 0, tau_py = 0, MHT = 0, met_ld = 0;
+
+    TLorentzVector jetp4;
+    for(int i=0; i<vSelectedJets.size(); i++)
+    {
+        jetp4.SetPtEtaPhiE(vSelectedJets.at(i).pt(), vSelectedJets.at(i).eta(), vSelectedJets.at(i).phi(), vSelectedJets.at(i).E());
+        jet_px = jet_px + jetp4.Px();
+        jet_py = jet_py + jetp4.Py();
+    }
+
+    for(int i=0; i<vTightLeptons.size(); i++)
+    {
+        lepton_px = lepton_px + vTightLeptons.at(i).p4().Px();
+        lepton_py = lepton_py + vTightLeptons.at(i).p4().Py();
+    }
+
+    TLorentzVector taup4;
+    for(int i=0; i<vSelectedTaus.size(); i++)
+    {
+        taup4.SetPtEtaPhiE(vSelectedTaus.at(i).pt(), vSelectedTaus.at(i).eta(), vSelectedTaus.at(i).phi(), vSelectedTaus.at(i).E());
+        tau_px = tau_px + taup4.Px();
+        tau_py = tau_py + taup4.Py();
+    }
+
+    MHT = sqrt( (jet_px + lepton_px + tau_px) * (jet_px + lepton_px + tau_px) + (jet_py + lepton_py + tau_py) * (jet_py + lepton_py + tau_py) );
+
+    met_ld = 0.00397 * vEvent->at(0).metpt() + 0.00265 * MHT;
+
+    if(DEBUG) std::cout << " MHT =  " << MHT << "MET = " << vEvent->at(0).metpt() << " met_ld = " << met_ld ;
+
+    // ########
+    // # SFOS #
+    // ########
+
+    bool isSFOS = false;
+    for(int i=0; i<vTightLeptons.size(); i++)
+    {
+        for(int j=0; j<vTightLeptons.size(); j++)
+        {
+            if (  ( i                           != j                            )
+                    && ( vTightLeptons.at(i).id() == -vTightLeptons.at(j).id() ) )
+            { isSFOS = true ;}
+        }
+    }
+
+    if(DEBUG) std::cout << std::endl << "nJets: " << vSelectedJets.size() << " met_ld: " << met_ld << " isSFOS " << isSFOS << std::endl;
+
+
+    int sum_charges_3l = vTightLeptons.at(0).charge() + vTightLeptons.at(1).charge();
+    for(int i=0; i<2; i++)
+    {
+        sum_charges_3l = sum_charges_3l + vTightLeptons.at(i).charge();
+    }
+    // if( fabs(sum_charges_3l) != 1 ) return; //Cf. AN : triple charge consistency not required in 3l ?
+
+
+    // #################################
+    // # b-tagging nominal reweighting #
+    // #################################
+
+    std::vector<double> jetPts;
+    std::vector<double> jetEtas;
+    std::vector<double> jetCSVs;
+    std::vector<int>    jetFlavors;
+    int iSys = 0;
+    double wgt_csv, wgt_csv_def, wgt_csv_hf, wgt_csv_lf, wgt_csv_cf, new_weight;
+
+    for(int i=0; i<vSelectedJets.size(); i++)
+    {
+        jetPts.push_back(     vSelectedJets.at(i).pt()                );
+        jetEtas.push_back(    vSelectedJets.at(i).eta()               );
+        jetCSVs.push_back(    vSelectedJets.at(i).CSVv2()             );
+        jetFlavors.push_back( vSelectedJets.at(i).jet_hadronFlavour() );
+    }
+
+    wgt_csv_def = get_csv_wgt(jetPts, jetEtas, jetCSVs, jetFlavors, iSys, wgt_csv_hf, wgt_csv_lf, wgt_csv_cf);
+    new_weight = weight * wgt_csv_def; // weight = weight * wgt_csv_def;
+
+    // ##################################
+    // # b-tagging deriving systematics #
+    // ##################################
+
+    std::vector<double> weights_csv;
+    double wgt_csv_def_sys = 0;
+
+    for(int i=7; i<25; i++)
+    {
+        wgt_csv_def_sys = get_csv_wgt(jetPts, jetEtas, jetCSVs, jetFlavors, i, wgt_csv_hf, wgt_csv_lf, wgt_csv_cf)/wgt_csv_def;
+        weights_csv.push_back(wgt_csv_def_sys);
+    }
+
+    double min_weight_csv = *min_element(weights_csv.begin(),weights_csv.end());
+    double max_weight_csv = *max_element(weights_csv.begin(),weights_csv.end());
+
+    weight_csv_down = min_weight_csv;
+    weight_csv_up   = max_weight_csv;
+
+// ##################################################################################################################################
+
+
+
+    // ####################################
+    // #  ____  ____    ____  ____ _____  #
+    // # |___ \|  _ \  | __ )|  _ \_   _| #
+    // #   __) | | | | |  _ \| | | || |   #
+    // #  / __/| |_| | | |_) | |_| || |   #
+    // # |_____|____/  |____/|____/ |_|   #
+    // #                                  #
+    // ####################################
+
+    // based on https://github.com/CERN-PH-CMG/cmgtools-lite/blob/0b47d4d1c50ea0e24ef0d9cf1c24c763e78c1bf0/TTHAnalysis/python/tools/kinMVA_2D_2lss_3l.py
+
+    //variables from tHq2016
+    //NB : "forward jet" = most forward non-CSV loose jet
+
+    // double nJet25;
+    // double maxEtaJet25;
+    // double lepCharge;
+    // double nJetEta1 ;
+    // double dEtaFwdJetBJet;
+    // double dEtaFwdJet2BJet;
+    // double dEtaFwdJetClosestLep;
+    // double dPhiHighestPtSSPair;
+    // double minDRll;
+    // double Lep3Pt;
+
+    int ijet_forward=-1, ijet_hardest_btag=-1, ijet_2nd_hardest_btag=-1;
+    double tmp = -999;
+
+	//--- Find "forward jet"
+    for(int ijet=0; ijet<vLightJets.size(); ijet++)
+    {
+        if(fabs(vLightJets.at(ijet).eta()) > tmp)
+        {
+            tmp = fabs(vLightJets.at(ijet).eta());
+            ijet_forward = ijet;
+        }
+    }
+
+	//--- Find "hardest" and "second hardest" tagged jets
+    double pt1=0, pt2=0;
+    for(int ijet=0; ijet<vLooseBTagJets.size(); ijet++)
+    {
+        if(fabs(vLooseBTagJets.at(ijet).pt()) > pt1)
+        {
+            pt1 = fabs(vLooseBTagJets.at(ijet).pt());
+            ijet_2nd_hardest_btag = ijet_hardest_btag;
+            ijet_hardest_btag = ijet;
+        }
+        else if(fabs(vLooseBTagJets.at(ijet).pt()) > pt2)
+        {
+            pt2 = fabs(vLooseBTagJets.at(ijet).pt());
+            ijet_2nd_hardest_btag = ijet;
+        }
+    }
+
+
+
+	//--- Var1 : nof jets with pT>25 and |eta|<2.4
+    nJet25 = 0;
+    for(int ijet=0; ijet<vSelectedJets.size(); ijet++)
+    {
+        if(vSelectedJets.at(ijet).pt() > 25 && fabs(vSelectedJets.at(ijet).eta() ) < 2.4) {nJet25++;}
+    }
+
+    //--- Var2: max eta of any 'non-CSV-loose' jet
+    tmp = -999;
+    for(int ijet=0; ijet<vLightJets.size(); ijet++)
+    {
+        if(fabs(vLightJets.at(ijet).eta()) > tmp) {tmp = fabs(vLightJets.at(ijet).eta());}
+    }
+    maxEtaJet25 = tmp;
+
+	//--- Var3 : sum of leptons charges
+    lepCharge = vTightLeptons.at(0).charge() + vTightLeptons.at(1).charge();
+
+	//--- Var4 : nof 'non-csv-loose' jets with eta>1.0
+    nJetEta1 = 0;
+    for(int ijet=0; ijet<vLightJets.size(); ijet++)
+    {
+        if( fabs(vLightJets.at(ijet).eta() ) > 1.0) {nJetEta1++;}
+    }
+
+	//--- Var5 : dEta between forward light jet and hardest tagged jet
+    dEtaFwdJetBJet = fabs( vLightJets.at(ijet_forward).eta() - vLooseBTagJets.at(ijet_hardest_btag).eta() );
+
+	//--- Var6 : dEta between forward and 2nd hardest tagged jet
+    if(ijet_2nd_hardest_btag < 0) {dEtaFwdJet2BJet = -1;}
+    else {dEtaFwdJet2BJet = fabs( vLightJets.at(ijet_forward).eta() - vLooseBTagJets.at(ijet_2nd_hardest_btag).eta() );}
+
+	//--- Var7 : dEta between forward light jet and closet lepton (angular dist.)
+    dEtaFwdJetClosestLep = 0; tmp = 999;
+    for(int ilep=0; ilep<vTightLeptons.size(); ilep++)
+    {
+        if( fabs(vLightJets.at(ijet_forward).eta() - vTightLeptons.at(ilep).eta() ) < tmp) {dEtaFwdJetClosestLep = fabs(vLightJets.at(ijet_forward).eta() - vTightLeptons.at(ilep).eta() ); tmp = dEtaFwdJetClosestLep;}
+    }
+
+    //--- Var8 : dPhi of highest pT SS lepton pair (?)
+    dPhiHighestPtSSPair = fabs(Phi_MPi_Pi(vTightLeptons.at(0).phi() - vTightLeptons.at(1).phi() ) );
+
+    //--- Var9 : min. dR between any 2 leptons
+    minDRll = 999;
+	TLorentzVector lep1, lep2, lep3;
+	lep1.SetPtEtaPhiE(vTightLeptons.at(0).pt(), vTightLeptons.at(0).eta(), vTightLeptons.at(0).phi(), vTightLeptons.at(0).E() );
+	lep2.SetPtEtaPhiE(vTightLeptons.at(1).pt(), vTightLeptons.at(1).eta(), vTightLeptons.at(1).phi(), vTightLeptons.at(1).E() );
+	minDRll = lep1.DeltaR(lep2);
+
+
+    //--- Var10 : pT of 3rd hardest lepton
+    Lep3Pt = vTightLeptons.at(1).pt();
+
+
+    //--- Fill additionnal variables, used for control only
+    lep1Pt = vFakeableLeptons.at(0).pt(); lep2Pt = vFakeableLeptons.at(1).pt();
+    hardestBjetPt = vLooseBTagJets.at(ijet_hardest_btag).pt(); hardestBjetEta = vLooseBTagJets.at(ijet_hardest_btag).eta();
+    fwdJetPt = vLooseBTagJets.at(ijet_forward).pt();
+
+    //--------------------------
+    // PRINTOUT OF INFOS & INPUT VARS
+    //--------------------------
+
+    bool do_printout = false;
+
+    if(do_printout)
+    {
+        cout<<endl<<endl<<BOLD(FBLU("------------ EVENT -----------"))<<endl;
+
+        cout<<FYEL("--- Tagged Jets : ")<<endl;
+        for(int ijet=0; ijet<vLooseBTagJets.size(); ijet++)
+        {
+            cout<<ijet<<" pT = "<<vLooseBTagJets.at(ijet).pt()<<" / eta = "<<vLooseBTagJets.at(ijet).eta()<<" / phi = "<<vLooseBTagJets.at(ijet).phi()<<" / CSV = "<<vLooseBTagJets.at(ijet).CSVv2()<<endl;
+        }
+        cout<<"Hardest & 2nd hardest jets are "<<ijet_hardest_btag<<", "<<ijet_2nd_hardest_btag<<endl<<endl;
+
+        cout<<FYEL("--- Forward Jets : ")<<endl;
+        for(int ijet=0; ijet<vLightJets.size(); ijet++)
+        {
+            cout<<ijet<<" pT = "<<vLightJets.at(ijet).pt()<<" / eta = "<<vLightJets.at(ijet).eta()<<" / phi = "<<vLightJets.at(ijet).phi()<<" / CSV = "<<vLightJets.at(ijet).CSVv2()<<endl;
+        }
+        cout<<"Forwardest jet is "<<ijet_forward<<endl<<endl;
+
+        cout<<FYEL("--- Selected Leptons : ")<<endl;
+        for(int ilep=0; ilep<vTightLeptons.size(); ilep++)
+        {
+            cout<<ilep<<" pT = "<<vTightLeptons.at(ilep).pt()<<" / eta = "<<vTightLeptons.at(ilep).eta()<<" / phi = "<<vTightLeptons.at(ilep).phi()<<" : Charge = "<<vTightLeptons.at(ilep).charge()<<endl;
+        }
+
+        cout<<FYEL("--- Input variables : ")<<endl;
+
+        cout<<"nJet25 = "<<nJet25<<endl;
+        cout<<"maxEtaJet25 = "<<maxEtaJet25<<endl;
+        cout<<"lepCharge = "<<lepCharge<<endl;
+        cout<<"nJetEta1 = "<<nJetEta1 <<endl;
+        cout<<"dEtaFwdJetBJet = "<<dEtaFwdJetBJet<<endl;
+        cout<<"dEtaFwdJet2BJet = "<<dEtaFwdJet2BJet<<endl;
+        cout<<"dEtaFwdJetClosestLep = "<<dEtaFwdJetClosestLep<<endl;
+        cout<<"dPhiHighestPtSSPair = "<<dPhiHighestPtSSPair<<endl;
+        cout<<"minDRll = "<<minDRll<<endl;
+        cout<<"Lep3Pt = "<<Lep3Pt<<endl;
+
+        cout<<"------------------"<<endl<<endl;
+    }
+
+
+    //--- COMPUTE BDT OUTPUT from weight files
+    signal_2lss_TT_MVA   = mva_2lss_tt->EvaluateMVA("BDTG method");
+    signal_2lss_TTV_MVA   = mva_2lss_ttV->EvaluateMVA("BDTG method");
+    // ======================================================================================================
+
+
+    fillOutputTree();
+    // cout<<BOLD(FYEL("TREE FILLED !"))<<endl;
+}
+
+
+
+
+
+
+void TTbarHiggsMultileptonAnalysis::TwoLeptonSelection_THQ2l_Training(int evt)
+{
+    Reinit_Categories();
+
+    //If data doesn't pass trigger, weight=0
+    if(weight==0) {return;}
+
+
+    // ####################
+    // # Common selection #
+    // ####################
+
+    //At least 2 leptons
+    if(vFakeableLeptons.size() < 2) {return;}
+
+
+    //==2 tight leptons
+	if(vTightLeptons.size() > 2) {return;}
+
+    //SS lepton pair
+    if(vTightLeptons.at(0).charge() * vTightLeptons.at(1).charge() < 0) {return;}
+
+    //Dilepton channel  : leptons need to pass tightCharge cut (dPt/pT>0.2 for muons, tightCharge>1 for ele)
+    if(!vTightLeptons.at(0).passTightCharge() ) {return;}
+    if(!vTightLeptons.at(1).passTightCharge() ) {return;}
+
+    //pT cuts
+    if(vTightLeptons.at(0).pt() < 20 || vTightLeptons.at(1).pt() < 10) {return;}
+
+    //Jet cuts
+    if(vSelectedJets.size() < 2) {return;}
+
+    if(nLooseBJets == 0) {return;}
+
+    if(vLightJets.size() == 0)  {return;}
+
+    is_2l_THQ_Training = 1; //2l Training category
+
+//---------------------------------------------------------------------------
+// ##################################################################################################################################
+
+    // ##########
+    // # MET LD #
+    // ##########
+
+    float jet_px = 0, jet_py = 0, lepton_px = 0, lepton_py = 0, tau_px = 0, tau_py = 0, MHT = 0, met_ld = 0;
+
+    TLorentzVector jetp4;
+    for(int i=0; i<vSelectedJets.size(); i++)
+    {
+        jetp4.SetPtEtaPhiE(vSelectedJets.at(i).pt(), vSelectedJets.at(i).eta(), vSelectedJets.at(i).phi(), vSelectedJets.at(i).E());
+        jet_px = jet_px + jetp4.Px();
+        jet_py = jet_py + jetp4.Py();
+    }
+
+    for(int i=0; i<vTightLeptons.size(); i++)
+    {
+        lepton_px = lepton_px + vTightLeptons.at(i).p4().Px();
+        lepton_py = lepton_py + vTightLeptons.at(i).p4().Py();
+    }
+
+    TLorentzVector taup4;
+    for(int i=0; i<vSelectedTaus.size(); i++)
+    {
+        taup4.SetPtEtaPhiE(vSelectedTaus.at(i).pt(), vSelectedTaus.at(i).eta(), vSelectedTaus.at(i).phi(), vSelectedTaus.at(i).E());
+        tau_px = tau_px + taup4.Px();
+        tau_py = tau_py + taup4.Py();
+    }
+
+    MHT = sqrt( (jet_px + lepton_px + tau_px) * (jet_px + lepton_px + tau_px) + (jet_py + lepton_py + tau_py) * (jet_py + lepton_py + tau_py) );
+
+    met_ld = 0.00397 * vEvent->at(0).metpt() + 0.00265 * MHT;
+
+    if(DEBUG) std::cout << " MHT =  " << MHT << "MET = " << vEvent->at(0).metpt() << " met_ld = " << met_ld ;
+
+    // ########
+    // # SFOS #
+    // ########
+
+    bool isSFOS = false;
+    for(int i=0; i<vTightLeptons.size(); i++)
+    {
+        for(int j=0; j<vTightLeptons.size(); j++)
+        {
+            if (  ( i                           != j                            )
+                    && ( vTightLeptons.at(i).id() == -vTightLeptons.at(j).id() ) )
+            { isSFOS = true ;}
+        }
+    }
+
+    if(DEBUG) std::cout << std::endl << "nJets: " << vSelectedJets.size() << " met_ld: " << met_ld << " isSFOS " << isSFOS << std::endl;
+
+
+    int sum_charges_3l = vTightLeptons.at(0).charge() + vTightLeptons.at(1).charge();
+    for(int i=0; i<2; i++)
+    {
+        sum_charges_3l = sum_charges_3l + vTightLeptons.at(i).charge();
+    }
+    // if( fabs(sum_charges_3l) != 1 ) return; //Cf. AN : triple charge consistency not required in 3l ?
+
+
+    // #################################
+    // # b-tagging nominal reweighting #
+    // #################################
+
+    std::vector<double> jetPts;
+    std::vector<double> jetEtas;
+    std::vector<double> jetCSVs;
+    std::vector<int>    jetFlavors;
+    int iSys = 0;
+    double wgt_csv, wgt_csv_def, wgt_csv_hf, wgt_csv_lf, wgt_csv_cf, new_weight;
+
+    for(int i=0; i<vSelectedJets.size(); i++)
+    {
+        jetPts.push_back(     vSelectedJets.at(i).pt()                );
+        jetEtas.push_back(    vSelectedJets.at(i).eta()               );
+        jetCSVs.push_back(    vSelectedJets.at(i).CSVv2()             );
+        jetFlavors.push_back( vSelectedJets.at(i).jet_hadronFlavour() );
+    }
+
+    wgt_csv_def = get_csv_wgt(jetPts, jetEtas, jetCSVs, jetFlavors, iSys, wgt_csv_hf, wgt_csv_lf, wgt_csv_cf);
+    new_weight = weight * wgt_csv_def; // weight = weight * wgt_csv_def;
+
+    // ##################################
+    // # b-tagging deriving systematics #
+    // ##################################
+
+    std::vector<double> weights_csv;
+    double wgt_csv_def_sys = 0;
+
+    for(int i=7; i<25; i++)
+    {
+        wgt_csv_def_sys = get_csv_wgt(jetPts, jetEtas, jetCSVs, jetFlavors, i, wgt_csv_hf, wgt_csv_lf, wgt_csv_cf)/wgt_csv_def;
+        weights_csv.push_back(wgt_csv_def_sys);
+    }
+
+    double min_weight_csv = *min_element(weights_csv.begin(),weights_csv.end());
+    double max_weight_csv = *max_element(weights_csv.begin(),weights_csv.end());
+
+    weight_csv_down = min_weight_csv;
+    weight_csv_up   = max_weight_csv;
+
+// ##################################################################################################################################
+
+
+
+    // ####################################
+    // #  ____  ____    ____  ____ _____  #
+    // # |___ \|  _ \  | __ )|  _ \_   _| #
+    // #   __) | | | | |  _ \| | | || |   #
+    // #  / __/| |_| | | |_) | |_| || |   #
+    // # |_____|____/  |____/|____/ |_|   #
+    // #                                  #
+    // ####################################
+
+    // based on https://github.com/CERN-PH-CMG/cmgtools-lite/blob/0b47d4d1c50ea0e24ef0d9cf1c24c763e78c1bf0/TTHAnalysis/python/tools/kinMVA_2D_2lss_3l.py
+
+    //variables from tHq2016
+    //NB : "forward jet" = most forward non-CSV loose jet
+
+    // double nJet25;
+    // double maxEtaJet25;
+    // double lepCharge;
+    // double nJetEta1 ;
+    // double dEtaFwdJetBJet;
+    // double dEtaFwdJet2BJet;
+    // double dEtaFwdJetClosestLep;
+    // double dPhiHighestPtSSPair;
+    // double minDRll;
+    // double Lep3Pt;
+
+    int ijet_forward=-1, ijet_hardest_btag=-1, ijet_2nd_hardest_btag=-1;
+    double tmp = -999;
+
+	//--- Find "forward jet"
+    for(int ijet=0; ijet<vLightJets.size(); ijet++)
+    {
+        if(fabs(vLightJets.at(ijet).eta()) > tmp)
+        {
+            tmp = fabs(vLightJets.at(ijet).eta());
+            ijet_forward = ijet;
+        }
+    }
+
+	//--- Find "hardest" and "second hardest" tagged jets
+    double pt1=0, pt2=0;
+    for(int ijet=0; ijet<vLooseBTagJets.size(); ijet++)
+    {
+        if(fabs(vLooseBTagJets.at(ijet).pt()) > pt1)
+        {
+            pt1 = fabs(vLooseBTagJets.at(ijet).pt());
+            ijet_2nd_hardest_btag = ijet_hardest_btag;
+            ijet_hardest_btag = ijet;
+        }
+        else if(fabs(vLooseBTagJets.at(ijet).pt()) > pt2)
+        {
+            pt2 = fabs(vLooseBTagJets.at(ijet).pt());
+            ijet_2nd_hardest_btag = ijet;
+        }
+    }
+
+
+
+	//--- Var1 : nof jets with pT>25 and |eta|<2.4
+    nJet25 = 0;
+    for(int ijet=0; ijet<vSelectedJets.size(); ijet++)
+    {
+        if(vSelectedJets.at(ijet).pt() > 25 && fabs(vSelectedJets.at(ijet).eta() ) < 2.4) {nJet25++;}
+    }
+
+    //--- Var2: max eta of any 'non-CSV-loose' jet
+    tmp = -999;
+    for(int ijet=0; ijet<vLightJets.size(); ijet++)
+    {
+        if(fabs(vLightJets.at(ijet).eta()) > tmp) {tmp = fabs(vLightJets.at(ijet).eta());}
+    }
+    maxEtaJet25 = tmp;
+
+	//--- Var3 : sum of leptons charges
+    lepCharge = vTightLeptons.at(0).charge() + vTightLeptons.at(1).charge();
+
+	//--- Var4 : nof 'non-csv-loose' jets with eta>1.0
+    nJetEta1 = 0;
+    for(int ijet=0; ijet<vLightJets.size(); ijet++)
+    {
+        if( fabs(vLightJets.at(ijet).eta() ) > 1.0) {nJetEta1++;}
+    }
+
+	//--- Var5 : dEta between forward light jet and hardest tagged jet
+    dEtaFwdJetBJet = fabs( vLightJets.at(ijet_forward).eta() - vLooseBTagJets.at(ijet_hardest_btag).eta() );
+
+	//--- Var6 : dEta between forward and 2nd hardest tagged jet
+    if(ijet_2nd_hardest_btag < 0) {dEtaFwdJet2BJet = -1;}
+    else {dEtaFwdJet2BJet = fabs( vLightJets.at(ijet_forward).eta() - vLooseBTagJets.at(ijet_2nd_hardest_btag).eta() );}
+
+	//--- Var7 : dEta between forward light jet and closet lepton (angular dist.)
+    dEtaFwdJetClosestLep = 0; tmp = 999;
+    for(int ilep=0; ilep<vTightLeptons.size(); ilep++)
+    {
+        if( fabs(vLightJets.at(ijet_forward).eta() - vTightLeptons.at(ilep).eta() ) < tmp) {dEtaFwdJetClosestLep = fabs(vLightJets.at(ijet_forward).eta() - vTightLeptons.at(ilep).eta() ); tmp = dEtaFwdJetClosestLep;}
+    }
+
+    //--- Var8 : dPhi of highest pT SS lepton pair (?)
+    dPhiHighestPtSSPair = fabs(Phi_MPi_Pi(vTightLeptons.at(0).phi() - vTightLeptons.at(1).phi() ) );
+
+    //--- Var9 : min. dR between any 2 leptons
+    minDRll = 999;
+	TLorentzVector lep1, lep2, lep3;
+	lep1.SetPtEtaPhiE(vTightLeptons.at(0).pt(), vTightLeptons.at(0).eta(), vTightLeptons.at(0).phi(), vTightLeptons.at(0).E() );
+	lep2.SetPtEtaPhiE(vTightLeptons.at(1).pt(), vTightLeptons.at(1).eta(), vTightLeptons.at(1).phi(), vTightLeptons.at(1).E() );
+	minDRll = lep1.DeltaR(lep2);
+
+
+    //--- Var10 : pT of 3rd hardest lepton
+    Lep3Pt = vTightLeptons.at(1).pt();
+
+
+    //--- Fill additionnal variables, used for control only
+    lep1Pt = vFakeableLeptons.at(0).pt(); lep2Pt = vFakeableLeptons.at(1).pt();
+    hardestBjetPt = vLooseBTagJets.at(ijet_hardest_btag).pt(); hardestBjetEta = vLooseBTagJets.at(ijet_hardest_btag).eta();
+    fwdJetPt = vLooseBTagJets.at(ijet_forward).pt();
+
+    //--------------------------
+    // PRINTOUT OF INFOS & INPUT VARS
+    //--------------------------
+
+    bool do_printout = false;
+
+    if(do_printout)
+    {
+        cout<<endl<<endl<<BOLD(FBLU("------------ EVENT -----------"))<<endl;
+
+        cout<<FYEL("--- Tagged Jets : ")<<endl;
+        for(int ijet=0; ijet<vLooseBTagJets.size(); ijet++)
+        {
+            cout<<ijet<<" pT = "<<vLooseBTagJets.at(ijet).pt()<<" / eta = "<<vLooseBTagJets.at(ijet).eta()<<" / phi = "<<vLooseBTagJets.at(ijet).phi()<<" / CSV = "<<vLooseBTagJets.at(ijet).CSVv2()<<endl;
+        }
+        cout<<"Hardest & 2nd hardest jets are "<<ijet_hardest_btag<<", "<<ijet_2nd_hardest_btag<<endl<<endl;
+
+        cout<<FYEL("--- Forward Jets : ")<<endl;
+        for(int ijet=0; ijet<vLightJets.size(); ijet++)
+        {
+            cout<<ijet<<" pT = "<<vLightJets.at(ijet).pt()<<" / eta = "<<vLightJets.at(ijet).eta()<<" / phi = "<<vLightJets.at(ijet).phi()<<" / CSV = "<<vLightJets.at(ijet).CSVv2()<<endl;
+        }
+        cout<<"Forwardest jet is "<<ijet_forward<<endl<<endl;
+
+        cout<<FYEL("--- Selected Leptons : ")<<endl;
+        for(int ilep=0; ilep<vTightLeptons.size(); ilep++)
+        {
+            cout<<ilep<<" pT = "<<vTightLeptons.at(ilep).pt()<<" / eta = "<<vTightLeptons.at(ilep).eta()<<" / phi = "<<vTightLeptons.at(ilep).phi()<<" : Charge = "<<vTightLeptons.at(ilep).charge()<<endl;
+        }
+
+        cout<<FYEL("--- Input variables : ")<<endl;
+
+        cout<<"nJet25 = "<<nJet25<<endl;
+        cout<<"maxEtaJet25 = "<<maxEtaJet25<<endl;
+        cout<<"lepCharge = "<<lepCharge<<endl;
+        cout<<"nJetEta1 = "<<nJetEta1 <<endl;
+        cout<<"dEtaFwdJetBJet = "<<dEtaFwdJetBJet<<endl;
+        cout<<"dEtaFwdJet2BJet = "<<dEtaFwdJet2BJet<<endl;
+        cout<<"dEtaFwdJetClosestLep = "<<dEtaFwdJetClosestLep<<endl;
+        cout<<"dPhiHighestPtSSPair = "<<dPhiHighestPtSSPair<<endl;
+        cout<<"minDRll = "<<minDRll<<endl;
+        cout<<"Lep3Pt = "<<Lep3Pt<<endl;
+
+        cout<<"------------------"<<endl<<endl;
+    }
+
+
+
+    //--- COMPUTE BDT OUTPUT from weight files
+    signal_2lss_TT_MVA   = mva_2lss_tt->EvaluateMVA("BDTG method");
+    signal_2lss_TTV_MVA   = mva_2lss_ttV->EvaluateMVA("BDTG method");
+    // ======================================================================================================
+
+
+    fillOutputTree();
+    // cout<<BOLD(FYEL("TREE FILLED !"))<<endl;
+}
+
+
+
+
+
+
+
+
+//--- Enriched in dileptonic ttbar events
+//-- E/mu 2l SS control region
+void TTbarHiggsMultileptonAnalysis::TwoLeptonSelection_THQ2l_EMU_OS_CR(int evt)
+{
+    Reinit_Categories();
+
+    //If data doesn't pass trigger, weight=0
+    if(weight==0) {return;}
+
+
+    // ####################
+    // # Common selection #
+    // ####################
+
+    //At least 2 leptons
+    if(vFakeableLeptons.size() < 2) {return;}
+
+
+    //==2 tight leptons
+	if(vTightLeptons.size() != 2) {return;}
+
+    //OS pair
+    if(vTightLeptons.at(0).charge() * vTightLeptons.at(1).charge() > 0) {return;}
+
+    //e-mu pair
+    if( fabs(vTightLeptons.at(0).id() * vTightLeptons.at(1).id()) != 143 ) {return;}
+
+    //Dilepton channel  : leptons need to pass tightCharge cut (dPt/pT>0.2 for muons, tightCharge>1 for ele)
+    if(!vTightLeptons.at(0).passTightCharge() ) {return;}
+    if(!vTightLeptons.at(1).passTightCharge() ) {return;}
+
+    //pT cuts
+    if(vTightLeptons.at(0).pt() < 25 || vTightLeptons.at(1).pt() < 10) {return;}
+    if( fabs(vTightLeptons.at(1).id()) == 11 && vTightLeptons.at(1).pt() < 15)
+
+    //Jet cuts
+    if(vSelectedJets.size() < 2) {return;}
+
+    if(nMediumBJets == 0) {return;}
+
+    if(vLightJets_FwdPtCut.size() == 0) {return;}
+
+
+    //Cleanup -- Veto if loose lepton pair with mll < 12
+    bool pass_cleanup = true;
+    for(int i=0; i<vLooseLeptons.size()-1; i++)
+    {
+        for(int j=i+1; j<vLooseLeptons.size(); j++)
+        {
+            if( fabs( (vLooseLeptons.at(i).p4() + vLooseLeptons.at(j).p4()).M() ) < 12 ) {pass_cleanup = false;}
+        }
+    }
+    if(!pass_cleanup) {return;}
+
+    // ##########
+    // # OSSF pair - Z veto
+    // ##########
+    bool pass_Zveto = true;
+    if(fabs(vTightLeptons.at(0).id())==11 && fabs(vTightLeptons.at(1).id())==11)
+    {
+        if(fabs( (vTightLeptons.at(0).p4() + vTightLeptons.at(1).p4()).M() - 91.188) < 10) {pass_Zveto = false;}
+    }
+    if(!pass_Zveto) {return;}
+
+
+    is_2l_EMU_CR = 1; //2l SR category
+
+//---------------------------------------------------------------------------
+// ##################################################################################################################################
+
+    // ##########
+    // # MET LD #
+    // ##########
+
+    float jet_px = 0, jet_py = 0, lepton_px = 0, lepton_py = 0, tau_px = 0, tau_py = 0, MHT = 0, met_ld = 0;
+
+    TLorentzVector jetp4;
+    for(int i=0; i<vSelectedJets.size(); i++)
+    {
+        jetp4.SetPtEtaPhiE(vSelectedJets.at(i).pt(), vSelectedJets.at(i).eta(), vSelectedJets.at(i).phi(), vSelectedJets.at(i).E());
+        jet_px = jet_px + jetp4.Px();
+        jet_py = jet_py + jetp4.Py();
+    }
+
+    for(int i=0; i<vTightLeptons.size(); i++)
+    {
+        lepton_px = lepton_px + vTightLeptons.at(i).p4().Px();
+        lepton_py = lepton_py + vTightLeptons.at(i).p4().Py();
+    }
+
+    TLorentzVector taup4;
+    for(int i=0; i<vSelectedTaus.size(); i++)
+    {
+        taup4.SetPtEtaPhiE(vSelectedTaus.at(i).pt(), vSelectedTaus.at(i).eta(), vSelectedTaus.at(i).phi(), vSelectedTaus.at(i).E());
+        tau_px = tau_px + taup4.Px();
+        tau_py = tau_py + taup4.Py();
+    }
+
+    MHT = sqrt( (jet_px + lepton_px + tau_px) * (jet_px + lepton_px + tau_px) + (jet_py + lepton_py + tau_py) * (jet_py + lepton_py + tau_py) );
+
+    met_ld = 0.00397 * vEvent->at(0).metpt() + 0.00265 * MHT;
+
+    if(DEBUG) std::cout << " MHT =  " << MHT << "MET = " << vEvent->at(0).metpt() << " met_ld = " << met_ld ;
+
+    // ########
+    // # SFOS #
+    // ########
+
+    bool isSFOS = false;
+    for(int i=0; i<vTightLeptons.size(); i++)
+    {
+        for(int j=0; j<vTightLeptons.size(); j++)
+        {
+            if (  ( i                           != j                            )
+                    && ( vTightLeptons.at(i).id() == -vTightLeptons.at(j).id() ) )
+            { isSFOS = true ;}
+        }
+    }
+
+    if(DEBUG) std::cout << std::endl << "nJets: " << vSelectedJets.size() << " met_ld: " << met_ld << " isSFOS " << isSFOS << std::endl;
+
+
+    int sum_charges_3l = vTightLeptons.at(0).charge() + vTightLeptons.at(1).charge();
+    for(int i=0; i<2; i++)
+    {
+        sum_charges_3l = sum_charges_3l + vTightLeptons.at(i).charge();
+    }
+    // if( fabs(sum_charges_3l) != 1 ) return; //Cf. AN : triple charge consistency not required in 3l ?
+
+
+    // #################################
+    // # b-tagging nominal reweighting #
+    // #################################
+
+    std::vector<double> jetPts;
+    std::vector<double> jetEtas;
+    std::vector<double> jetCSVs;
+    std::vector<int>    jetFlavors;
+    int iSys = 0;
+    double wgt_csv, wgt_csv_def, wgt_csv_hf, wgt_csv_lf, wgt_csv_cf, new_weight;
+
+    for(int i=0; i<vSelectedJets.size(); i++)
+    {
+        jetPts.push_back(     vSelectedJets.at(i).pt()                );
+        jetEtas.push_back(    vSelectedJets.at(i).eta()               );
+        jetCSVs.push_back(    vSelectedJets.at(i).CSVv2()             );
+        jetFlavors.push_back( vSelectedJets.at(i).jet_hadronFlavour() );
+    }
+
+    wgt_csv_def = get_csv_wgt(jetPts, jetEtas, jetCSVs, jetFlavors, iSys, wgt_csv_hf, wgt_csv_lf, wgt_csv_cf);
+    new_weight = weight * wgt_csv_def; // weight = weight * wgt_csv_def;
+
+    // ##################################
+    // # b-tagging deriving systematics #
+    // ##################################
+
+    std::vector<double> weights_csv;
+    double wgt_csv_def_sys = 0;
+
+    for(int i=7; i<25; i++)
+    {
+        wgt_csv_def_sys = get_csv_wgt(jetPts, jetEtas, jetCSVs, jetFlavors, i, wgt_csv_hf, wgt_csv_lf, wgt_csv_cf)/wgt_csv_def;
+        weights_csv.push_back(wgt_csv_def_sys);
+    }
+
+    double min_weight_csv = *min_element(weights_csv.begin(),weights_csv.end());
+    double max_weight_csv = *max_element(weights_csv.begin(),weights_csv.end());
+
+    weight_csv_down = min_weight_csv;
+    weight_csv_up   = max_weight_csv;
+
+// ##################################################################################################################################
+
+
+
+    // ####################################
+    // #  ____  ____    ____  ____ _____  #
+    // # |___ \|  _ \  | __ )|  _ \_   _| #
+    // #   __) | | | | |  _ \| | | || |   #
+    // #  / __/| |_| | | |_) | |_| || |   #
+    // # |_____|____/  |____/|____/ |_|   #
+    // #                                  #
+    // ####################################
+
+    // based on https://github.com/CERN-PH-CMG/cmgtools-lite/blob/0b47d4d1c50ea0e24ef0d9cf1c24c763e78c1bf0/TTHAnalysis/python/tools/kinMVA_2D_2lss_3l.py
+
+    //variables from tHq2016
+    //NB : "forward jet" = most forward non-CSV loose jet
+
+    // double nJet25;
+    // double maxEtaJet25;
+    // double lepCharge;
+    // double nJetEta1 ;
+    // double dEtaFwdJetBJet;
+    // double dEtaFwdJet2BJet;
+    // double dEtaFwdJetClosestLep;
+    // double dPhiHighestPtSSPair;
+    // double minDRll;
+    // double Lep3Pt;
+
+    int ijet_forward=-1, ijet_hardest_btag=-1, ijet_2nd_hardest_btag=-1;
+    double tmp = -999;
+
+	//--- Find "forward jet"
+    for(int ijet=0; ijet<vLightJets.size(); ijet++)
+    {
+        if(fabs(vLightJets.at(ijet).eta()) > tmp)
+        {
+            tmp = fabs(vLightJets.at(ijet).eta());
+            ijet_forward = ijet;
+        }
+    }
+
+	//--- Find "hardest" and "second hardest" tagged jets
+    double pt1=0, pt2=0;
+    for(int ijet=0; ijet<vLooseBTagJets.size(); ijet++)
+    {
+        if(fabs(vLooseBTagJets.at(ijet).pt()) > pt1)
+        {
+            pt1 = fabs(vLooseBTagJets.at(ijet).pt());
+            ijet_2nd_hardest_btag = ijet_hardest_btag;
+            ijet_hardest_btag = ijet;
+        }
+        else if(fabs(vLooseBTagJets.at(ijet).pt()) > pt2)
+        {
+            pt2 = fabs(vLooseBTagJets.at(ijet).pt());
+            ijet_2nd_hardest_btag = ijet;
+        }
+    }
+
+
+
+	//--- Var1 : nof jets with pT>25 and |eta|<2.4
+    nJet25 = 0;
+    for(int ijet=0; ijet<vSelectedJets.size(); ijet++)
+    {
+        if(vSelectedJets.at(ijet).pt() > 25 && fabs(vSelectedJets.at(ijet).eta() ) < 2.4) {nJet25++;}
+    }
+
+    //--- Var2: max eta of any 'non-CSV-loose' jet
+    tmp = -999;
+    for(int ijet=0; ijet<vLightJets.size(); ijet++)
+    {
+        if(fabs(vLightJets.at(ijet).eta()) > tmp) {tmp = fabs(vLightJets.at(ijet).eta());}
+    }
+    maxEtaJet25 = tmp;
+
+	//--- Var3 : sum of leptons charges
+    lepCharge = vTightLeptons.at(0).charge() + vTightLeptons.at(1).charge();
+
+	//--- Var4 : nof 'non-csv-loose' jets with eta>1.0
+    nJetEta1 = 0;
+    for(int ijet=0; ijet<vLightJets.size(); ijet++)
+    {
+        if( fabs(vLightJets.at(ijet).eta() ) > 1.0) {nJetEta1++;}
+    }
+
+	//--- Var5 : dEta between forward light jet and hardest tagged jet
+    dEtaFwdJetBJet = fabs( vLightJets.at(ijet_forward).eta() - vLooseBTagJets.at(ijet_hardest_btag).eta() );
+
+	//--- Var6 : dEta between forward and 2nd hardest tagged jet
+    if(ijet_2nd_hardest_btag < 0) {dEtaFwdJet2BJet = -1;}
+    else {dEtaFwdJet2BJet = fabs( vLightJets.at(ijet_forward).eta() - vLooseBTagJets.at(ijet_2nd_hardest_btag).eta() );}
+
+	//--- Var7 : dEta between forward light jet and closet lepton (angular dist.)
+    dEtaFwdJetClosestLep = 0; tmp = 999;
+    for(int ilep=0; ilep<vTightLeptons.size(); ilep++)
+    {
+        if( fabs(vLightJets.at(ijet_forward).eta() - vTightLeptons.at(ilep).eta() ) < tmp) {dEtaFwdJetClosestLep = fabs(vLightJets.at(ijet_forward).eta() - vTightLeptons.at(ilep).eta() ); tmp = dEtaFwdJetClosestLep;}
+    }
+
+    //--- Var8 : dPhi of highest pT SS lepton pair (?)
+    dPhiHighestPtSSPair = fabs(Phi_MPi_Pi(vTightLeptons.at(0).phi() - vTightLeptons.at(1).phi() ) );
+
+    //--- Var9 : min. dR between any 2 leptons
+    minDRll = 999;
+	TLorentzVector lep1, lep2, lep3;
+	lep1.SetPtEtaPhiE(vTightLeptons.at(0).pt(), vTightLeptons.at(0).eta(), vTightLeptons.at(0).phi(), vTightLeptons.at(0).E() );
+	lep2.SetPtEtaPhiE(vTightLeptons.at(1).pt(), vTightLeptons.at(1).eta(), vTightLeptons.at(1).phi(), vTightLeptons.at(1).E() );
+	minDRll = lep1.DeltaR(lep2);
+
+
+    //--- Var10 : pT of 3rd hardest lepton
+    Lep3Pt = vTightLeptons.at(1).pt();
+
+
+    //--- Fill additionnal variables, used for control only
+    lep1Pt = vFakeableLeptons.at(0).pt(); lep2Pt = vFakeableLeptons.at(1).pt();
+    hardestBjetPt = vLooseBTagJets.at(ijet_hardest_btag).pt(); hardestBjetEta = vLooseBTagJets.at(ijet_hardest_btag).eta();
+    fwdJetPt = vLooseBTagJets.at(ijet_forward).pt();
+
+    //--------------------------
+    // PRINTOUT OF INFOS & INPUT VARS
+    //--------------------------
+
+    bool do_printout = false;
+
+    if(do_printout)
+    {
+        cout<<endl<<endl<<BOLD(FBLU("------------ EVENT -----------"))<<endl;
+
+        cout<<FYEL("--- Tagged Jets : ")<<endl;
+        for(int ijet=0; ijet<vLooseBTagJets.size(); ijet++)
+        {
+            cout<<ijet<<" pT = "<<vLooseBTagJets.at(ijet).pt()<<" / eta = "<<vLooseBTagJets.at(ijet).eta()<<" / phi = "<<vLooseBTagJets.at(ijet).phi()<<" / CSV = "<<vLooseBTagJets.at(ijet).CSVv2()<<endl;
+        }
+        cout<<"Hardest & 2nd hardest jets are "<<ijet_hardest_btag<<", "<<ijet_2nd_hardest_btag<<endl<<endl;
+
+        cout<<FYEL("--- Forward Jets : ")<<endl;
+        for(int ijet=0; ijet<vLightJets.size(); ijet++)
+        {
+            cout<<ijet<<" pT = "<<vLightJets.at(ijet).pt()<<" / eta = "<<vLightJets.at(ijet).eta()<<" / phi = "<<vLightJets.at(ijet).phi()<<" / CSV = "<<vLightJets.at(ijet).CSVv2()<<endl;
+        }
+        cout<<"Forwardest jet is "<<ijet_forward<<endl<<endl;
+
+        cout<<FYEL("--- Selected Leptons : ")<<endl;
+        for(int ilep=0; ilep<vTightLeptons.size(); ilep++)
+        {
+            cout<<ilep<<" pT = "<<vTightLeptons.at(ilep).pt()<<" / eta = "<<vTightLeptons.at(ilep).eta()<<" / phi = "<<vTightLeptons.at(ilep).phi()<<" : Charge = "<<vTightLeptons.at(ilep).charge()<<endl;
+        }
+
+        cout<<FYEL("--- Input variables : ")<<endl;
+
+        cout<<"nJet25 = "<<nJet25<<endl;
+        cout<<"maxEtaJet25 = "<<maxEtaJet25<<endl;
+        cout<<"lepCharge = "<<lepCharge<<endl;
+        cout<<"nJetEta1 = "<<nJetEta1 <<endl;
+        cout<<"dEtaFwdJetBJet = "<<dEtaFwdJetBJet<<endl;
+        cout<<"dEtaFwdJet2BJet = "<<dEtaFwdJet2BJet<<endl;
+        cout<<"dEtaFwdJetClosestLep = "<<dEtaFwdJetClosestLep<<endl;
+        cout<<"dPhiHighestPtSSPair = "<<dPhiHighestPtSSPair<<endl;
+        cout<<"minDRll = "<<minDRll<<endl;
+        cout<<"Lep3Pt = "<<Lep3Pt<<endl;
+
+        cout<<"------------------"<<endl<<endl;
+    }
+
+
+    //--- COMPUTE BDT OUTPUT from weight files
+    signal_2lss_TT_MVA   = mva_2lss_tt->EvaluateMVA("BDTG method");
+    signal_2lss_TTV_MVA   = mva_2lss_ttV->EvaluateMVA("BDTG method");
+    // ======================================================================================================
+
+
+    fillOutputTree();
+    // cout<<BOLD(FYEL("TREE FILLED !"))<<endl;
+}
+
+
+
+
+
+
+
+/*
 void TTbarHiggsMultileptonAnalysis::ThreeLeptonSelection_ApplicationFakes(int evt)
 {
     if(weight==0)         return; // For data not passing the relevant trigger, clean up the histograms from events with weight 0)
@@ -2007,6 +2901,15 @@ void TTbarHiggsMultileptonAnalysis::ThreeLeptonSelection_ApplicationFakes(int ev
 
     // if (_printLHCO_RECO) PrintLHCOforMadweight_RECO(evt);
 }
+*/
+
+
+
+
+
+
+
+
 
 // # ######################################################################
 // #                  _             _                  _                  #
@@ -2039,9 +2942,45 @@ void TTbarHiggsMultileptonAnalysis::initializeOutputTree()
 
     tOutput->Branch("mc_event",&mc_event,"mc_event/I");
     tOutput->Branch("weight",&weight,"weight/F");
+    tOutput->Branch("mc_weight",&mc_weight,"mc_weight/F");
+    tOutput->Branch("is_trigger",&is_trigger,"is_trigger/B");
+
+	//--- Categories & MVA
+	tOutput->Branch("is_3l_THQ_SR",&is_3l_THQ_SR,"is_3l_THQ_SR/B");
+	tOutput->Branch("is_3l_THQ_Training",&is_3l_THQ_Training,"is_3l_THQ_Training/B");
+	tOutput->Branch("is_3l_Z_CR",&is_3l_Z_CR,"is_3l_Z_CR/B");
+    tOutput->Branch("is_2l_THQ_SR",&is_2l_THQ_SR,"is_2l_THQ_SR/B");
+    tOutput->Branch("is_2l_THQ_Training",&is_2l_THQ_Training,"is_2l_THQ_Training/B");
+	tOutput->Branch("is_2l_EMU_CR",&is_2l_EMU_CR,"is_2l_EMU_CR/B");
+
+	tOutput->Branch("signal_3l_TT_MVA",&signal_3l_TT_MVA,"signal_3l_TT_MVA/F");
+	tOutput->Branch("signal_3l_TTV_MVA",&signal_3l_TTV_MVA,"signal_3l_TTV_MVA/F");
+    tOutput->Branch("signal_2lss_TT_MVA",&signal_2lss_TT_MVA,"signal_2lss_TT_MVA/F");
+    tOutput->Branch("signal_2lss_TTV_MVA",&signal_2lss_TTV_MVA,"signal_2lss_TTV_MVA/F");
+
+    //-- Input variables from tHq2016 analysis
+    tOutput->Branch("nJet25",&nJet25,"nJet25/F");
+    tOutput->Branch("maxEtaJet25",&maxEtaJet25,"maxEtaJet25/F");
+    tOutput->Branch("lepCharge",&lepCharge,"lepCharge/F");
+    tOutput->Branch("nJetEta1",&nJetEta1,"nJetEta1/F");
+    tOutput->Branch("dEtaFwdJetBJet",&dEtaFwdJetBJet,"dEtaFwdJetBJet/F");
+    tOutput->Branch("dEtaFwdJet2BJet",&dEtaFwdJet2BJet,"dEtaFwdJet2BJet/F");
+    tOutput->Branch("dEtaFwdJetClosestLep",&dEtaFwdJetClosestLep,"dEtaFwdJetClosestLep/F");
+    tOutput->Branch("dPhiHighestPtSSPair",&dPhiHighestPtSSPair,"dPhiHighestPtSSPair/F");
+    tOutput->Branch("minDRll",&minDRll,"minDRll/F");
+    tOutput->Branch("Lep3Pt",&Lep3Pt,"Lep3Pt/F");
+
+    tOutput->Branch("inv_mll",&inv_mll,"inv_mll/F");
+    tOutput->Branch("hardestBjetPt",&hardestBjetPt,"hardestBjetPt/F");
+    tOutput->Branch("hardestBjetEta",&hardestBjetEta,"hardestBjetEta/F");
+    tOutput->Branch("fwdJetPt",&fwdJetPt,"fwdJetPt/F");
+    tOutput->Branch("lep1Pt",&lep1Pt,"lep1Pt/F");
+    tOutput->Branch("lep2Pt",&lep2Pt,"lep2Pt/F");
+    tOutput->Branch("lep3Pt",&lep3Pt,"lep3Pt/F");
+
+
     tOutput->Branch("weightfake",&weightfake,"weightfake/F");
     tOutput->Branch("weightflip",&weightflip,"weightflip/F");
-    tOutput->Branch("mc_weight",&mc_weight,"mc_weight/F");
     tOutput->Branch("weight_scale_muF0p5",&weight_scale_muF0p5,"weight_scale_muF0p5/F");
     tOutput->Branch("weight_scale_muF2",&weight_scale_muF2,"weight_scale_muF2/F");
     tOutput->Branch("weight_scale_muR0p5",&weight_scale_muR0p5,"weight_scale_muR0p5/F");
@@ -2051,42 +2990,11 @@ void TTbarHiggsMultileptonAnalysis::initializeOutputTree()
     tOutput->Branch("weights_pdf","std::vector<float>",&weights_pdf);
     tOutput->Branch("ids_pdf","std::vector<std::string>",&ids_pdf);
 
+
     tOutput->Branch("PV_weight",&weight_PV,"PV_weight/F");
-    tOutput->Branch("mc_3l_category",&mc_3l_category,"mc_3l_category/I");
-    tOutput->Branch("mc_ttbar_decay",&mc_ttbar_decay,"mc_ttbar_decay/I");
-    tOutput->Branch("mc_boson_decay",&mc_boson_decay,"mc_boson_decay/I");
     tOutput->Branch("mc_ttZhypAllowed",&mc_ttZhypAllowed,"mc_ttZhypAllowed/I");
-    tOutput->Branch("mc_nJets25",&mc_nJets25,"mc_nJets25/I");
-    tOutput->Branch("mc_nBtagJets25",&mc_nBtagJets25,"mc_nBtagJets25/I");
 
     tOutput->Branch("catJets",&catJets,"catJets/I");
-
-    //-- NB : coded as floats bc treated as any other variable in analysis code (floats) !
-    tOutput->Branch("is_3l_THQ_SR",&is_3l_THQ_SR,"is_3l_THQ_SR/F");
-    tOutput->Branch("is_3l_THQ_Training",&is_3l_THQ_Training,"is_3l_THQ_Training/F");
-
-    tOutput->Branch("cat_HtoWW",&cat_HtoWW,"cat_HtoWW/B");
-    tOutput->Branch("cat_HtoZZ",&cat_HtoZZ,"cat_HtoZZ/B");
-    tOutput->Branch("cat_Htott",&cat_Htott,"cat_Htott/B");
-
-    tOutput->Branch("is_trigger",&is_trigger,"is_trigger/B");
-
-    tOutput->Branch("max_Lep_eta", &max_Lep_eta, "max_Lep_eta/F");
-    tOutput->Branch("MT_met_lep1",&MT_met_lep1,"MT_met_lep1/F");
-    tOutput->Branch("nJet25_Recl",&nJet25_Recl,"nJet25_Recl/F");
-    tOutput->Branch("mindr_lep1_jet",&mindr_lep1_jet,"mindr_lep1_jet/F");
-    tOutput->Branch("mindr_lep2_jet",&mindr_lep2_jet,"mindr_lep2_jet/F");
-    tOutput->Branch("LepGood_conePt0",&LepGood_conePt0,"LepGood_conePt0/F");
-    tOutput->Branch("LepGood_conePt1",&LepGood_conePt1,"LepGood_conePt1/F");
-    tOutput->Branch("met",&met,"met/F");
-    tOutput->Branch("mhtJet25_Recl",&mhtJet25_Recl,"mhtJet25_Recl/F");
-    tOutput->Branch("avg_dr_jet",&avg_dr_jet,"avg_dr_jet/F");
-
-    // tOutput->Branch("signal_2lss_TT_MVA",&signal_2lss_TT_MVA,"signal_2lss_TT_MVA/F");
-    // tOutput->Branch("signal_2lss_TTV_MVA",&signal_2lss_TTV_MVA,"signal_2lss_TTV_MVA/F");
-
-    tOutput->Branch("signal_3l_TT_MVA",&signal_3l_TT_MVA,"signal_3l_TT_MVA/F");
-    tOutput->Branch("signal_3l_TTV_MVA",&signal_3l_TTV_MVA,"signal_3l_TTV_MVA/F");
 
     tOutput->Branch("multilepton_Lepton1_Id",               &multilepton_Lepton1_Id,                "multilepton_Lepton1_Id/I");
     tOutput->Branch("multilepton_Lepton1_P4",               "TLorentzVector",                       &multilepton_Lepton1_P4);
@@ -2255,20 +3163,10 @@ void TTbarHiggsMultileptonAnalysis::initializeOutputTree()
     tOutput->Branch("multilepton_mHT",&multilepton_mHT,"multilepton_mHT/F");
     tOutput->Branch("multilepton_Ptot","TLorentzVector",&multilepton_Ptot);
 
-    //-- Input variables from tHq2016 analysis
-    tOutput->Branch("nJet25",&nJet25,"nJet25/F");
-    tOutput->Branch("maxEtaJet25",&maxEtaJet25,"maxEtaJet25/F");
-    tOutput->Branch("lepCharge",&lepCharge,"lepCharge/F");
-    tOutput->Branch("nJetEta1",&nJetEta1,"nJetEta1/F");
-    tOutput->Branch("dEtaFwdJetBJet",&dEtaFwdJetBJet,"dEtaFwdJetBJet/F");
-    tOutput->Branch("dEtaFwdJet2BJet",&dEtaFwdJet2BJet,"dEtaFwdJet2BJet/F");
-    tOutput->Branch("dEtaFwdJetClosestLep",&dEtaFwdJetClosestLep,"dEtaFwdJetClosestLep/F");
-    tOutput->Branch("dPhiHighestPtSSPair",&dPhiHighestPtSSPair,"dPhiHighestPtSSPair/F");
-    tOutput->Branch("minDRll",&minDRll,"minDRll/F");
-    tOutput->Branch("Lep3Pt",&Lep3Pt,"Lep3Pt/F");
-
     return;
 }
+
+
 
 void TTbarHiggsMultileptonAnalysis::fillOutputTree()
 {
@@ -2708,7 +3606,6 @@ void TTbarHiggsMultileptonAnalysis::fillOutputTree()
                 || (multilepton_Lepton2_Id==-multilepton_Lepton3_Id))
             mc_ttZhypAllowed = 1; }
 
-    mc_nJets25 = vSelectedJets.size();
 
     tOutput->Fill();
 }

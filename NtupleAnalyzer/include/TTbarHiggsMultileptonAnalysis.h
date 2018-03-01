@@ -49,11 +49,36 @@ class TTbarHiggsMultileptonAnalysis
         TTbarHiggsMultileptonAnalysis(TString inputFileName, TString sampleName, TString treeName, TString outputFileName, bool isdata, bool doSystCombine, float xsec, float lumi, int nowe, int nmax); //Constructor
         ~TTbarHiggsMultileptonAnalysis(); //Destructor
 
-        void ThreeLeptonSelection_THQ3l_SR(int evt); //NEW
-        void ThreeLeptonSelection_THQ3l_Training(int evt); //NEW
+        //-- 3l selections
+        void ThreeLeptonSelection_THQ3l_SR(int evt);
+        void ThreeLeptonSelection_THQ3l_Training(int evt);
+        void ThreeLeptonSelection_THQ3l_Z_CR(int evt);
 
-        void ThreeLeptonSelection_ApplicationFakes(int evt);
+        //-- 2l selections
+        void TwoLeptonSelection_THQ2l_SR(int evt);
+        void TwoLeptonSelection_THQ2l_Training(int evt);
+        void TwoLeptonSelection_THQ2l_EMU_OS_CR(int evt);
 
+        // void ThreeLeptonSelection_ApplicationFakes(int evt);
+
+		void Init();
+		void InitEvent();
+		void InitTree();
+		void Loop();
+
+		void initializeOutputTree();
+		void selectBjets(std::string, int*, int*, bool);
+		void fillOutputTree();
+		void FillJetInfoOutputTree(int*, int, TLorentzVector*, TLorentzVector, float*, float, float*, float*, float, float*, float*, float, float, float);
+        void Reinit_Categories();
+
+		float Phi_0_2Pi(float phi);
+		float Phi_MPi_Pi(float phi);
+		float GetDeltaR(float eta1,float phi1,float eta2,float phi2);
+		//NEW
+		// TString Convert_Number_To_TString(double, int/*=10*/)
+		// double Convert_TString_To_Number(TString)
+		// bool Check_File_Existence(const TString&)
 
         TChain *fChain;   //!pointer to the analyzed TTree or TChain
 
@@ -78,58 +103,42 @@ class TTbarHiggsMultileptonAnalysis
 
         //New categories
         std::vector<Jet>	  vLooseBTagJets; //Loose-CSV jets (+pT/eta cuts)
-        std::vector<Jet>      vLightJets; //Non-loose CSV jets (+pT/eta cuts)
+		std::vector<Jet>      vLightJets; //Non-loose CSV jets
+		std::vector<Jet>      vLightJets_FwdPtCut; //Non-loose CSV jets (with pT>40 cut on forward jets, SR)
         std::vector<Lepton>   vFakeableLeptons;
         std::vector<Lepton>   vLooseLeptons;
         std::vector<Lepton>   vTightLeptons;
-
 
         int nLooseBJets;
         int nMediumBJets;
         int nForwardJets;
 
-        bool is_emu_TT_CR;
 
-        bool is_3l_THQ_SR;    // THQ 3l analysis //NEW
-        bool is_3l_THQ_Training;    // THQ 3l analysis //NEW
+        //-- NB : coded in floats, because treated as any other variable in Analysis code (floats)
+        //-- NB2 : if add new cat., need to add it in func Reinit_Categories()
+        bool is_3l_THQ_SR;    // Category : training events tHQ3l analysis
+        bool is_3l_THQ_Training; //Category : training events tHQ3l analysis
+        bool is_3l_Z_CR;
         bool is_3l_AppFakes_SR;
 
-
-        // for sub-categorisation
-        bool cat_HtoWW, cat_HtoZZ, cat_Htott;
-
-        int n_tight;
+        bool is_2l_THQ_SR;
+        bool is_2l_THQ_Training;
+        bool is_2l_EMU_CR;
 
         bool is_trigger;
-
-        float zero_btagSF;
-        float zero_btagSF_up;
-        float zero_btagSF_do;
-
-        void Init();
-        void InitEvent();
-        void InitTree();
-        void Loop();
-
-        void initializeOutputTree();
-        void selectBjets(std::string, int*, int*, bool);
-        void fillOutputTree();
-        void FillJetInfoOutputTree(int*, int, TLorentzVector*, TLorentzVector, float*, float, float*, float*, float, float*, float*, float, float, float);
-
-
-        float Phi_0_2Pi(float phi);
-        float Phi_MPi_Pi(float phi);
-        float GetDeltaR(float eta1,float phi1,float eta2,float phi2);
-        //NEW
-        // TString Convert_Number_To_TString(double, int/*=10*/)
-        // double Convert_TString_To_Number(TString)
-        // bool Check_File_Existence(const TString&)
-
-
 
         TTree* tOutput;
         long int mc_event;
 
+
+        //-- NB : input variables declared in SignalExtractionMVA.h
+        //Additionnal variables, for control plots
+        float lep1Pt, lep2Pt, lep3Pt, inv_mll, hardestBjetPt, hardestBjetEta, fwdJetPt;
+
+
+
+
+        //--- Lots of variables, used for MEM computation
         BTagCalibrationX       calib;
         BTagCalibrationXReader reader;
 
@@ -148,7 +157,7 @@ class TTbarHiggsMultileptonAnalysis
 
         Float_t weight_csv_up, weight_csv_down;
 
-        Int_t mc_3l_category, mc_ttbar_decay, mc_boson_decay, mc_ttZhypAllowed, mc_nJets25, mc_nBtagJets25, mc_nMediumBtagJets25, mc_nNonBtagJets25;
+        Int_t mc_ttZhypAllowed;
         Int_t catJets;
 
         Int_t           multilepton_Lepton1_Id,             multilepton_Lepton2_Id,                 multilepton_Lepton3_Id,             multilepton_Lepton4_Id;
@@ -196,18 +205,6 @@ class TTbarHiggsMultileptonAnalysis
         Double_t multilepton_mETcov01;
         Double_t multilepton_mETcov10;
         Double_t multilepton_mETcov11;
-
-        //NEW -- input variables for tHq2016 analysis -- in SinglaExtractionMVA.cxx
-        // Double_t nJet25;
-        // Double_t MaxEtaJet25;
-        // Double_t totCharge;
-        // Double_t nJetEta1 ;
-        // Double_t detaFwdJetBJet;
-        // Double_t detaFwdJet2BJet;
-        // Double_t detaFwdJetClosestLep;
-        // Double_t dphiHighestPtSPPair;
-        // Double_t minDRll;
-        // Double_t Lep3Pt;
 
 
     private:

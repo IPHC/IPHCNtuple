@@ -62,10 +62,8 @@ do
   #if [[ $xsec == "" ]]; then
     #xsec=1
   #fi
-  fl=$(echo $sample | cut -c1-1)
-  fl2=$(echo $sample | cut -c1-11)
   datamc=""
-  if [[ $fl == "J" ]]; then
+  if [[ $sample == *Run2016* ]]; then
     isdata=1
     datamc="DATA"
     nmax=${nmax}
@@ -75,13 +73,14 @@ do
     nmax=${nmax}
   fi
   
-  isdata=1 # --- FIXME ----
+  #isdata=1
    
   fout=$(echo ${runName}/${dataset}/${line}_${jidx} | sed 's%.txt%%g')
   lout=$(echo ${line}_${jidx} | sed 's%.txt%%g')
 
 # echo "${dataset}: $noe $xsec"
   echo "${fpath}${line}"
+  echo "isdata = " ${isdata}
  
  # qsub -N ${dir} -q ${que} -o ${logName}/${sample}.log -j oe single_batch_job.sh \
 #-v dout=${dout},line2=${fpath}${line},fout=${fout},noe=${noe},xsec=${xsec},isdata=${isdata},sample=${sample},nmax=${nmax},dout_f=${dout_f}
