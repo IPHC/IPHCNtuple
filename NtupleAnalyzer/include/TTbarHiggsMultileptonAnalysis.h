@@ -127,6 +127,10 @@ class TTbarHiggsMultileptonAnalysis
 
         bool is_trigger;
 
+		//3l : 0 uuu, 1 uue, 2 eeu, 3 eee
+		//2l : 0 uu, 1 eu+ue, 2 ee
+		float channel;
+
         TTree* tOutput;
         long int mc_event;
 

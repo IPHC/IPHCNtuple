@@ -10,6 +10,7 @@ if [[ ${jName} == "" ]]; then
 fi
 
 que="cms"
+#que="cms_local_mdm" #local queue
 
 export HOME=$(pwd)
 
@@ -49,8 +50,8 @@ do
   sample=$(echo $line | sed 's%.txt%%g')
   dataset=$(echo $sample | sed 's%_ID..*%%g')
   if [[ ! -d ${runName}/${dataset} ]]; then
-    mkdir ${runName}
-    mkdir ${runName}/${dataset}  
+    #mkdir ${runName} #removed
+    #mkdir ${runName}/${dataset}  
     mkdir ${dout_f}/${runName}/${dataset}
   fi
   #linexsec=$(grep $dataset $fxsec)

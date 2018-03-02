@@ -72,36 +72,6 @@ jesTotal = new JetCorrectionUncertainty(*(new JetCorrectorParameters("/home-pbs/
 ```
 
 
-```
-cd /home-pbs/username/MyAnalysis/CMSSW_8_0_20/src/ttH/NtupleProducer/test
-```
-
-
-* **single_batch_job.zsh** - idem : 
-
-```
-...
-export X509_USER_PROXY=/home-pbs/ntonon/proxy/x509up_u8066
-...
-cd /home-pbs/ntonon/tHq/CMSSW_8_0_20/src/
-...
-```
-
-* **run_batch.zsh** - idem : 
-
-```
-...
-cp /tmp/x509up_u8066 /home-pbs/ntonon/proxy
-...
-dout="/home-pbs/ntonon/tHq/CMSSW_8_0_20/src/ttH/NtupleProducer/test"
-dout_f="/opt/sbg/scratch1/cms/ntonon/ntuples_prod_walrus_patch2/"
-...
-fdir=$(ls -d lists_priority*) //Modify dir. name, depending on the name of the dir containing the list of FlatTree files
-...
-isdata=0 #or 1
-...
-```
-
 
 ----  Produce list of FlatTree files on which to run
 
@@ -115,7 +85,7 @@ root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/XXX/output_*.roo
 ```
 
 
-* **split_into_lists.zsh** - FOR BATCH, modify the following lines with your own proxy, username, directory :
+* **split_into_lists.zsh** - Will automatically prepare lists of FlatTree files on which to run, based on content of FlatTree dir. and maximum nof files per job :
 
 ```
 ...
@@ -135,6 +105,49 @@ Then you could e.g. copy the lists for samples you're interested in in a new dir
 ((NB : could also list the FlatTree files yourself, and change the directory in which to look for in run_batch.zsh accordingly (cf. above) ))
 
 
+
+```
+cd /home-pbs/username/MyAnalysis/CMSSW_8_0_20/src/ttH/NtupleProducer/test
+```
+
+
+
+* **single_batch_job.zsh** - this is the code taking care of submitting a single job : 
+
+```
+...
+export X509_USER_PROXY=/home-pbs/ntonon/proxy/x509up_u8066
+...
+cd /home-pbs/ntonon/tHq/CMSSW_8_0_20/src/
+...
+```
+
+
+* **Move_File_ToGrid.sh** - after a job has been completed, this script is called to move the output to the grid (to avoid storing Ntuples on scratch1, which is an un-safe disk not meant for storing) - modify  : 
+
+```
+...
+gfal-mkdir srm://sbgse1.in2p3.fr:8446/dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/$2 #Grid path where to copy outputs
+gfal-copy -f $1 srm://sbgse1.in2p3.fr:8446/dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/$2/. #Grid path where to copy outputs
+...
+```
+
+
+
+* **run_batch.zsh** - idem : 
+
+```
+...
+cp /tmp/x509up_u8066 /home-pbs/ntonon/proxy
+...
+dout="/home-pbs/ntonon/tHq/CMSSW_8_0_20/src/ttH/NtupleProducer/test" #local dir 
+dout_f="/opt/sbg/scratch1/cms/ntonon/ntuples_prod_walrus_patch2/" #output dir. (NB : only scratch1 is writable by local batch)
+...
+fdir=$(ls -d lists_priority*) //Can modify dir. containing list of files on which to run (e.g. to run on sub-list, ...)
+...
+```
+
+
 ### Run
 
 *Interactively*
@@ -149,7 +162,7 @@ Then you could e.g. copy the lists for samples you're interested in in a new dir
 *Launch jobs*
 
 ```
-./run_batch.zsh
+./run_batch.zsh [prod_name]
 ```
 
 
@@ -159,14 +172,27 @@ Then you could e.g. copy the lists for samples you're interested in in a new dir
 ```
 cd /home-pbs/username/MyAnalysis/CMSSW_8_0_20/src/ttH/NtupleAnalyzer/test
 ```
-* **table.txt** - add list of samples, with cross section (pb-1) and sum of weights of events from FlatTrees (SWE, to account for efficiency from skimming), e.g. : 
+* **table.txt** - add list of samples, with cross section (pb-1) and sum of weights of events from FlatTrees (SWE, to account for efficiency from skimming, see below), e.g. : 
 
 ```
 ...
 THQ_Hincl_13TeV-madgraph-pythia8_TuneCUETP8M1_RunIISummer16MiniAODv2_PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_v1_MINIAODSIM_0000       0.7927       3495652
 ...
 ```
-(NB : can get SWE infos from [IPHCFlatTree twiki](https://twiki.cern.ch/twiki/bin/view/CMS/IPHCFlatTreeProduction) )
+
+NB : can get SWE infos from [IPHCFlatTree twiki](https://twiki.cern.ch/twiki/bin/view/CMS/IPHCFlatTreeProduction) ) if using exact same FlatTrees.
+
+The safer option, is to re-compute the SWE of your FlatTree files yourself (it is different from the event number, because some events have weight -1). To do this, compile and execute the code **Get_SumWeightEvents_FlatTrees.cxx** . It will ask you for the complete path to the FlatTree files of your sample, and then the total number of FlatTree files for this sample. Example : 
+
+```
+./a.out #execute the compiled code
+
+#Enter complete path to files
+/dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/Walrus-patch2/TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2_PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_v1_MINIAODSIM/180126_150054/0000
+
+#Enter number of files
+98
+```
 
 
 
@@ -174,10 +200,10 @@ THQ_Hincl_13TeV-madgraph-pythia8_TuneCUETP8M1_RunIISummer16MiniAODv2_PUMoriond17
 
 ```
 ...
-fpath="/opt/sbg/scratch1/cms/ntonon/ntuples_prod_walrus_patch2/toytHq/"
+fpath="/dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/" #Here, the NTProducer files were stored on the grid
 ...
 ```
-then run the script to produce the lists : 
+then run the script to produce automatically the lists of files on which to run, based on directory content and maximum nof files per job : 
 ```
 ./split_into_lists.zsh
 ```
@@ -190,6 +216,16 @@ then run the script to produce the lists :
 export X509_USER_PROXY=/home-pbs/ntonon/proxy/x509up_u8066
 
 cd /home-pbs/ntonon/tHq/CMSSW_8_0_20/src/
+...
+```
+
+
+* **Move_File_ToGrid.sh** - after a job has been completed, this script is called to move the output to the grid (to avoid storing Ntuples on scratch1, which is an un-safe disk not meant for storing) - modify  : 
+
+```
+...
+gfal-mkdir srm://sbgse1.in2p3.fr:8446/dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/$2 #Grid path where to copy outputs
+gfal-copy -f $1 srm://sbgse1.in2p3.fr:8446/dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/$2/. #Grid path where to copy outputs
 ...
 ```
 
@@ -227,6 +263,5 @@ fdir=$(ls -d lists_NameOfYourList) //Name of the directory containing the list o
 *Launch jobs*
 
 ```
-./run_batch.zsh
+./run_batch.zsh [prod_name]
 ```
-

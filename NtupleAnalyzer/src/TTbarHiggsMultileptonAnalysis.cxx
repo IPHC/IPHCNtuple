@@ -1,6 +1,8 @@
 //ThreeLeptonSelection_THQ3l
 //TwoLeptonSelection_THQ2l
 
+//Weight files (Fake rate, ...) --> /opt/sbg/scratch1/cms/TTH/weight/...
+
 #include "../include/TTbarHiggsMultileptonAnalysis.h"
 #include "TSystem.h"
 #include "SignalExtractionMVA.cxx"
@@ -175,6 +177,8 @@ void TTbarHiggsMultileptonAnalysis::InitEvent()
     signal_2lss_TT_MVA = 0; signal_2lss_TTV_MVA = 0;
 
     lep1Pt = 0; lep2Pt = 0; lep3Pt = 0; inv_mll = 0; hardestBjetPt = 0; hardestBjetEta = 0; fwdJetPt = 0;
+
+	channel = -1;
 
     return;
 }
@@ -623,6 +627,12 @@ void TTbarHiggsMultileptonAnalysis::ThreeLeptonSelection_THQ3l_SR(int evt)
 //---------------------------------------------------------------------------
 // ##################################################################################################################################
 
+    //--- Determine leptonic channel of event
+    if(fabs(vTightLeptons.at(0).id())+fabs(vTightLeptons.at(1).id())+fabs(vTightLeptons.at(2).id()) == 39) {channel = 0;} //uuu
+    else if(fabs(vTightLeptons.at(0).id())+fabs(vTightLeptons.at(1).id())+fabs(vTightLeptons.at(2).id()) == 37) {channel = 1;} //uue
+    else if(fabs(vTightLeptons.at(0).id())+fabs(vTightLeptons.at(1).id())+fabs(vTightLeptons.at(2).id()) == 35) {channel = 2;} //eeu
+    else if(fabs(vTightLeptons.at(0).id())+fabs(vTightLeptons.at(1).id())+fabs(vTightLeptons.at(2).id()) == 33) {channel = 3;} //eee
+
     // ##########
     // # MET LD #
     // ##########
@@ -959,6 +969,14 @@ void TTbarHiggsMultileptonAnalysis::ThreeLeptonSelection_THQ3l_Training(int evt)
 
 
 // ##################################################################################################################################
+
+    //--- Determine leptonic channel of event
+    if(fabs(vTightLeptons.at(0).id())+fabs(vTightLeptons.at(1).id())+fabs(vTightLeptons.at(2).id()) == 39) {channel = 0;} //uuu
+    else if(fabs(vTightLeptons.at(0).id())+fabs(vTightLeptons.at(1).id())+fabs(vTightLeptons.at(2).id()) == 37) {channel = 1;} //uue
+    else if(fabs(vTightLeptons.at(0).id())+fabs(vTightLeptons.at(1).id())+fabs(vTightLeptons.at(2).id()) == 35) {channel = 2;} //eeu
+    else if(fabs(vTightLeptons.at(0).id())+fabs(vTightLeptons.at(1).id())+fabs(vTightLeptons.at(2).id()) == 33) {channel = 3;} //eee
+
+
     float jet_px = 0, jet_py = 0, lepton_px = 0, lepton_py = 0, tau_px = 0, tau_py = 0, MHT = 0, met_ld = 0;
 
     TLorentzVector jetp4;
@@ -1298,6 +1316,13 @@ void TTbarHiggsMultileptonAnalysis::ThreeLeptonSelection_THQ3l_Z_CR(int evt)
 
 //---------------------------------------------------------------------------
 // ##################################################################################################################################
+
+    //--- Determine leptonic channel of event
+    if(fabs(vTightLeptons.at(0).id())+fabs(vTightLeptons.at(1).id())+fabs(vTightLeptons.at(2).id()) == 39) {channel = 0;} //uuu
+    else if(fabs(vTightLeptons.at(0).id())+fabs(vTightLeptons.at(1).id())+fabs(vTightLeptons.at(2).id()) == 37) {channel = 1;} //uue
+    else if(fabs(vTightLeptons.at(0).id())+fabs(vTightLeptons.at(1).id())+fabs(vTightLeptons.at(2).id()) == 35) {channel = 2;} //eeu
+    else if(fabs(vTightLeptons.at(0).id())+fabs(vTightLeptons.at(1).id())+fabs(vTightLeptons.at(2).id()) == 33) {channel = 3;} //eee
+
 
     // ##########
     // # MET LD #
@@ -1656,6 +1681,12 @@ void TTbarHiggsMultileptonAnalysis::TwoLeptonSelection_THQ2l_SR(int evt)
 //---------------------------------------------------------------------------
 // ##################################################################################################################################
 
+    //--- Determine leptonic channel of event
+    if(fabs(vTightLeptons.at(0).id())+fabs(vTightLeptons.at(1).id()) == 26) {channel = 0;} //uu
+    else if(fabs(vTightLeptons.at(0).id())+fabs(vTightLeptons.at(1).id()) == 24) {channel = 1;} //ue+eu
+    else if(fabs(vTightLeptons.at(0).id())+fabs(vTightLeptons.at(1).id()) == 22) {channel = 2;} //ee
+
+
     // ##########
     // # MET LD #
     // ##########
@@ -1979,6 +2010,11 @@ void TTbarHiggsMultileptonAnalysis::TwoLeptonSelection_THQ2l_Training(int evt)
 
 //---------------------------------------------------------------------------
 // ##################################################################################################################################
+
+    //--- Determine leptonic channel of event
+    if(fabs(vTightLeptons.at(0).id())+fabs(vTightLeptons.at(1).id()) == 26) {channel = 0;} //uu
+    else if(fabs(vTightLeptons.at(0).id())+fabs(vTightLeptons.at(1).id()) == 24) {channel = 1;} //ue+eu
+    else if(fabs(vTightLeptons.at(0).id())+fabs(vTightLeptons.at(1).id()) == 22) {channel = 2;} //ee
 
     // ##########
     // # MET LD #
@@ -2335,6 +2371,11 @@ void TTbarHiggsMultileptonAnalysis::TwoLeptonSelection_THQ2l_EMU_OS_CR(int evt)
 
 //---------------------------------------------------------------------------
 // ##################################################################################################################################
+
+    //--- Determine leptonic channel of event
+    if(fabs(vTightLeptons.at(0).id())+fabs(vTightLeptons.at(1).id()) == 26) {channel = 0;} //uu
+    else if(fabs(vTightLeptons.at(0).id())+fabs(vTightLeptons.at(1).id()) == 24) {channel = 1;} //ue+eu
+    else if(fabs(vTightLeptons.at(0).id())+fabs(vTightLeptons.at(1).id()) == 22) {channel = 2;} //ee
 
     // ##########
     // # MET LD #
@@ -2943,7 +2984,8 @@ void TTbarHiggsMultileptonAnalysis::initializeOutputTree()
     tOutput->Branch("mc_event",&mc_event,"mc_event/I");
     tOutput->Branch("weight",&weight,"weight/F");
     tOutput->Branch("mc_weight",&mc_weight,"mc_weight/F");
-    tOutput->Branch("is_trigger",&is_trigger,"is_trigger/B");
+	tOutput->Branch("is_trigger",&is_trigger,"is_trigger/B");
+	tOutput->Branch("channel",&channel,"channel/F");
 
 	//--- Categories & MVA
 	tOutput->Branch("is_3l_THQ_SR",&is_3l_THQ_SR,"is_3l_THQ_SR/B");
