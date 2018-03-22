@@ -14,10 +14,8 @@ void fillQFhistos(TFile* fileFR)
     return;
 }
 
-double get_QF_wgt_2l( std::vector<double> leptonsPts,
-                      std::vector<double> leptonsEtas)
+/*double get_QF_weight( std::vector<double> leptonsPts, std::vector<double> leptonsEtas)
 {
-
     double weight    = 1;
     double weight_QF = 0;
 
@@ -37,5 +35,25 @@ double get_QF_wgt_2l( std::vector<double> leptonsPts,
 
     weight    = weight * weight_QF;
     return weight;
+}*/
+
+double get_QF_weight(float l1pt, float l1eta, int l1pdgId, float l2pt, float l2eta, int l2pdgId)
+{
+    double weight = 0;    
+    
+    if (abs(l1pdgId) == 11) 
+    {
+        int x = h_QF_wgt->GetXaxis()->FindBin(l1pt);
+        int y = h_QF_wgt->GetYaxis()->FindBin(l1eta);
+        weight += h_QF_wgt->GetBinContent(x,y); 
+    }
+    if (abs(l2pdgId) == 11) 
+    {
+        int x = h_QF_wgt->GetXaxis()->FindBin(l2pt);
+        int y = h_QF_wgt->GetYaxis()->FindBin(l2eta);
+        weight += h_QF_wgt->GetBinContent(x,y);
+    }
+
+   return weight;
 }
 

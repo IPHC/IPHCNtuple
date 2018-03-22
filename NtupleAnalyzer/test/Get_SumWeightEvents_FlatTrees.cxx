@@ -169,7 +169,7 @@ void Get_SumWeight_FlatTree(TString path_ft, int nfiles)
 
    // TString command = "rfdir " + path_ft + " | wc -l";
 
-   ofstream file_out("list_tmp.txt");
+   // ofstream file_out("list_tmp.txt");
 
    // int nfiles = Convert_TString_To_Number( GetStdoutFromCommand(command) );
 	// if(nfiles == 0) {cout<<FRED("Error : no files found !")<<endl; return;}
@@ -193,9 +193,9 @@ void Get_SumWeight_FlatTree(TString path_ft, int nfiles)
       f->Close();
    }
 
-   file_out<<path_ft<<" / nfiles = "<<nfiles<<" / sum_hweight = "<<setprecision(10)<<sum_hweight<<" / sum_hcount = "<<setprecision(10)<<sum_hcount<<endl<<endl;
+   // file_out<<path_ft<<" / nfiles = "<<nfiles<<" / sum_hweight = "<<setprecision(10)<<sum_hweight<<" / sum_hcount = "<<setprecision(10)<<sum_hcount<<endl<<endl;
 	cout<<FMAG(" "<<path_ft<<" / nfiles = "<<nfiles<<" / sum_hweight = "<<setprecision(10)<<sum_hweight<<" ")<<endl<<endl;
-	
+
    return;
 }
 

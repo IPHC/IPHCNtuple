@@ -24,55 +24,14 @@ void fillFRhistos(TFile* fileFR)
     return;
 }
 
-double get_FR_wgt_2l( std::vector<double> leptonsPts,
-                      std::vector<double> leptonsEtas,
-                      std::vector<int>    leptonsId)
+
+//--- CHANGED : keep only 1 function, use negative factors (cf. tHq AN), ...
+double get_FR_weight( std::vector<double> leptonsPts, std::vector<double> leptonsEtas, std::vector<int> leptonsIds)
 {
-    double weight    = 1;
+    double weight    = -1; //CHANGED to negative
     double weight_FR = 1;
 
     int iPt, iEta;
-    double leptonPt, leptonEta, leptonId;
-
-    for(int i=0; i<leptonsPts.size(); i++)
-    {
-        double leptonPt  = leptonsPts[i];
-        double leptonEta = fabs( leptonsEtas[i] );
-        int    leptonId  = abs(  leptonsId[i]   );
-
-        int x = h_FR_wgt_el->GetXaxis()->FindBin(leptonPt);
-        int y = h_FR_wgt_el->GetYaxis()->FindBin(leptonEta);
-
-        if(leptonId == 11)
-        {
-            double f2 = h_FR_wgt_el->GetBinContent(x,y);
-            weight_FR = f2 / (1-f2);
-            //std::cout << "electron - pt : " << leptonPt << " eta : " << leptonEta << " weigt: " << weight_FR << std::endl;
-        }
-        else if (leptonId == 13)
-        {
-            double f2 = h_FR_wgt_mu->GetBinContent(x,y);
-            weight_FR = f2 / (1-f2);
-            //std::cout << "muon - pt : " << leptonPt << " eta : " << leptonEta << " weight: " << weight_FR << std::endl;
-        }
-
-        weight    = weight * weight_FR;
-
-        //std::cout << "weight: " << weight << std::endl;
-    }
-
-    return weight;
-}
-
-double get_FR_wgt_3l( std::vector<double> leptonsPts,
-                      std::vector<double> leptonsEtas,
-                      std::vector<int>    leptonsIds)
-{
-    double weight    = 1;
-    double weight_FR = 1;
-
-    int iPt, iEta;
-    double leptonPt, leptonEta, leptonId;
 
     for(int i=0; i<leptonsPts.size(); i++)
     {   
@@ -80,22 +39,25 @@ double get_FR_wgt_3l( std::vector<double> leptonsPts,
         double leptonEta  = fabs( leptonsEtas[i] );
         int    leptonId   = abs(  leptonsIds[i]   );
 
+	//Find corresponding bin (same binning in ele & mu histos)
         int x = h_FR_wgt_el->GetXaxis()->FindBin(leptonPt);
         int y = h_FR_wgt_el->GetYaxis()->FindBin(leptonEta);
+	
+	double f2 = 0;
 
         if(leptonId == 11)
         {
-            double f2 = h_FR_wgt_el->GetBinContent(x,y);
-            weight_FR = f2 / (1-f2);
+            f2 = h_FR_wgt_el->GetBinContent(x,y);
             //std::cout << "electron - pt : " << leptonPt << " eta : " << leptonEta << " weigt: " << weight_FR << std::endl;
         }
         else if (leptonId == 13)
         {
-            double f2 = h_FR_wgt_mu->GetBinContent(x,y);
-            weight_FR = f2 / (1-f2);
+            f2 = h_FR_wgt_mu->GetBinContent(x,y);
+            weight_FR = -f2 / (1-f2);
             //std::cout << "muon - pt : " << leptonPt << " eta : " << leptonEta << " weight: " << weight_FR << std::endl;
         }
 
+        weight_FR = -f2 / (1-f2);
         weight    = weight * weight_FR;
 
         //std::cout << "weight: " << weight << std::endl;

@@ -19,6 +19,11 @@ rm -f /tmp/tempMC.txt
 for line in $liMC
 do
   echo $line
+
+  if [[ $1 != "" && $line != *$1* ]]; then
+	continue
+  fi
+
   d1=$(echo $line)
   liMC2=$(/usr/bin/rfdir ${fpath}${d1} | awk '{print $9}') #lists all FILENAMES in dir
   echo $liMC2 | while read line2
@@ -35,7 +40,7 @@ do
   chmod 755 /tmp/ScriptMerging_$line.sh
   /tmp/ScriptMerging_$line.sh
   rm -f /tmp/ScriptMerging_$line.sh
-  
+
   rm -f /tmp/tempMC.txt
 done
 
@@ -44,6 +49,11 @@ done
 rm -f /tmp/tempDATA.txt
 for line in $liDATA
 do
+
+  if [[ $1 != "" && $line != *$1* ]]; then
+	continue
+  fi
+
   echo $line
   d1=$(echo $line)
   liDATA2=$(/usr/bin/rfdir ${fpath}${d1} | awk '{print $9}')
@@ -53,7 +63,7 @@ do
         file=$(echo ${fpathDATAXRD}${d1}/${f1})
         echo "${file}" >> /tmp/tempDATA.txt
   done
-  
+
   echo "hadd -f $outDir/merged_$line.root " > /tmp/tmp_ScriptMerging_$line.sh
   cat /tmp/tempDATA.txt >> /tmp/tmp_ScriptMerging_$line.sh
   tr '\n' ' ' < /tmp/tmp_ScriptMerging_$line.sh > /tmp/ScriptMerging_$line.sh
@@ -62,11 +72,14 @@ do
   /tmp/ScriptMerging_$line.sh
   rm -f /tmp/ScriptMerging_$line.sh
 
-   
+
   rm -f /tmp/tempDATA.txt
 done
 
 
+if [[ $1 != "" ]]; then
+  exit 1
+fi
 
 
 #--- FURTHER HADDS & RENAME NTUPLES ---
@@ -75,16 +88,27 @@ echo ''
 echo ''
 echo '=== FURTHER MERGING AND RENAMING ==='
 
-hadd -f $outDir/DY.root $outDir/merged_DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root $outDir/merged_DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8.root
-rm $outDir/merged_DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root
-rm $outDir/merged_DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8.root
+# hadd -f $outDir/DY.root $outDir/merged_DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root $outDir/merged_DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8.root
+# rm $outDir/merged_DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root
+# rm $outDir/merged_DYJetsToLL_M-50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8.root
 
-hadd -f $outDir/TTbar.root $outDir/merged_TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root $outDir/merged_TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root $outDir/merged_TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root
+hadd -f $outDir/DY.root $outDir/merged_DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8.root $outDir/merged_DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root
+rm $outDir/merged_DYJetsToLL_M-10to50_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8.root
+rm $outDir/merged_DYJetsToLL_M-50_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root
+
+hadd -f $outDir/TTbar_DiLep.root $outDir/merged_TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root $outDir/merged_TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_RunIISummer16MiniAODv2_PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1_v1_MINIAODSIM.root
 rm $outDir/merged_TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root
+rm $outDir/merged_TTJets_DiLept_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_RunIISummer16MiniAODv2_PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1_v1_MINIAODSIM.root
+
+
+hadd -f $outDir/TTbar_SingleLep.root $outDir/merged_TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root $outDir/merged_TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root $outDir/merged_TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_RunIISummer16MiniAODv2_PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1_v1_MINIAODSIM.root $outDir/merged_TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_RunIISummer16MiniAODv2_PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1_v1_MINIAODSIM.root
 rm $outDir/merged_TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root
 rm $outDir/merged_TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root
+rm $outDir/merged_TTJets_SingleLeptFromT_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_RunIISummer16MiniAODv2_PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1_v1_MINIAODSIM.root
+rm $outDir/merged_TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8_RunIISummer16MiniAODv2_PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1_v1_MINIAODSIM.root
 
-hadd -f $outDir/ttZ.root $outDir/merged_TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8_RunIISummer16MiniAODv2_PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1_v1_MINIAODSIM.root $outDir/merged_TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8_RunIISummer16MiniAODv2_PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext2_v1_MINIAODSIM.root $outDir/merged_TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8_RunIISummer16MiniAODv2_PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext3_v1_MINIAODSIM.root 
+
+hadd -f $outDir/ttZ.root $outDir/merged_TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8_RunIISummer16MiniAODv2_PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1_v1_MINIAODSIM.root $outDir/merged_TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8_RunIISummer16MiniAODv2_PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext2_v1_MINIAODSIM.root $outDir/merged_TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8_RunIISummer16MiniAODv2_PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext3_v1_MINIAODSIM.root
 rm $outDir/merged_TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8_RunIISummer16MiniAODv2_PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1_v1_MINIAODSIM.root
 rm $outDir/merged_TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8_RunIISummer16MiniAODv2_PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext2_v1_MINIAODSIM.root
 rm $outDir/merged_TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8_RunIISummer16MiniAODv2_PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext3_v1_MINIAODSIM.root
@@ -108,6 +132,17 @@ mv $outDir/merged_ZZZ_TuneCUETP8M1_13TeV-amcatnlo-pythia8.root $outDir/ZZZ.root
 mv $outDir/merged_TTTT_TuneCUETP8M1_13TeV-amcatnlo-pythia8.root $outDir/TTTT.root
 mv $outDir/merged_tZq_ll_4f_13TeV-amcatnlo-herwigpp.root $outDir/tZq.root
 mv $outDir/merged_ttHJetToNonbb_M125_13TeV_amcatnloFXFX_madspin_pythia8_mWCutfix.root $outDir/ttH.root
+mv $outDir/merged_ttWJets_13TeV_madgraphMLM.root $outDir/ttW_MadgraphMLM.root
+mv $outDir/merged_ttZJets_13TeV_madgraphMLM.root $outDir/ttZ_MadgraphMLM.root
+mv $outDir/merged_TTLL_m1to10.root $outDir/TTLL_m1to10.root
+mv $outDir/merged_WpWpJJ_EWK-QCD_TuneCUETP8M1_13TeV-madgraph-pythia8.root $outDir/WW_EWK.root
+mv $outDir/merged_WW_DoubleScattering_13TeV-pythia8.root $outDir/WW_DPS.root
+mv $outDir/merged_ZGTo2LG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8.root $outDir/ZG.root
+mv $outDir/merged_WGToLNuG_TuneCUETP8M1_13TeV-madgraphMLM-pythia8.root $outDir/WG.root
+mv $outDir/merged_TGJets_TuneCUETP8M1_13TeV_amcatnlo_madspin_pythia8.root $outDir/TGJets.root
+
+#Not interested in this sample
+rm $outDir/merged_WGToLNuG_TuneCUETP8M1_13TeV-amcatnloFXFX-pythia8.root
 
 
 hadd -f $outDir/SingleElectron.root $outDir/*SingleElectron*

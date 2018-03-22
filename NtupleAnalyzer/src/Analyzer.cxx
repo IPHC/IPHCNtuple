@@ -1,8 +1,10 @@
-#include "../include/Hist.h"
+//#include "../include/Hist.h"
 //#include "../include/TTbarDileptonAnalysis.h"
-#include "../include/TTbarHiggsMultileptonAnalysis.h"
+//#include "../include/TTbarHiggsMultileptonAnalysis.h"
 //#include "../include/TTbarHiggsTFAnalysis.h"
-#include "../include/TTbarHiggsBTagEff.h"
+//#include "../include/TTbarHiggsBTagEff.h"
+
+#include "../include/tHqMultileponAnalysis.h"
 
 #include "TChain.h"
 

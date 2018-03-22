@@ -168,6 +168,7 @@ fdir=$(ls -d lists_priority*) //Can modify dir. containing list of files on whic
 
 ### Set-up & Run NtupleAnalyzer
 
+NB : paths to weight files may need to be changed (look for ".root" in src/TTbarHiggsMultileptonAnalysis.cxx)
 
 ```
 cd /home-pbs/username/MyAnalysis/CMSSW_8_0_20/src/ttH/NtupleAnalyzer/test

@@ -1,0 +1,1 @@
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/WpWpJJ_EWK-QCD_TuneCUETP8M1_13TeV-madgraph-pythia8/WpWpJJ_EWK-QCD_TuneCUETP8M1_13TeV-madgraph-pythia8_ID0_0.root

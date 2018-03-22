@@ -122,6 +122,9 @@ void Muon::init()
            
 }
 
+
+//--- original selection from ttH
+
 bool Muon::sel()
 {
 
@@ -208,3 +211,63 @@ bool Muon::sel()
     return isLooseTTH;
 }
 
+
+
+/*
+//updated muon sel, based on tHq AN
+bool Muon::sel()
+{
+
+    // Loose
+    bool pass_pt      = (_pt          >  5    );
+    bool pass_eta     = (fabs(_eta)   <  2.4  );
+    bool pass_dxy     = (fabs(_dxy)   <  0.05 );
+    bool pass_dz      = (fabs(_dz)    <  0.1  );
+    bool pass_miniIso = (_iso         <  0.4  );
+    bool pass_SIP     = (fabs(_sip3d) <  8    );
+    bool pass_isLoose = (_isLoose             );
+
+    bool isLooseTTH = ( pass_pt      &&
+                        pass_eta     &&
+                        pass_dxy     &&
+                        pass_dz      &&
+                        pass_miniIso &&
+                        pass_SIP     &&
+                        pass_isLoose );
+
+    _isLooseTTH = isLooseTTH;
+
+    
+    // Fakeable    
+  
+    pass_pt      = (_pt          >  15    );
+ 
+     _isFakeableTTH = isLooseTTH && pass_pt && _lepMVA_jetBTagCSV < 0.8484;
+      
+
+    // Tight
+  
+    bool pass_lepMVA_TTH  = _lepMVA_TTH > 0.90 ;
+
+    _isTightTTH = isLooseTTH && pass_pt && _lepMVA_jetBTagCSV < 0.8484 && _isMedium && pass_lepMVA_TTH;
+   
+    _passTightCharge = (_tightCharge < 0.2);
+
+    if(_isFakeableTTH && !_isTightTTH)
+    {
+        float dr_min = 0.5, new_pt = -100;
+        int n_jets = ntP->jet_pt->size();
+        for(int ij=0;ij<n_jets;ij++)
+        {
+            float dr = GetDeltaR(_eta,_phi,ntP->jet_eta->at(ij),ntP->jet_phi->at(ij));
+            if( dr < dr_min ) new_pt = ntP->jet_pt->at(ij) * 0.85;
+            //std::cout << "jet[" << ij << "]  dr: " << dr << "  pt: " << ntP->jet_pt->at(ij) << std::endl;
+        }
+        _pt = new_pt;
+    }
+
+
+    return isLooseTTH;
+}
+
+*/

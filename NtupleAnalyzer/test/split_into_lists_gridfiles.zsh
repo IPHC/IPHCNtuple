@@ -12,7 +12,7 @@ fpathMCXRD=$(echo ${fpath} | sed "s%/dpm%root://sbgse1.in2p3.fr//dpm%g")
 
 #--- Files per job
 nFilesDATA=40
-nFilesMC=20
+nFilesMC=5
 outDir="lists/"
 
 rm -rf ${outDir}
@@ -57,7 +57,15 @@ done
 rm -f /tmp/tempMC.txt
 for line in $liMC
 do
+  #TTbar_Single files are very large --> split further
+  if [[ $line == TTJets_SingleLeptFromT*_ext* ]]; then
+    nFilesMC_tmp=1
+  else 
+    nFilesMC_tmp=$nFilesMC
+  fi
+
   echo $line
+  
   d1=$(echo $line)
   liMC2=$(/usr/bin/rfdir ${fpath}${d1} | awk '{print $9}')
   echo $liMC2 | while read line2
@@ -67,7 +75,7 @@ do
         echo "${file}" >> /tmp/tempMC.txt
   done
   
-  split -a 5 -l ${nFilesMC} -d /tmp/tempMC.txt /tmp/${d1}_
+  split -a 5 -l ${nFilesMC_tmp} -d /tmp/tempMC.txt /tmp/${d1}_
   lsfi=($(ls /tmp/${d1}_*))
   jid=0
   
