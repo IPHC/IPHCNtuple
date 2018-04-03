@@ -11,7 +11,7 @@ fpathDATAXRD=$(echo ${fpath} | sed "s%/dpm%root://sbgse1.in2p3.fr//dpm%g")
 fpathMCXRD=$(echo ${fpath} | sed "s%/dpm%root://sbgse1.in2p3.fr//dpm%g")
 
 #--- Files per job
-nFilesDATA=40
+nFilesDATA=20
 nFilesMC=5
 outDir="lists/"
 

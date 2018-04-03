@@ -16,8 +16,8 @@ if [[ ${jName} == "" ]]; then
   exit 1
 fi
 
-#que="cms_local"
-que="cms"
+que="cms_local_mdm"
+#que="cms"
 
 export HOME=$(pwd)
 

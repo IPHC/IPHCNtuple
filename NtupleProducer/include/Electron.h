@@ -96,6 +96,12 @@ class Electron : public Base
         void read();
         void init();
 
+        //NEW
+        bool passMuOverlap() {return _passMuOverlap;}
+        bool passConditions() {return _passConditions;}
+        float eInvMinusPinv() {return _eInvMinusPinv;}
+
+
     protected:
 
         int     _ID;
@@ -178,6 +184,11 @@ class Electron : public Base
 
         float _trackMomentumError;
         float _mvaNonTrigV0;
+
+        //NEw
+        bool _passMuOverlap;
+        bool _passConditions;
+        float _eInvMinusPinv;
 
         ClassDef(Electron,1)
 };

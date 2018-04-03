@@ -92,7 +92,7 @@ int main(int argc, char *argv[])
   
       
     //tHq analysis
-    TTbarHiggsMultileptonAnalysis* tHqAnalysis = new TTbarHiggsMultileptonAnalysis(fname,dataset,stream,outfile,isdata,doSystCombine,xsec,lumi,nowe,nmax);
+    tHqMultileponAnalysis* tHqAnalysis = new tHqMultileponAnalysis(fname,dataset,stream,outfile,isdata,doSystCombine,xsec,lumi,nowe,nmax);
     
     //tHqAnalysis->createHistograms();
     

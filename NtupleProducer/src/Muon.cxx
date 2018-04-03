@@ -3,7 +3,7 @@
 #include <iomanip>
 
 ClassImp(Muon)
-    
+
 Muon::Muon()
 {
 }
@@ -15,18 +15,16 @@ Muon::~Muon()
 void Muon::read()
 {
     _ID                             = idx;
-
-    // general informations
     _E                              = ntP->mu_E->at(idx);
     _pt                             = ntP->mu_pt->at(idx);
     _ptUnc                          = ntP->mu_pt->at(idx);
-    _eta                            = ntP->mu_eta->at(idx);	
-    _phi                            = ntP->mu_phi->at(idx);	
+    _eta                            = ntP->mu_eta->at(idx);
+    _phi                            = ntP->mu_phi->at(idx);
     _m                              = ntP->mu_m->at(idx);
     _charge                         = ntP->mu_charge->at(idx);
     _id                             = ntP->mu_id->at(idx);
 
-    // 
+    //
     _isLoose                        = ntP->mu_isLooseMuon->at(idx);
     _isMedium	                    = ntP->mu_isMediumMuon->at(idx);
     _isTight	                    = ntP->mu_isTightMuon->at(idx);
@@ -47,7 +45,7 @@ void Muon::read()
 
     _lepMVA_miniRelIsoCharged       = ntP->mu_lepMVA_miniRelIsoCharged->at(idx);
     _lepMVA_miniRelIsoNeutral       = ntP->mu_lepMVA_miniRelIsoNeutral->at(idx);
-    _lepMVA_jetPtRelv2              = ntP->mu_lepMVA_jetPtRelv2->at(idx);  
+    _lepMVA_jetPtRelv2              = ntP->mu_lepMVA_jetPtRelv2->at(idx);
     //_lepMVA_jetDR                 = ntP->mu_lepMVA_jetDR->at(idx); // branch not available in FlatTree
     _lepMVA_jetPtRatio              = ntP->mu_lepMVA_jetPtRatio->at(idx);
     _lepMVA_jetBTagCSV              = ntP->mu_lepMVA_jetBTagCSV->at(idx);
@@ -57,7 +55,7 @@ void Muon::read()
     _lepMVA_mvaId                   = ntP->mu_lepMVA_mvaId->at(idx);
     _lepMVA_eta                     = ntP->mu_lepMVA_eta->at(idx);
     _lepMVA_jetNDauChargedMVASel    = ntP->mu_lepMVA_jetNDauChargedMVASel->at(idx);
- 
+
     // more variables
 
 }
@@ -65,9 +63,9 @@ void Muon::read()
 void Muon::init()
 {
     // general informations
-    
+
     _fakeType          = -100.;
-    
+
     _E                 = -100.;
     _pt                = -100.;
     _ptUnc             = -100.;
@@ -75,24 +73,24 @@ void Muon::init()
     _phi               = -100.;
     _m                 = -100.;
     _charge            = 0;
-    _id                = 0;    
+    _id                = 0;
 
     // Id
     _isLoose           = 0;
     _isMedium          = 0;
     _isTight           = 0;
     _isPFMuon          = 0;
-  
+
     _isLooseTTH        = 0;
     _isFakeableTTH     = 0;
     _isTightTTH        = 0;
-    
+
     // variables for Id
-    
+
     _dxy                = -100.;
     _dz                 = -100.;
-    _iso                = -100.; 
-    _sip3d              = -100.;   
+    _iso                = -100.;
+    _sip3d              = -100.;
     _bestTrack_pt       = -100.;
     _bestTrack_ptError  = -100.;
     //_dB3D               = -100.;
@@ -103,10 +101,10 @@ void Muon::init()
     _noLostHits         = true;
 
     // more variables
-   
-    _lepMVA                      = -100.; 
-    _lepMVA_TTH                  = -100.; 
-      
+
+    _lepMVA                      = -100.;
+    _lepMVA_TTH                  = -100.;
+
     _lepMVA_miniRelIsoCharged    = -100.;
     _lepMVA_miniRelIsoNeutral    = -100.;
     _lepMVA_jetPtRelv2           = -100.;
@@ -119,11 +117,27 @@ void Muon::init()
     _lepMVA_mvaId                = -100.;
     _lepMVA_eta                  = -100.;
     _lepMVA_jetNDauChargedMVASel = -100.;
-           
+
 }
 
 
-//--- original selection from ttH
+
+
+
+
+
+
+
+
+
+
+// ######## ######## ##     ##
+//    ##       ##    ##     ##
+//    ##       ##    ##     ##
+//    ##       ##    #########
+//    ##       ##    ##     ##
+//    ##       ##    ##     ##
+//    ##       ##    ##     ##
 
 bool Muon::sel()
 {
@@ -147,24 +161,24 @@ bool Muon::sel()
 
     _isLooseTTH = isLooseTTH;
 
-    
+
     // Fakeable
-    
-  
+
+
     bool pass_lepMVA_TTH  = _lepMVA_TTH > 0.90 ;
     bool pass_lepMVA_jetBTagCSV089 = _lepMVA_jetBTagCSV < 0.89;
-    
+
     bool pass_lepMVA_jetBtagCSVPtRatio = false;
-    
+
     if (!pass_lepMVA_TTH && _lepMVA_jetPtRatio > 0.3 && _lepMVA_jetBTagCSV < 0.8484) pass_lepMVA_jetBtagCSVPtRatio = true;
     if (pass_lepMVA_TTH && pass_lepMVA_jetBTagCSV089) pass_lepMVA_jetBtagCSVPtRatio = true;
-    
+
     _isFakeableTTH = isLooseTTH && pass_lepMVA_jetBtagCSVPtRatio;
 
     // Tight
-  
+
     _isTightTTH = isLooseTTH && pass_lepMVA_TTH && _isMedium && pass_lepMVA_jetBTagCSV089;
-   
+
     _passTightCharge = (_tightCharge < 0.2);
     //_isTightTTH = isLooseTTH && pass_lepMVA_TTH && _isMedium && pass_lepMVA_jetBTagCSV089 && _pass_tightCharge;
 
@@ -182,11 +196,11 @@ bool Muon::sel()
     }
 
     cout<<std::setiosflags(ios::fixed)<<setprecision(5);
-    
+
     // synchronization printout
     if( false )
-    //if( isLooseTTH ) 
-    {    
+    //if( isLooseTTH )
+    {
         std::cout                      << nt->NtEvent->at(0).id()                       << " "
                                        << _pt                                           << " "
                                        << _eta                                          << " "
@@ -213,45 +227,65 @@ bool Muon::sel()
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+// ######## ##     ##  #######      #######    #####      ##    #######
+//    ##    ##     ## ##     ##    ##     ##  ##   ##   ####   ##     ##
+//    ##    ##     ## ##     ##           ## ##     ##    ##   ##
+//    ##    ######### ##     ##     #######  ##     ##    ##   ########
+//    ##    ##     ## ##  ## ##    ##        ##     ##    ##   ##     ##
+//    ##    ##     ## ##    ##     ##         ##   ##     ##   ##     ##
+//    ##    ##     ##  ##### ##    #########   #####    ######  #######
+
 /*
 //updated muon sel, based on tHq AN
 bool Muon::sel()
 {
-
     // Loose
-    bool pass_pt      = (_pt          >  5    );
     bool pass_eta     = (fabs(_eta)   <  2.4  );
+    bool pass_pt      = (_pt          >  5    );
     bool pass_dxy     = (fabs(_dxy)   <  0.05 );
     bool pass_dz      = (fabs(_dz)    <  0.1  );
-    bool pass_miniIso = (_iso         <  0.4  );
     bool pass_SIP     = (fabs(_sip3d) <  8    );
+    bool pass_miniIso = (_iso         <  0.4  );
     bool pass_isLoose = (_isLoose             );
 
     bool isLooseTTH = ( pass_pt      &&
-                        pass_eta     &&
                         pass_dxy     &&
                         pass_dz      &&
-                        pass_miniIso &&
                         pass_SIP     &&
+                        pass_miniIso &&
                         pass_isLoose );
 
     _isLooseTTH = isLooseTTH;
 
-    
-    // Fakeable    
-  
-    pass_pt      = (_pt          >  15    );
- 
-     _isFakeableTTH = isLooseTTH && pass_pt && _lepMVA_jetBTagCSV < 0.8484;
-      
+
+    // Fakeable
+    // pass_pt      = (_pt          >  15    );
+
+    _isFakeableTTH = isLooseTTH && pass_pt && _lepMVA_jetBTagCSV < 0.8484;
+
 
     // Tight
-  
+    _passTightCharge = (_tightCharge < 0.2);
     bool pass_lepMVA_TTH  = _lepMVA_TTH > 0.90 ;
 
-    _isTightTTH = isLooseTTH && pass_pt && _lepMVA_jetBTagCSV < 0.8484 && _isMedium && pass_lepMVA_TTH;
-   
-    _passTightCharge = (_tightCharge < 0.2);
+    _isTightTTH = isLooseTTH && pass_pt && _lepMVA_jetBTagCSV < 0.8484 && _isMedium && _passTightCharge && pass_lepMVA_TTH;
 
     if(_isFakeableTTH && !_isTightTTH)
     {
@@ -266,8 +300,6 @@ bool Muon::sel()
         _pt = new_pt;
     }
 
-
     return isLooseTTH;
 }
-
 */

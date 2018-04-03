@@ -8,7 +8,7 @@ export LD_LIBRARY_PATH=${cdir}:${NtupleDir}:${NtupleDir}/obj:$LD_LIBRARY_PATH
 --file input.txt \
 --tree Nt \
 --outfile ./output_Data \
---nmax -1  \
+--nmax 1000000  \
 --isdata 1 \
 --doSystCombine 0 \
 --nowe -1 \

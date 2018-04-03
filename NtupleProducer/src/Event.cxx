@@ -130,6 +130,8 @@ void Event::read(bool isdata)
     {
 	    std::string currentpath ("Nopathsofar");
 	    if( ntP->trigger_pass->at(i) == 1) { currentpath = ntP->trigger_name->at(i); }
+	    
+	    //if(currentpath != "Nopathsofar") {cout<<"currentpath : "<<currentpath<<endl;}
 
 	    // Single lepton
 	    std::size_t e1    = currentpath.find("HLT_Ele27_eta2p1_WPLoose_Gsf_v");

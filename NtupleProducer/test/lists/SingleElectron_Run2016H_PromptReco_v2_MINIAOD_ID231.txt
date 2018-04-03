@@ -1,0 +1,7 @@
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/Walrus-patch2/SingleElectron/Run2016H_PromptReco_v2_MINIAOD/180329_090323/0004/output_4616.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/Walrus-patch2/SingleElectron/Run2016H_PromptReco_v2_MINIAOD/180329_090323/0004/output_4617.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/Walrus-patch2/SingleElectron/Run2016H_PromptReco_v2_MINIAOD/180329_090323/0004/output_4618.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/Walrus-patch2/SingleElectron/Run2016H_PromptReco_v2_MINIAOD/180329_090323/0004/output_4619.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/Walrus-patch2/SingleElectron/Run2016H_PromptReco_v2_MINIAOD/180329_090323/0004/output_4620.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/Walrus-patch2/SingleElectron/Run2016H_PromptReco_v2_MINIAOD/180329_090323/0004/output_4621.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/Walrus-patch2/SingleElectron/Run2016H_PromptReco_v2_MINIAOD/180329_090323/0004/output_4622.root

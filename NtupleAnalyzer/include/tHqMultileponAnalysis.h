@@ -1,5 +1,5 @@
-#ifndef TTbarHiggsMultileptonAnalysis_H
-#define TTbarHiggsMultileptonAnalysis_H
+#ifndef tHqMultileponAnalysis_H
+#define tHqMultileponAnalysis_H
 
 /* BASH COLORS */
 #define RST   "[0m"
@@ -40,14 +40,16 @@
 #include "Lepton.h"
 #include "BTagCalibrationXStandalone.h"
 
-class TTbarHiggsMultileptonAnalysis
+class tHqMultileponAnalysis
 {
 
     public:
 
-        TTbarHiggsMultileptonAnalysis(); //Default constructor
-        TTbarHiggsMultileptonAnalysis(TString inputFileName, TString sampleName, TString treeName, TString outputFileName, bool isdata, bool doSystCombine, float xsec, float lumi, int nowe, int nmax); //Constructor
-        ~TTbarHiggsMultileptonAnalysis(); //Destructor
+        tHqMultileponAnalysis(); //Default constructor
+        tHqMultileponAnalysis(TString inputFileName, TString sampleName, TString treeName, TString outputFileName, bool isdata, bool doSystCombine, float xsec, float lumi, int nowe, int nmax); //Constructor
+        ~tHqMultileponAnalysis(); //Destructor
+
+        void Debug_Selection(int evt);
 
         //-- 3l selections
         void ThreeLeptonSelection_THQ3l_SR(int evt);
@@ -64,19 +66,25 @@ class TTbarHiggsMultileptonAnalysis
 		void TwoLeptonSelection_ApplicationFakes(int evt);
 		void TwoLeptonSelection_ApplicationChargeFlip(int evt);
 
+        //-- Gamma conv
+        void ThreeLeptonSelection_GammaConv(int evt);
+        void TwoLeptonSelection_GammaConv(int evt);
 
 		void InitFiles();
 		void InitVectors();
 		void InitVariables();
 		void InitTree();
+		void initializeOutputTree();
+
 		void Loop();
 
-		void initializeOutputTree();
-		void selectBjets(std::string, int*, int*, bool);
+		void Compute_Variables(TString);
 		void fillOutputTree();
 		void FillJetInfoOutputTree(int*, int, TLorentzVector*, TLorentzVector, float*, float, float*, float*, float, float*, float*, float, float, float);
 
-		float Phi_0_2Pi(float phi);
+        void SelectBjets(int&, int&, bool);
+        void SelectOtherJets(const int, const int, int&, int&, int&, int&, int&, int&, int&, int&);
+        float Phi_0_2Pi(float phi);
 		float Phi_MPi_Pi(float phi);
 		float GetDeltaR(float eta1,float phi1,float eta2,float phi2);
         bool Sample_isUsed_forTraining();
@@ -116,7 +124,6 @@ class TTbarHiggsMultileptonAnalysis
         std::vector<Lepton>   vLooseLeptons;
         std::vector<Lepton>   vTightLeptons;
 
-		//FIXME -- use floats ?
         float nLooseBJets;
         float nMediumBJets;
 		float nLightJets;
@@ -149,7 +156,8 @@ class TTbarHiggsMultileptonAnalysis
 		float channel;
 
         TTree* tOutput;
-        long int mc_event;
+        double event_id;
+		int event_run;
 
 
         //-- NB : input variables declared in SignalExtractionMVA.h
@@ -215,6 +223,10 @@ class TTbarHiggsMultileptonAnalysis
         Float_t multilepton_JetHighestPt1_2ndPair_JEC_Down, multilepton_JetHighestPt2_2ndPair_JEC_Down, multilepton_JetClosestMw1_2ndPair_JEC_Down, multilepton_JetClosestMw2_2ndPair_JEC_Down, multilepton_JetLowestMjj1_2ndPair_JEC_Down, multilepton_JetLowestMjj2_2ndPair_JEC_Down;
         Float_t multilepton_JetHighestPt1_2ndPair_JER_Up, multilepton_JetHighestPt2_2ndPair_JER_Up, multilepton_JetClosestMw1_2ndPair_JER_Up, multilepton_JetClosestMw2_2ndPair_JER_Up, multilepton_JetLowestMjj1_2ndPair_JER_Up, multilepton_JetLowestMjj2_2ndPair_JER_Up;
         Float_t multilepton_JetHighestPt1_2ndPair_JER_Down, multilepton_JetHighestPt2_2ndPair_JER_Down, multilepton_JetClosestMw1_2ndPair_JER_Down, multilepton_JetClosestMw2_2ndPair_JER_Down, multilepton_JetLowestMjj1_2ndPair_JER_Down, multilepton_JetLowestMjj2_2ndPair_JER_Down;
+
+        Int_t multilepton_JetHighestEta1_Id, multilepton_JetHighestEta2_Id;
+        TLorentzVector multilepton_JetHighestEta1_P4, multilepton_JetHighestEta2_P4;
+        Float_t multilepton_JetHighestEta1_CSV, multilepton_JetHighestEta2_CSV;
 
         Int_t           multilepton_h0_Label,   multilepton_t1_Label,   multilepton_t2_Label;
         Int_t           multilepton_h0_Id,      multilepton_t1_Id,      multilepton_t2_Id;

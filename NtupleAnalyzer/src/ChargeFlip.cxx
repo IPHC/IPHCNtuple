@@ -44,13 +44,13 @@ double get_QF_weight(float l1pt, float l1eta, int l1pdgId, float l2pt, float l2e
     if (abs(l1pdgId) == 11) 
     {
         int x = h_QF_wgt->GetXaxis()->FindBin(l1pt);
-        int y = h_QF_wgt->GetYaxis()->FindBin(l1eta);
+        int y = h_QF_wgt->GetYaxis()->FindBin( fabs(l1eta) );
         weight += h_QF_wgt->GetBinContent(x,y); 
     }
     if (abs(l2pdgId) == 11) 
     {
         int x = h_QF_wgt->GetXaxis()->FindBin(l2pt);
-        int y = h_QF_wgt->GetYaxis()->FindBin(l2eta);
+        int y = h_QF_wgt->GetYaxis()->FindBin( fabs(l2eta) );
         weight += h_QF_wgt->GetBinContent(x,y);
     }
 

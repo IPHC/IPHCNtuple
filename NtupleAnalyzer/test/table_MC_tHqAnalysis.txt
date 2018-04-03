@@ -31,7 +31,7 @@ TTGJets_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8														3.697		4776
 TTGJets_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8_RunIISummer16MiniAODv2_PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1_v1_MINIAODSIM		3.697		4776876
 TTGJets_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8_RunIISummer16MiniAODv2_PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_v1_MINIAODSIM		3.697		4776876
 
-TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8			0.2529		6487782
+TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8													0.2529		6487782
 TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8_RunIISummer16MiniAODv2_PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext1_v1_MINIAODSIM	0.2529		6487782
 TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8_RunIISummer16MiniAODv2_PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext2_v1_MINIAODSIM	0.2529		6487782
 TTZToLLNuNu_M-10_TuneCUETP8M1_13TeV-amcatnlo-pythia8_RunIISummer16MiniAODv2_PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_ext3_v1_MINIAODSIM	0.2529		6487782
@@ -61,14 +61,16 @@ TGJets_TuneCUETP8M1_13TeV_amcatnlo_madspin_pythia8_RunIISummer16MiniAODv2_PUMori
 TGJets_TuneCUETP8M1_13TeV_amcatnlo_madspin_pythia8_RunIISummer16MiniAODv2_PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_v1_MINIAODSIM		2.967		368556
 
 
-#FIXME (xsec ttZ AN ??)
-ttZJets_13TeV_madgraphMLM						0.5297		10790776
+#Modified Xsec (0.5297/0.692)
+ttZJets_13TeV_madgraphMLM						0.7655		10790776
 
 ttWJets_13TeV_madgraphMLM						0.6105		6877864
 
 ST_tW_top_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1		35.6		6952636
 		
 ST_tW_antitop_5f_inclusiveDecays_13TeV-powheg-pythia8_TuneCUETP8M1	35.6		6932903
+
+ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1	3.68064		622974
 
 WWTo2L2Nu_13TeV-powheg							10.481		1998956
 	

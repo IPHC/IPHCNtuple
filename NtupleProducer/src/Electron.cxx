@@ -147,7 +147,19 @@ void Electron::init()
 }
 
 
-//--- original selection from ttH
+
+
+
+
+
+
+// ######## ######## ##     ##
+//    ##       ##    ##     ##
+//    ##       ##    ##     ##
+//    ##       ##    #########
+//    ##       ##    ##     ##
+//    ##       ##    ##     ##
+//    ##       ##    ##     ##
 
 
 bool Electron::sel()
@@ -174,12 +186,12 @@ bool Electron::sel()
     bool pass_losthits = (_nlosthits < 2   );
 
     //
-    bool pass_muOverlap = 1;
+    bool _passMuOverlap = 1;
     int nMuon = nt->NtMuon->size();
     for(int im=0;im<nMuon;im++)
     {
         float dr = GetDeltaR(_eta,_phi,nt->NtMuon->at(im).eta(),nt->NtMuon->at(im).phi());
-        if( dr < 0.05 ) pass_muOverlap = 0; //&& nt->NtMuon->at(im).isLoose() ) pass_muOverlap = 0;
+        if( dr < 0.05 ) _passMuOverlap = 0; //&& nt->NtMuon->at(im).isLoose() ) _passMuOverlap = 0;
     }
 
     bool isLooseTTH     = ( pass_pt          &&
@@ -190,7 +202,7 @@ bool Electron::sel()
                             pass_SIP         &&
                             pass_isLoose     &&
                             pass_losthits    &&
-                            pass_muOverlap   );
+                            _passMuOverlap   );
 
     _isLooseTTH = isLooseTTH; // OK
 
@@ -205,18 +217,18 @@ bool Electron::sel()
     //if (abs((1.0/lep.ecalEnergy() - lep.eSuperClusterOverP()/lep.ecalEnergy()) if lep.ecalEnergy()>0. else 9e9)>=0.01): return False
     //return True
 
-    bool cond_closuretest = true;
+    bool _passConditions = true;
     if ( _pt > 30 )
     {
 
-        float eInvMinusPinv  = ( _ecalEnergy > 0 ) ?  (1. / _ecalEnergy - _eSuperClusterOverP / _ecalEnergy) : 99;
-        //std::cout << eInvMinusPinv << " ";
-        if ( ntP->el_hadronicOverEm->at(idx)        >= ( 0.10 - 0.03 * ( abs(_superCluster_eta) > 1.479 ) ) )   {cond_closuretest = false;}// std::cout << "H/E nope ";}
-        if ( fabs(_deltaEtaSuperClusterTrackAtVtx)  >= ( 0.01 - 0.002 * ( abs(_superCluster_eta) > 1.479 ) ) )  {cond_closuretest = false;}// std::cout << "Eta nope ";}
-        if ( fabs(_deltaPhiSuperClusterTrackAtVtx)  >= ( 0.04 + 0.03 * ( abs(_superCluster_eta) > 1.479  ) ) )  {cond_closuretest = false;}// std::cout << "Phi nope ";}
-        if ( eInvMinusPinv                          <= ( -0.05) )                                               {cond_closuretest = false;}// std::cout << "1/. inf nope ";}
-        if ( eInvMinusPinv                          >= ( 0.01 - 0.005 * ( abs(_superCluster_eta) > 1.479  ) ) ) {cond_closuretest = false;}// std::cout << "1/. sup nope ";}
-        if ( _sigmaIetaIeta                         >= ( 0.011 + 0.019 * ( abs(_superCluster_eta) > 1.479 ) ) ) {cond_closuretest = false;}// std::cout << "See nope ";}
+        _eInvMinusPinv  = ( _ecalEnergy > 0 ) ?  (1. / _ecalEnergy - _eSuperClusterOverP / _ecalEnergy) : 99;
+        //std::cout << _eInvMinusPinv << " ";
+        if ( ntP->el_hadronicOverEm->at(idx)        >= ( 0.10 - 0.03 * ( abs(_superCluster_eta) > 1.479 ) ) )   {_passConditions = false;}// std::cout << "H/E nope ";}
+        if ( fabs(_deltaEtaSuperClusterTrackAtVtx)  >= ( 0.01 - 0.002 * ( abs(_superCluster_eta) > 1.479 ) ) )  {_passConditions = false;}// std::cout << "Eta nope ";}
+        if ( fabs(_deltaPhiSuperClusterTrackAtVtx)  >= ( 0.04 + 0.03 * ( abs(_superCluster_eta) > 1.479  ) ) )  {_passConditions = false;}// std::cout << "Phi nope ";}
+        if ( _eInvMinusPinv                          <= ( -0.05) )                                               {_passConditions = false;}// std::cout << "1/. inf nope ";}
+        if ( _eInvMinusPinv                          >= ( 0.01 - 0.005 * ( abs(_superCluster_eta) > 1.479  ) ) ) {_passConditions = false;}// std::cout << "1/. sup nope ";}
+        if ( _sigmaIetaIeta                         >= ( 0.011 + 0.019 * ( abs(_superCluster_eta) > 1.479 ) ) ) {_passConditions = false;}// std::cout << "See nope ";}
     }
 
     // Fakeable
@@ -226,12 +238,13 @@ bool Electron::sel()
 
     bool pass_lepMVA_TTH  = _lepMVA_TTH > 0.90 ;
 
-    bool pass_lepMVA_jetBTagCSV089 = _lepMVA_jetBTagCSV < 0.8484;
+    bool pass_lepMVA_jetBTagCSV084 = _lepMVA_jetBTagCSV < 0.8484;
+
 
     bool pass_lepMVA_jetBtagCSVPtRatio = false;
 
     if (!pass_lepMVA_TTH && _lepMVA_jetPtRatio > 0.5 && _lepMVA_jetBTagCSV < 0.3) pass_lepMVA_jetBtagCSVPtRatio = true;
-    if ( pass_lepMVA_TTH && pass_lepMVA_jetBTagCSV089) pass_lepMVA_jetBtagCSVPtRatio = true;
+    if ( pass_lepMVA_TTH && pass_lepMVA_jetBTagCSV084) pass_lepMVA_jetBtagCSVPtRatio = true;
 
     bool isFakeableTTH     = ( pass_pt          &&
                                pass_eta         &&
@@ -241,8 +254,8 @@ bool Electron::sel()
                                pass_SIP         &&
                                pass_isLoose     &&
                                //pass_losthits    &&
-                               cond_closuretest &&
-                               pass_muOverlap   &&
+                               _passConditions &&
+                               _passMuOverlap   &&
             			       pass_lepMVA_jetBtagCSVPtRatio
 			                 );
 
@@ -262,10 +275,10 @@ bool Electron::sel()
                             pass_miniIso          &&
                             pass_SIP              &&
                             pass_isLoose          &&
-                            cond_closuretest      &&
-                            pass_muOverlap        &&
+                            _passConditions      &&
+                            _passMuOverlap        &&
 			                pass_lepMVA_TTH       &&
-			                pass_lepMVA_jetBTagCSV089
+			                pass_lepMVA_jetBTagCSV084
                             );
 
     _isTightTTH = isTightTTH;
@@ -319,103 +332,111 @@ bool Electron::sel()
 }
 
 
-/*
 
-//---updated sel from tHq 2016
+
+
+
+
+
+
+
+
+
+
+
+// ######## ##     ##  #######      #######    #####      ##    #######
+//    ##    ##     ## ##     ##    ##     ##  ##   ##   ####   ##     ##
+//    ##    ##     ## ##     ##           ## ##     ##    ##   ##
+//    ##    ######### ##     ##     #######  ##     ##    ##   ########
+//    ##    ##     ## ##  ## ##    ##        ##     ##    ##   ##     ##
+//    ##    ##     ## ##    ##     ##         ##   ##     ##   ##     ##
+//    ##    ##     ##  ##### ##    #########   #####    ######  #######
+
+/*
 bool Electron::sel()
 {
-
     float SIP     = fabs(_ip3d/_ip3dErr);
 
     //MVA ID
-    bool  isLoose = false;
+    bool  pass_MVAid = false;
+    bool  _passConditions = false;
+    _eInvMinusPinv  = ( _ecalEnergy > 0 ) ?  (1. / _ecalEnergy - _eSuperClusterOverP / _ecalEnergy) : 99;
 
-    if      (fabs(_eta) < 0.8  ) { isLoose = ( _mvaNonTrigV0 > 0 ); }
-    else if (fabs(_eta) < 1.479) { isLoose = ( _mvaNonTrigV0 > 0 ); }
-    else                         { isLoose = ( _mvaNonTrigV0 > 0.7 ); }
+    if(fabs(_eta) < 0.8)
+    {
+        if(_lepMVA_mvaId > 0) {pass_MVAid = true;}
+
+        if(_sigmaIetaIeta < 0.011 && ntP->el_hadronicOverEm->at(idx) < 0.10 && fabs(_deltaEtaSuperClusterTrackAtVtx) < 0.01 && fabs(_deltaPhiSuperClusterTrackAtVtx) < 0.04 && _eInvMinusPinv > -0.05 && _eInvMinusPinv < 0.010) {_passConditions = true;}
+    }
+    else if(fabs(_eta) < 1.479)
+    {
+        if(_lepMVA_mvaId > 0) {pass_MVAid = true;}
+
+        if(_sigmaIetaIeta < 0.011 && ntP->el_hadronicOverEm->at(idx) < 0.10 && fabs(_deltaEtaSuperClusterTrackAtVtx) < 0.01 && fabs(_deltaPhiSuperClusterTrackAtVtx) < 0.04 && _eInvMinusPinv > -0.05 && _eInvMinusPinv < 0.010) {_passConditions = true;}
+    }
+    else
+    {
+        if(_lepMVA_mvaId > 0.7) {pass_MVAid = true;}
+
+        if(_sigmaIetaIeta < 0.030 && ntP->el_hadronicOverEm->at(idx) < 0.07 && fabs(_deltaEtaSuperClusterTrackAtVtx) < 0.008 && fabs(_deltaPhiSuperClusterTrackAtVtx) < 0.07 && _eInvMinusPinv > -0.05 && _eInvMinusPinv < 0.005) {_passConditions = true;}
+    }
+
 
 
     // Loose
-    bool pass_pt       = (_pt        > 7   );
     bool pass_eta      = (fabs(_eta) < 2.5 );
+    bool pass_pt       = (_pt        > 7   );
     bool pass_dxy      = (fabs(_dxy) < 0.05);
     bool pass_dz       = (fabs(_dz)  < 0.1 );
-    bool pass_miniIso  = (_miniIso    < 0.4 );
     bool pass_SIP      = (SIP        < 8   );
-    bool pass_isLoose  = (isLoose          );
+    bool pass_miniIso  = (_miniIso    < 0.4 );
     bool pass_losthits = (_nlosthits < 2   );
 
-    //
-    bool pass_muOverlap = 1;
+    bool _passMuOverlap = 1;
     int nMuon = nt->NtMuon->size();
     for(int im=0;im<nMuon;im++)
     {
         float dr = GetDeltaR(_eta,_phi,nt->NtMuon->at(im).eta(),nt->NtMuon->at(im).phi());
-        if( dr < 0.05 ) pass_muOverlap = 0; //&& nt->NtMuon->at(im).isLoose() ) pass_muOverlap = 0;
+        if( dr < 0.05 ) _passMuOverlap = 0; //&& nt->NtMuon->at(im).isLoose() ) _passMuOverlap = 0;
     }
 
     bool isLooseTTH     = ( pass_pt          &&
                             pass_eta         &&
                             pass_dxy         &&
                             pass_dz          &&
-                            pass_miniIso     &&
                             pass_SIP         &&
-                            pass_isLoose     &&
+							pass_miniIso     &&
                             pass_losthits    &&
-                            pass_muOverlap   );
+                            pass_MVAid   );
 
-    _isLooseTTH = isLooseTTH; // OK
+    _isLooseTTH = isLooseTTH;
 
-
-
-    bool cond_closuretest = true;
-    if ( _pt > 30 )
-    {
-
-        float eInvMinusPinv  = ( _ecalEnergy > 0 ) ?  (1. / _ecalEnergy - _eSuperClusterOverP / _ecalEnergy) : 99;
-        //std::cout << eInvMinusPinv << " ";
-        if ( ntP->el_hadronicOverEm->at(idx)        >= ( 0.10 - 0.03 * ( abs(_superCluster_eta) > 1.479 ) ) )   {cond_closuretest = false;}// std::cout << "H/E nope ";}
-        if ( fabs(_deltaEtaSuperClusterTrackAtVtx)  >= ( 0.01 - 0.002 * ( abs(_superCluster_eta) > 1.479 ) ) )  {cond_closuretest = false;}// std::cout << "Eta nope ";}
-        if ( fabs(_deltaPhiSuperClusterTrackAtVtx)  >= ( 0.04 + 0.03 * ( abs(_superCluster_eta) > 1.479  ) ) )  {cond_closuretest = false;}// std::cout << "Phi nope ";}
-        if ( eInvMinusPinv                          <= ( -0.05) )                                               {cond_closuretest = false;}// std::cout << "1/. inf nope ";}
-        if ( eInvMinusPinv                          >= ( 0.01 - 0.005 * ( abs(_superCluster_eta) > 1.479  ) ) ) {cond_closuretest = false;}// std::cout << "1/. sup nope ";}
-        if ( _sigmaIetaIeta                         >= ( 0.011 + 0.019 * ( abs(_superCluster_eta) > 1.479 ) ) ) {cond_closuretest = false;}// std::cout << "See nope ";}
-    }
 
     // Fakeable
-
-    pass_losthits = (_nlosthits == 0 );
-    pass_pt       = (_pt        >  15); // should be 0.85 * pt(jet) for fakeable object cf v4 of note
-
+    // pass_pt = (_pt > 15); // should be 0.85 * pt(jet) for fakeable object cf v4 of note
+	pass_losthits = (_nlosthits == 0 );
     bool pass_lepMVA_TTH  = _lepMVA_TTH > 0.90 ;
+    bool pass_lepMVA_jetBTagCSV084 = _lepMVA_jetBTagCSV < 0.8484;
 
-    bool pass_lepMVA_jetBTagCSV089 = _lepMVA_jetBTagCSV < 0.8484;
-
-    bool pass_lepMVA_jetBtagCSVPtRatio = false;
-
+	bool pass_lepMVA_jetBtagCSVPtRatio = false;
     if (!pass_lepMVA_TTH && _lepMVA_jetPtRatio > 0.5 && _lepMVA_jetBTagCSV < 0.3) pass_lepMVA_jetBtagCSVPtRatio = true;
-    if ( pass_lepMVA_TTH && pass_lepMVA_jetBTagCSV089) pass_lepMVA_jetBtagCSVPtRatio = true;
+    if ( pass_lepMVA_TTH && pass_lepMVA_jetBTagCSV084) pass_lepMVA_jetBtagCSVPtRatio = true;
 
     bool isFakeableTTH     = ( pass_pt          &&
                                pass_eta         &&
                                pass_dxy         &&
                                pass_dz          &&
-                               pass_miniIso     &&
                                pass_SIP         &&
-                               pass_isLoose     &&
-                               //pass_losthits    &&
-                               cond_closuretest &&
-                               pass_muOverlap   &&
-            			       pass_lepMVA_jetBtagCSVPtRatio
+							   pass_miniIso     &&
+                               _passConditions    &&
+                               pass_lepMVA_jetBtagCSVPtRatio &&
+                               pass_losthits
 			                 );
 
     _isFakeableTTH = isFakeableTTH;
 
     // Tight
-
-    bool pass_CV            = (_passCV         );
     _passTightCharge        = (_tightCharge  >1);
-    _noLostHits             = pass_losthits;
     _cutEventSel            = _passCV;
 
     bool isTightTTH     = ( pass_pt               &&
@@ -424,14 +445,16 @@ bool Electron::sel()
                             pass_dz               &&
                             pass_miniIso          &&
                             pass_SIP              &&
-                            pass_isLoose          &&
-                            cond_closuretest      &&
-                            pass_muOverlap        &&
-			                pass_lepMVA_TTH       &&
-			                pass_lepMVA_jetBTagCSV089
+                            _passConditions      &&
+							pass_losthits        &&
+                            pass_lepMVA_jetBTagCSV084 &&
+                            _passTightCharge    &&
+                            _passCV         &&
+			                pass_lepMVA_TTH
                             );
 
     _isTightTTH = isTightTTH;
+
 
     if(_isFakeableTTH && !_isTightTTH)
     {
