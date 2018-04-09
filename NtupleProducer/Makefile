@@ -3,25 +3,24 @@ CMSINC      = -I$(CMSSW_BASE)/src
 #EGAMLIB      = -L$(CMSSW_BASE)/lib/slc6_amd64_gcc481 -lEgammaAnalysisElectronTools
 #FORMLIB      = -L$(CMSSW_BASE)/lib/slc6_amd64_gcc481 -lEgammaAnalysisElectronTools
 
-JETLIBS     = -L$(CMSSW_RELEASE_BASE)/lib/slc6_amd64_gcc530 -lCondFormatsJetMETObjects
+JETLIBS     = -L$(CMSSW_RELEASE_BASE)/lib/slc6_amd64_gcc630 -lCondFormatsJetMETObjects -lFWCoreMessageLogger
 JETINC      = -I$(CMSSW_RELEASE_BASE)/src
 
+BOOSTSYS       = $(shell scram tool tag boost BOOST_BASE)
+BOOSTINC       = -I$(BOOSTSYS)/include
 
-
-# escape c11
-ROOTCFLAGS    = $(shell root-config --cflags | sed -e "s%-std=c++0x %%g")
-#ROOTCFLAGS    = $(shell root-config --cflags | sed -e "s%-std=c++11 %%g")
+ROOTCFLAGS    = $(shell root-config --cflags)
 ROOTLIBS      = $(shell root-config --libs)
 ROOTGLIBS     = $(shell root-config --glibs)
 
-CXX           = g++ -fPIC -Wno-write-strings -Wno-writable-strings -Wno-attributes
+CXX           = g++ -std=c++11 -fPIC -Wno-write-strings -Wno-writable-strings -Wno-attributes 
 LD            = g++
 LDFLAGS       = -g
 SOFLAGS       = -shared
 
 CXXFLAGS       = $(ROOTCFLAGS)
-INCLUDE_FLAGS  = $(JETINC)
-LDLIBS         = $(ROOTLIBS) $(JETLIBS)
+INCLUDE_FLAGS  = $(JETINC) $(BOOSTINC)
+LDLIBS         = $(JETLIBS) $(ROOTLIBS) $(BOOSTLIBS)
 GLIBS          = $(ROOTGLIBS)
 
 EXE           = test/NtupleProducer
@@ -52,7 +51,7 @@ $(LIB):	      $(INC) $(SRC)
 
 	      @echo "####### Building library $(LIB)"
 	      @$(CXX) $(SOFLAGS) $(CXXFLAGS) $(ROOTLIBS) $(INCLUDE_FLAGS) -I. $(SRC) \
-	      obj/NtupleProducerDict.cxx -o $(LIB) $(ROOTLIBS)
+	      obj/NtupleProducerDict.cxx -o $(LIB) $(ROOTLIBS) 
 	      
 	      @echo  "####### Removing generated dictionary"
 	      @rm -f obj/NtupleProducerDict.cxx obj/NtupleProducerDict.h
@@ -62,7 +61,7 @@ $(EXE):	      $(LIB) src/NtupleProducer.cxx
 	      @echo "####### Building object file for executable"
 	      @$(CXX) -c $(CXXFLAGS) $(INCLUDE_FLAGS) src/NtupleProducer.cxx -o obj/NtupleProducer.o
 	      @echo "####### Building executable"
-	      @$(CXX) $(CXXFLAGS) obj/NtupleProducer.o $(LDLIBS) $(LIB) -o $(EXE)
+	      @$(CXX) $(CXXFLAGS) obj/NtupleProducer.o -o $(EXE) $(LDLIBS) $(LIB)
 
 clean:
 	      @rm -f $(OBJS) $(EXE) obj/NtupleProducerDict.cxx obj/NtupleProducerDict.h $(LIB)
