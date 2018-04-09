@@ -20,7 +20,7 @@ SOFLAGS       = -shared
 
 CXXFLAGS       = $(ROOTCFLAGS)
 INCLUDE_FLAGS  = $(JETINC) $(BOOSTINC)
-LDLIBS         = $(JETLIBS) $(ROOTLIBS) $(BOOSTLIBS)
+LDLIBS         = $(JETLIBS) $(ROOTLIBS)
 GLIBS          = $(ROOTGLIBS)
 
 EXE           = test/NtupleProducer
