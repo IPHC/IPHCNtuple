@@ -266,6 +266,7 @@ bool Muon::sel()
     bool pass_isLoose = (_isLoose             );
 
     bool isLooseTTH = ( pass_pt      &&
+                        pass_eta     &&
                         pass_dxy     &&
                         pass_dz      &&
                         pass_SIP     &&

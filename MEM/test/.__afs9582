@@ -1,0 +1,1 @@
+./test tHq.root 0 50 --MEMRun JobsReco/config.cfg

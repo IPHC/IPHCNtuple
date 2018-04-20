@@ -1,0 +1,10 @@
+tZq root://eoscms//eos/cms/store/user/chanon/TZQ/TestNtuplesV8bTight/FCNCNTuple_tZqmcNLO.root
+WZb root://eoscms//eos/cms/store/user/chanon/TZQ/TestNtuplesV8bTight/FCNCNTuple_WZB.root
+WZc root://eoscms//eos/cms/store/user/chanon/TZQ/TestNtuplesV8bTight/FCNCNTuple_WZC.root
+WZl root://eoscms//eos/cms/store/user/chanon/TZQ/TestNtuplesV8bTight/FCNCNTuple_WZL.root
+tWZ root://eoscms//eos/cms/store/user/chanon/TZQ/TestNtuplesV8bTight/FCNCNTuple_STtWll.root
+ZZ root://eoscms//eos/cms/store/user/chanon/TZQ/TestNtuplesV8bTight/FCNCNTuple_ZZ.root
+ttZ root://eoscms//eos/cms/store/user/chanon/TZQ/TestNtuplesV8bTight/FCNCNTuple_ttZ.root
+ttW root://eoscms//eos/cms/store/user/chanon/TZQ/TestNtuplesV8bTight/FCNCNTuple_ttW.root
+ttH root://eoscms//eos/cms/store/user/chanon/TZQ/TestNtuplesV8bTight/FCNCNTuple_ttH.root
+Data root://eoscms//eos/cms/store/user/chanon/TZQ/TestNtuplesV8bTight/FCNCNTuple_Data.root

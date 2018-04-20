@@ -9,5 +9,5 @@ infl="input.txt"
 --file ${infl}        \
 --outfile output \
 --tree FlatTree/tree  \
---nmax 10000              \
+--nmax 20000              \
 --isdata 1

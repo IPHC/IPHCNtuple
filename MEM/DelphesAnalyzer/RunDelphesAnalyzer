@@ -1,0 +1,16 @@
+#!/bin/csh
+
+setenv LOCALDIR `pwd`
+setenv EXECDIR /afs/cern.ch/work/c/chanon/CMSSW_8_0_23/src/IPHCNtuple/MEM/DelphesAnalyzer
+
+setenv LC_ALL "en_US.UTF-8"
+
+setenv LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:/afs/cern.ch/work/c/chanon/MG5_aMC_v2_5_5/Delphes/
+
+cd ${EXECDIR}
+eval `scram runtime -csh`
+
+root -l -b -q run.C
+
+ls 
+

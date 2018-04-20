@@ -26,8 +26,8 @@ float iF_Recl1;
 float iF_Recl2;
 
 // Output variables
-float signal_2l_TT_MVA;
-float signal_2l_TTV_MVA;
+float signal_2lss_TT_MVA;
+float signal_2lss_TTV_MVA;
 float signal_3l_TT_MVA;
 float signal_3l_TTV_MVA;
 

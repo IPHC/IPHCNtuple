@@ -10,11 +10,14 @@
 #define kJetPair_HighestPt 0
 #define kJetPair_MwClosest 1
 #define kJetPair_MjjLowest 2
-#define kJetSingle 3
-#define kTwoJetPair_MwClosest_2ndMwClosest 4
-#define kTwoJetPair_MwClosest_2ndMjjLowest 5
-#define kTwoJetPair_MwClosest_2ndHighestPt 6
-#define kThreeJets_MwClosest_HighestPt 7
+#define kJetPair_HighestEta 3
+#define kJetSingle 4
+#define kJetSingleHighestEta 5
+#define kTwoJetPair_MwClosest_2ndMwClosest 6
+#define kTwoJetPair_MwClosest_2ndMjjLowest 7
+#define kTwoJetPair_MwClosest_2ndHighestPt 8
+#define kThreeJets_MwClosest_HighestPt 9
+#define kTreatFirstBjetAsJet 10
 
 #define kBjet_Present 0
 #define kBjet_Missing 1
@@ -57,6 +60,7 @@ class MultiLepton
   vector<Particle> JetsHighestPt;
   vector<Particle> JetsClosestMw;
   vector<Particle> JetsLowestMjj;
+  vector<Particle> JetsHighestEta;
   vector<Particle> ParticleGen;
 
   TLorentzVector Ptot;
@@ -78,7 +82,9 @@ class MultiLepton
   double tWmaxTop;
   double tWmaxHiggs; 
 
-  unsigned int ipermlin;
+  unsigned int ipermlin_lep;
+  unsigned int ipermlin_jet;
+  unsigned int ipermlin_bjet;
 
   int iperm_bmiss;
   int iperm_jmiss;
@@ -99,7 +105,7 @@ class MultiLepton
   
   void DoSort(vector<Particle>*);
   int DoPermutation(vector<Particle>*);
-  int DoPermutationLinear(vector<Particle>*);
+  int DoPermutationLinear(string, vector<Particle>*);
   int CheckPermutationHyp(int);
 
   //int FindJetsCategory(int);
@@ -116,6 +122,8 @@ class MultiLepton
   void FillTTbarFullyLepHyp(MEPhaseSpace**);
   void FillTTbarSemiLepHyp(MEPhaseSpace**);
   void FillTLLJHyp(MEPhaseSpace**);
+  void FillWZJJHyp(MEPhaseSpace**);
+  void FillTHJHyp(MEPhaseSpace**);
 
   void AddIntegrationBound_TopLep(MEPhaseSpace**, int*, int, int, int);
   void AddIntegrationBound_TopHad(MEPhaseSpace**, int*, int, int*, int, int);
@@ -151,7 +159,9 @@ MultiLepton::MultiLepton(){
   tWmaxTop = TMath::ATan((173*173-mB*mB-80.419*80.419)/(80.419*2.0476));
   tWmaxHiggs = TMath::ATan((125*125-80.419*80.419)/(80.419*2.0476));
 
-  ipermlin = 0;
+  ipermlin_lep = 0;
+  ipermlin_jet = 0;
+  ipermlin_bjet = 0;
   iperm_bmiss = 0;
   iperm_jmiss = 0;
 
@@ -177,6 +187,7 @@ void MultiLepton::FillParticle(string Type, int id, TLorentzVector p4){
   if (Type=="jetHighestPt") JetsHighestPt.push_back(p);
   if (Type=="jetClosestMw") JetsClosestMw.push_back(p);
   if (Type=="jetLowestMjj") JetsLowestMjj.push_back(p);
+  if (Type=="jetHighestEta") JetsHighestEta.push_back(p);
 
   return;
 }
@@ -198,6 +209,7 @@ void MultiLepton::FillParticle(string Type, int id, float csv, float jec_up, flo
   if (Type=="jetHighestPt") JetsHighestPt.push_back(p);
   if (Type=="jetClosestMw") JetsClosestMw.push_back(p);
   if (Type=="jetLowestMjj") JetsLowestMjj.push_back(p);
+  if (Type=="jetHighestEta") JetsHighestEta.push_back(p);
 
   return;
 }
@@ -240,19 +252,38 @@ int MultiLepton::DoPermutation(vector<Particle>* particles)
   return res;
 }
 
-int MultiLepton::DoPermutationLinear(vector<Particle>* particles)
+int MultiLepton::DoPermutationLinear(string Type, vector<Particle>* particles)
 {
   cout << "doPermutation linear"<<endl; 
-  int res;
+  int res = 0;
   Particle p = (*particles).at(0);
   (*particles).erase((*particles).begin());
   (*particles).push_back(p);
-  ipermlin++;
-  if (ipermlin>=(*particles).size()) {
-    res=0;
-    ipermlin = 0;
+  if (Type=="lepton") {
+    ipermlin_lep++;
+    if (ipermlin_lep>=(*particles).size()) {
+      res=0;
+      ipermlin_lep = 0;
+    }
+    else res=1;
   }
-  else res=1;
+  if (Type=="jet") {
+    ipermlin_jet++;
+    if (ipermlin_jet>=(*particles).size()) {
+      res=0;
+      ipermlin_jet = 0;
+    }
+    else res=1;
+  }
+  if (Type=="bjet") {
+    ipermlin_bjet++;
+    if (ipermlin_bjet>=(*particles).size()) {
+      res=0;
+      ipermlin_bjet = 0;
+    }
+    else res=1;
+  }
+
   return res;
 }
 
@@ -290,6 +321,8 @@ void MultiLepton::FillParticlesHypothesis(int kMode, MEPhaseSpace** meIntegrator
   if (kMode==kMEM_TTbar_TopAntitopFullyLepDecay) FillTTbarFullyLepHyp(meIntegrator); 
   if (kMode==kMEM_TTbar_TopAntitopSemiLepDecay) FillTTbarSemiLepHyp(meIntegrator);
   if (kMode==kMEM_TLLJ_TopLepDecay) FillTLLJHyp(meIntegrator);
+  if (kMode==kMEM_WZJJ_LepDecay) FillWZJJHyp(meIntegrator);
+  if (kMode==kMEM_THJ_TopLepDecay) FillTHJHyp(meIntegrator);
 
   (*meIntegrator)->transferFunctions->MeasuredVarForTF.mET_Px = mET.Px();
   (*meIntegrator)->transferFunctions->MeasuredVarForTF.mET_Py = mET.Py();
@@ -329,12 +362,16 @@ int MultiLepton::CheckPermutationHyp(int kMode){
   int check = 1;
 
   if (Leptons.size()==3){
-    if (kMode==kMEM_TTLL_TopAntitopDecay){
+    if (kMode==kMEM_TTLL_TopAntitopDecay || kMode==kMEM_TLLJ_TopLepDecay){
       if (Leptons[0].Id != -Leptons[1].Id) check=0; // opposite sign same flavour to make a Z
       if (!(Leptons[0].Id>0 && Leptons[1].Id<0)) check=0; // ME needs l+ l- ordering
     }
+    if (kMode==kMEM_WZJJ_LepDecay){
+      if (Leptons[1].Id != -Leptons[2].Id) check=0; // opposite sign same flavour to make a Z
+      if (!(Leptons[1].Id>0 && Leptons[2].Id<0)) check=0; // ME needs l+ l- ordering
+    }
 
-    if (kMode==kMEM_TTH_TopAntitopHiggsDecay){
+    if (kMode==kMEM_TTH_TopAntitopHiggsDecay || kMode==kMEM_THJ_TopLepDecay){
       if (!(Leptons[0].Id>0 && Leptons[1].Id<0)) check=0; //opposite sign, and ME needs l+ l- ordering
     }
 
@@ -353,6 +390,7 @@ int MultiLepton::CheckPermutationHyp(int kMode){
     if (kMode==kMEM_TTbar_TopAntitopSemiLepDecay){
       check=1;
     }
+
   }
   if (Leptons.size()==4){
     if (kMode==kMEM_TTH_TopAntitopHiggsDecay){
@@ -369,7 +407,7 @@ int MultiLepton::CheckPermutationHyp(int kMode){
     }
   }
   if (Leptons.size()==2){
-    if (kMode==kMEM_TTH_TopAntitopHiggsSemiLepDecay){
+    if (kMode==kMEM_TTH_TopAntitopHiggsSemiLepDecay || kMode==kMEM_THJ_TopLepDecay){
       if (!(Leptons[0].Id * Leptons[1].Id > 0)) check=0; //same sign leptons 
     }
     if (kMode==kMEM_TTW_TopAntitopDecay || kMode==kMEM_TTWJJ_TopAntitopDecay){
@@ -392,6 +430,9 @@ void MultiLepton::SwitchJetsFromAllJets(int kMode){
   if (kMode==kJetSingle){
     Jets.push_back(JetsHighestPt[0]);
   }
+  if (kMode==kJetSingleHighestEta){
+  	//cout<<"JetsHighestEta.size() = "<<JetsHighestEta.size()<<endl;
+  }
   if (kMode==kJetPair_HighestPt){
     Jets.push_back(JetsHighestPt[0]);
     Jets.push_back(JetsHighestPt[1]);
@@ -403,6 +444,14 @@ void MultiLepton::SwitchJetsFromAllJets(int kMode){
   if (kMode==kJetPair_MjjLowest){
     Jets.push_back(JetsLowestMjj[0]);
     Jets.push_back(JetsLowestMjj[1]);
+  }
+  if (kMode==kJetPair_HighestEta){
+    Jets.push_back(JetsHighestEta[0]);
+    Jets.push_back(JetsHighestEta[1]);
+  }
+  if (kMode==kTreatFirstBjetAsJet){
+    Jets.push_back(Bjets[0]);
+    Jets.push_back(JetsHighestPt[0]);
   }
   if (kMode==kTwoJetPair_MwClosest_2ndMwClosest){
     Jets.push_back(JetsClosestMw[0]);
@@ -559,6 +608,96 @@ void MultiLepton::FillTLLJHyp(MEPhaseSpace** meIntegrator)
 
 }
 
+void MultiLepton::FillTHJHyp(MEPhaseSpace** meIntegrator)
+{
+
+  if ((*meIntegrator)->iNleptons==3){
+
+    (*meIntegrator)->FinalStateTTV.Boson_Type = kHfullylepJ;
+    (*meIntegrator)->FinalStateTTV.Top1_Decay = kTopLepDecay;
+    (*meIntegrator)->FinalStateTTV.Top1_Sign = (Leptons[2].Id>0)?kTop:kAntitop;
+    (*meIntegrator)->FinalStateTTV.Top2_Decay = kNoTop;
+    (*meIntegrator)->FinalStateTTV.Top2_Sign = kNoTop;
+
+    SetPresenceBandJets(meIntegrator, -1, 0);
+
+    (*meIntegrator)->MEMFix_HiggsFullLep.Lep1_E = Leptons[0].P4.E();
+    (*meIntegrator)->MEMFix_HiggsFullLep.Lep1_Theta = Leptons[0].P4.Theta();
+    (*meIntegrator)->MEMFix_HiggsFullLep.Lep1_Phi = Leptons[0].P4.Phi();
+    (*meIntegrator)->MEMFix_HiggsFullLep.Lep2_E = Leptons[1].P4.E();
+    (*meIntegrator)->MEMFix_HiggsFullLep.Lep2_Theta = Leptons[1].P4.Theta();
+    (*meIntegrator)->MEMFix_HiggsFullLep.Lep2_Phi = Leptons[1].P4.Phi();
+
+    (*meIntegrator)->MEMFix_TopLep.Lep_E = Leptons[2].P4.E();
+    (*meIntegrator)->MEMFix_TopLep.Lep_Theta = Leptons[2].P4.Theta();
+    (*meIntegrator)->MEMFix_TopLep.Lep_Phi = Leptons[2].P4.Phi();
+
+    int pos = 0;
+    AddIntegrationBound_TopLep(meIntegrator, &pos, 0, 0, (*meIntegrator)->MEMFix_TopLep.isBmissing);
+    AddIntegrationBound_HiggsFullyLep(meIntegrator, &pos);
+    AddIntegrationBound_OneJet(meIntegrator, &pos, 0, (*meIntegrator)->MEMFix_OtherJets.isJmissing);
+  }
+
+  if ((*meIntegrator)->iNleptons==2){
+
+    (*meIntegrator)->FinalStateTTV.Boson_Type = kHsemilepJ;
+    (*meIntegrator)->FinalStateTTV.Top1_Decay = kTopLepDecay;
+    (*meIntegrator)->FinalStateTTV.Top1_Sign = (Leptons[1].Id>0)?kTop:kAntitop;
+    (*meIntegrator)->FinalStateTTV.Top2_Decay = kNoTop;
+    (*meIntegrator)->FinalStateTTV.Top2_Sign = kNoTop;
+
+    SetPresenceBandJets(meIntegrator, -1, 1);
+
+    (*meIntegrator)->MEMFix_HiggsSemiLep.Lep1_E = Leptons[0].P4.E();
+    (*meIntegrator)->MEMFix_HiggsSemiLep.Lep1_Theta = Leptons[0].P4.Theta();
+    (*meIntegrator)->MEMFix_HiggsSemiLep.Lep1_Phi = Leptons[0].P4.Phi();
+    (*meIntegrator)->MEMFix_HiggsSemiLep.LepSign = (Leptons[0].Id>0)?1:-1;
+
+    (*meIntegrator)->MEMFix_TopLep.Lep_E = Leptons[1].P4.E();
+    (*meIntegrator)->MEMFix_TopLep.Lep_Theta = Leptons[1].P4.Theta();
+    (*meIntegrator)->MEMFix_TopLep.Lep_Phi = Leptons[1].P4.Phi();
+
+    int pos = 0;
+    AddIntegrationBound_TopLep(meIntegrator, &pos, 0, 0, (*meIntegrator)->MEMFix_TopLep.isBmissing);
+    AddIntegrationBound_HiggsSemiLep(meIntegrator, &pos, 0, (*meIntegrator)->MEMFix_HiggsSemiLep.isJmissing);
+    AddIntegrationBound_OneJet(meIntegrator, &pos, 2, (*meIntegrator)->MEMFix_OtherJets.isJmissing);
+
+  }
+
+}
+
+void MultiLepton::FillWZJJHyp(MEPhaseSpace** meIntegrator)
+{
+
+  if ((*meIntegrator)->iNleptons==3){
+
+    (*meIntegrator)->FinalStateTTV.Boson_Type = kLNuLLJJ;
+    (*meIntegrator)->FinalStateTTV.Top1_Decay = kNoTop;
+    (*meIntegrator)->FinalStateTTV.Top1_Sign = kNoTop;
+    (*meIntegrator)->FinalStateTTV.Top2_Decay = kNoTop;
+    (*meIntegrator)->FinalStateTTV.Top2_Sign = kNoTop;
+
+    SetPresenceBandJets(meIntegrator, -2, 1);
+
+    (*meIntegrator)->MEMFix_HiggsSemiLep.Lep1_E = Leptons[0].P4.E();
+    (*meIntegrator)->MEMFix_HiggsSemiLep.Lep1_Theta = Leptons[0].P4.Theta();
+    (*meIntegrator)->MEMFix_HiggsSemiLep.Lep1_Phi = Leptons[0].P4.Phi();
+    (*meIntegrator)->MEMFix_HiggsSemiLep.LepSign = (Leptons[0].Id>0)?1:-1;
+
+    (*meIntegrator)->MEMFix_HiggsFullLep.Lep1_E = Leptons[1].P4.E();
+    (*meIntegrator)->MEMFix_HiggsFullLep.Lep1_Theta = Leptons[1].P4.Theta();
+    (*meIntegrator)->MEMFix_HiggsFullLep.Lep1_Phi = Leptons[1].P4.Phi();
+    (*meIntegrator)->MEMFix_HiggsFullLep.Lep2_E = Leptons[2].P4.E();
+    (*meIntegrator)->MEMFix_HiggsFullLep.Lep2_Theta = Leptons[2].P4.Theta();
+    (*meIntegrator)->MEMFix_HiggsFullLep.Lep2_Phi = Leptons[2].P4.Phi();
+
+    int pos = 0;
+    bool doTTWJJ = true;
+    AddIntegrationBound_Woffshell(meIntegrator, &pos, 0, (*meIntegrator)->MEMFix_HiggsSemiLep.isJmissing, doTTWJJ);
+
+  }
+}
+
 void MultiLepton::FillTTLLHyp(MEPhaseSpace** meIntegrator){
 
   FillTTHFullyLepHyp(meIntegrator);
@@ -702,7 +841,7 @@ void MultiLepton::FillTTbarSemiLepHyp(MEPhaseSpace** meIntegrator){
 
   if ((*meIntegrator)->iNleptons==3 || (*meIntegrator)->iNleptons==2){
 
-    (*meIntegrator)->FinalStateTTV.Boson_Type = kNone;
+    (*meIntegrator)->FinalStateTTV.Boson_Type = kNoBoson;
     (*meIntegrator)->FinalStateTTV.Top1_Decay = kTopHadDecay;
     (*meIntegrator)->FinalStateTTV.Top1_Sign = (Leptons[0].Id>0)?kTop:kAntitop;
     (*meIntegrator)->FinalStateTTV.Top2_Decay = kTopLepDecay;
@@ -730,7 +869,7 @@ void MultiLepton::FillTTbarFullyLepHyp(MEPhaseSpace** meIntegrator){
 
   if ((*meIntegrator)->iNleptons==3 || (*meIntegrator)->iNleptons==4){
 
-    (*meIntegrator)->FinalStateTTV.Boson_Type = kNone;
+    (*meIntegrator)->FinalStateTTV.Boson_Type = kNoBoson;
     (*meIntegrator)->FinalStateTTV.Top1_Decay = kTopLepDecay;
     (*meIntegrator)->FinalStateTTV.Top1_Sign = (Leptons[0].Id>0)?kAntitop:kTop;
     (*meIntegrator)->FinalStateTTV.Top2_Decay = kTopLepDecay;
@@ -1232,7 +1371,7 @@ void MultiLepton::AddIntegrationBound_Woffshell(MEPhaseSpace** meIntegrator, int
       xU[*pos+0] = MissingJetMaxE;
       xU[*pos+1] = TMath::Pi();
       xU[*pos+2] = 2*TMath::Pi();
-      *pos += 2;
+      *pos += 3;
     }
     if (isJetMissing==kJet_PresentBoth || isJetMissing==kJet_MissingFirst){
       if (isJetMissing==kJet_PresentBoth){
@@ -1243,6 +1382,7 @@ void MultiLepton::AddIntegrationBound_Woffshell(MEPhaseSpace** meIntegrator, int
       else if (isJetMissing==kJet_MissingFirst){
         xL[*pos] = Jets[numJets+0].P4.E()*JetTFfracmin; //HiggsSemiLep, Jet2_E
         xU[*pos] = JetTFfracmax*Jets[numJets+0].P4.E();//meIntegrator->comEnergy //HiggsSemiLep, Jet2_E
+	*pos += 1;
       }
     }
     if (isJetMissing==kJet_MissingSecond || isJetMissing==kJet_MissingBoth){
@@ -1252,7 +1392,7 @@ void MultiLepton::AddIntegrationBound_Woffshell(MEPhaseSpace** meIntegrator, int
       xU[*pos+0] = MissingJetMaxE;
       xU[*pos+1] = TMath::Pi();
       xU[*pos+2] = 2*TMath::Pi();
-      *pos += 2;
+      *pos += 3;
     }
   }
 
@@ -1261,14 +1401,24 @@ void MultiLepton::AddIntegrationBound_Woffshell(MEPhaseSpace** meIntegrator, int
 
 void MultiLepton::AddIntegrationBound_OneJet(MEPhaseSpace** meIntegrator, int* pos, int numJets, int isJetMissing){
 
+  cout << "AddIntegrationBound_OneJet" << " numJets="<<numJets<<" isJetMissing="<<isJetMissing << endl;//" E="<< Jets[numJets+0].P4.E()<< " Theta="<<Jets[numJets+0].P4.Theta()<<" Phi="<<Jets[numJets+0].P4.Phi()<<endl;
+
   if (isJetMissing==kJet_Present){
       (*meIntegrator)->MEMFix_OtherJets.Jet1_Theta = Jets[numJets+0].P4.Theta();
       (*meIntegrator)->MEMFix_OtherJets.Jet1_Phi = Jets[numJets+0].P4.Phi();
+    if (numJets==0){
       (*meIntegrator)->transferFunctions->MeasuredVarForTF.Jet1_E = Jets[numJets+0].P4.E();
       (*meIntegrator)->transferFunctions->MeasuredVarForTF.Jet1_Eta = Jets[numJets+0].P4.Eta();
       (*meIntegrator)->transferFunctions->MeasuredVarForTF.doJet1TF = true;
+    }
+    else if (numJets==2){
+      (*meIntegrator)->transferFunctions->MeasuredVarForTF.Jet3_E = Jets[numJets+0].P4.E();
+      (*meIntegrator)->transferFunctions->MeasuredVarForTF.Jet3_Eta = Jets[numJets+0].P4.Eta();
+      (*meIntegrator)->transferFunctions->MeasuredVarForTF.doJet3TF = true;
+    }
   }
-  else (*meIntegrator)->transferFunctions->MeasuredVarForTF.doJet1TF = false;
+  //else if (numJets==0) (*meIntegrator)->transferFunctions->MeasuredVarForTF.doJet1TF = false;
+  //else if (numJets==2) (*meIntegrator)->transferFunctions->MeasuredVarForTF.doJet3TF = false;
 
   if (isJetMissing==kJet_Present){
       xL[*pos] = Jets[numJets+0].P4.E()*JetTFfracmin; //HiggsSemiLep, Jet1_E
@@ -1282,7 +1432,7 @@ void MultiLepton::AddIntegrationBound_OneJet(MEPhaseSpace** meIntegrator, int* p
       xU[*pos+0] = MissingJetMaxE;
       xU[*pos+1] = TMath::Pi();
       xU[*pos+2] = 2*TMath::Pi();
-      *pos += 2;
+      *pos += 3;
   }
 }
 
@@ -1337,12 +1487,35 @@ void MultiLepton::SetPresenceBandJets(MEPhaseSpace** meIntegrator, int KindTwoTo
    if (Bjets.size()>=1) (*meIntegrator)->MEMFix_TopLep.isBmissing = kBjet_Present;
    if (Bjets.size()==0) (*meIntegrator)->MEMFix_TopLep.isBmissing = kBjet_Missing;
  }
-
+ if (KindTwoTops==-2){ //no top ! WZJJ, assume 2 jets (no b-jet)
+   (*meIntegrator)->MEMFix_TopLep.isBmissing = kBjet_Missing;
+ }
 
   //Jets presence
-  if (KindTwoTops==-1){
-    if (Jets.size()>=1) (*meIntegrator)->MEMFix_OtherJets.isJmissing = kJet_Present;
-    if (Jets.size()==0) (*meIntegrator)->MEMFix_OtherJets.isJmissing = kJet_Missing;
+  if (KindTwoTops==-1){ //one top only: tzq, thq
+    if (KindBoson==0){ //boson with no jet
+      if (Jets.size()>=1) (*meIntegrator)->MEMFix_OtherJets.isJmissing = kJet_Present;
+      if (Jets.size()==0) (*meIntegrator)->MEMFix_OtherJets.isJmissing = kJet_Missing;
+    }
+    if (KindBoson==1){ //boson with jets (thq 2lss+3j)
+      if (Jets.size()==0) {
+	(*meIntegrator)->MEMFix_OtherJets.isJmissing = kJet_Missing;
+	(*meIntegrator)->MEMFix_HiggsSemiLep.isJmissing = kJet_MissingBoth;
+      }
+      if (Jets.size()==1) {
+	(*meIntegrator)->MEMFix_OtherJets.isJmissing = kJet_Present;
+        (*meIntegrator)->MEMFix_HiggsSemiLep.isJmissing = kJet_MissingBoth;
+      }
+      if (Jets.size()==2) {
+	(*meIntegrator)->MEMFix_OtherJets.isJmissing = kJet_Present;
+	if (iperm_jmiss==0) (*meIntegrator)->MEMFix_HiggsSemiLep.isJmissing = kJet_MissingFirst;
+        if (iperm_jmiss==1) (*meIntegrator)->MEMFix_HiggsSemiLep.isJmissing = kJet_MissingSecond;
+      }
+      if (Jets.size()==3) {
+        (*meIntegrator)->MEMFix_OtherJets.isJmissing = kJet_Present;
+        (*meIntegrator)->MEMFix_HiggsSemiLep.isJmissing = kJet_PresentBoth;
+      }
+    }
   }
   if (KindTwoTops==0 && KindBoson==0){ //has top had  
     if (Jets.size()==2) (*meIntegrator)->MEMFix_TopHad.isJmissing = kJet_PresentBoth;
@@ -1350,7 +1523,7 @@ void MultiLepton::SetPresenceBandJets(MEPhaseSpace** meIntegrator, int KindTwoTo
     if (Jets.size()==1 && iperm_jmiss==1) (*meIntegrator)->MEMFix_TopHad.isJmissing = kJet_MissingSecond;
     if (Jets.size()==0) (*meIntegrator)->MEMFix_TopHad.isJmissing = kJet_MissingBoth;
   }
-  if (KindTwoTops==1 && KindBoson==1){ //has HiggsSemiLep or ttwjj
+  if ((KindTwoTops==1 && KindBoson==1) || (KindTwoTops==-2)){ //has HiggsSemiLep or ttwjj
     if (Jets.size()==2) (*meIntegrator)->MEMFix_HiggsSemiLep.isJmissing = kJet_PresentBoth;
     if (Jets.size()==1 && iperm_jmiss==0) (*meIntegrator)->MEMFix_HiggsSemiLep.isJmissing = kJet_MissingFirst;
     if (Jets.size()==1 && iperm_jmiss==1) (*meIntegrator)->MEMFix_HiggsSemiLep.isJmissing = kJet_MissingSecond;

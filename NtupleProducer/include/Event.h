@@ -11,7 +11,7 @@ class Event : public Base
         Event();
         virtual ~Event();
 
-        long int id()                       {return _id;};
+	double id()                       {return _id;};
         int run()                           {return _run;};
         int lumi()                          {return _lumi;};
 

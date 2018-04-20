@@ -1,1 +1,5 @@
-root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/ttZJets_13TeV_madgraphMLM/ttZJets_13TeV_madgraphMLM_ID5_0.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/newLepMVA/ttZJets_13TeV_madgraphMLM/ttZJets_13TeV_madgraphMLM_ID4_0.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/newLepMVA/ttZJets_13TeV_madgraphMLM/ttZJets_13TeV_madgraphMLM_ID5_0.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/newLepMVA/ttZJets_13TeV_madgraphMLM/ttZJets_13TeV_madgraphMLM_ID6_0.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/newLepMVA/ttZJets_13TeV_madgraphMLM/ttZJets_13TeV_madgraphMLM_ID7_0.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/newLepMVA/ttZJets_13TeV_madgraphMLM/ttZJets_13TeV_madgraphMLM_ID8_0.root

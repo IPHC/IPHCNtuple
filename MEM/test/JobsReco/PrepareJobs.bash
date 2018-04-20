@@ -4,10 +4,10 @@
 #Environment variables LHAPDF and MEMEXECDIR (containing the executable) must be set
 
 #Suffix of the subdirectory: jobs will be created in Jobs_${opt}, that should contain the config.cfg file 
-opt=test_AllCat_BugFix
+opt=thq_test
 
-#nEv events are run per job. Recommended nEv=6. If running also TTWJJ hyp, use nEv=1 (very slow).
-nEv=10
+#nEv events are run per job. Recommended nEv=6. If running also TTWJJ hyp, use nEv=1 (very slow). Depends on process
+nEv=20
 
 #LSF queue
 queue=1nd
@@ -29,7 +29,7 @@ do
   nJobs=$(($nEntries / $nEv ))
   echo nEntries=$nEntries nJobs=$nJobs
 
-  #nJobsMax=$((2000/$nEv))
+  #nJobsMax=$((20000/$nEv))
   #echo nJobsMax=$nJobsMax
 
   cp RunBatchMEM_template Jobs_${opt}/RunBatchMEM_${proc}_template
@@ -42,7 +42,7 @@ do
 
   for i in `seq 0 $nJobs` #$nJobs 
   do
-    #if [[ $i -ge $nJobsMax ]]; then break; fi
+#    if [[ $i -ge $nJobsMax ]]; then break; fi
 
     i1=$(($i*$nEv))
     i2=$(($i*$nEv+$nEv))

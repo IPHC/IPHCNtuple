@@ -1,9 +1,9 @@
 #!/bin/bash
 
-
+#PROC_SA_CPP_sm_DECAY_gqlnullgq
 model=sm_no_b_mass
-suffix="pptllq"
-Name="TLLQ"
+suffix="ppthq"
+Name="THQ"
 
 ProcDir=PROC_SA_CPP_${model}_DECAY_${suffix}
 echo Generating code for ${ProcDir} with MakeFile name ${Name}

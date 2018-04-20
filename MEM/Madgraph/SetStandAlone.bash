@@ -1,7 +1,7 @@
 #!/bin/bash
 
-model=sm_ckm
-suffix="ppttlpvljj"
+model=sm_no_b_mass
+suffix="ppthq"
 
 cd PROC_SA_CPP_${model}_DECAY_${suffix}
 echo Entering PROC_SA_CPP_${model}_DECAY_${suffix}
@@ -18,8 +18,8 @@ sed -i s/_${model}/_${model}_${suffix}/g HelAmps_${model}_${suffix}.cc
 sed -i s/_${model}/_${model}_${suffix}/g HelAmps_${model}_${suffix}.h
 sed -i s/_${model}/_${model}_${suffix}/g Parameters_${model}_${suffix}.cc
 sed -i s/_${model}/_${model}_${suffix}/g Parameters_${model}_${suffix}.h
-sed -i s,read_slha,../../PROC_SA_CPP_sm_4/src/read_slha,g Makefile
 sed -i s/_${model}/_${model}_${suffix}/g Makefile
+sed -i s,read_slha,../../PROC_SA_CPP_sm_4/src/read_slha,g Makefile
 sed -i s,read_slha,../../PROC_SA_CPP_sm_4/src/read_slha,g Parameters_${model}_${suffix}.h
 make clean
 make

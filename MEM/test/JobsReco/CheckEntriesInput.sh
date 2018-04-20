@@ -1,5 +1,7 @@
 #!/bin/bash
 
+nEntriesTot=0
+
 while read line
 do
 
@@ -10,6 +12,11 @@ do
 
   root -l -q 'ReadEntries.C("'${inputfile}'")' | awk 'NR==3' > tmp
   nEntries=`cat tmp`
-echo nEntries=$nEntries
+  echo nEntries=$nEntries
+
+  nEntriesTot=$(( nEntriesTot + nEntries ));
+  #echo nEntriesTot=$nEntriesTot
 
 done < FileList.txt
+
+echo nEntriesTot=$nEntriesTot

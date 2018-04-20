@@ -1,1 +1,2 @@
-root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/WWTo2L2Nu_13TeV-powheg/WWTo2L2Nu_13TeV-powheg_ID0_0.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/newLepMVA/WWTo2L2Nu_13TeV-powheg/WWTo2L2Nu_13TeV-powheg_ID0_0.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/newLepMVA/WWTo2L2Nu_13TeV-powheg/WWTo2L2Nu_13TeV-powheg_ID1_0.root

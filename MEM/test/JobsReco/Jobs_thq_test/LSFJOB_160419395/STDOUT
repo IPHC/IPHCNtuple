@@ -1,0 +1,30 @@
+@(#)CERN job starter $Date: 2010/06/23 14:22:16 $
+Working directory is </pool/lsf/ntonon/160419395> on <b6702bb37f.cern.ch>
+
+Error in <TUnixSystem::FindDynamicLibrary>: SubGradient_h[.so | .dll | .dylib | .sl | .dl | .a] does not exist in /afs/cern.ch/user/n/ntonon/public/MEM_Implementation/CMSSW_8_0_20/biglib/slc6_amd64_gcc530:/afs/cern.ch/user/n/ntonon/public/MEM_Implementation/CMSSW_8_0_20/lib/slc6_amd64_gcc530:/afs/cern.ch/user/n/ntonon/public/MEM_Implementation/CMSSW_8_0_20/external/slc6_amd64_gcc530/lib:/cvmfs/cms.cern.ch/slc6_amd64_gcc530/cms/cmssw/CMSSW_8_0_20/biglib/slc6_amd64_gcc530:/cvmfs/cms.cern.ch/slc6_amd64_gcc530/cms/cmssw/CMSSW_8_0_20/lib/slc6_amd64_gcc530:/cvmfs/cms.cern.ch/slc6_amd64_gcc530/cms/cmssw/CMSSW_8_0_20/external/slc6_amd64_gcc530/lib:/cvmfs/cms.cern.ch/slc6_amd64_gcc530/external/llvm/3.7.1-giojec/lib64:/cvmfs/cms.cern.ch/slc6_amd64_gcc530/external/gcc/5.3.0/lib64:/cvmfs/cms.cern.ch/slc6_amd64_gcc530/external/gcc/5.3.0/lib:/usr/lsf/lib64:/afs/cern.ch/user/n/ntonon/public/MEM_Implementation/CMSSW_8_0_20/src/LHAPDF-6.1.5-install/lib:/afs/cern.ch/user/n/ntonon/public/MEM_Implementation/CMSSW_8_0_20/src/LHAPDF-6.1.5-install/lib:.:/cvmfs/cms.cern.ch/slc6_amd64_gcc530/lcg/root/6.06.00-ikhhed4/lib:/lib64/tls/x86_64:/lib64/tls:/lib64/x86_64:/lib64:/usr/lib64/tls/x86_64:/usr/lib64/tls:/usr/lib64/x86_64:/usr/lib64
+Warning in <TClass::Init>: no dictionary for class ROOT::TIOFeatures is available
+Error in <TTree::SetBranchAddress>: unknown branch -> mc_event
+Error in <TTree::SetBranchAddress>: unknown branch -> is_2lss_TTH_SR
+Error in <TTree::SetBranchAddress>: unknown branch -> is_3l_TTH_SR
+Error in <TTree::SetBranchAddress>: unknown branch -> cat_HtoWW
+Error in <TTree::SetBranchAddress>: unknown branch -> cat_HtoZZ
+Error in <TTree::SetBranchAddress>: unknown branch -> cat_Htott
+Error in <TTree::SetBranchAddress>: unknown branch -> mc_3l_category
+Error in <TTree::SetBranchAddress>: unknown branch -> mc_ttbar_decay
+Error in <TTree::SetBranchAddress>: unknown branch -> mc_boson_decay
+Error in <TTree::SetBranchAddress>: unknown branch -> nJet25_Recl
+Error in <TTree::SetBranchAddress>: unknown branch -> max_Lep_eta
+Error in <TTree::SetBranchAddress>: unknown branch -> MT_met_lep1
+Error in <TTree::SetBranchAddress>: unknown branch -> mindr_lep1_jet
+Error in <TTree::SetBranchAddress>: unknown branch -> mindr_lep2_jet
+Error in <TTree::SetBranchAddress>: unknown branch -> LepGood_conePt0
+Error in <TTree::SetBranchAddress>: unknown branch -> LepGood_conePt1
+1524226926.160419395.out
+log_tHq_thq_test_87
+output.root
+
+Job finished at Fri Apr 20 15:33:21 CEST 2018 on node 
+ under linux version Scientific Linux CERN SLC release 6.9 (Carbon)
+
+CERN statistics: This process used approximately : 2:49:14 KSI2K hours (10154 KSI2K seconds)
+                 This process corresponds to     : 11:00:04 HS06  hours (39604 HS06  seconds)

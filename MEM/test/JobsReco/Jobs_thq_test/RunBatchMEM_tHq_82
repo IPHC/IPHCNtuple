@@ -1,0 +1,28 @@
+#!/bin/csh
+
+setenv LSB_JOB_REPORT_MAIL N
+
+setenv LOCALDIR `pwd`
+setenv EXECDIR /afs/cern.ch/user/n/ntonon/public/MEM_Implementation/CMSSW_8_0_20/src/IPHCNtuple/MEM/test
+
+setenv LC_ALL "en_US.UTF-8"
+
+setenv LHAPDF /afs/cern.ch/user/n/ntonon/public/MEM_Implementation/CMSSW_8_0_20/src/LHAPDF-6.1.5-install
+setenv LHAPATH $LHAPDF/share/LHAPDF/
+setenv LHAPDF_BIN $LHAPDF/bin
+setenv PATH ${PATH}:${LHAPDF_BIN}
+setenv LD_LIBRARY_PATH ${LD_LIBRARY_PATH}:$LHAPDF/lib
+
+#setenv ROOTSYS /usr/bin/root
+rehash
+
+cd ${EXECDIR}
+eval `scram runtime -csh`
+
+cd ${LOCALDIR}
+${EXECDIR}/./test /afs/cern.ch/user/n/ntonon/public/MEM_Implementation/CMSSW_8_0_20/src/IPHCNtuple/MEM/test/tHq.root 1640 1660 --MEMRun /afs/cern.ch/user/n/ntonon/public/MEM_Implementation/CMSSW_8_0_20/src/IPHCNtuple/MEM/test/JobsReco/Jobs_thq_test/config.cfg > log_tHq_thq_test_82
+
+ls 
+
+#cp log_tHq_thq_test_82 /afs/cern.ch/user/n/ntonon/public/MEM_Implementation/CMSSW_8_0_20/src/IPHCNtuple/MEM/test/JobsReco/Jobs_thq_test/
+cp output.root /afs/cern.ch/user/n/ntonon/public/MEM_Implementation/CMSSW_8_0_20/src/IPHCNtuple/MEM/test/JobsReco/Jobs_thq_test/output_tHq_thq_test_82.root

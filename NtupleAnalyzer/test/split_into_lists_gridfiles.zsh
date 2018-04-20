@@ -1,6 +1,8 @@
 #!/bin/env zsh
 export x509_USER_PROXY=/home-pbs/ntonon/proxy/x509up_u8066
-fpath="/dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/"
+
+#fpath="/dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/oldLepMVA/"
+fpath="/dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/newLepMVA/"
 
 dataStr="SingleElectron|SingleMuon|DoubleEG|DoubleMuon|MuonEG"
 

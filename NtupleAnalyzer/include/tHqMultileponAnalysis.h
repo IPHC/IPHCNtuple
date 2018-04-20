@@ -49,7 +49,7 @@ class tHqMultileponAnalysis
         tHqMultileponAnalysis(TString inputFileName, TString sampleName, TString treeName, TString outputFileName, bool isdata, bool doSystCombine, float xsec, float lumi, int nowe, int nmax); //Constructor
         ~tHqMultileponAnalysis(); //Destructor
 
-        void Debug_Selection(int evt);
+        // void Debug_Selection(int evt);
 
         //-- 3l selections
         void ThreeLeptonSelection_THQ3l_SR(int evt);
@@ -71,7 +71,7 @@ class tHqMultileponAnalysis
         void TwoLeptonSelection_GammaConv(int evt);
 
 		void InitFiles();
-		void InitVectors();
+		void InitEvent();
 		void InitVariables();
 		void InitTree();
 		void initializeOutputTree();
@@ -83,7 +83,7 @@ class tHqMultileponAnalysis
 		void FillJetInfoOutputTree(int*, int, TLorentzVector*, TLorentzVector, float*, float, float*, float*, float, float*, float*, float, float, float);
 
         void SelectBjets(int&, int&, bool);
-        void SelectOtherJets(const int, const int, int&, int&, int&, int&, int&, int&, int&, int&);
+        void SelectOtherJets(const int, const int, int&, int&, int&, int&, int&, int&, int&, int&, int&, int&, int&, int&, int&, int&);
         float Phi_0_2Pi(float phi);
 		float Phi_MPi_Pi(float phi);
 		float GetDeltaR(float eta1,float phi1,float eta2,float phi2);
@@ -133,21 +133,18 @@ class tHqMultileponAnalysis
 		float nFakeableLep;
 
 
-        //-- NB : coded in floats, because treated as any other variable in Analysis code (floats)
-        //-- NB2 : if add new cat., need to add it in func Reinit_Categories()
-        bool is_3l_THQ_SR;    // Category : training events tHQ3l analysis
-        bool is_3l_THQ_Training; //Category : training events tHQ3l analysis
-        bool is_3l_Z_CR;
-
-        bool is_2l_THQ_SR;
-        bool is_2l_THQ_Training;
-        bool is_2l_EMU_CR;
-
-        bool is_3l_AppFakes_SR;
-        bool is_3l_GammaConv_SR;
-		bool is_2l_AppFakes_SR;
-        bool is_2l_GammaConv_SR;
-        bool is_2l_QFlip_SR;
+        //-- Categories are encoded as Char_t (not booleans, bc vector<bool> is 'broken' in C++)
+        Char_t is_3l_THQ_SR;    // Category : training events tHQ3l analysis
+        Char_t is_3l_THQ_Training; //Category : training events tHQ3l analysis
+        Char_t is_3l_Z_CR;
+        Char_t is_2l_THQ_SR;
+        Char_t is_2l_THQ_Training;
+        Char_t is_2l_EMU_CR;
+        Char_t is_3l_AppFakes_SR;
+        Char_t is_3l_GammaConv_SR;
+	    Char_t is_2l_AppFakes_SR;
+        Char_t is_2l_GammaConv_SR;
+        Char_t is_2l_QFlip_SR;
 
         bool is_trigger;
 
@@ -156,13 +153,14 @@ class tHqMultileponAnalysis
 		float channel;
 
         TTree* tOutput;
-        double event_id;
-		int event_run;
+        Float_t event_id;
+		Float_t event_run;
 
 
         //-- NB : input variables declared in SignalExtractionMVA.h
         //Additionnal variables, for control plots
         float lep1Pt, lep2Pt, lep3Pt, inv_mll, hardestBjetPt, hardestBjetEta, fwdJetPt;
+		float MET;
 
 
 
@@ -226,7 +224,9 @@ class tHqMultileponAnalysis
 
         Int_t multilepton_JetHighestEta1_Id, multilepton_JetHighestEta2_Id;
         TLorentzVector multilepton_JetHighestEta1_P4, multilepton_JetHighestEta2_P4;
-        Float_t multilepton_JetHighestEta1_CSV, multilepton_JetHighestEta2_CSV;
+		Float_t multilepton_JetHighestEta1_CSV, multilepton_JetHighestEta2_CSV;
+		Float_t multilepton_JetHighestEta1_JEC_Up, multilepton_JetHighestEta1_JEC_Down, multilepton_JetHighestEta2_JEC_Up, multilepton_JetHighestEta2_JEC_Down;
+		Float_t multilepton_JetHighestEta1_JER_Up, multilepton_JetHighestEta1_JER_Down, multilepton_JetHighestEta2_JER_Up, multilepton_JetHighestEta2_JER_Down;
 
         Int_t           multilepton_h0_Label,   multilepton_t1_Label,   multilepton_t2_Label;
         Int_t           multilepton_h0_Id,      multilepton_t1_Id,      multilepton_t2_Id;
