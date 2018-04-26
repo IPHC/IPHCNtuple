@@ -60,7 +60,7 @@ class Muon : public Base
 
         // MVA
         float lepMVA()             {return _lepMVA;};
-        float lepMVA_TTH()   {return _lepMVA_TTH;};
+//        float lepMVA_TTH()   {return _lepMVA_TTH;};
 
         float lepMVA_miniRelIsoCharged()    {return _lepMVA_miniRelIsoCharged;};
         float lepMVA_miniRelIsoNeutral()    {return _lepMVA_miniRelIsoNeutral;};
@@ -119,7 +119,7 @@ class Muon : public Base
 
         // MVA
         float _lepMVA;
-        float _lepMVA_TTH;
+//        float _lepMVA_TTH;
 
         float _lepMVA_miniRelIsoCharged;
         float _lepMVA_miniRelIsoNeutral;

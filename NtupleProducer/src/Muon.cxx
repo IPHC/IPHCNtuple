@@ -41,7 +41,7 @@ void Muon::read()
 
     // mva-based selection additionnal variables
     _lepMVA	                        = ntP->mu_lepMVA->at(idx);
-    _lepMVA_TTH                     = ntP->mu_lepMVA_Moriond16->at(idx);
+//    _lepMVA_TTH                     = ntP->mu_lepMVA_Moriond16->at(idx);
 
     _lepMVA_miniRelIsoCharged       = ntP->mu_lepMVA_miniRelIsoCharged->at(idx);
     _lepMVA_miniRelIsoNeutral       = ntP->mu_lepMVA_miniRelIsoNeutral->at(idx);
@@ -103,7 +103,7 @@ void Muon::init()
     // more variables
 
     _lepMVA                      = -100.;
-    _lepMVA_TTH                  = -100.;
+//    _lepMVA_TTH                  = -100.;
 
     _lepMVA_miniRelIsoCharged    = -100.;
     _lepMVA_miniRelIsoNeutral    = -100.;
@@ -165,19 +165,19 @@ bool Muon::sel()
     // Fakeable
 
 
-    bool pass_lepMVA_TTH  = _lepMVA_TTH > 0.90 ;
+    bool pass_lepMVA  = _lepMVA > 0.90 ;
     bool pass_lepMVA_jetBTagCSV089 = _lepMVA_jetBTagCSV < 0.89;
 
     bool pass_lepMVA_jetBtagCSVPtRatio = false;
 
-    if (!pass_lepMVA_TTH && _lepMVA_jetPtRatio > 0.3 && _lepMVA_jetBTagCSV < 0.8484) pass_lepMVA_jetBtagCSVPtRatio = true;
-    if (pass_lepMVA_TTH && pass_lepMVA_jetBTagCSV089) pass_lepMVA_jetBtagCSVPtRatio = true;
+    if (!pass_lepMVA && _lepMVA_jetPtRatio > 0.3 && _lepMVA_jetBTagCSV < 0.8484) pass_lepMVA_jetBtagCSVPtRatio = true;
+    if (pass_lepMVA && pass_lepMVA_jetBTagCSV089) pass_lepMVA_jetBtagCSVPtRatio = true;
 
     _isFakeableTTH = isLooseTTH && pass_lepMVA_jetBtagCSVPtRatio;
 
     // Tight
 
-    _isTightTTH = isLooseTTH && pass_lepMVA_TTH && _isMedium && pass_lepMVA_jetBTagCSV089;
+    _isTightTTH = isLooseTTH && pass_lepMVA && _isMedium && pass_lepMVA_jetBTagCSV089;
 
     _passTightCharge = (_tightCharge < 0.2);
     //_isTightTTH = isLooseTTH && pass_lepMVA_TTH && _isMedium && pass_lepMVA_jetBTagCSV089 && _pass_tightCharge;
@@ -219,7 +219,7 @@ bool Muon::sel()
                                        << fabs(_dxy)                                    << " "
                                        << _dz                                           << " "
                                        << ntP->mu_segmentCompatibility->at(idx)         << " "
-                                       << _lepMVA_TTH                                   << std::endl;
+                                       << _lepMVA                                   << std::endl;
     }
 
     return isLooseTTH;
