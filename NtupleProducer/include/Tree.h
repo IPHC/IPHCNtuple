@@ -146,7 +146,6 @@ class Tree {
         vector<float>   *el_dzError;
         vector<float>   *el_mvaIso;
    vector<float>   *el_mvaNoIso;
-        vector<float>   *el_mvaNonTrigCat;
         vector<bool>    *el_mvaPassMedium;
         vector<bool>    *el_mvaPassTight;
         vector<int>     *el_numberOfHits;
@@ -158,9 +157,6 @@ class Tree {
         vector<float>   *el_lepMVA_miniRelIsoCharged;
         vector<float>   *el_lepMVA_miniRelIsoNeutral;
         vector<float>   *el_lepMVA_jetPtRelv2;
-        vector<float>   *el_lepMVA_neuRelIso;
-        vector<float>   *el_lepMVA_chRelIso;
-        vector<float>   *el_lepMVA_jetDR;
         vector<float>   *el_lepMVA_jetPtRatio;
         vector<float>   *el_lepMVA_jetBTagCSV;
         vector<float>   *el_lepMVA_sip3d;
@@ -169,17 +165,13 @@ class Tree {
         vector<float>   *el_lepMVA_mvaId;
         vector<float>   *el_lepMVA_eta;
         vector<float>   *el_lepMVA_jetNDauChargedMVASel;
-        vector<float>   *el_lepMVA_Moriond16;
         vector<int>     *el_isGsfCtfScPixChargeConsistent;
         vector<int>     *el_isGsfScPixChargeConsistent;
         vector<int>     *el_passConversionVeto;
         vector<float>   *el_deltaEtaSuperClusterTrackAtVtx;
         vector<float>   *el_deltaPhiSuperClusterTrackAtVtx;
-        vector<float>   *el_see;
         vector<float>   *el_hadronicOverEm;
         vector<float>   *el_scleta;
-        vector<float>   *el_dB3D;
-        vector<float>   *el_edB3D;
         vector<bool>    *el_hasMatchedConversion;
         vector<float>   *el_sigmaIetaIeta;
         vector<float>   *el_superCluster_eta;
@@ -261,9 +253,6 @@ class Tree {
         vector<float>   *mu_lepMVA_miniRelIsoCharged;
         vector<float>   *mu_lepMVA_miniRelIsoNeutral;
         vector<float>   *mu_lepMVA_jetPtRelv2;
-        vector<float>   *mu_lepMVA_neuRelIso;
-        vector<float>   *mu_lepMVA_chRelIso;
-        vector<float>   *mu_lepMVA_jetDR;
         vector<float>   *mu_lepMVA_jetPtRatio;
         vector<float>   *mu_lepMVA_jetBTagCSV;
         vector<float>   *mu_lepMVA_sip3d;
@@ -272,7 +261,6 @@ class Tree {
         vector<float>   *mu_lepMVA_mvaId;
         vector<float>   *mu_lepMVA_eta;
         vector<float>   *mu_lepMVA_jetNDauChargedMVASel;
-        vector<float>   *mu_lepMVA_Moriond16;
         vector<float>   *mu_innerTrack_pt;
         vector<float>   *mu_innerTrack_ptError;
         vector<float>   *mu_dB3D;
@@ -293,8 +281,6 @@ class Tree {
         vector<float>   *tau_eta;
         vector<float>   *tau_phi;
         vector<float>   *tau_m;
-        vector<float>   *tau_dxy;
-        vector<float>   *tau_dz;
         vector<float>   *tau_leadingTrackDxy;
         vector<float>   *tau_leadingTrackDz;
         vector<int>     *tau_charge;
@@ -308,13 +294,13 @@ class Tree {
         vector<float>   *tau_byLooseCombinedIsolationDeltaBetaCorr3Hits;
         vector<float>   *tau_byMediumCombinedIsolationDeltaBetaCorr3Hits;
         vector<float>   *tau_byTightCombinedIsolationDeltaBetaCorr3Hits;
-        vector<float>   *tau_byLooseIsolationMVA3newDMwLT;
-        vector<float>   *tau_byMediumIsolationMVA3newDMwLT;
-        vector<float>   *tau_byTightIsolationMVA3newDMwLT;
+//        vector<float>   *tau_byLooseIsolationMVA3newDMwLT;
+//        vector<float>   *tau_byMediumIsolationMVA3newDMwLT;
+//        vector<float>   *tau_byTightIsolationMVA3newDMwLT;
 
-        vector<float>   *tau_byLooseCombinedIsolationDeltaBetaCorr3HitsdR03;
-        vector<float>   *tau_byMediumCombinedIsolationDeltaBetaCorr3HitsdR03;
-        vector<float>   *tau_byTightCombinedIsolationDeltaBetaCorr3HitsdR03;
+//        vector<float>   *tau_byLooseCombinedIsolationDeltaBetaCorr3HitsdR03;
+//        vector<float>   *tau_byMediumCombinedIsolationDeltaBetaCorr3HitsdR03;
+//        vector<float>   *tau_byTightCombinedIsolationDeltaBetaCorr3HitsdR03;
         vector<float>   *tau_byLooseIsolationMVArun2v1DBdR03oldDMwLT;
         vector<float>   *tau_byMediumIsolationMVArun2v1DBdR03oldDMwLT;
         vector<float>   *tau_byTightIsolationMVArun2v1DBdR03oldDMwLT;
@@ -1024,7 +1010,6 @@ class Tree {
         TBranch        *b_el_dzError;   //!
         TBranch        *b_el_mvaIso;   //!
    TBranch        *b_el_mvaNoIso;   //!
-        TBranch        *b_el_mvaNonTrigCat;   //!
         TBranch        *b_el_mvaPassMedium;   //!
         TBranch        *b_el_mvaPassTight;   //!
         TBranch        *b_el_numberOfHits;   //!
@@ -1036,16 +1021,12 @@ class Tree {
         TBranch        *b_el_lepMVA_miniRelIsoCharged;
         TBranch        *b_el_lepMVA_miniRelIsoNeutral;
         TBranch        *b_el_lepMVA_jetPtRelv2;
-        TBranch        *b_el_lepMVA_neuRelIso;
-        TBranch        *b_el_lepMVA_chRelIso;
-        TBranch        *b_el_lepMVA_jetDR;
         TBranch        *b_el_lepMVA_jetPtRatio;
         TBranch        *b_el_lepMVA_jetBTagCSV;
         TBranch        *b_el_lepMVA_sip3d;
         TBranch        *b_el_lepMVA_dxy;
         TBranch        *b_el_lepMVA_dz;
         TBranch        *b_el_lepMVA_mvaId;
-        TBranch        *b_el_lepMVA_Moriond16;   //!
         TBranch        *b_el_lepMVA_eta;   //!
         TBranch        *b_el_lepMVA_jetNDauChargedMVASel;   //!
         TBranch        *b_el_isGsfCtfScPixChargeConsistent;   //!
@@ -1053,11 +1034,8 @@ class Tree {
         TBranch        *b_el_passConversionVeto;   //!
         TBranch        *b_el_deltaEtaSuperClusterTrackAtVtx;
         TBranch        *b_el_deltaPhiSuperClusterTrackAtVtx;
-        TBranch        *b_el_see;
         TBranch        *b_el_hadronicOverEm;
         TBranch        *b_el_scleta;
-        TBranch        *b_el_dB3D;
-        TBranch        *b_el_edB3D;
         TBranch        *b_el_hasMatchedConversion;
         TBranch        *b_el_sigmaIetaIeta;
         TBranch        *b_el_superCluster_eta;
@@ -1138,16 +1116,12 @@ class Tree {
         TBranch        *b_mu_lepMVA_miniRelIsoCharged;
         TBranch        *b_mu_lepMVA_miniRelIsoNeutral;
         TBranch        *b_mu_lepMVA_jetPtRelv2;
-        TBranch        *b_mu_lepMVA_neuRelIso;
-        TBranch        *b_mu_lepMVA_chRelIso;
-        TBranch        *b_mu_lepMVA_jetDR;
         TBranch        *b_mu_lepMVA_jetPtRatio;
         TBranch        *b_mu_lepMVA_jetBTagCSV;
         TBranch        *b_mu_lepMVA_sip3d;
         TBranch        *b_mu_lepMVA_dxy;
         TBranch        *b_mu_lepMVA_dz;
         TBranch        *b_mu_lepMVA_mvaId;
-        TBranch        *b_mu_lepMVA_Moriond16;   //!
         TBranch        *b_mu_lepMVA_eta;   //!
         TBranch        *b_mu_lepMVA_jetNDauChargedMVASel;   //!
         TBranch        *b_mu_innerTrack_pt;   //!
@@ -1170,8 +1144,6 @@ class Tree {
         TBranch   *b_tau_eta;
         TBranch   *b_tau_phi;
         TBranch   *b_tau_m;
-        TBranch   *b_tau_dxy;
-        TBranch   *b_tau_dz;
         TBranch   *b_tau_leadingTrackDxy;
         TBranch   *b_tau_leadingTrackDz;
         TBranch   *b_tau_charge;
@@ -1185,13 +1157,13 @@ class Tree {
         TBranch   *b_tau_byLooseCombinedIsolationDeltaBetaCorr3Hits;
         TBranch   *b_tau_byMediumCombinedIsolationDeltaBetaCorr3Hits;
         TBranch   *b_tau_byTightCombinedIsolationDeltaBetaCorr3Hits;
-        TBranch   *b_tau_byLooseIsolationMVA3newDMwLT;
-        TBranch   *b_tau_byMediumIsolationMVA3newDMwLT;
-        TBranch   *b_tau_byTightIsolationMVA3newDMwLT;
+//        TBranch   *b_tau_byLooseIsolationMVA3newDMwLT;
+//        TBranch   *b_tau_byMediumIsolationMVA3newDMwLT;
+//        TBranch   *b_tau_byTightIsolationMVA3newDMwLT;
 
-        TBranch   *b_tau_byLooseCombinedIsolationDeltaBetaCorr3HitsdR03;
-        TBranch   *b_tau_byMediumCombinedIsolationDeltaBetaCorr3HitsdR03;
-        TBranch   *b_tau_byTightCombinedIsolationDeltaBetaCorr3HitsdR03;
+//        TBranch   *b_tau_byLooseCombinedIsolationDeltaBetaCorr3HitsdR03;
+//        TBranch   *b_tau_byMediumCombinedIsolationDeltaBetaCorr3HitsdR03;
+//        TBranch   *b_tau_byTightCombinedIsolationDeltaBetaCorr3HitsdR03;
         TBranch   *b_tau_byLooseIsolationMVArun2v1DBdR03oldDMwLT;
         TBranch   *b_tau_byMediumIsolationMVArun2v1DBdR03oldDMwLT;
         TBranch   *b_tau_byTightIsolationMVArun2v1DBdR03oldDMwLT;
