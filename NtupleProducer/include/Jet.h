@@ -27,7 +27,7 @@ class Jet : public Base
         float qg()          {return _qg;};
 
         bool  isTight()     {return _isTight;};
-        bool  isLoose()     {return _isLoose;};
+        bool  tightJetID()     {return _tightJetID;};
 
         int   ntrk()        {return _ntrk;};
 
@@ -83,7 +83,7 @@ class Jet : public Base
         float _qg;
 
         bool _isTight;
-        bool _isLoose;
+        bool _tightJetID;
 
         int _ntrk;
 

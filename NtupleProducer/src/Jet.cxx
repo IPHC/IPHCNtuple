@@ -26,7 +26,7 @@ void Jet::read(bool isdata)
 
 
     // selection variables
-    if( CHECK(ntP->jet_looseJetID) )    _isLoose    = ntP->jet_looseJetID->at(idx);
+    if( CHECK(ntP->jet_tightJetID) )    _tightJetID    = ntP->jet_tightJetID->at(idx);
 
     // other variables
     if ( CHECK(ntP->jet_ntrk)    )          _ntrk           = ntP->jet_ntrk->at(idx);
@@ -66,7 +66,7 @@ void Jet::init()
     _qg      = -100.;
 
     // selection variables
-    _isLoose = 0;
+    _tightJetID = 0;
 
     // other variables
     _ntrk           = -100;
@@ -99,23 +99,21 @@ void Jet::init()
 bool Jet::sel()
 {
     // selection
-    bool pass_pt      = (_pt        > 25.);
-    //bool pass_eta     = (fabs(_eta) < 2.4);
-    bool pass_eta     = true;  //-- CHANGED
-    bool pass_isLoose = (_isLoose        );
-    bool pass_jetId   = 0;
+   bool pass_pt      = (_pt > 25.);
+   bool pass_eta     = (fabs(_eta) < 2.4);
+   bool pass_tightJetID = (_tightJetID);
 
-    float pileupJetId = ntP->jet_pileupJetId->at(idx);
-
-    if( fabs(_eta) >= 0 && fabs(_eta) < 2.5 )
-        if( pileupJetId > -0.63 ) pass_jetId = 1;
-        else if( fabs(_eta) >= 2.5 && fabs(_eta) < 2.75 )
-            if( pileupJetId > -0.60 ) pass_jetId = 1;
-            else if( fabs(_eta) >= 2.75 && fabs(_eta) < 3.0 )
-                if( pileupJetId > -0.55 ) pass_jetId = 1;
-                else if( fabs(_eta) >= 3.0 && fabs(_eta) < 5.2 )
-                    if( pileupJetId > -0.45 ) pass_jetId = 1;
-
+/*   float pileupJetId = ntP->jet_pileupJetId->at(idx);
+   
+   if( fabs(_eta) >= 0 && fabs(_eta) < 2.5 )
+     if( pileupJetId > -0.63 ) pass_jetId = 1;
+   else if( fabs(_eta) >= 2.5 && fabs(_eta) < 2.75 )
+     if( pileupJetId > -0.60 ) pass_jetId = 1;
+   else if( fabs(_eta) >= 2.75 && fabs(_eta) < 3.0 )
+     if( pileupJetId > -0.55 ) pass_jetId = 1;
+   else if( fabs(_eta) >= 3.0 && fabs(_eta) < 5.2 )
+     if( pileupJetId > -0.45 ) pass_jetId = 1;*/
+   
     bool pass_muOverlap = 1;
     int nMuon = nt->NtMuon->size();
     for(int im=0;im<nMuon;im++)
@@ -146,7 +144,7 @@ bool Jet::sel()
 
     bool isSelectionJet = ( pass_pt         &&
                             pass_eta        &&
-                            pass_isLoose    &&
+                            pass_tightJetID &&
                             pass_muOverlap  &&
                             pass_elOverlap  &&
                             pass_tauOverlap 
@@ -159,7 +157,7 @@ bool Jet::sel()
                             << _pt                              << " "
                             << _eta                             << " "
                             << _phi                             << " "
-                            << _isLoose                         << " "
+                            << _tightJetID                      << " "
                             << _E                               << " "
                             << pass_muOverlap                   << " "
                             << pass_elOverlap                   << " "

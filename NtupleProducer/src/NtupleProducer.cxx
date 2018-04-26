@@ -106,8 +106,8 @@ int main(int argc, char *argv[])
    std::string jecData = jecFilesPath+"Fall17_17Nov2017F_V6_DATA_UncertaintySources_AK4PFchs.txt";
    
    if( isdata == false ) jesTotal = new JetCorrectionUncertainty(*(new JetCorrectorParameters(jecMC.c_str(), "Total")));
-   else	jesTotal = new JetCorrectionUncertainty(*(new JetCorrectorParameters(jecData.c_str(), "Total")));
-
+   else	jesTotal = new JetCorrectionUncertainty(*(new JetCorrectorParameters(jecData.c_str(), "Total")));   
+   
     for(Long64_t i=0;i<nentries;i++)
     {
         if( i > nmax && nmax >= 0 ) break;
@@ -156,8 +156,6 @@ int main(int argc, char *argv[])
         }
         if(mu_presel) n_mu++;
 
-        //std::cout << "muons done" << std::endl;
-
         int n_el_evt = 0;
 
         // electrons
@@ -177,12 +175,7 @@ int main(int argc, char *argv[])
         }
         if(el_presel) n_el++;
 
-        //std::cout << "electrons done" << std::endl;
-
-        // preselection
-        //if ( (n_mu_evt + n_el_evt) < 2 ) continue;
-
-        int n_tau_evt = 0;
+       int n_tau_evt = 0;
 
         // taus
         for(int j=0;j<ntP->tau_n;j++)
@@ -200,8 +193,6 @@ int main(int argc, char *argv[])
             }
         }
         if(tau_presel) n_tau++;
-
-        //std::cout << "taus done" << std::endl;
 
         int n_jet_evt = 0;
 
@@ -265,16 +256,16 @@ int main(int argc, char *argv[])
             nt->NtTruth->push_back(truth);
         }
 
-        /*
-           std::cout << " n_mu :  " << n_mu  << std::endl
-           << " n_el :  " << n_el  << std::endl
-           << " n_tau:  " << n_tau << std::endl
-           << " n_jet:  " << n_jet << std::endl;
-        */
+        //if ( (n_mu_evt + n_el_evt) < 2 ) continue;
 
         nt->fill();
     }
 
-    delete evdebug;
-    delete nt;
+   std::cout << "n_mu = " << n_mu  << std::endl;
+   std::cout << "n_el = " << n_el  << std::endl;
+   std::cout << "n_tau = " << n_tau << std::endl;
+   std::cout << "n_jet = " << n_jet << std::endl;
+   
+   delete evdebug;
+   delete nt;
 }
