@@ -141,7 +141,8 @@ void Tree::Init(TChain *ch)
     el_dz = 0;
     el_dxyError = 0;
     el_dzError = 0;
-    el_mvaNonTrigV0 = 0;
+    el_mvaIso = 0;
+   el_mvaNoIso = 0;
     el_mvaNonTrigCat = 0;
     el_mvaPassMedium = 0;
     el_mvaPassTight = 0;
@@ -366,7 +367,7 @@ void Tree::Init(TChain *ch)
     jet_DeepCSVProbbb = 0;
     jet_DeepCSVProbc = 0;
     jet_DeepCSVProbcc = 0;
-    jet_looseJetID = 0;
+    jet_tightJetID = 0;
     jet_partonFlavour = 0;
     jet_hadronFlavour = 0;
     jet_neutralHadronEnergy = 0;
@@ -946,7 +947,8 @@ void Tree::Init(TChain *ch)
     //fChain->SetBranchAddress("el_dz", &el_dz, &b_el_dz);
     //fChain->SetBranchAddress("el_dxyError", &el_dxyError, &b_el_dxyError);
     //fChain->SetBranchAddress("el_dzError", &el_dzError, &b_el_dzError);
-    fChain->SetBranchAddress("el_mvaNonTrigV0", &el_mvaNonTrigV0, &b_el_mvaNonTrigV0);
+    fChain->SetBranchAddress("el_mvaIso", &el_mvaIso, &b_el_mvaIso);
+   fChain->SetBranchAddress("el_mvaNoIso", &el_mvaNoIso, &b_el_mvaNoIso);
     fChain->SetBranchAddress("el_mvaNonTrigCat", &el_mvaNonTrigCat, &b_el_mvaNonTrigCat);
     //fChain->SetBranchAddress("el_mvaPassMedium", &el_mvaPassMedium, &b_el_mvaPassMedium);
     //fChain->SetBranchAddress("el_mvaPassTight", &el_mvaPassTight, &b_el_mvaPassTight);
@@ -1172,7 +1174,7 @@ void Tree::Init(TChain *ch)
     fChain->SetBranchAddress("jet_DeepCSVProbbb", &jet_DeepCSVProbb, &b_jet_DeepCSVProbbb);
     fChain->SetBranchAddress("jet_DeepCSVProbc", &jet_DeepCSVProbc, &b_jet_DeepCSVProbc);
     fChain->SetBranchAddress("jet_DeepCSVProbcc", &jet_DeepCSVProbcc, &b_jet_DeepCSVProbcc);
-    fChain->SetBranchAddress("jet_looseJetID", &jet_looseJetID, &b_jet_looseJetID);
+    fChain->SetBranchAddress("jet_tightJetID", &jet_tightJetID, &b_jet_tightJetID);
     fChain->SetBranchAddress("jet_partonFlavour", &jet_partonFlavour, &b_jet_partonFlavour);
     fChain->SetBranchAddress("jet_hadronFlavour", &jet_hadronFlavour, &b_jet_hadronFlavour);
     fChain->SetBranchAddress("jet_neutralHadronEnergy", &jet_neutralHadronEnergy, &b_jet_neutralHadronEnergy);

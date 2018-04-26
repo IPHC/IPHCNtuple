@@ -144,7 +144,8 @@ class Tree {
         vector<float>   *el_dz;
         vector<float>   *el_dxyError;
         vector<float>   *el_dzError;
-        vector<float>   *el_mvaNonTrigV0;
+        vector<float>   *el_mvaIso;
+   vector<float>   *el_mvaNoIso;
         vector<float>   *el_mvaNonTrigCat;
         vector<bool>    *el_mvaPassMedium;
         vector<bool>    *el_mvaPassTight;
@@ -370,7 +371,7 @@ class Tree {
         vector<float>   *jet_DeepCSVProbbb;
         vector<float>   *jet_DeepCSVProbc;
         vector<float>   *jet_DeepCSVProbcc;
-        vector<bool>    *jet_looseJetID;
+        vector<bool>    *jet_tightJetID;
         vector<int>     *jet_partonFlavour;
         vector<int>     *jet_hadronFlavour;
         vector<float>   *jet_neutralHadronEnergy;
@@ -1021,7 +1022,8 @@ class Tree {
         TBranch        *b_el_dz;   //!
         TBranch        *b_el_dxyError;   //!
         TBranch        *b_el_dzError;   //!
-        TBranch        *b_el_mvaNonTrigV0;   //!
+        TBranch        *b_el_mvaIso;   //!
+   TBranch        *b_el_mvaNoIso;   //!
         TBranch        *b_el_mvaNonTrigCat;   //!
         TBranch        *b_el_mvaPassMedium;   //!
         TBranch        *b_el_mvaPassTight;   //!
@@ -1247,7 +1249,7 @@ class Tree {
         TBranch        *b_jet_DeepCSVProbbb;
         TBranch        *b_jet_DeepCSVProbc;
         TBranch        *b_jet_DeepCSVProbcc;
-        TBranch        *b_jet_looseJetID;
+        TBranch        *b_jet_tightJetID;
         TBranch        *b_jet_partonFlavour;   //!
         TBranch        *b_jet_hadronFlavour;   //!
         TBranch        *b_jet_neutralHadronEnergy;   //!
