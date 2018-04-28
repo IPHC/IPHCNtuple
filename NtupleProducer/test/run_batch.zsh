@@ -9,6 +9,8 @@ if [[ ${jName} == "" ]]; then
   exit 1
 fi
 
+dosync=0
+
 que="cms"
 #que="cms_local_mdm" #local queue
 
@@ -88,7 +90,7 @@ do
 
 
   qsub -N ${dir} -q ${que} -o ${logName}/${sample}.log -j oe single_batch_job.sh \
--v dout=${dout},line2=${fpath}${line},fout=${fout},isdata=${isdata},sample=${sample},nmax=${nmax},dout_f=${dout_f},dataset=${dataset}
+-v dout=${dout},line2=${fpath}${line},fout=${fout},isdata=${isdata},sample=${sample},nmax=${nmax},dout_f=${dout_f},dataset=${dataset},dosync=${dosync}
 done
 
 #echo ${dataset}

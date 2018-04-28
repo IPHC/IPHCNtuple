@@ -11,13 +11,15 @@
 #include "GenJet.h"
 #include "TriggerObj.h"
 #include "Ntuple.h"
+#include "Sync.h"
 // JES
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 
-extern Tree             *ntP;
-extern TChain           *ch;
-extern Ntuple           *nt;
+extern Tree *ntP;
+extern TChain *ch;
+extern Ntuple *nt;
+extern Sync *sc;
 extern std::vector<int> *evdebug;
 
 #endif
