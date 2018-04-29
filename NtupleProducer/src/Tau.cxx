@@ -154,7 +154,7 @@ void Tau::sel()
    bool pass_dz  = ( fabs(_dz) < 0.2 );
    
    bool pass_decayModeFinding = ( _decayModeFinding );
-   bool pass_byLooseIsolationMVArun2v1DBdR03oldDMwLT = ( _byLooseIsolationMVArun2v1DBdR03oldDMwLT );
+   bool pass_byVLooseIsolationMVArun2v1DBdR03oldDMwLT = ( _byVLooseIsolationMVArun2v1DBdR03oldDMwLT );
    
    bool pass_muOverlap = 1;
    int nMuon = nt->NtMuonLoose->size();
@@ -177,20 +177,20 @@ void Tau::sel()
 		      pass_dxy &&
 		      pass_dz &&
 		      pass_decayModeFinding &&
-		      pass_byLooseIsolationMVArun2v1DBdR03oldDMwLT &&
+		      pass_byVLooseIsolationMVArun2v1DBdR03oldDMwLT &&
 		      pass_muOverlap &&
 		      pass_elOverlap );
    
-   if( evdebug->at(0) == nt->NtEvent->at(0).id() )
+/*   if( evdebug->at(0) == nt->NtEvent->at(0).id() )
      {
 	std::cout << "pass_pt = " << pass_pt << " (" << _pt << ")" << std::endl;
 	std::cout << "pass_eta = " << pass_eta << " (" << _eta << ")" << std::endl;
 	std::cout << "pass_dxy = " << pass_dxy << " (" << _dxy << ")" << std::endl;
 	std::cout << "pass_dz = " << pass_dz << " (" << _dz << ")" << std::endl;
 	std::cout << "pass_decayModeFinding = " << pass_decayModeFinding << " (" << _decayModeFinding << ")" << std::endl;
-	std::cout << "pass_byLooseIsolationMVArun2v1DBdR03oldDMwLT = " << pass_byLooseIsolationMVArun2v1DBdR03oldDMwLT << " (" << _byLooseIsolationMVArun2v1DBdR03oldDMwLT << ")" << std::endl;
+	std::cout << "pass_byVLooseIsolationMVArun2v1DBdR03oldDMwLT = " << pass_byVLooseIsolationMVArun2v1DBdR03oldDMwLT << " (" << _byVLooseIsolationMVArun2v1DBdR03oldDMwLT << ")" << std::endl;
 	std::cout << "pass_muOverlap = " << pass_muOverlap << std::endl;
 	std::cout << "pass_elOverlap = " << pass_elOverlap << std::endl;
-     }   
+     }*/
 }
 

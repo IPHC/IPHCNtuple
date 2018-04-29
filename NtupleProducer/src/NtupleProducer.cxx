@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
    TriggerObj trigObj;
    
    evdebug = new std::vector<int>();
-   evdebug->push_back(13579585);
+//   evdebug->push_back(13579585);
 
    int nlep = 0;
    int njet = 0;
