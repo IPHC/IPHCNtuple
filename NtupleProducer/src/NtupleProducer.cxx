@@ -37,7 +37,7 @@ int main(int argc, char *argv[])
    int nmax = -1;
    bool isdata = 0;
    bool dosync = 0;
-
+   
    for(int i=0;i<argc;i++)
      {
         if( ! strcmp(argv[i],"--file") ) fname_str = argv[i+1];
@@ -97,7 +97,7 @@ int main(int argc, char *argv[])
    TriggerObj trigObj;
    
    evdebug = new std::vector<int>();
-   //   evdebug->push_back(120);
+   evdebug->push_back(13579585);
 
    int nlep = 0;
    int njet = 0;
@@ -117,152 +117,150 @@ int main(int argc, char *argv[])
    else	jesTotal = new JetCorrectionUncertainty(*(new JetCorrectorParameters(jecData.c_str(), "Total")));   
    
    for(Long64_t i=0;i<nentries;i++)
-    {
-       if( i > nmax && nmax >= 0 ) break;
-
-       ch->GetEntry(i);
-       nt->clearVar();
-       if( dosync ) sc->initVar();
-
+     {
+	if( i > nmax && nmax >= 0 ) break;
+	
+	ch->GetEntry(i);
+	nt->clearVar();
+	if( dosync ) sc->initVar();
+	
         //	if( !(isHtoWW || isHtoZZ || isHtoTT) ) continue;
-
+	
         // event
         ev.init();
         ev.read(isdata);
-
+	
         //	if( isHtoWW ) ev._tth_channel = 0;
         //	else if( isHtoZZ ) ev._tth_channel = 1;
         //	else if( isHtoTT ) ev._tth_channel = 2;
-
+	
         nt->NtEvent->push_back(ev);
-
+	
         int n_mu_evt = 0;
-
+	
         // muons
         for(int j=0;j<ntP->mu_n;j++)
-        {
-            idx = j;
-
-            mu.init();
-            mu.read();
-
-            if( mu.sel())
-            {
-                nt->NtMuon->push_back(mu);
-                n_mu_evt++;
-            }
-        }
-
+	  {
+	     idx = j;
+	     
+	     mu.init();
+	     mu.read();
+	     mu.sel();
+	     
+	     if( mu.isLooseTTH() )
+	       {
+		  nt->NtMuonLoose->push_back(mu);
+		  n_mu_evt++;
+	       }
+	     if( mu.isFakeableTTH() )
+	       {
+		  nt->NtMuonFakeable->push_back(mu);
+	       }
+	     if( mu.isTightTTH() )
+	       {
+		  nt->NtMuonTight->push_back(mu);
+	       }
+	  }
+	
         int n_el_evt = 0;
-
-        // electrons
+	
+	// electrons
         for(int j=0;j<ntP->el_n;j++)
-        {
-            idx = j;
-
-            el.init();
-            el.read();
-
-            if( el.sel()  )
-            {
-                nt->NtElectron->push_back(el);
-                n_el_evt++;
-            }
-        }
-
-       int n_tau_evt = 0;
-
+	  {
+	     idx = j;
+	     
+	     el.init();
+	     el.read();
+	     el.sel();
+	     
+	     if( el.isLooseTTH()  )
+	       {
+		  nt->NtElectronLoose->push_back(el);
+		  n_el_evt++;
+	       }
+	     if( el.isFakeableTTH()  )
+	       {
+		  nt->NtElectronFakeable->push_back(el);
+	       }
+	     if( el.isTightTTH()  )
+	       {
+		  nt->NtElectronTight->push_back(el);
+	       }
+	  }
+	
+	int n_tau_evt = 0;
+	
         // taus
         for(int j=0;j<ntP->tau_n;j++)
-        {
-            idx = j;
-
-            tau.init();
-            tau.read();
-
-            if (tau.sel())
-            {
-                nt->NtTau->push_back(tau);
-                n_tau_evt++;
-            }
-        }
-
+	  {
+	     idx = j;
+	     
+	     tau.init();
+	     tau.read();
+	     tau.sel();
+	     
+	     if( tau.isFakeableTTH() )
+	       {
+		  nt->NtTauFakeable->push_back(tau);
+		  n_tau_evt++;
+	       }
+	  }
+	
         int n_jet_evt = 0;
-
+	
         // jets
         for(int j=0;j<ntP->jet_n;j++)
-	 {
-            idx = j;
-	    
-            jet.init();
-            jet.read(isdata);
-	    
-            jesTotal->setJetPt(ntP->jet_pt->at(idx));
-            jesTotal->setJetEta(ntP->jet_eta->at(idx));
-	    
-	    jet.setJESUncertainty(jesTotal->getUncertainty(true));
-	    
-	    if( jet.sel() )
-	      {
-		 nt->NtJet->push_back(jet);
-		 n_jet_evt++;
-	      }
-        }
+	  {
+	     idx = j;
+	     
+	     jet.init();
+	     jet.read(isdata);
+	     
+	     jesTotal->setJetPt(ntP->jet_pt->at(idx));
+	     jesTotal->setJetEta(ntP->jet_eta->at(idx));	     
+	     jet.setJESUncertainty(jesTotal->getUncertainty(true));
+	     
+	     jet.sel();
+	     
+	     if( jet.isLooseTTH() )
+	       {
+		  nt->NtJetLoose->push_back(jet);
+		  n_jet_evt++;
+	       }
+	  }
 
-        //trigger objects
-        /*for(int j=0;j<ntP->triggerobject_n;j++)
-          {
-          idx = j;
+        if( !isdata )
+	  {
+	     // genjets
+	     for(int j=0;j<ntP->genJet_n;j++)
+	       {
+		  idx = j;
+		  
+		  genjet.init();
+		  genjet.read();
+		  
+		  if (genjet.sel()) nt->NtGenJet->push_back(genjet);
+	       }
+	     
+	     // truth
+	     truth.init();
+	     truth.read();
+	     truth.readMultiLepton();
+	     
+	     nt->NtTruth->push_back(truth);
+	  }
+	
+	if( n_el_evt > 0 ) n_presel_el++;
+	if( n_mu_evt > 0 ) n_presel_mu++;
+	if( n_tau_evt > 0 ) n_presel_tau++;
+	if( n_jet_evt > 0 ) n_presel_jet++;
 
-          trigObj.init();
-          trigObj.read();
-
-          if (trigObj.sel()) nt->NtTriggerObj->push_back(trigObj);
-          }*/
-
-        if (!isdata)
-        {
-            // genjets
-            for(int j=0;j<ntP->genJet_n;j++)
-            {
-                idx = j;
-
-                genjet.init();
-                genjet.read();
-
-                if (genjet.sel()) nt->NtGenJet->push_back(genjet);
-            }
-
-            // truth
-            truth.init();
-            truth.read();
-            truth.readMultiLepton();
-
-            nt->NtTruth->push_back(truth);
-        }
-       
-       if( n_el_evt > 0 ) n_presel_el++;
-       if( n_mu_evt > 0 ) n_presel_mu++;
-       if( n_tau_evt > 0 ) n_presel_tau++;
-       if( n_jet_evt > 0 ) n_presel_jet++;
-
-       // Sync ntuple variables
-       sc->nEvent = i;
-       sc->ls = ntP->ev_lumi;
-       sc->run = ntP->ev_run;
-       sc->n_presel_mu = n_presel_mu;
-       sc->n_fakeablesel_mu = -9999;
-       sc->n_mvasel_mu = -9999;
-       sc->n_presel_ele = n_presel_el;
-       sc->n_fakeablesel_ele = -9999;
-       sc->n_mvasel_ele = -9999;
-       sc->n_presel_tau = n_presel_tau;
-       sc->n_presel_jet = n_presel_jet;
-       
-       nt->fill();
-       if( dosync ) sc->fill();
-    }
-
+	sc->get(nt,n_presel_el,n_presel_mu,n_presel_tau,n_presel_jet);
+	
+	nt->fill();
+	if( dosync ) sc->fill();
+     }
+   
    if( dosync )
      {	
 	std::cout << "n_presel_mu = " << n_presel_mu  << std::endl;

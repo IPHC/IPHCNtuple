@@ -13,23 +13,16 @@ Event::~Event()
 
 void Event::read(bool isdata)
 {
-    // Event
     _id               = ntP->ev_id;
     _run              = ntP->ev_run;
     _lumi             = ntP->ev_lumi;
     _rho              = ntP->ev_rho;
 
-    //std::cout << "id: "   << _id << std::endl;
-    //std::cout << "run: "  << _run << std::endl;
-    //std::cout << "lumi: " << _lumi << std::endl;
-
-    // pv
     _pv_n             = ntP->nvertex;
     _pv_z             = ntP->pv_z;
     _pv_zError        = ntP->pv_zError;
 
-    // MET
-    _metpt            = ntP->met_pt;
+   _metpt            = ntP->met_pt;
     _metphi           = ntP->met_phi;
     _metsumet         = ntP->met_sumet;
     _metcov00	      = ntP->met_cov00;
@@ -59,7 +52,7 @@ void Event::read(bool isdata)
     }
 
     // trigger
-    
+
     /*
     for( int i = 0; i < ntP->trigger->size(); i++)
     {
@@ -122,62 +115,6 @@ void Event::read(bool isdata)
         if(mmTk_noDz != std::string::npos)  { _TRIGmmTk_noDz = true ;}
     }
     */
-    
-    
-    //  ### CHANGED -- TRIGGERS FROM 2016 THQ AN ###
-    
-    for( int i = 0; i < ntP->trigger->size(); i++)
-    {
-	    std::string currentpath ("Nopathsofar");
-	    if( ntP->trigger_pass->at(i) == 1) { currentpath = ntP->trigger_name->at(i); }
-	    
-	    //if(currentpath != "Nopathsofar") {cout<<"currentpath : "<<currentpath<<endl;}
-
-	    // Single lepton
-	    std::size_t e1    = currentpath.find("HLT_Ele27_eta2p1_WPLoose_Gsf_v");
-	    std::size_t e2    = currentpath.find("HLT_Ele27_WPTight_Gsf_v");
-	    std::size_t e3    = currentpath.find("HLT_Ele25_eta2p1_WPTight_Gsf_v");
-	    std::size_t m1    = currentpath.find("HLT_IsoMu22_v");
-	    std::size_t m2    = currentpath.find("HLT_IsoMu22_eta2p1_v");
-	    std::size_t m3    = currentpath.find("HLT_IsoMu24_v");
-	    std::size_t mTk1    = currentpath.find("HLT_IsoTkMu22_v");
-	    std::size_t mTk2    = currentpath.find("HLT_IsoTkMu22_eta2p1_v");
-	    std::size_t mTk3    = currentpath.find("HLT_IsoTkMu24_v");
-
-	    // Double lepton
-	    std::size_t ee    = currentpath.find("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v");
-	    std::size_t me1    = currentpath.find("HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_v");
-	    std::size_t me2    = currentpath.find("HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_DZ_v");
-	    std::size_t em1    = currentpath.find("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v");
-	    std::size_t em2    = currentpath.find("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v");
-	    std::size_t mm    = currentpath.find("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
-	    std::size_t mmTk    = currentpath.find("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v");
-
-	    // Triple lepton
-	    std::size_t eee    = currentpath.find("HLT_Ele16_Ele12_Ele8_CaloIdL_TrackIdL_v");
-	    std::size_t mme    = currentpath.find("HLT_DiMu9_Ele9_CaloIdL_TrackIdL_v");
-	    std::size_t eem    = currentpath.find("HLT_Mu8_DiEle12_CaloIdL_TrackIdL_v");
-	    std::size_t mmm    = currentpath.find("HLT_TripleMu_12_10_5_v");
-
-
-	    if(e1        != std::string::npos || e2   != std::string::npos || e3   != std::string::npos)    { _TRIGe    = true ;}
-	    if(m1        != std::string::npos || m2   != std::string::npos || m2   != std::string::npos)    { _TRIGm    = true ;}
-	    if(mTk1      != std::string::npos || mTk2 != std::string::npos || mTk3 != std::string::npos)    { _TRIGmTk  = true ;}
-
-	    if(ee	     != std::string::npos)  { _TRIGee   = true ;}
-	    if(me1        != std::string::npos || me2 != std::string::npos)  { _TRIGme   = true ;}
-	    if(em1        != std::string::npos || em2 != std::string::npos)  { _TRIGem   = true ;}
-	    if(mm	     != std::string::npos)  { _TRIGmm   = true ;}
-	    if(mmTk      != std::string::npos)  { _TRIGmmTk = true ;}
-
-	    if(eee       != std::string::npos)  { _TRIGeee  = true ;}
-	    if(mme       !=std::string::npos)   { _TRIGmme = true ;}
-	    if(eem       !=std::string::npos)   { _TRIGeem = true ;}
-	    if(mmm       !=std::string::npos)   { _TRIGmmm = true ;}
-    }
-
-    // discriminant vs tt
-    _disc_TT = 0;
 }
 
 void Event::init()

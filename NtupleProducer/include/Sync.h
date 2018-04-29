@@ -9,6 +9,7 @@
 #include "Truth.h"
 #include "GenJet.h"
 #include "TriggerObj.h"
+#include "Ntuple.h"
 
 #include "TFile.h"
 #include "TTree.h"
@@ -25,6 +26,7 @@ class Sync
    
    void setBranchAddress();
    void initVar();
+   void get(Ntuple *nt,int n_presel_el,int n_presel_mu,int n_presel_tau,int n_presel_jet);
    void fill();
    
    TFile*  m_file;

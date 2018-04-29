@@ -1,5 +1,11 @@
 #include "include/Sync.h"
 
+#include <stdio.h>
+#include <stdlib.h>
+#include <math.h>
+#include <algorithm>
+#include <assert.h>
+
 Sync::Sync(std::string fname_out)
 {
    _fname_out = fname_out;
@@ -14,7 +20,7 @@ Sync::~Sync()
 void Sync::Init()
 {
    m_file = new TFile(_fname_out.c_str(),"RECREATE");
-   m_tree = new TTree("Nt","Sync Ntuple");
+   m_tree = new TTree("syncTree","Sync Ntuple");
 }
 
 void Sync::setBranchAddress()
@@ -585,6 +591,216 @@ void Sync::initVar()
    Integral_ttbar = -9999;
    integration_type = -9999;
    memOutput_LR = -9999;
+}
+
+void Sync::get(Ntuple *nt,int n_presel_el,int n_presel_mu,int n_presel_tau,int n_presel_jet)
+{
+   nEvent = nt->NtEvent->at(0).id();
+   ls = nt->NtEvent->at(0).lumi();
+   run = nt->NtEvent->at(0).run();
+   n_presel_mu = n_presel_mu;
+   n_fakeablesel_mu = -9999;
+   n_mvasel_mu = -9999;
+   n_presel_ele = n_presel_el;
+   n_fakeablesel_ele = -9999;
+   n_mvasel_ele = -9999;
+   n_presel_tau = n_presel_tau;
+   n_presel_jet = n_presel_jet;
+   
+   int nMuon = nt->NtMuonLoose->size();
+   
+   if( nMuon > 0 )
+     {	
+	mu1_pt = nt->NtMuonLoose->at(0).pt();
+	mu1_conept = nt->NtMuonLoose->at(0).conept();
+	mu1_eta = nt->NtMuonLoose->at(0).eta();
+	mu1_phi = nt->NtMuonLoose->at(0).phi();
+	mu1_E = nt->NtMuonLoose->at(0).E();
+	mu1_charge = nt->NtMuonLoose->at(0).charge();
+	mu1_miniRelIso = nt->NtMuonLoose->at(0).iso();
+	mu1_miniIsoCharged = nt->NtMuonLoose->at(0).lepMVA_miniRelIsoCharged()*mu1_pt;
+	mu1_miniIsoNeutral = nt->NtMuonLoose->at(0).lepMVA_miniRelIsoNeutral()*mu1_pt;
+	mu1_PFRelIso04 = nt->NtMuonLoose->at(0).isoR04();
+	mu1_jetNDauChargedMVASel = nt->NtMuonLoose->at(0).lepMVA_jetNDauChargedMVASel();
+	mu1_jetPtRel = nt->NtMuonLoose->at(0).lepMVA_jetPtRelv2();
+	mu1_jetPtRatio = nt->NtMuonLoose->at(0).lepMVA_jetPtRatio();
+	mu1_jetCSV = nt->NtMuonLoose->at(0).lepMVA_jetBTagCSV();
+	mu1_sip3D = fabs(nt->NtMuonLoose->at(0).sip3d());
+	mu1_dxy = nt->NtMuonLoose->at(0).dxy();
+	mu1_dxyAbs = fabs(nt->NtMuonLoose->at(0).dxy());
+	mu1_dz = nt->NtMuonLoose->at(0).dz();
+	mu1_segmentCompatibility = nt->NtMuonLoose->at(0).lepMVA_mvaId();
+	mu1_leptonMVA = nt->NtMuonLoose->at(0).lepMVA();
+	mu1_mediumID = nt->NtMuonLoose->at(0).isMedium();
+	mu1_dpt_div_pt = nt->NtMuonLoose->at(0).bestTrackptError()/nt->NtMuonLoose->at(0).bestTrackpt();
+	mu1_isfakeablesel = nt->NtMuonLoose->at(0).isFakeableTTH();
+	mu1_ismvasel = nt->NtMuonLoose->at(0).isTightTTH();
+     }   
+
+   if( nMuon > 1 )
+     {	
+	mu2_pt = nt->NtMuonLoose->at(1).pt();
+	mu2_conept = nt->NtMuonLoose->at(1).conept();
+	mu2_eta = nt->NtMuonLoose->at(1).eta();
+	mu2_phi = nt->NtMuonLoose->at(1).phi();
+	mu2_E = nt->NtMuonLoose->at(1).E();
+	mu2_charge = nt->NtMuonLoose->at(1).charge();
+	mu2_miniRelIso = nt->NtMuonLoose->at(1).iso();
+	mu2_miniIsoCharged = nt->NtMuonLoose->at(1).lepMVA_miniRelIsoCharged()*mu2_pt;
+	mu2_miniIsoNeutral = nt->NtMuonLoose->at(1).lepMVA_miniRelIsoNeutral()*mu2_pt;
+	mu2_PFRelIso04 = nt->NtMuonLoose->at(1).isoR04();
+	mu2_jetNDauChargedMVASel = nt->NtMuonLoose->at(1).lepMVA_jetNDauChargedMVASel();
+	mu2_jetPtRel = nt->NtMuonLoose->at(1).lepMVA_jetPtRelv2();
+	mu2_jetPtRatio = nt->NtMuonLoose->at(1).lepMVA_jetPtRatio();
+	mu2_jetCSV = nt->NtMuonLoose->at(1).lepMVA_jetBTagCSV();
+	mu2_sip3D = fabs(nt->NtMuonLoose->at(1).sip3d());
+	mu2_dxy = nt->NtMuonLoose->at(1).dxy();
+	mu2_dxyAbs = fabs(nt->NtMuonLoose->at(1).dxy());
+	mu2_dz = nt->NtMuonLoose->at(1).dz();
+	mu2_segmentCompatibility = nt->NtMuonLoose->at(1).lepMVA_mvaId();
+	mu2_leptonMVA = nt->NtMuonLoose->at(1).lepMVA();
+	mu2_mediumID = nt->NtMuonLoose->at(1).isMedium();
+	mu2_dpt_div_pt = nt->NtMuonLoose->at(1).bestTrackptError()/nt->NtMuonLoose->at(1).bestTrackpt();
+	mu2_isfakeablesel = nt->NtMuonLoose->at(1).isFakeableTTH();
+	mu2_ismvasel = nt->NtMuonLoose->at(1).isTightTTH();
+     }
+
+   int nElectron = nt->NtElectronLoose->size();
+   
+   if( nElectron > 0 )
+     {	   
+	ele1_pt = nt->NtElectronLoose->at(0).pt();
+	ele1_conept = nt->NtElectronLoose->at(0).conept();
+	ele1_eta = nt->NtElectronLoose->at(0).eta();
+	ele1_phi = nt->NtElectronLoose->at(0).phi();
+	ele1_E = nt->NtElectronLoose->at(0).E();
+	ele1_charge = nt->NtElectronLoose->at(0).charge();
+	ele1_miniRelIso = nt->NtElectronLoose->at(0).miniIso();
+	ele1_miniIsoCharged = nt->NtElectronLoose->at(0).lepMVA_miniRelIsoCharged()*ele1_pt;
+	ele1_miniIsoNeutral = nt->NtElectronLoose->at(0).lepMVA_miniRelIsoNeutral()*ele1_pt;
+	ele1_PFRelIso04 = nt->NtElectronLoose->at(0).isoR04();
+	ele1_jetNDauChargedMVASel = nt->NtElectronLoose->at(0).lepMVA_jetNDauChargedMVASel();
+	ele1_jetPtRel = nt->NtElectronLoose->at(0).lepMVA_jetPtRelv2();;
+	ele1_jetPtRatio = nt->NtElectronLoose->at(0).lepMVA_jetPtRatio();
+	ele1_jetCSV = nt->NtElectronLoose->at(0).lepMVA_jetBTagCSV();
+	ele1_sip3D = fabs(nt->NtElectronLoose->at(0).sip3d());
+	ele1_dxy = nt->NtElectronLoose->at(0).dxy();
+	ele1_dxyAbs = fabs(nt->NtElectronLoose->at(0).dxy());
+	ele1_dz = nt->NtElectronLoose->at(0).dz();
+	ele1_ntMVAeleID = nt->NtElectronLoose->at(0).lepMVA_mvaId();
+	ele1_leptonMVA = nt->NtElectronLoose->at(0).lepMVA();
+	ele1_isChargeConsistent = nt->NtElectronLoose->at(0).isGsfScPixChargeConsistent();
+	ele1_passesConversionVeto = nt->NtElectronLoose->at(0).passCV();
+	ele1_nMissingHits = nt->NtElectronLoose->at(0).nlosthits();
+	ele1_sigmaEtaEta = nt->NtElectronLoose->at(0).sigmaIetaIeta();
+	ele1_HoE = nt->NtElectronLoose->at(0).hadronicOverEm();
+	ele1_deltaEta = nt->NtElectronLoose->at(0).deltaEtaSuperClusterTrackAtVtx();
+	ele1_deltaPhi = nt->NtElectronLoose->at(0).deltaPhiSuperClusterTrackAtVtx();
+	ele1_OoEminusOoP = nt->NtElectronLoose->at(0).ooEmooP();
+	ele1_isfakeablesel = nt->NtElectronLoose->at(0).isFakeableTTH();
+	ele1_ismvasel = nt->NtElectronLoose->at(0).isTightTTH();
+     }   
+
+   if( nElectron > 1 )
+     {	   
+	ele2_pt = nt->NtElectronLoose->at(1).pt();
+	ele2_conept = nt->NtElectronLoose->at(1).conept();
+	ele2_eta = nt->NtElectronLoose->at(1).eta();
+	ele2_phi = nt->NtElectronLoose->at(1).phi();
+	ele2_E = nt->NtElectronLoose->at(1).E();
+	ele2_charge = nt->NtElectronLoose->at(1).charge();
+	ele2_miniRelIso = nt->NtElectronLoose->at(1).miniIso();
+	ele2_miniIsoCharged = nt->NtElectronLoose->at(1).lepMVA_miniRelIsoCharged()*ele2_pt;
+	ele2_miniIsoNeutral = nt->NtElectronLoose->at(1).lepMVA_miniRelIsoNeutral()*ele2_pt;
+	ele2_PFRelIso04 = nt->NtElectronLoose->at(1).isoR04();
+	ele2_jetNDauChargedMVASel = nt->NtElectronLoose->at(1).lepMVA_jetNDauChargedMVASel();
+	ele2_jetPtRel = nt->NtElectronLoose->at(1).lepMVA_jetPtRelv2();;
+	ele2_jetPtRatio = nt->NtElectronLoose->at(1).lepMVA_jetPtRatio();
+	ele2_jetCSV = nt->NtElectronLoose->at(1).lepMVA_jetBTagCSV();
+	ele2_sip3D = fabs(nt->NtElectronLoose->at(1).sip3d());
+	ele2_dxy = nt->NtElectronLoose->at(1).dxy();
+	ele2_dxyAbs = fabs(nt->NtElectronLoose->at(1).dxy());
+	ele2_dz = nt->NtElectronLoose->at(1).dz();
+	ele2_ntMVAeleID = nt->NtElectronLoose->at(1).lepMVA_mvaId();
+	ele2_leptonMVA = nt->NtElectronLoose->at(1).lepMVA();
+	ele2_isChargeConsistent = nt->NtElectronLoose->at(1).isGsfScPixChargeConsistent();
+	ele2_passesConversionVeto = nt->NtElectronLoose->at(1).passCV();
+	ele2_nMissingHits = nt->NtElectronLoose->at(1).nlosthits();
+	ele2_sigmaEtaEta = nt->NtElectronLoose->at(1).sigmaIetaIeta();
+	ele2_HoE = nt->NtElectronLoose->at(1).hadronicOverEm();
+	ele2_deltaEta = nt->NtElectronLoose->at(1).deltaEtaSuperClusterTrackAtVtx();
+	ele2_deltaPhi = nt->NtElectronLoose->at(1).deltaPhiSuperClusterTrackAtVtx();
+	ele2_OoEminusOoP = nt->NtElectronLoose->at(1).ooEmooP();
+	ele2_isfakeablesel = nt->NtElectronLoose->at(1).isFakeableTTH();
+	ele2_ismvasel = nt->NtElectronLoose->at(1).isTightTTH();
+     }   
+
+   int nTau = nt->NtTauFakeable->size();
+
+   if( nTau > 0 )
+     {	      
+	tau1_pt = nt->NtTauFakeable->at(0).pt();
+	tau1_eta = nt->NtTauFakeable->at(0).eta();
+	tau1_phi = nt->NtTauFakeable->at(0).phi();
+	tau1_E = nt->NtTauFakeable->at(0).E();
+	tau1_charge = nt->NtTauFakeable->at(0).charge();
+	tau1_dxy = nt->NtTauFakeable->at(0).dxy();
+	tau1_dz = nt->NtTauFakeable->at(0).dz();
+	tau1_decayModeFindingOldDMs = nt->NtTauFakeable->at(0).decayModeFinding();
+	tau1_decayModeFindingNewDMs = nt->NtTauFakeable->at(0).decayModeFindingNewDMs();
+	tau1_byCombinedIsolationDeltaBetaCorr3Hits = -9999;
+	tau1_byLooseCombinedIsolationDeltaBetaCorr3Hits = nt->NtTauFakeable->at(0).byLooseCombinedIsolationDeltaBetaCorr3Hits();
+	tau1_byMediumCombinedIsolationDeltaBetaCorr3Hits = nt->NtTauFakeable->at(0).byMediumCombinedIsolationDeltaBetaCorr3Hits();
+	tau1_byTightCombinedIsolationDeltaBetaCorr3Hits = nt->NtTauFakeable->at(0).byTightCombinedIsolationDeltaBetaCorr3Hits();
+	tau1_byLooseCombinedIsolationDeltaBetaCorr3HitsdR03 = -9999;
+	tau1_byMediumCombinedIsolationDeltaBetaCorr3HitsdR03 = -9999;
+	tau1_byTightCombinedIsolationDeltaBetaCorr3HitsdR03 = -9999;
+	tau1_byVLooseIsolationMVArun2v1DBdR03oldDMwLT = nt->NtTauFakeable->at(0).byVLooseIsolationMVArun2v1DBdR03oldDMwLT();
+	tau1_byLooseIsolationMVArun2v1DBdR03oldDMwLT = nt->NtTauFakeable->at(0).byLooseIsolationMVArun2v1DBdR03oldDMwLT();
+	tau1_byMediumIsolationMVArun2v1DBdR03oldDMwLT = nt->NtTauFakeable->at(0).byMediumIsolationMVArun2v1DBdR03oldDMwLT();
+	tau1_byTightIsolationMVArun2v1DBdR03oldDMwLT = nt->NtTauFakeable->at(0).byTightIsolationMVArun2v1DBdR03oldDMwLT();
+	tau1_byVTightIsolationMVArun2v1DBdR03oldDMwLT = nt->NtTauFakeable->at(0).byVTightIsolationMVArun2v1DBdR03oldDMwLT();
+	tau1_rawMVArun2v1DBdR03oldDMwLT = -9999;
+	tau1_againstMuonLoose3 = nt->NtTauFakeable->at(0).againstMuonLoose3();
+	tau1_againstMuonTight3 = nt->NtTauFakeable->at(0).againstMuonTight3();
+	tau1_againstElectronVLooseMVA6 = nt->NtTauFakeable->at(0).againstElectronVLooseMVA6();
+	tau1_againstElectronLooseMVA6 = nt->NtTauFakeable->at(0).againstElectronLooseMVA6();
+	tau1_againstElectronMediumMVA6 = nt->NtTauFakeable->at(0).againstElectronMediumMVA6();
+	tau1_againstElectronTightMVA6 = nt->NtTauFakeable->at(0).againstElectronTightMVA6();
+     }   
+
+   if( nTau > 1 )
+     {	      
+	tau2_pt = nt->NtTauFakeable->at(1).pt();
+	tau2_eta = nt->NtTauFakeable->at(1).eta();
+	tau2_phi = nt->NtTauFakeable->at(1).phi();
+	tau2_E = nt->NtTauFakeable->at(1).E();
+	tau2_charge = nt->NtTauFakeable->at(1).charge();
+	tau2_dxy = nt->NtTauFakeable->at(1).dxy();
+	tau2_dz = nt->NtTauFakeable->at(1).dz();
+	tau2_decayModeFindingOldDMs = nt->NtTauFakeable->at(1).decayModeFinding();
+	tau2_decayModeFindingNewDMs = nt->NtTauFakeable->at(1).decayModeFindingNewDMs();
+	tau2_byCombinedIsolationDeltaBetaCorr3Hits = -9999;
+	tau2_byLooseCombinedIsolationDeltaBetaCorr3Hits = nt->NtTauFakeable->at(1).byLooseCombinedIsolationDeltaBetaCorr3Hits();
+	tau2_byMediumCombinedIsolationDeltaBetaCorr3Hits = nt->NtTauFakeable->at(1).byMediumCombinedIsolationDeltaBetaCorr3Hits();
+	tau2_byTightCombinedIsolationDeltaBetaCorr3Hits = nt->NtTauFakeable->at(1).byTightCombinedIsolationDeltaBetaCorr3Hits();
+	tau2_byLooseCombinedIsolationDeltaBetaCorr3HitsdR03 = -9999;
+	tau2_byMediumCombinedIsolationDeltaBetaCorr3HitsdR03 = -9999;
+	tau2_byTightCombinedIsolationDeltaBetaCorr3HitsdR03 = -9999;
+	tau2_byVLooseIsolationMVArun2v1DBdR03oldDMwLT = nt->NtTauFakeable->at(1).byVLooseIsolationMVArun2v1DBdR03oldDMwLT();
+	tau2_byLooseIsolationMVArun2v1DBdR03oldDMwLT = nt->NtTauFakeable->at(1).byLooseIsolationMVArun2v1DBdR03oldDMwLT();
+	tau2_byMediumIsolationMVArun2v1DBdR03oldDMwLT = nt->NtTauFakeable->at(1).byMediumIsolationMVArun2v1DBdR03oldDMwLT();
+	tau2_byTightIsolationMVArun2v1DBdR03oldDMwLT = nt->NtTauFakeable->at(1).byTightIsolationMVArun2v1DBdR03oldDMwLT();
+	tau2_byVTightIsolationMVArun2v1DBdR03oldDMwLT = nt->NtTauFakeable->at(1).byVTightIsolationMVArun2v1DBdR03oldDMwLT();
+	tau2_rawMVArun2v1DBdR03oldDMwLT = -9999;
+	tau2_againstMuonLoose3 = nt->NtTauFakeable->at(1).againstMuonLoose3();
+	tau2_againstMuonTight3 = nt->NtTauFakeable->at(1).againstMuonTight3();
+	tau2_againstElectronVLooseMVA6 = nt->NtTauFakeable->at(1).againstElectronVLooseMVA6();
+	tau2_againstElectronLooseMVA6 = nt->NtTauFakeable->at(1).againstElectronLooseMVA6();
+	tau2_againstElectronMediumMVA6 = nt->NtTauFakeable->at(1).againstElectronMediumMVA6();
+	tau2_againstElectronTightMVA6 = nt->NtTauFakeable->at(1).againstElectronTightMVA6();
+     }   
+   
 }
 
 void Sync::fill()
