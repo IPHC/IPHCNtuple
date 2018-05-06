@@ -5,6 +5,7 @@
 #include <math.h>
 #include <algorithm>
 #include <assert.h>
+#include <iostream>
 
 Sync::Sync(std::string fname_out)
 {
@@ -17,295 +18,310 @@ Sync::~Sync()
    m_file->Close();
 }
 
-void Sync::Init()
+void Sync::Init(int sync)
 {
    m_file = new TFile(_fname_out.c_str(),"RECREATE");
-   m_tree = new TTree("syncTree","Sync Ntuple");
+   if( sync == 1 ) m_tree = new TTree("syncTree","Sync Ntuple");
+   else
+     {
+	m_tree_1l2tau_SR = new TTree("syncTree_1l2tau_SR","Sync Ntuple");
+	m_tree_1l2tau_Fake = new TTree("syncTree_1l2tau_Fake","Sync Ntuple");
+     }   
 }
 
-void Sync::setBranchAddress()
+void Sync::setBranchAddress(int sync)
 {
-   m_tree->Branch("nEvent",&nEvent,"nEvent/I");
-   m_tree->Branch("ls",&ls,"ls/I");
-   m_tree->Branch("run",&run,"run/I");
-   m_tree->Branch("n_presel_mu",&n_presel_mu,"n_presel_mu/I");
-   m_tree->Branch("n_fakeablesel_mu",&n_fakeablesel_mu,"n_fakeablesel_mu/I");
-   m_tree->Branch("n_mvasel_mu",&n_mvasel_mu,"n_mvasel_mu/I");
-   m_tree->Branch("n_presel_ele",&n_presel_ele,"n_presel_ele/I");
-   m_tree->Branch("n_fakeablesel_ele",&n_fakeablesel_ele,"n_fakeablesel_ele/I");
-   m_tree->Branch("n_mvasel_ele",&n_mvasel_ele,"n_mvasel_ele/I");
-   m_tree->Branch("n_presel_tau",&n_presel_tau,"n_presel_tau/I");
-   m_tree->Branch("n_presel_jet",&n_presel_jet,"n_presel_jet/I");
-   
-   m_tree->Branch("mu1_pt",&mu1_pt,"mu1_pt/F");
-   m_tree->Branch("mu1_conept",&mu1_conept,"mu1_conept/F");
-   m_tree->Branch("mu1_eta",&mu1_eta,"mu1_eta/F");
-   m_tree->Branch("mu1_phi",&mu1_phi,"mu1_phi/F");
-   m_tree->Branch("mu1_E",&mu1_E,"mu1_E/F");
-   m_tree->Branch("mu1_charge",&mu1_charge,"mu1_charge/I");
-   m_tree->Branch("mu1_miniRelIso",&mu1_miniRelIso,"mu1_miniRelIso/F");
-   m_tree->Branch("mu1_miniIsoCharged",&mu1_miniIsoCharged,"mu1_miniIsoCharged/F");
-   m_tree->Branch("mu1_miniIsoNeutral",&mu1_miniIsoNeutral,"mu1_miniIsoNeutral/F");
-   m_tree->Branch("mu1_PFRelIso04",&mu1_PFRelIso04,"mu1_PFRelIso04/F");
-   m_tree->Branch("mu1_jetNDauChargedMVASel",&mu1_jetNDauChargedMVASel,"mu1_jetNDauChargedMVASel/F");
-   m_tree->Branch("mu1_jetPtRel",&mu1_jetPtRel,"mu1_jetPtRel/F");
-   m_tree->Branch("mu1_jetPtRatio",&mu1_jetPtRatio,"mu1_jetPtRatio/F");
-   m_tree->Branch("mu1_jetCSV",&mu1_jetCSV,"mu1_jetCSV/F");
-   m_tree->Branch("mu1_sip3D",&mu1_sip3D,"mu1_sip3D/F");
-   m_tree->Branch("mu1_dxy",&mu1_dxy,"mu1_dxy/F");
-   m_tree->Branch("mu1_dxyAbs",&mu1_dxyAbs,"mu1_dxyAbs/F");
-   m_tree->Branch("mu1_dz",&mu1_dz,"mu1_dz/F");
-   m_tree->Branch("mu1_segmentCompatibility",&mu1_segmentCompatibility,"mu1_segmentCompatibility/F");
-   m_tree->Branch("mu1_leptonMVA",&mu1_leptonMVA,"mu1_leptonMVA/F");
-   m_tree->Branch("mu1_mediumID",&mu1_mediumID,"mu1_mediumID/F");
-   m_tree->Branch("mu1_dpt_div_pt",&mu1_dpt_div_pt,"mu1_dpt_div_pt/F");
-   m_tree->Branch("mu1_isfakeablesel",&mu1_isfakeablesel,"mu1_isfakeablesel/I");
-   m_tree->Branch("mu1_ismvasel",&mu1_ismvasel,"mu1_ismvasel/I");
+   if( sync == 1 ) createBranch(m_tree);
+   else
+     {
+	createBranch(m_tree_1l2tau_SR);
+	createBranch(m_tree_1l2tau_Fake);
+     }   
+}
 
-   m_tree->Branch("mu2_pt",&mu2_pt,"mu2_pt/F");
-   m_tree->Branch("mu2_conept",&mu2_conept,"mu2_conept/F");
-   m_tree->Branch("mu2_eta",&mu2_eta,"mu2_eta/F");
-   m_tree->Branch("mu2_phi",&mu2_phi,"mu2_phi/F");
-   m_tree->Branch("mu2_E",&mu2_E,"mu2_E/F");
-   m_tree->Branch("mu2_charge",&mu2_charge,"mu2_charge/I");
-   m_tree->Branch("mu2_miniRelIso",&mu2_miniRelIso,"mu2_miniRelIso/F");
-   m_tree->Branch("mu2_miniIsoCharged",&mu2_miniIsoCharged,"mu2_miniIsoCharged/F");
-   m_tree->Branch("mu2_miniIsoNeutral",&mu2_miniIsoNeutral,"mu2_miniIsoNeutral/F");
-   m_tree->Branch("mu2_PFRelIso04",&mu2_PFRelIso04,"mu2_PFRelIso04/F");
-   m_tree->Branch("mu2_jetNDauChargedMVASel",&mu2_jetNDauChargedMVASel,"mu2_jetNDauChargedMVASel/F");
-   m_tree->Branch("mu2_jetPtRel",&mu2_jetPtRel,"mu2_jetPtRel/F");
-   m_tree->Branch("mu2_jetPtRatio",&mu2_jetPtRatio,"mu2_jetPtRatio/F");
-   m_tree->Branch("mu2_jetCSV",&mu2_jetCSV,"mu2_jetCSV/F");
-   m_tree->Branch("mu2_sip3D",&mu2_sip3D,"mu2_sip3D/F");
-   m_tree->Branch("mu2_dxy",&mu2_dxy,"mu2_dxy/F");
-   m_tree->Branch("mu2_dxyAbs",&mu2_dxyAbs,"mu2_dxyAbs/F");
-   m_tree->Branch("mu2_dz",&mu2_dz,"mu2_dz/F");
-   m_tree->Branch("mu2_segmentCompatibility",&mu2_segmentCompatibility,"mu2_segmentCompatibility/F");
-   m_tree->Branch("mu2_leptonMVA",&mu2_leptonMVA,"mu2_leptonMVA/F");
-   m_tree->Branch("mu2_mediumID",&mu2_mediumID,"mu2_mediumID/F");
-   m_tree->Branch("mu2_dpt_div_pt",&mu2_dpt_div_pt,"mu2_dpt_div_pt/F");
-   m_tree->Branch("mu2_isfakeablesel",&mu2_isfakeablesel,"mu2_isfakeablesel/I");
-   m_tree->Branch("mu2_ismvasel",&mu2_ismvasel,"mu2_ismvasel/I");
+void Sync::createBranch(TTree *tr)
+{   
+   tr->Branch("nEvent",&nEvent,"nEvent/I");
+   tr->Branch("ls",&ls,"ls/I");
+   tr->Branch("run",&run,"run/I");
+   tr->Branch("n_presel_mu",&n_presel_mu,"n_presel_mu/I");
+   tr->Branch("n_fakeablesel_mu",&n_fakeablesel_mu,"n_fakeablesel_mu/I");
+   tr->Branch("n_mvasel_mu",&n_mvasel_mu,"n_mvasel_mu/I");
+   tr->Branch("n_presel_ele",&n_presel_ele,"n_presel_ele/I");
+   tr->Branch("n_fakeablesel_ele",&n_fakeablesel_ele,"n_fakeablesel_ele/I");
+   tr->Branch("n_mvasel_ele",&n_mvasel_ele,"n_mvasel_ele/I");
+   tr->Branch("n_presel_tau",&n_presel_tau,"n_presel_tau/I");
+   tr->Branch("n_presel_jet",&n_presel_jet,"n_presel_jet/I");
    
-   m_tree->Branch("ele1_pt",&ele1_pt,"ele1_pt/F");
-   m_tree->Branch("ele1_conept",&ele1_conept,"ele1_conept/F");
-   m_tree->Branch("ele1_eta",&ele1_eta,"ele1_eta/F");
-   m_tree->Branch("ele1_phi",&ele1_phi,"ele1_phi/F");
-   m_tree->Branch("ele1_E",&ele1_E,"ele1_E/F");
-   m_tree->Branch("ele1_charge",&ele1_charge,"ele1_charge/I");
-   m_tree->Branch("ele1_miniRelIso",&ele1_miniRelIso,"ele1_miniRelIso/F");
-   m_tree->Branch("ele1_miniIsoCharged",&ele1_miniIsoCharged,"ele1_miniIsoCharged/F");
-   m_tree->Branch("ele1_miniIsoNeutral",&ele1_miniIsoNeutral,"ele1_miniIsoNeutral/F");
-   m_tree->Branch("ele1_PFRelIso04",&ele1_PFRelIso04,"ele1_PFRelIso04/F");
-   m_tree->Branch("ele1_jetNDauChargedMVASel",&ele1_jetNDauChargedMVASel,"ele1_jetNDauChargedMVASel/F");
-   m_tree->Branch("ele1_jetPtRel",&ele1_jetPtRel,"ele1_jetPtRel/F");
-   m_tree->Branch("ele1_jetPtRatio",&ele1_jetPtRatio,"ele1_jetPtRatio/F");
-   m_tree->Branch("ele1_jetCSV",&ele1_jetCSV,"ele1_jetCSV/F");
-   m_tree->Branch("ele1_sip3D",&ele1_sip3D,"ele1_sip3D/F");
-   m_tree->Branch("ele1_dxy",&ele1_dxy,"ele1_dxy/F");
-   m_tree->Branch("ele1_dxyAbs",&ele1_dxyAbs,"ele1_dxyAbs/F");
-   m_tree->Branch("ele1_dz",&ele1_dz,"ele1_dz/F");
-   m_tree->Branch("ele1_ntMVAeleID",&ele1_ntMVAeleID,"ele1_ntMVAeleID/F");
-   m_tree->Branch("ele1_leptonMVA",&ele1_leptonMVA,"ele1_leptonMVA/F");
-   m_tree->Branch("ele1_isChargeConsistent",&ele1_isChargeConsistent,"ele1_isChargeConsistent/I");
-   m_tree->Branch("ele1_passesConversionVeto",&ele1_passesConversionVeto,"ele1_passesConversionVeto/F");
-   m_tree->Branch("ele1_nMissingHits",&ele1_nMissingHits,"ele1_nMissingHits/F");
-   m_tree->Branch("ele1_sigmaEtaEta",&ele1_sigmaEtaEta,"ele1_sigmaEtaEta/F");
-   m_tree->Branch("ele1_HoE",&ele1_HoE,"ele1_HoE/F");
-   m_tree->Branch("ele1_deltaEta",&ele1_deltaEta,"ele1_deltaEta/F");
-   m_tree->Branch("ele1_deltaPhi",&ele1_deltaPhi,"ele1_deltaPhi/F");
-   m_tree->Branch("ele1_OoEminusOoP",&ele1_OoEminusOoP,"ele1_OoEminusOoP/F");
-   m_tree->Branch("ele1_isfakeablesel",&ele1_isfakeablesel,"ele1_isfakeablesel/I");
-   m_tree->Branch("ele1_ismvasel",&ele1_ismvasel,"ele1_ismvasel/I");
+   tr->Branch("mu1_pt",&mu1_pt,"mu1_pt/F");
+   tr->Branch("mu1_conept",&mu1_conept,"mu1_conept/F");
+   tr->Branch("mu1_eta",&mu1_eta,"mu1_eta/F");
+   tr->Branch("mu1_phi",&mu1_phi,"mu1_phi/F");
+   tr->Branch("mu1_E",&mu1_E,"mu1_E/F");
+   tr->Branch("mu1_charge",&mu1_charge,"mu1_charge/I");
+   tr->Branch("mu1_miniRelIso",&mu1_miniRelIso,"mu1_miniRelIso/F");
+   tr->Branch("mu1_miniIsoCharged",&mu1_miniIsoCharged,"mu1_miniIsoCharged/F");
+   tr->Branch("mu1_miniIsoNeutral",&mu1_miniIsoNeutral,"mu1_miniIsoNeutral/F");
+   tr->Branch("mu1_PFRelIso04",&mu1_PFRelIso04,"mu1_PFRelIso04/F");
+   tr->Branch("mu1_jetNDauChargedMVASel",&mu1_jetNDauChargedMVASel,"mu1_jetNDauChargedMVASel/F");
+   tr->Branch("mu1_jetPtRel",&mu1_jetPtRel,"mu1_jetPtRel/F");
+   tr->Branch("mu1_jetPtRatio",&mu1_jetPtRatio,"mu1_jetPtRatio/F");
+   tr->Branch("mu1_jetCSV",&mu1_jetCSV,"mu1_jetCSV/F");
+   tr->Branch("mu1_sip3D",&mu1_sip3D,"mu1_sip3D/F");
+   tr->Branch("mu1_dxy",&mu1_dxy,"mu1_dxy/F");
+   tr->Branch("mu1_dxyAbs",&mu1_dxyAbs,"mu1_dxyAbs/F");
+   tr->Branch("mu1_dz",&mu1_dz,"mu1_dz/F");
+   tr->Branch("mu1_segmentCompatibility",&mu1_segmentCompatibility,"mu1_segmentCompatibility/F");
+   tr->Branch("mu1_leptonMVA",&mu1_leptonMVA,"mu1_leptonMVA/F");
+   tr->Branch("mu1_mediumID",&mu1_mediumID,"mu1_mediumID/F");
+   tr->Branch("mu1_dpt_div_pt",&mu1_dpt_div_pt,"mu1_dpt_div_pt/F");
+   tr->Branch("mu1_isfakeablesel",&mu1_isfakeablesel,"mu1_isfakeablesel/I");
+   tr->Branch("mu1_ismvasel",&mu1_ismvasel,"mu1_ismvasel/I");
 
-   m_tree->Branch("ele2_pt",&ele2_pt,"ele2_pt/F");
-   m_tree->Branch("ele2_conept",&ele2_conept,"ele2_conept/F");
-   m_tree->Branch("ele2_eta",&ele2_eta,"ele2_eta/F");
-   m_tree->Branch("ele2_phi",&ele2_phi,"ele2_phi/F");
-   m_tree->Branch("ele2_E",&ele2_E,"ele2_E/F");
-   m_tree->Branch("ele2_charge",&ele2_charge,"ele2_charge/I");
-   m_tree->Branch("ele2_miniRelIso",&ele2_miniRelIso,"ele2_miniRelIso/F");
-   m_tree->Branch("ele2_miniIsoCharged",&ele2_miniIsoCharged,"ele2_miniIsoCharged/F");
-   m_tree->Branch("ele2_miniIsoNeutral",&ele2_miniIsoNeutral,"ele2_miniIsoNeutral/F");
-   m_tree->Branch("ele2_PFRelIso04",&ele2_PFRelIso04,"ele2_PFRelIso04/F");
-   m_tree->Branch("ele2_jetNDauChargedMVASel",&ele2_jetNDauChargedMVASel,"ele2_jetNDauChargedMVASel/F");
-   m_tree->Branch("ele2_jetPtRel",&ele2_jetPtRel,"ele2_jetPtRel/F");
-   m_tree->Branch("ele2_jetPtRatio",&ele2_jetPtRatio,"ele2_jetPtRatio/F");
-   m_tree->Branch("ele2_jetCSV",&ele2_jetCSV,"ele2_jetCSV/F");
-   m_tree->Branch("ele2_sip3D",&ele2_sip3D,"ele2_sip3D/F");
-   m_tree->Branch("ele2_dxy",&ele2_dxy,"ele2_dxy/F");
-   m_tree->Branch("ele2_dxyAbs",&ele2_dxyAbs,"ele2_dxyAbs/F");
-   m_tree->Branch("ele2_dz",&ele2_dz,"ele2_dz/F");
-   m_tree->Branch("ele2_ntMVAeleID",&ele2_ntMVAeleID,"ele2_ntMVAeleID/F");
-   m_tree->Branch("ele2_leptonMVA",&ele2_leptonMVA,"ele2_leptonMVA/F");
-   m_tree->Branch("ele2_isChargeConsistent",&ele2_isChargeConsistent,"ele2_isChargeConsistent/I");
-   m_tree->Branch("ele2_passesConversionVeto",&ele2_passesConversionVeto,"ele2_passesConversionVeto/F");
-   m_tree->Branch("ele2_nMissingHits",&ele2_nMissingHits,"ele2_nMissingHits/F");
-   m_tree->Branch("ele2_sigmaEtaEta",&ele2_sigmaEtaEta,"ele2_sigmaEtaEta/F");
-   m_tree->Branch("ele2_HoE",&ele2_HoE,"ele2_HoE/F");
-   m_tree->Branch("ele2_deltaEta",&ele2_deltaEta,"ele2_deltaEta/F");
-   m_tree->Branch("ele2_deltaPhi",&ele2_deltaPhi,"ele2_deltaPhi/F");
-   m_tree->Branch("ele2_OoEminusOoP",&ele2_OoEminusOoP,"ele2_OoEminusOoP/F");
-   m_tree->Branch("ele2_isfakeablesel",&ele2_isfakeablesel,"ele2_isfakeablesel/I");
-   m_tree->Branch("ele2_ismvasel",&ele2_ismvasel,"ele2_ismvasel/I");
+   tr->Branch("mu2_pt",&mu2_pt,"mu2_pt/F");
+   tr->Branch("mu2_conept",&mu2_conept,"mu2_conept/F");
+   tr->Branch("mu2_eta",&mu2_eta,"mu2_eta/F");
+   tr->Branch("mu2_phi",&mu2_phi,"mu2_phi/F");
+   tr->Branch("mu2_E",&mu2_E,"mu2_E/F");
+   tr->Branch("mu2_charge",&mu2_charge,"mu2_charge/I");
+   tr->Branch("mu2_miniRelIso",&mu2_miniRelIso,"mu2_miniRelIso/F");
+   tr->Branch("mu2_miniIsoCharged",&mu2_miniIsoCharged,"mu2_miniIsoCharged/F");
+   tr->Branch("mu2_miniIsoNeutral",&mu2_miniIsoNeutral,"mu2_miniIsoNeutral/F");
+   tr->Branch("mu2_PFRelIso04",&mu2_PFRelIso04,"mu2_PFRelIso04/F");
+   tr->Branch("mu2_jetNDauChargedMVASel",&mu2_jetNDauChargedMVASel,"mu2_jetNDauChargedMVASel/F");
+   tr->Branch("mu2_jetPtRel",&mu2_jetPtRel,"mu2_jetPtRel/F");
+   tr->Branch("mu2_jetPtRatio",&mu2_jetPtRatio,"mu2_jetPtRatio/F");
+   tr->Branch("mu2_jetCSV",&mu2_jetCSV,"mu2_jetCSV/F");
+   tr->Branch("mu2_sip3D",&mu2_sip3D,"mu2_sip3D/F");
+   tr->Branch("mu2_dxy",&mu2_dxy,"mu2_dxy/F");
+   tr->Branch("mu2_dxyAbs",&mu2_dxyAbs,"mu2_dxyAbs/F");
+   tr->Branch("mu2_dz",&mu2_dz,"mu2_dz/F");
+   tr->Branch("mu2_segmentCompatibility",&mu2_segmentCompatibility,"mu2_segmentCompatibility/F");
+   tr->Branch("mu2_leptonMVA",&mu2_leptonMVA,"mu2_leptonMVA/F");
+   tr->Branch("mu2_mediumID",&mu2_mediumID,"mu2_mediumID/F");
+   tr->Branch("mu2_dpt_div_pt",&mu2_dpt_div_pt,"mu2_dpt_div_pt/F");
+   tr->Branch("mu2_isfakeablesel",&mu2_isfakeablesel,"mu2_isfakeablesel/I");
+   tr->Branch("mu2_ismvasel",&mu2_ismvasel,"mu2_ismvasel/I");
+   
+   tr->Branch("ele1_pt",&ele1_pt,"ele1_pt/F");
+   tr->Branch("ele1_conept",&ele1_conept,"ele1_conept/F");
+   tr->Branch("ele1_eta",&ele1_eta,"ele1_eta/F");
+   tr->Branch("ele1_phi",&ele1_phi,"ele1_phi/F");
+   tr->Branch("ele1_E",&ele1_E,"ele1_E/F");
+   tr->Branch("ele1_charge",&ele1_charge,"ele1_charge/I");
+   tr->Branch("ele1_miniRelIso",&ele1_miniRelIso,"ele1_miniRelIso/F");
+   tr->Branch("ele1_miniIsoCharged",&ele1_miniIsoCharged,"ele1_miniIsoCharged/F");
+   tr->Branch("ele1_miniIsoNeutral",&ele1_miniIsoNeutral,"ele1_miniIsoNeutral/F");
+   tr->Branch("ele1_PFRelIso04",&ele1_PFRelIso04,"ele1_PFRelIso04/F");
+   tr->Branch("ele1_jetNDauChargedMVASel",&ele1_jetNDauChargedMVASel,"ele1_jetNDauChargedMVASel/F");
+   tr->Branch("ele1_jetPtRel",&ele1_jetPtRel,"ele1_jetPtRel/F");
+   tr->Branch("ele1_jetPtRatio",&ele1_jetPtRatio,"ele1_jetPtRatio/F");
+   tr->Branch("ele1_jetCSV",&ele1_jetCSV,"ele1_jetCSV/F");
+   tr->Branch("ele1_sip3D",&ele1_sip3D,"ele1_sip3D/F");
+   tr->Branch("ele1_dxy",&ele1_dxy,"ele1_dxy/F");
+   tr->Branch("ele1_dxyAbs",&ele1_dxyAbs,"ele1_dxyAbs/F");
+   tr->Branch("ele1_dz",&ele1_dz,"ele1_dz/F");
+   tr->Branch("ele1_ntMVAeleID",&ele1_ntMVAeleID,"ele1_ntMVAeleID/F");
+   tr->Branch("ele1_leptonMVA",&ele1_leptonMVA,"ele1_leptonMVA/F");
+   tr->Branch("ele1_isChargeConsistent",&ele1_isChargeConsistent,"ele1_isChargeConsistent/I");
+   tr->Branch("ele1_passesConversionVeto",&ele1_passesConversionVeto,"ele1_passesConversionVeto/F");
+   tr->Branch("ele1_nMissingHits",&ele1_nMissingHits,"ele1_nMissingHits/F");
+   tr->Branch("ele1_sigmaEtaEta",&ele1_sigmaEtaEta,"ele1_sigmaEtaEta/F");
+   tr->Branch("ele1_HoE",&ele1_HoE,"ele1_HoE/F");
+   tr->Branch("ele1_deltaEta",&ele1_deltaEta,"ele1_deltaEta/F");
+   tr->Branch("ele1_deltaPhi",&ele1_deltaPhi,"ele1_deltaPhi/F");
+   tr->Branch("ele1_OoEminusOoP",&ele1_OoEminusOoP,"ele1_OoEminusOoP/F");
+   tr->Branch("ele1_isfakeablesel",&ele1_isfakeablesel,"ele1_isfakeablesel/I");
+   tr->Branch("ele1_ismvasel",&ele1_ismvasel,"ele1_ismvasel/I");
 
-   m_tree->Branch("tau1_pt",&tau1_pt,"tau1_pt/F");
-   m_tree->Branch("tau1_eta",&tau1_eta,"tau1_eta/F");
-   m_tree->Branch("tau1_phi",&tau1_phi,"tau1_phi/F");
-   m_tree->Branch("tau1_E",&tau1_E,"tau1_E/F");
-   m_tree->Branch("tau1_charge",&tau1_charge,"tau1_charge/I");
-   m_tree->Branch("tau1_dxy",&tau1_dxy,"tau1_dxy/F");
-   m_tree->Branch("tau1_dz",&tau1_dz,"tau1_dz/F");
-   m_tree->Branch("tau1_decayModeFindingOldDMs",&tau1_decayModeFindingOldDMs,"tau1_decayModeFindingOldDMs/F");
-   m_tree->Branch("tau1_decayModeFindingNewDMs",&tau1_decayModeFindingNewDMs,"tau1_decayModeFindingNewDMs/F");
-   m_tree->Branch("tau1_byCombinedIsolationDeltaBetaCorr3Hits",&tau1_byCombinedIsolationDeltaBetaCorr3Hits,"tau1_byCombinedIsolationDeltaBetaCorr3Hits/F");
-   m_tree->Branch("tau1_byLooseCombinedIsolationDeltaBetaCorr3Hits",&tau1_byLooseCombinedIsolationDeltaBetaCorr3Hits,"tau1_byLooseCombinedIsolationDeltaBetaCorr3Hits/F");
-   m_tree->Branch("tau1_byMediumCombinedIsolationDeltaBetaCorr3Hits",&tau1_byMediumCombinedIsolationDeltaBetaCorr3Hits,"tau1_byMediumCombinedIsolationDeltaBetaCorr3Hits/F");
-   m_tree->Branch("tau1_byTightCombinedIsolationDeltaBetaCorr3Hits",&tau1_byTightCombinedIsolationDeltaBetaCorr3Hits,"tau1_byTightCombinedIsolationDeltaBetaCorr3Hits/F");
-   m_tree->Branch("tau1_byLooseCombinedIsolationDeltaBetaCorr3HitsdR03",&tau1_byLooseCombinedIsolationDeltaBetaCorr3HitsdR03,"tau1_byLooseCombinedIsolationDeltaBetaCorr3HitsdR03/F");
-   m_tree->Branch("tau1_byMediumCombinedIsolationDeltaBetaCorr3HitsdR03",&tau1_byMediumCombinedIsolationDeltaBetaCorr3HitsdR03,"tau1_byMediumCombinedIsolationDeltaBetaCorr3HitsdR03/F");
-   m_tree->Branch("tau1_byTightCombinedIsolationDeltaBetaCorr3HitsdR03",&tau1_byTightCombinedIsolationDeltaBetaCorr3HitsdR03,"tau1_byTightCombinedIsolationDeltaBetaCorr3HitsdR03/F");
-   m_tree->Branch("tau1_byVLooseIsolationMVArun2v1DBdR03oldDMwLT",&tau1_byVLooseIsolationMVArun2v1DBdR03oldDMwLT,"tau1_byVLooseIsolationMVArun2v1DBdR03oldDMwLT/F");
-   m_tree->Branch("tau1_byLooseIsolationMVArun2v1DBdR03oldDMwLT",&tau1_byLooseIsolationMVArun2v1DBdR03oldDMwLT,"tau1_byLooseIsolationMVArun2v1DBdR03oldDMwLT/F");
-   m_tree->Branch("tau1_byMediumIsolationMVArun2v1DBdR03oldDMwLT",&tau1_byMediumIsolationMVArun2v1DBdR03oldDMwLT,"tau1_byMediumIsolationMVArun2v1DBdR03oldDMwLT/F");
-   m_tree->Branch("tau1_byTightIsolationMVArun2v1DBdR03oldDMwLT",&tau1_byTightIsolationMVArun2v1DBdR03oldDMwLT,"tau1_byTightIsolationMVArun2v1DBdR03oldDMwLT/F");
-   m_tree->Branch("tau1_byVTightIsolationMVArun2v1DBdR03oldDMwLT",&tau1_byVTightIsolationMVArun2v1DBdR03oldDMwLT,"tau1_byVTightIsolationMVArun2v1DBdR03oldDMwLT/F");
-   m_tree->Branch("tau1_rawMVArun2v1DBdR03oldDMwLT",&tau1_rawMVArun2v1DBdR03oldDMwLT,"tau1_rawMVArun2v1DBdR03oldDMwLT/F");
-   m_tree->Branch("tau1_againstMuonLoose3",&tau1_againstMuonLoose3,"tau1_againstMuonLoose3/F");
-   m_tree->Branch("tau1_againstMuonTight3",&tau1_againstMuonTight3,"tau1_againstMuonTight3/F");
-   m_tree->Branch("tau1_againstElectronVLooseMVA6",&tau1_againstElectronVLooseMVA6,"tau1_againstElectronVLooseMVA6/F");
-   m_tree->Branch("tau1_againstElectronLooseMVA6",&tau1_againstElectronLooseMVA6,"tau1_againstElectronLooseMVA6/F");
-   m_tree->Branch("tau1_againstElectronMediumMVA6",&tau1_againstElectronMediumMVA6,"tau1_againstElectronMediumMVA6/F");
-   m_tree->Branch("tau1_againstElectronTightMVA6",&tau1_againstElectronTightMVA6,"tau1_againstElectronTightMVA6/F");
+   tr->Branch("ele2_pt",&ele2_pt,"ele2_pt/F");
+   tr->Branch("ele2_conept",&ele2_conept,"ele2_conept/F");
+   tr->Branch("ele2_eta",&ele2_eta,"ele2_eta/F");
+   tr->Branch("ele2_phi",&ele2_phi,"ele2_phi/F");
+   tr->Branch("ele2_E",&ele2_E,"ele2_E/F");
+   tr->Branch("ele2_charge",&ele2_charge,"ele2_charge/I");
+   tr->Branch("ele2_miniRelIso",&ele2_miniRelIso,"ele2_miniRelIso/F");
+   tr->Branch("ele2_miniIsoCharged",&ele2_miniIsoCharged,"ele2_miniIsoCharged/F");
+   tr->Branch("ele2_miniIsoNeutral",&ele2_miniIsoNeutral,"ele2_miniIsoNeutral/F");
+   tr->Branch("ele2_PFRelIso04",&ele2_PFRelIso04,"ele2_PFRelIso04/F");
+   tr->Branch("ele2_jetNDauChargedMVASel",&ele2_jetNDauChargedMVASel,"ele2_jetNDauChargedMVASel/F");
+   tr->Branch("ele2_jetPtRel",&ele2_jetPtRel,"ele2_jetPtRel/F");
+   tr->Branch("ele2_jetPtRatio",&ele2_jetPtRatio,"ele2_jetPtRatio/F");
+   tr->Branch("ele2_jetCSV",&ele2_jetCSV,"ele2_jetCSV/F");
+   tr->Branch("ele2_sip3D",&ele2_sip3D,"ele2_sip3D/F");
+   tr->Branch("ele2_dxy",&ele2_dxy,"ele2_dxy/F");
+   tr->Branch("ele2_dxyAbs",&ele2_dxyAbs,"ele2_dxyAbs/F");
+   tr->Branch("ele2_dz",&ele2_dz,"ele2_dz/F");
+   tr->Branch("ele2_ntMVAeleID",&ele2_ntMVAeleID,"ele2_ntMVAeleID/F");
+   tr->Branch("ele2_leptonMVA",&ele2_leptonMVA,"ele2_leptonMVA/F");
+   tr->Branch("ele2_isChargeConsistent",&ele2_isChargeConsistent,"ele2_isChargeConsistent/I");
+   tr->Branch("ele2_passesConversionVeto",&ele2_passesConversionVeto,"ele2_passesConversionVeto/F");
+   tr->Branch("ele2_nMissingHits",&ele2_nMissingHits,"ele2_nMissingHits/F");
+   tr->Branch("ele2_sigmaEtaEta",&ele2_sigmaEtaEta,"ele2_sigmaEtaEta/F");
+   tr->Branch("ele2_HoE",&ele2_HoE,"ele2_HoE/F");
+   tr->Branch("ele2_deltaEta",&ele2_deltaEta,"ele2_deltaEta/F");
+   tr->Branch("ele2_deltaPhi",&ele2_deltaPhi,"ele2_deltaPhi/F");
+   tr->Branch("ele2_OoEminusOoP",&ele2_OoEminusOoP,"ele2_OoEminusOoP/F");
+   tr->Branch("ele2_isfakeablesel",&ele2_isfakeablesel,"ele2_isfakeablesel/I");
+   tr->Branch("ele2_ismvasel",&ele2_ismvasel,"ele2_ismvasel/I");
 
-   m_tree->Branch("tau2_pt",&tau2_pt,"tau2_pt/F");
-   m_tree->Branch("tau2_eta",&tau2_eta,"tau2_eta/F");
-   m_tree->Branch("tau2_phi",&tau2_phi,"tau2_phi/F");
-   m_tree->Branch("tau2_E",&tau2_E,"tau2_E/F");
-   m_tree->Branch("tau2_charge",&tau2_charge,"tau2_charge/I");
-   m_tree->Branch("tau2_dxy",&tau2_dxy,"tau2_dxy/F");
-   m_tree->Branch("tau2_dz",&tau2_dz,"tau2_dz/F");
-   m_tree->Branch("tau2_decayModeFindingOldDMs",&tau2_decayModeFindingOldDMs,"tau2_decayModeFindingOldDMs/F");
-   m_tree->Branch("tau2_decayModeFindingNewDMs",&tau2_decayModeFindingNewDMs,"tau2_decayModeFindingNewDMs/F");
-   m_tree->Branch("tau2_byCombinedIsolationDeltaBetaCorr3Hits",&tau2_byCombinedIsolationDeltaBetaCorr3Hits,"tau2_byCombinedIsolationDeltaBetaCorr3Hits/F");
-   m_tree->Branch("tau2_byLooseCombinedIsolationDeltaBetaCorr3Hits",&tau2_byLooseCombinedIsolationDeltaBetaCorr3Hits,"tau2_byLooseCombinedIsolationDeltaBetaCorr3Hits/F");
-   m_tree->Branch("tau2_byMediumCombinedIsolationDeltaBetaCorr3Hits",&tau2_byMediumCombinedIsolationDeltaBetaCorr3Hits,"tau2_byMediumCombinedIsolationDeltaBetaCorr3Hits/F");
-   m_tree->Branch("tau2_byTightCombinedIsolationDeltaBetaCorr3Hits",&tau2_byTightCombinedIsolationDeltaBetaCorr3Hits,"tau2_byTightCombinedIsolationDeltaBetaCorr3Hits/F");
-   m_tree->Branch("tau2_byLooseCombinedIsolationDeltaBetaCorr3HitsdR03",&tau2_byLooseCombinedIsolationDeltaBetaCorr3HitsdR03,"tau2_byLooseCombinedIsolationDeltaBetaCorr3HitsdR03/F");
-   m_tree->Branch("tau2_byMediumCombinedIsolationDeltaBetaCorr3HitsdR03",&tau2_byMediumCombinedIsolationDeltaBetaCorr3HitsdR03,"tau2_byMediumCombinedIsolationDeltaBetaCorr3HitsdR03/F");
-   m_tree->Branch("tau2_byTightCombinedIsolationDeltaBetaCorr3HitsdR03",&tau2_byTightCombinedIsolationDeltaBetaCorr3HitsdR03,"tau2_byTightCombinedIsolationDeltaBetaCorr3HitsdR03/F");
-   m_tree->Branch("tau2_byVLooseIsolationMVArun2v1DBdR03oldDMwLT",&tau2_byVLooseIsolationMVArun2v1DBdR03oldDMwLT,"tau2_byVLooseIsolationMVArun2v1DBdR03oldDMwLT/F");
-   m_tree->Branch("tau2_byLooseIsolationMVArun2v1DBdR03oldDMwLT",&tau2_byLooseIsolationMVArun2v1DBdR03oldDMwLT,"tau2_byLooseIsolationMVArun2v1DBdR03oldDMwLT/F");
-   m_tree->Branch("tau2_byMediumIsolationMVArun2v1DBdR03oldDMwLT",&tau2_byMediumIsolationMVArun2v1DBdR03oldDMwLT,"tau2_byMediumIsolationMVArun2v1DBdR03oldDMwLT/F");
-   m_tree->Branch("tau2_byTightIsolationMVArun2v1DBdR03oldDMwLT",&tau2_byTightIsolationMVArun2v1DBdR03oldDMwLT,"tau2_byTightIsolationMVArun2v1DBdR03oldDMwLT/F");
-   m_tree->Branch("tau2_byVTightIsolationMVArun2v1DBdR03oldDMwLT",&tau2_byVTightIsolationMVArun2v1DBdR03oldDMwLT,"tau2_byVTightIsolationMVArun2v1DBdR03oldDMwLT/F");
-   m_tree->Branch("tau2_rawMVArun2v1DBdR03oldDMwLT",&tau2_rawMVArun2v1DBdR03oldDMwLT,"tau2_rawMVArun2v1DBdR03oldDMwLT/F");
-   m_tree->Branch("tau2_againstMuonLoose3",&tau2_againstMuonLoose3,"tau2_againstMuonLoose3/F");
-   m_tree->Branch("tau2_againstMuonTight3",&tau2_againstMuonTight3,"tau2_againstMuonTight3/F");
-   m_tree->Branch("tau2_againstElectronVLooseMVA6",&tau2_againstElectronVLooseMVA6,"tau2_againstElectronVLooseMVA6/F");
-   m_tree->Branch("tau2_againstElectronLooseMVA6",&tau2_againstElectronLooseMVA6,"tau2_againstElectronLooseMVA6/F");
-   m_tree->Branch("tau2_againstElectronMediumMVA6",&tau2_againstElectronMediumMVA6,"tau2_againstElectronMediumMVA6/F");
-   m_tree->Branch("tau2_againstElectronTightMVA6",&tau2_againstElectronTightMVA6,"tau2_againstElectronTightMVA6/F");
-   
-   m_tree->Branch("jet1_pt",&jet1_pt,"jet1_pt/F");
-   m_tree->Branch("jet1_eta",&jet1_eta,"jet1_eta/F");
-   m_tree->Branch("jet1_phi",&jet1_phi,"jet1_phi/F");
-   m_tree->Branch("jet1_E",&jet1_E,"jet1_E/F");
-   m_tree->Branch("jet1_CSV",&jet1_CSV,"jet1_CSV/F");
+   tr->Branch("tau1_pt",&tau1_pt,"tau1_pt/F");
+   tr->Branch("tau1_eta",&tau1_eta,"tau1_eta/F");
+   tr->Branch("tau1_phi",&tau1_phi,"tau1_phi/F");
+   tr->Branch("tau1_E",&tau1_E,"tau1_E/F");
+   tr->Branch("tau1_charge",&tau1_charge,"tau1_charge/I");
+   tr->Branch("tau1_dxy",&tau1_dxy,"tau1_dxy/F");
+   tr->Branch("tau1_dz",&tau1_dz,"tau1_dz/F");
+   tr->Branch("tau1_decayModeFindingOldDMs",&tau1_decayModeFindingOldDMs,"tau1_decayModeFindingOldDMs/F");
+   tr->Branch("tau1_decayModeFindingNewDMs",&tau1_decayModeFindingNewDMs,"tau1_decayModeFindingNewDMs/F");
+   tr->Branch("tau1_byCombinedIsolationDeltaBetaCorr3Hits",&tau1_byCombinedIsolationDeltaBetaCorr3Hits,"tau1_byCombinedIsolationDeltaBetaCorr3Hits/F");
+   tr->Branch("tau1_byLooseCombinedIsolationDeltaBetaCorr3Hits",&tau1_byLooseCombinedIsolationDeltaBetaCorr3Hits,"tau1_byLooseCombinedIsolationDeltaBetaCorr3Hits/F");
+   tr->Branch("tau1_byMediumCombinedIsolationDeltaBetaCorr3Hits",&tau1_byMediumCombinedIsolationDeltaBetaCorr3Hits,"tau1_byMediumCombinedIsolationDeltaBetaCorr3Hits/F");
+   tr->Branch("tau1_byTightCombinedIsolationDeltaBetaCorr3Hits",&tau1_byTightCombinedIsolationDeltaBetaCorr3Hits,"tau1_byTightCombinedIsolationDeltaBetaCorr3Hits/F");
+   tr->Branch("tau1_byLooseCombinedIsolationDeltaBetaCorr3HitsdR03",&tau1_byLooseCombinedIsolationDeltaBetaCorr3HitsdR03,"tau1_byLooseCombinedIsolationDeltaBetaCorr3HitsdR03/F");
+   tr->Branch("tau1_byMediumCombinedIsolationDeltaBetaCorr3HitsdR03",&tau1_byMediumCombinedIsolationDeltaBetaCorr3HitsdR03,"tau1_byMediumCombinedIsolationDeltaBetaCorr3HitsdR03/F");
+   tr->Branch("tau1_byTightCombinedIsolationDeltaBetaCorr3HitsdR03",&tau1_byTightCombinedIsolationDeltaBetaCorr3HitsdR03,"tau1_byTightCombinedIsolationDeltaBetaCorr3HitsdR03/F");
+   tr->Branch("tau1_byVLooseIsolationMVArun2v1DBdR03oldDMwLT",&tau1_byVLooseIsolationMVArun2v1DBdR03oldDMwLT,"tau1_byVLooseIsolationMVArun2v1DBdR03oldDMwLT/F");
+   tr->Branch("tau1_byLooseIsolationMVArun2v1DBdR03oldDMwLT",&tau1_byLooseIsolationMVArun2v1DBdR03oldDMwLT,"tau1_byLooseIsolationMVArun2v1DBdR03oldDMwLT/F");
+   tr->Branch("tau1_byMediumIsolationMVArun2v1DBdR03oldDMwLT",&tau1_byMediumIsolationMVArun2v1DBdR03oldDMwLT,"tau1_byMediumIsolationMVArun2v1DBdR03oldDMwLT/F");
+   tr->Branch("tau1_byTightIsolationMVArun2v1DBdR03oldDMwLT",&tau1_byTightIsolationMVArun2v1DBdR03oldDMwLT,"tau1_byTightIsolationMVArun2v1DBdR03oldDMwLT/F");
+   tr->Branch("tau1_byVTightIsolationMVArun2v1DBdR03oldDMwLT",&tau1_byVTightIsolationMVArun2v1DBdR03oldDMwLT,"tau1_byVTightIsolationMVArun2v1DBdR03oldDMwLT/F");
+   tr->Branch("tau1_rawMVArun2v1DBdR03oldDMwLT",&tau1_rawMVArun2v1DBdR03oldDMwLT,"tau1_rawMVArun2v1DBdR03oldDMwLT/F");
+   tr->Branch("tau1_againstMuonLoose3",&tau1_againstMuonLoose3,"tau1_againstMuonLoose3/F");
+   tr->Branch("tau1_againstMuonTight3",&tau1_againstMuonTight3,"tau1_againstMuonTight3/F");
+   tr->Branch("tau1_againstElectronVLooseMVA6",&tau1_againstElectronVLooseMVA6,"tau1_againstElectronVLooseMVA6/F");
+   tr->Branch("tau1_againstElectronLooseMVA6",&tau1_againstElectronLooseMVA6,"tau1_againstElectronLooseMVA6/F");
+   tr->Branch("tau1_againstElectronMediumMVA6",&tau1_againstElectronMediumMVA6,"tau1_againstElectronMediumMVA6/F");
+   tr->Branch("tau1_againstElectronTightMVA6",&tau1_againstElectronTightMVA6,"tau1_againstElectronTightMVA6/F");
 
-   m_tree->Branch("jet2_pt",&jet2_pt,"jet2_pt/F");
-   m_tree->Branch("jet2_eta",&jet2_eta,"jet2_eta/F");
-   m_tree->Branch("jet2_phi",&jet2_phi,"jet2_phi/F");
-   m_tree->Branch("jet2_E",&jet2_E,"jet2_E/F");
-   m_tree->Branch("jet2_CSV",&jet2_CSV,"jet2_CSV/F");
+   tr->Branch("tau2_pt",&tau2_pt,"tau2_pt/F");
+   tr->Branch("tau2_eta",&tau2_eta,"tau2_eta/F");
+   tr->Branch("tau2_phi",&tau2_phi,"tau2_phi/F");
+   tr->Branch("tau2_E",&tau2_E,"tau2_E/F");
+   tr->Branch("tau2_charge",&tau2_charge,"tau2_charge/I");
+   tr->Branch("tau2_dxy",&tau2_dxy,"tau2_dxy/F");
+   tr->Branch("tau2_dz",&tau2_dz,"tau2_dz/F");
+   tr->Branch("tau2_decayModeFindingOldDMs",&tau2_decayModeFindingOldDMs,"tau2_decayModeFindingOldDMs/F");
+   tr->Branch("tau2_decayModeFindingNewDMs",&tau2_decayModeFindingNewDMs,"tau2_decayModeFindingNewDMs/F");
+   tr->Branch("tau2_byCombinedIsolationDeltaBetaCorr3Hits",&tau2_byCombinedIsolationDeltaBetaCorr3Hits,"tau2_byCombinedIsolationDeltaBetaCorr3Hits/F");
+   tr->Branch("tau2_byLooseCombinedIsolationDeltaBetaCorr3Hits",&tau2_byLooseCombinedIsolationDeltaBetaCorr3Hits,"tau2_byLooseCombinedIsolationDeltaBetaCorr3Hits/F");
+   tr->Branch("tau2_byMediumCombinedIsolationDeltaBetaCorr3Hits",&tau2_byMediumCombinedIsolationDeltaBetaCorr3Hits,"tau2_byMediumCombinedIsolationDeltaBetaCorr3Hits/F");
+   tr->Branch("tau2_byTightCombinedIsolationDeltaBetaCorr3Hits",&tau2_byTightCombinedIsolationDeltaBetaCorr3Hits,"tau2_byTightCombinedIsolationDeltaBetaCorr3Hits/F");
+   tr->Branch("tau2_byLooseCombinedIsolationDeltaBetaCorr3HitsdR03",&tau2_byLooseCombinedIsolationDeltaBetaCorr3HitsdR03,"tau2_byLooseCombinedIsolationDeltaBetaCorr3HitsdR03/F");
+   tr->Branch("tau2_byMediumCombinedIsolationDeltaBetaCorr3HitsdR03",&tau2_byMediumCombinedIsolationDeltaBetaCorr3HitsdR03,"tau2_byMediumCombinedIsolationDeltaBetaCorr3HitsdR03/F");
+   tr->Branch("tau2_byTightCombinedIsolationDeltaBetaCorr3HitsdR03",&tau2_byTightCombinedIsolationDeltaBetaCorr3HitsdR03,"tau2_byTightCombinedIsolationDeltaBetaCorr3HitsdR03/F");
+   tr->Branch("tau2_byVLooseIsolationMVArun2v1DBdR03oldDMwLT",&tau2_byVLooseIsolationMVArun2v1DBdR03oldDMwLT,"tau2_byVLooseIsolationMVArun2v1DBdR03oldDMwLT/F");
+   tr->Branch("tau2_byLooseIsolationMVArun2v1DBdR03oldDMwLT",&tau2_byLooseIsolationMVArun2v1DBdR03oldDMwLT,"tau2_byLooseIsolationMVArun2v1DBdR03oldDMwLT/F");
+   tr->Branch("tau2_byMediumIsolationMVArun2v1DBdR03oldDMwLT",&tau2_byMediumIsolationMVArun2v1DBdR03oldDMwLT,"tau2_byMediumIsolationMVArun2v1DBdR03oldDMwLT/F");
+   tr->Branch("tau2_byTightIsolationMVArun2v1DBdR03oldDMwLT",&tau2_byTightIsolationMVArun2v1DBdR03oldDMwLT,"tau2_byTightIsolationMVArun2v1DBdR03oldDMwLT/F");
+   tr->Branch("tau2_byVTightIsolationMVArun2v1DBdR03oldDMwLT",&tau2_byVTightIsolationMVArun2v1DBdR03oldDMwLT,"tau2_byVTightIsolationMVArun2v1DBdR03oldDMwLT/F");
+   tr->Branch("tau2_rawMVArun2v1DBdR03oldDMwLT",&tau2_rawMVArun2v1DBdR03oldDMwLT,"tau2_rawMVArun2v1DBdR03oldDMwLT/F");
+   tr->Branch("tau2_againstMuonLoose3",&tau2_againstMuonLoose3,"tau2_againstMuonLoose3/F");
+   tr->Branch("tau2_againstMuonTight3",&tau2_againstMuonTight3,"tau2_againstMuonTight3/F");
+   tr->Branch("tau2_againstElectronVLooseMVA6",&tau2_againstElectronVLooseMVA6,"tau2_againstElectronVLooseMVA6/F");
+   tr->Branch("tau2_againstElectronLooseMVA6",&tau2_againstElectronLooseMVA6,"tau2_againstElectronLooseMVA6/F");
+   tr->Branch("tau2_againstElectronMediumMVA6",&tau2_againstElectronMediumMVA6,"tau2_againstElectronMediumMVA6/F");
+   tr->Branch("tau2_againstElectronTightMVA6",&tau2_againstElectronTightMVA6,"tau2_againstElectronTightMVA6/F");
+   
+   tr->Branch("jet1_pt",&jet1_pt,"jet1_pt/F");
+   tr->Branch("jet1_eta",&jet1_eta,"jet1_eta/F");
+   tr->Branch("jet1_phi",&jet1_phi,"jet1_phi/F");
+   tr->Branch("jet1_E",&jet1_E,"jet1_E/F");
+   tr->Branch("jet1_CSV",&jet1_CSV,"jet1_CSV/F");
 
-   m_tree->Branch("jet3_pt",&jet3_pt,"jet3_pt/F");
-   m_tree->Branch("jet3_eta",&jet3_eta,"jet3_eta/F");
-   m_tree->Branch("jet3_phi",&jet3_phi,"jet3_phi/F");
-   m_tree->Branch("jet3_E",&jet3_E,"jet3_E/F");
-   m_tree->Branch("jet3_CSV",&jet3_CSV,"jet3_CSV/F");
+   tr->Branch("jet2_pt",&jet2_pt,"jet2_pt/F");
+   tr->Branch("jet2_eta",&jet2_eta,"jet2_eta/F");
+   tr->Branch("jet2_phi",&jet2_phi,"jet2_phi/F");
+   tr->Branch("jet2_E",&jet2_E,"jet2_E/F");
+   tr->Branch("jet2_CSV",&jet2_CSV,"jet2_CSV/F");
 
-   m_tree->Branch("jet4_pt",&jet4_pt,"jet4_pt/F");
-   m_tree->Branch("jet4_eta",&jet4_eta,"jet4_eta/F");
-   m_tree->Branch("jet4_phi",&jet4_phi,"jet4_phi/F");
-   m_tree->Branch("jet4_E",&jet4_E,"jet4_E/F");
-   m_tree->Branch("jet4_CSV",&jet4_CSV,"jet4_CSV/F");
-   
-   m_tree->Branch("PFMET",&PFMET,"PFMET/F");
-   m_tree->Branch("PFMETphi",&PFMETphi,"PFMETphi/F");
-   m_tree->Branch("MHT",&MHT,"MHT/F");
-   m_tree->Branch("metLD",&metLD,"metLD/F");
-   m_tree->Branch("isGenMatched",&isGenMatched,"isGenMatched/I");
-   
-   m_tree->Branch("lep1_conePt",&lep1_conePt,"lep1_conePt/F");
-   m_tree->Branch("lep2_conePt",&lep2_conePt,"lep2_conePt/F");
-   m_tree->Branch("lep3_conePt",&lep3_conePt,"lep3_conePt/F");
-   
-   m_tree->Branch("mindr_lep1_jet",&mindr_lep1_jet,"mindr_lep1_jet/F");
-   m_tree->Branch("mindr_lep2_jet",&mindr_lep2_jet,"mindr_lep2_jet/F");
-   m_tree->Branch("mindr_lep3_jet",&mindr_lep3_jet,"mindr_lep3_jet/F");
+   tr->Branch("jet3_pt",&jet3_pt,"jet3_pt/F");
+   tr->Branch("jet3_eta",&jet3_eta,"jet3_eta/F");
+   tr->Branch("jet3_phi",&jet3_phi,"jet3_phi/F");
+   tr->Branch("jet3_E",&jet3_E,"jet3_E/F");
+   tr->Branch("jet3_CSV",&jet3_CSV,"jet3_CSV/F");
 
-   m_tree->Branch("mindr_tau1_jet",&mindr_tau1_jet,"mindr_tau1_jet/F");
-   m_tree->Branch("mindr_tau2_jet",&mindr_tau2_jet,"mindr_tau2_jet/F");
-   m_tree->Branch("mindr_tau3_jet",&mindr_tau3_jet,"mindr_tau3_jet/F");
+   tr->Branch("jet4_pt",&jet4_pt,"jet4_pt/F");
+   tr->Branch("jet4_eta",&jet4_eta,"jet4_eta/F");
+   tr->Branch("jet4_phi",&jet4_phi,"jet4_phi/F");
+   tr->Branch("jet4_E",&jet4_E,"jet4_E/F");
+   tr->Branch("jet4_CSV",&jet4_CSV,"jet4_CSV/F");
    
-   m_tree->Branch("avg_dr_jet",&avg_dr_jet,"avg_dr_jet/F");
-   m_tree->Branch("avr_dr_lep_tau",&avr_dr_lep_tau,"avr_dr_lep_tau/F");
-   m_tree->Branch("max_dr_lep_tau",&max_dr_lep_tau,"max_dr_lep_tau/F");
-   m_tree->Branch("mindr_tau_jet",&mindr_tau_jet,"mindr_tau_jet/F");
-   m_tree->Branch("min_dr_lep_tau",&min_dr_lep_tau,"min_dr_lep_tau/F");
-   m_tree->Branch("min_dr_lep_jet",&min_dr_lep_jet,"min_dr_lep_jet/F");
-   m_tree->Branch("dr_leps",&dr_leps,"dr_leps/F");
-   m_tree->Branch("dr_taus",&dr_taus,"dr_taus/F");
-   m_tree->Branch("dR_lep_tau_ss",&dR_lep_tau_ss,"dR_lep_tau_ss/F");
-   m_tree->Branch("dr_lep1_tau",&dr_lep1_tau,"dr_lep1_tau/F");
-   m_tree->Branch("dr_lep2_tau",&dr_lep2_tau,"dr_lep2_tau/F");
-   m_tree->Branch("max_lep_eta",&max_lep_eta,"max_lep_eta/F");
-   m_tree->Branch("mT_lep1",&mT_lep1,"mT_lep1/F");
-   m_tree->Branch("mT_lep2",&mT_lep2,"mT_lep2/F");
-   m_tree->Branch("mTauTauVis",&mTauTauVis,"mTauTauVis/F");
-   m_tree->Branch("mTauTauVis1",&mTauTauVis1,"mTauTauVis1/F");
-   m_tree->Branch("mTauTauVis2",&mTauTauVis2,"mTauTauVis2/F");
-   m_tree->Branch("mbb",&mbb,"mbb/F");
-   m_tree->Branch("mbb_loose",&mbb_loose,"mbb_loose/F");
-   m_tree->Branch("cosThetaS_hadTau",&cosThetaS_hadTau,"cosThetaS_hadTau/F");
-   m_tree->Branch("HTT",&HTT,"HTT/F");
-   m_tree->Branch("HadTop_pt",&HadTop_pt,"HadTop_pt/F");
-   m_tree->Branch("Hj_tagger",&Hj_tagger,"Hj_tagger/F");
-   m_tree->Branch("nBJetLoose",&nBJetLoose,"nBJetLoose/I");
+   tr->Branch("PFMET",&PFMET,"PFMET/F");
+   tr->Branch("PFMETphi",&PFMETphi,"PFMETphi/F");
+   tr->Branch("MHT",&MHT,"MHT/F");
+   tr->Branch("metLD",&metLD,"metLD/F");
+   tr->Branch("isGenMatched",&isGenMatched,"isGenMatched/I");
    
-   m_tree->Branch("mvaOutput_plainKin_ttV",&mvaOutput_plainKin_ttV,"mvaOutput_plainKin_ttV/F");
-   m_tree->Branch("mvaOutput_plainKin_ttbar",&mvaOutput_plainKin_ttbar,"mvaOutput_plainKin_ttbar/F");
-   m_tree->Branch("mvaOutput_1l_2tau_HTT_SUM_VT",&mvaOutput_1l_2tau_HTT_SUM_VT,"mvaOutput_1l_2tau_HTT_SUM_VT/F");
-   m_tree->Branch("mvaOutput_2l_2tau_plainKin_1B_VT",&mvaOutput_2l_2tau_plainKin_1B_VT,"mvaOutput_2l_2tau_plainKin_1B_VT/F");
-   m_tree->Branch("mvaOutput_2l_2tau_plainKin_SUM_VT",&mvaOutput_2l_2tau_plainKin_SUM_VT,"mvaOutput_2l_2tau_plainKin_SUM_VT/F");
-   m_tree->Branch("mvaOutput_2lss_ttV",&mvaOutput_2lss_ttV,"mvaOutput_2lss_ttV/F");
-   m_tree->Branch("mvaOutput_2lss_ttbar",&mvaOutput_2lss_ttbar,"mvaOutput_2lss_ttbar/F");
-   m_tree->Branch("mvaOutput_2lss_1tau_plainKin_ttbar",&mvaOutput_2lss_1tau_plainKin_ttbar,"mvaOutput_2lss_1tau_plainKin_ttbar/F");
-   m_tree->Branch("mvaOutput_2lss_1tau_plainKin_ttV",&mvaOutput_2lss_1tau_plainKin_ttV,"mvaOutput_2lss_1tau_plainKin_ttV/F");
-   m_tree->Branch("mvaOutput_2lss_1tau_plainKin_1B_M",&mvaOutput_2lss_1tau_plainKin_1B_M,"mvaOutput_2lss_1tau_plainKin_1B_M/F");
-   m_tree->Branch("mvaOutput_2lss_1tau_plainKin_SUM_M",&mvaOutput_2lss_1tau_plainKin_SUM_M,"mvaOutput_2lss_1tau_plainKin_SUM_M/F");
-   m_tree->Branch("mvaOutput_2lss_1tau_HTT_SUM_M",&mvaOutput_2lss_1tau_HTT_SUM_M,"mvaOutput_2lss_1tau_HTT_SUM_M/F");
-   m_tree->Branch("mvaOutput_2lss_1tau_HTTMEM_SUM_M",&mvaOutput_2lss_1tau_HTTMEM_SUM_M,"mvaOutput_2lss_1tau_HTTMEM_SUM_M/F");
-   m_tree->Branch("mvaOutput_3l_ttV",&mvaOutput_3l_ttV,"mvaOutput_3l_ttV/F");
-   m_tree->Branch("mvaOutput_3l_ttbar",&mvaOutput_3l_ttbar,"mvaOutput_3l_ttbar/F");
-   m_tree->Branch("mvaOutput_3l_1tau_plainKin_SUM_M",&mvaOutput_3l_1tau_plainKin_SUM_M,"mvaOutput_3l_1tau_plainKin_SUM_M/F");
-   m_tree->Branch("mvaOutput_3l_1tau_plainKin_1B_M",&mvaOutput_3l_1tau_plainKin_1B_M,"mvaOutput_3l_1tau_plainKin_1B_M/F");
+   tr->Branch("lep1_conePt",&lep1_conePt,"lep1_conePt/F");
+   tr->Branch("lep2_conePt",&lep2_conePt,"lep2_conePt/F");
+   tr->Branch("lep3_conePt",&lep3_conePt,"lep3_conePt/F");
    
-   m_tree->Branch("FR_weight",&FR_weight,"FR_weight/F");
-   m_tree->Branch("triggerSF_weight",&triggerSF_weight,"triggerSF_weight/F");
-   m_tree->Branch("leptonSF_weight",&leptonSF_weight,"leptonSF_weight/F");
-   m_tree->Branch("tauSF_weight",&tauSF_weight,"tauSF_weight/F");
-   m_tree->Branch("bTagSF_weight",&bTagSF_weight,"bTagSF_weight/F");
-   m_tree->Branch("PU_weight",&PU_weight,"PU_weight/F");
-   m_tree->Branch("MC_weight",&MC_weight,"MC_weight/F");
+   tr->Branch("mindr_lep1_jet",&mindr_lep1_jet,"mindr_lep1_jet/F");
+   tr->Branch("mindr_lep2_jet",&mindr_lep2_jet,"mindr_lep2_jet/F");
+   tr->Branch("mindr_lep3_jet",&mindr_lep3_jet,"mindr_lep3_jet/F");
+
+   tr->Branch("mindr_tau1_jet",&mindr_tau1_jet,"mindr_tau1_jet/F");
+   tr->Branch("mindr_tau2_jet",&mindr_tau2_jet,"mindr_tau2_jet/F");
+   tr->Branch("mindr_tau3_jet",&mindr_tau3_jet,"mindr_tau3_jet/F");
    
-   m_tree->Branch("Integral_ttH",&Integral_ttH,"Integral_ttH/F");
-   m_tree->Branch("Integral_ttZ",&Integral_ttZ,"Integral_ttZ/F");
-   m_tree->Branch("Integral_ttZ_Zll",&Integral_ttZ_Zll,"Integral_ttZ_Zll/F");
-   m_tree->Branch("Integral_ttbar",&Integral_ttbar,"Integral_ttbar/F");
-   m_tree->Branch("integration_type",&integration_type,"integration_type/F");
-   m_tree->Branch("memOutput_LR",&memOutput_LR,"memOutput_LR/F");
+   tr->Branch("avg_dr_jet",&avg_dr_jet,"avg_dr_jet/F");
+   tr->Branch("avr_dr_lep_tau",&avr_dr_lep_tau,"avr_dr_lep_tau/F");
+   tr->Branch("max_dr_lep_tau",&max_dr_lep_tau,"max_dr_lep_tau/F");
+   tr->Branch("mindr_tau_jet",&mindr_tau_jet,"mindr_tau_jet/F");
+   tr->Branch("min_dr_lep_tau",&min_dr_lep_tau,"min_dr_lep_tau/F");
+   tr->Branch("min_dr_lep_jet",&min_dr_lep_jet,"min_dr_lep_jet/F");
+   tr->Branch("dr_leps",&dr_leps,"dr_leps/F");
+   tr->Branch("dr_taus",&dr_taus,"dr_taus/F");
+   tr->Branch("dR_lep_tau_ss",&dR_lep_tau_ss,"dR_lep_tau_ss/F");
+   tr->Branch("dr_lep1_tau",&dr_lep1_tau,"dr_lep1_tau/F");
+   tr->Branch("dr_lep2_tau",&dr_lep2_tau,"dr_lep2_tau/F");
+   tr->Branch("max_lep_eta",&max_lep_eta,"max_lep_eta/F");
+   tr->Branch("mT_lep1",&mT_lep1,"mT_lep1/F");
+   tr->Branch("mT_lep2",&mT_lep2,"mT_lep2/F");
+   tr->Branch("mTauTauVis",&mTauTauVis,"mTauTauVis/F");
+   tr->Branch("mTauTauVis1",&mTauTauVis1,"mTauTauVis1/F");
+   tr->Branch("mTauTauVis2",&mTauTauVis2,"mTauTauVis2/F");
+   tr->Branch("mbb",&mbb,"mbb/F");
+   tr->Branch("mbb_loose",&mbb_loose,"mbb_loose/F");
+   tr->Branch("cosThetaS_hadTau",&cosThetaS_hadTau,"cosThetaS_hadTau/F");
+   tr->Branch("HTT",&HTT,"HTT/F");
+   tr->Branch("HadTop_pt",&HadTop_pt,"HadTop_pt/F");
+   tr->Branch("Hj_tagger",&Hj_tagger,"Hj_tagger/F");
+   tr->Branch("nBJetLoose",&nBJetLoose,"nBJetLoose/I");
+   
+   tr->Branch("mvaOutput_plainKin_ttV",&mvaOutput_plainKin_ttV,"mvaOutput_plainKin_ttV/F");
+   tr->Branch("mvaOutput_plainKin_ttbar",&mvaOutput_plainKin_ttbar,"mvaOutput_plainKin_ttbar/F");
+   tr->Branch("mvaOutput_1l_2tau_HTT_SUM_VT",&mvaOutput_1l_2tau_HTT_SUM_VT,"mvaOutput_1l_2tau_HTT_SUM_VT/F");
+   tr->Branch("mvaOutput_2l_2tau_plainKin_1B_VT",&mvaOutput_2l_2tau_plainKin_1B_VT,"mvaOutput_2l_2tau_plainKin_1B_VT/F");
+   tr->Branch("mvaOutput_2l_2tau_plainKin_SUM_VT",&mvaOutput_2l_2tau_plainKin_SUM_VT,"mvaOutput_2l_2tau_plainKin_SUM_VT/F");
+   tr->Branch("mvaOutput_2lss_ttV",&mvaOutput_2lss_ttV,"mvaOutput_2lss_ttV/F");
+   tr->Branch("mvaOutput_2lss_ttbar",&mvaOutput_2lss_ttbar,"mvaOutput_2lss_ttbar/F");
+   tr->Branch("mvaOutput_2lss_1tau_plainKin_ttbar",&mvaOutput_2lss_1tau_plainKin_ttbar,"mvaOutput_2lss_1tau_plainKin_ttbar/F");
+   tr->Branch("mvaOutput_2lss_1tau_plainKin_ttV",&mvaOutput_2lss_1tau_plainKin_ttV,"mvaOutput_2lss_1tau_plainKin_ttV/F");
+   tr->Branch("mvaOutput_2lss_1tau_plainKin_1B_M",&mvaOutput_2lss_1tau_plainKin_1B_M,"mvaOutput_2lss_1tau_plainKin_1B_M/F");
+   tr->Branch("mvaOutput_2lss_1tau_plainKin_SUM_M",&mvaOutput_2lss_1tau_plainKin_SUM_M,"mvaOutput_2lss_1tau_plainKin_SUM_M/F");
+   tr->Branch("mvaOutput_2lss_1tau_HTT_SUM_M",&mvaOutput_2lss_1tau_HTT_SUM_M,"mvaOutput_2lss_1tau_HTT_SUM_M/F");
+   tr->Branch("mvaOutput_2lss_1tau_HTTMEM_SUM_M",&mvaOutput_2lss_1tau_HTTMEM_SUM_M,"mvaOutput_2lss_1tau_HTTMEM_SUM_M/F");
+   tr->Branch("mvaOutput_3l_ttV",&mvaOutput_3l_ttV,"mvaOutput_3l_ttV/F");
+   tr->Branch("mvaOutput_3l_ttbar",&mvaOutput_3l_ttbar,"mvaOutput_3l_ttbar/F");
+   tr->Branch("mvaOutput_3l_1tau_plainKin_SUM_M",&mvaOutput_3l_1tau_plainKin_SUM_M,"mvaOutput_3l_1tau_plainKin_SUM_M/F");
+   tr->Branch("mvaOutput_3l_1tau_plainKin_1B_M",&mvaOutput_3l_1tau_plainKin_1B_M,"mvaOutput_3l_1tau_plainKin_1B_M/F");
+   
+   tr->Branch("FR_weight",&FR_weight,"FR_weight/F");
+   tr->Branch("triggerSF_weight",&triggerSF_weight,"triggerSF_weight/F");
+   tr->Branch("leptonSF_weight",&leptonSF_weight,"leptonSF_weight/F");
+   tr->Branch("tauSF_weight",&tauSF_weight,"tauSF_weight/F");
+   tr->Branch("bTagSF_weight",&bTagSF_weight,"bTagSF_weight/F");
+   tr->Branch("PU_weight",&PU_weight,"PU_weight/F");
+   tr->Branch("MC_weight",&MC_weight,"MC_weight/F");
+   
+   tr->Branch("Integral_ttH",&Integral_ttH,"Integral_ttH/F");
+   tr->Branch("Integral_ttZ",&Integral_ttZ,"Integral_ttZ/F");
+   tr->Branch("Integral_ttZ_Zll",&Integral_ttZ_Zll,"Integral_ttZ_Zll/F");
+   tr->Branch("Integral_ttbar",&Integral_ttbar,"Integral_ttbar/F");
+   tr->Branch("integration_type",&integration_type,"integration_type/F");
+   tr->Branch("memOutput_LR",&memOutput_LR,"memOutput_LR/F");
 }
 
 void Sync::initVar()
@@ -800,10 +816,134 @@ void Sync::get(Ntuple *nt,int n_presel_el,int n_presel_mu,int n_presel_tau,int n
 	tau2_againstElectronMediumMVA6 = nt->NtTauFakeable->at(1).againstElectronMediumMVA6();
 	tau2_againstElectronTightMVA6 = nt->NtTauFakeable->at(1).againstElectronTightMVA6();
      }   
-   
 }
 
-void Sync::fill()
+void Sync::fill(Ntuple *nt,int sync)
 {
-   m_tree->Fill();
+   if( sync == 1 ) m_tree->Fill();
+   else
+     {
+	int nElectronFakeable = nt->NtElectronFakeable->size();
+	int nMuonFakeable = nt->NtMuonFakeable->size();
+	int nTauFakeable = nt->NtTauFakeable->size();
+	int nLepFakeable = nElectronFakeable+nMuonFakeable;
+	int nLepTight = nt->NtElectronTight->size()+nt->NtMuonTight->size();
+	bool pass_ele_pt = (nElectronFakeable > 0) ? (nt->NtElectronFakeable->at(0).pt() > 30.) : 0;
+	bool pass_muo_pt = (nMuonFakeable > 0) ? (nt->NtMuonFakeable->at(0).pt() > 25.) : 0;
+	bool pass_lep_pt = (pass_ele_pt || pass_muo_pt);
+	bool pass_ele_eta = (nElectronFakeable > 0) ? (fabs(nt->NtElectronFakeable->at(0).eta()) < 2.1) : 0;
+	bool pass_muo_eta = (nMuonFakeable > 0) ? (fabs(nt->NtMuonFakeable->at(0).eta()) < 2.1) : 0;
+	bool pass_lep_eta = (pass_ele_eta || pass_muo_eta);
+	bool pass_tau_pt = (nTauFakeable >= 2) ? (nt->NtTauFakeable->at(0).pt() > 30. && nt->NtTauFakeable->at(1).pt() > 20.) : 0;
+	int nJetLoose = nt->NtJetLoose->size();
+	int nJetLooseBL = 0;
+	int nJetLooseBM = 0;
+	for(int ij=0;ij<nJetLoose;ij++)
+	  {
+	     if( nt->NtJetLoose->at(ij).isMediumBTag() ) nJetLooseBM++;
+	     if( nt->NtJetLoose->at(ij).isLooseBTag() ) nJetLooseBL++;
+	  }	
+	
+	bool pass_mee = 1;
+	for(int ie=0;ie<nt->NtElectronLoose->size();ie++ )
+	  {
+	     TLorentzVector *l1 = new TLorentzVector();
+	     l1->SetPtEtaPhiE(nt->NtElectronLoose->at(ie).pt(),
+			      nt->NtElectronLoose->at(ie).eta(),
+			      nt->NtElectronLoose->at(ie).phi(),
+			      nt->NtElectronLoose->at(ie).E());
+	     
+	     for(int iee=ie+1;iee<nt->NtElectronLoose->size();iee++ )
+	       {
+		  TLorentzVector *l2 = new TLorentzVector();
+		  l2->SetPtEtaPhiE(nt->NtElectronLoose->at(iee).pt(),
+				   nt->NtElectronLoose->at(iee).eta(),
+				   nt->NtElectronLoose->at(iee).phi(),
+				   nt->NtElectronLoose->at(iee).E());
+		  
+		  float mll = (*l1+*l2).M();
+
+		  if( mll < 12 ) pass_mee = 0;
+		  
+		  delete l2;
+	       }	    
+	     
+	     delete l1;
+	  }		
+
+	bool pass_mmm = 1;
+	for(int im=0;im<nt->NtMuonLoose->size();im++ )
+	  {
+	     TLorentzVector *l1 = new TLorentzVector();
+	     l1->SetPtEtaPhiE(nt->NtMuonLoose->at(im).pt(),
+			      nt->NtMuonLoose->at(im).eta(),
+			      nt->NtMuonLoose->at(im).phi(),
+			      nt->NtMuonLoose->at(im).E());
+	     
+	     for(int imm=im+1;imm<nt->NtMuonLoose->size();imm++ )
+	       {
+		  TLorentzVector *l2 = new TLorentzVector();
+		  l2->SetPtEtaPhiE(nt->NtMuonLoose->at(imm).pt(),
+				   nt->NtMuonLoose->at(imm).eta(),
+				   nt->NtMuonLoose->at(imm).phi(),
+				   nt->NtMuonLoose->at(imm).E());
+		  
+		  float mll = (*l1+*l2).M();
+		  if( mll < 12 ) pass_mmm = 0;
+		  
+		  delete l2;
+	       }	    
+	     
+	     delete l1;
+	  }		
+
+	bool pass_mem = 1;
+	for(int ie=0;ie<nt->NtElectronLoose->size();ie++ )
+	  {
+	     TLorentzVector *l1 = new TLorentzVector();
+	     l1->SetPtEtaPhiE(nt->NtElectronLoose->at(ie).pt(),
+			      nt->NtElectronLoose->at(ie).eta(),
+			      nt->NtElectronLoose->at(ie).phi(),
+			      nt->NtElectronLoose->at(ie).E());
+	     
+	     for(int im=0;im<nt->NtMuonLoose->size();im++ )
+	       {
+		  TLorentzVector *l2 = new TLorentzVector();
+		  l2->SetPtEtaPhiE(nt->NtMuonLoose->at(im).pt(),
+				   nt->NtMuonLoose->at(im).eta(),
+				   nt->NtMuonLoose->at(im).phi(),
+				   nt->NtMuonLoose->at(im).E());
+		  
+		  float mll = (*l1+*l2).M();
+		  if( mll < 12 ) pass_mem = 0;
+		  
+		  delete l2;
+	       }	    
+	     
+	     delete l1;
+	  }		
+	
+	bool pass_mll = (pass_mee && pass_mmm && pass_mem);
+	
+	if( nLepFakeable > 0 && pass_lep_pt && pass_lep_eta && nLepTight <= 1 && nTauFakeable >= 2 && pass_tau_pt &&
+	    nJetLoose >= 3 && (nJetLooseBL >= 2 || nJetLooseBM >= 1) && pass_mll )
+	  {
+	     if( ((nElectronFakeable > 0 && nt->NtElectronLoose->at(0).isTightTTH()) ||
+		  (nMuonFakeable > 0 && nt->NtMuonLoose->at(0).isTightTTH())) &&
+		 (nt->NtTauFakeable->at(0).byMediumIsolationMVArun2v1DBdR03oldDMwLT() && 
+		     nt->NtTauFakeable->at(1).byMediumIsolationMVArun2v1DBdR03oldDMwLT()) &&
+		 (nt->NtTauFakeable->at(0).charge()*nt->NtTauFakeable->at(1).charge() < 0) )
+	       {
+		  m_tree_1l2tau_SR->Fill();
+	       }
+	     if( ((nElectronFakeable > 0 && !nt->NtElectronLoose->at(0).isTightTTH()) &&
+		  (nMuonFakeable > 0 && !nt->NtMuonLoose->at(0).isTightTTH())) ||
+		 (nt->NtTauFakeable->at(0).byMediumIsolationMVArun2v1DBdR03oldDMwLT() ||
+		     nt->NtTauFakeable->at(1).byMediumIsolationMVArun2v1DBdR03oldDMwLT()) &&
+		 (nt->NtTauFakeable->at(0).charge()*nt->NtTauFakeable->at(1).charge() < 0) )
+	       {
+		  m_tree_1l2tau_Fake->Fill();
+	       }	     
+	  }	
+     }   
 }

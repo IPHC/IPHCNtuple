@@ -27,7 +27,7 @@ int main(int argc, char *argv[])
 	std::cout << "--tree: TTree name" << std::endl;
 	std::cout << "--nmax: max number of events" << std::endl;
 	std::cout << "--isdata: data or MC ?" << std::endl;
-	std::cout << "--dosync: produce sync ntuple" << std::endl;
+	std::cout << "--sync: produce sync ntuple (1-object,2-event)" << std::endl;
 	exit(1);
      }
    
@@ -36,7 +36,7 @@ int main(int argc, char *argv[])
    const char *stream_str = "FlatTree/tree";
    int nmax = -1;
    bool isdata = 0;
-   bool dosync = 0;
+   int sync = 0;
    
    for(int i=0;i<argc;i++)
      {
@@ -45,7 +45,7 @@ int main(int argc, char *argv[])
         if( ! strcmp(argv[i],"--tree") ) stream_str = argv[i+1];
         if( ! strcmp(argv[i],"--nmax") ) nmax = atoi(argv[i+1]);
         if( ! strcmp(argv[i],"--isdata") ) isdata = (bool) atoi(argv[i+1]);
-	if( ! strcmp(argv[i],"--dosync") ) dosync = (bool) atoi(argv[i+1]);
+	if( ! strcmp(argv[i],"--sync") ) sync = atoi(argv[i+1]);
      }
    
    std::string cmssw = std::string(getenv("CMSSW_BASE"));
@@ -59,7 +59,7 @@ int main(int argc, char *argv[])
    std::cout << "--tree="   << stream     << std::endl;
    std::cout << "--nmax="   << nmax       << std::endl;
    std::cout << "--isdata=" << isdata     << std::endl;
-   std::cout << "--dosync=" << dosync     << std::endl;
+   std::cout << "--sync="   << sync       << std::endl;
    
    Tree tree(0,const_cast<char*>(fname),stream);
    ntP = &tree;
@@ -76,14 +76,14 @@ int main(int argc, char *argv[])
    nt->createVar();
    nt->setBranchAddress();
 
-   if( dosync )
+   if( sync )
      {	
 	std::cout << "Running in sync mode" << std::endl;
 	TString fname_sync_root = fname_out;
 	fname_sync_root += "_sync.root";
 	sc = new Sync(fname_sync_root.Data());
-	sc->Init();
-	sc->setBranchAddress();
+	sc->Init(sync);
+	sc->setBranchAddress(sync);
      }
    
    Event     ev;
@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
 	
 	ch->GetEntry(i);
 	nt->clearVar();
-	if( dosync ) sc->initVar();
+	if( sync ) sc->initVar();
 	
         //	if( !(isHtoWW || isHtoZZ || isHtoTT) ) continue;
 	
@@ -258,10 +258,10 @@ int main(int argc, char *argv[])
 	sc->get(nt,n_presel_el,n_presel_mu,n_presel_tau,n_presel_jet);
 	
 	nt->fill();
-	if( dosync ) sc->fill();
+	if( sync ) sc->fill(nt,sync);
      }
    
-   if( dosync )
+   if( sync )
      {	
 	std::cout << "n_presel_mu = " << n_presel_mu  << std::endl;
 	std::cout << "n_presel_el = " << n_presel_el  << std::endl;

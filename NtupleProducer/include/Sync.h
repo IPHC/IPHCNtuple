@@ -22,12 +22,12 @@ class Sync
    Sync(std::string fname_out);
    virtual ~Sync();
    
-   void Init();
+   void Init(int sync);
    
-   void setBranchAddress();
+   void setBranchAddress(int sync);
    void initVar();
    void get(Ntuple *nt,int n_presel_el,int n_presel_mu,int n_presel_tau,int n_presel_jet);
-   void fill();
+   void fill(Ntuple *nt,int sync);
    
    TFile*  m_file;
 
@@ -318,8 +318,12 @@ class Sync
  private:
      
    TTree*  m_tree;
+   TTree*  m_tree_1l2tau_SR;
+   TTree*  m_tree_1l2tau_Fake;
    TChain* m_chain;
    std::string _fname_out;
+   
+   void createBranch(TTree *tr);
 };
 
 #endif

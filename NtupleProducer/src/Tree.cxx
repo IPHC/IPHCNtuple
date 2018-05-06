@@ -1029,7 +1029,7 @@ void Tree::Init(TChain *ch)
    fChain->SetBranchAddress("jet_cMVAv2", &jet_cMVAv2, &b_jet_cMVAv2);
    fChain->SetBranchAddress("jet_DeepCSVProbudsg", &jet_DeepCSVProbudsg, &b_jet_DeepCSVProbudsg);
    fChain->SetBranchAddress("jet_DeepCSVProbb", &jet_DeepCSVProbb, &b_jet_DeepCSVProbb);
-   fChain->SetBranchAddress("jet_DeepCSVProbbb", &jet_DeepCSVProbb, &b_jet_DeepCSVProbbb);
+   fChain->SetBranchAddress("jet_DeepCSVProbbb", &jet_DeepCSVProbbb, &b_jet_DeepCSVProbbb);
    fChain->SetBranchAddress("jet_DeepCSVProbc", &jet_DeepCSVProbc, &b_jet_DeepCSVProbc);
    fChain->SetBranchAddress("jet_DeepCSVProbcc", &jet_DeepCSVProbcc, &b_jet_DeepCSVProbcc);
    fChain->SetBranchAddress("jet_tightJetID", &jet_tightJetID, &b_jet_tightJetID);

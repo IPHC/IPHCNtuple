@@ -20,13 +20,13 @@ dout=${dout}
 dout_f=${dout_f}
 sample=${sample}
 dataset=${dataset}
-dosync=${dosync}
+sync=${sync}
 
 
 echo "Executing .././NtupleProducer --file ${line2} --outfile ${dout_f}/${fout} --isdata ${isdata} --noe ${noe} --xsec ${xsec} --nmax ${nmax}"
 
 #Run the job
-${dout}/./NtupleProducer --file ${line2} --outfile ${dout_f}/${fout} --isdata ${isdata} --noe ${noe} --xsec ${xsec} --nmax ${nmax} --tree FlatTree/tree --dosync ${dosync}
+${dout}/./NtupleProducer --file ${line2} --outfile ${dout_f}/${fout} --isdata ${isdata} --noe ${noe} --xsec ${xsec} --nmax ${nmax} --tree FlatTree/tree --sync ${sync}
 
 #Move output file to from scratch1 to grid, via script (args : output filename, and destination)
 echo "Will move file [${dout_f}/${fout}] to [/dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/${dataset}/.]"
