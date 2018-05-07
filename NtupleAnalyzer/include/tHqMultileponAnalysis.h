@@ -71,7 +71,8 @@ class tHqMultileponAnalysis
         void TwoLeptonSelection_GammaConv(int evt);
 
 		void InitFiles();
-		void InitEvent();
+		void InitCollections();
+		void InitTLorentzVectors();
 		void InitVariables();
 		void InitTree();
 		void initializeOutputTree();
@@ -134,6 +135,7 @@ class tHqMultileponAnalysis
 
 
         //-- Categories are encoded as Char_t (not booleans, bc vector<bool> is 'broken' in C++)
+        //-- NB : WHEN ADDING A CATEG, MUST IMPLEMENT IN FILLOUTPUTTREE() WHETHER IT CORRESPONDS TO 2L, 3L, etc !
         Char_t is_3l_THQ_SR;    // Category : training events tHQ3l analysis
         Char_t is_3l_THQ_Training; //Category : training events tHQ3l analysis
         Char_t is_3l_Z_CR;

@@ -21,8 +21,11 @@ que="cms_local_mdm"
 
 export HOME=$(pwd)
 
-dout="/home-pbs/ntonon/tHq/CMSSW_8_0_20/src/ttH/NtupleAnalyzer/test"
-dout_f="/opt/sbg/scratch1/cms/ntonon/Analyzer_ntuples_tHq"
+dout="/home-pbs/ntonon/tHq/CMSSW_8_0_20/src/ttH/NtupleAnalyzer/test" #Current dir.
+dout_f="/opt/sbg/scratch1/cms/ntonon/Analyzer_ntuples_tHq" #tmp output dir
+
+#version="newLepMVA" #output subdir
+version="myObjDef" #output subdir # FIXME
 
 runName="toy_${jName}"
 logName="log_${jName}"
@@ -90,7 +93,7 @@ do
   echo "isdata = " ${isdata}
  
   qsub -N ${dir} -q ${que} -o ${logName}/${sample}.log -j oe single_batch_job.sh \
--v dout=${dout},line2=${fpath}${line},dout_f=${dout_f},fout=${fout},nowe=${nowe},xsec=${xsec},lumi=${lumi},isdata=${isdata},doSystCombine=${doSystCombine},dataset=${dataset},nmax=${nmax}
+-v dout=${dout},line2=${fpath}${line},dout_f=${dout_f},fout=${fout},nowe=${nowe},xsec=${xsec},lumi=${lumi},isdata=${isdata},doSystCombine=${doSystCombine},dataset=${dataset},nmax=${nmax},version=${version}
 done
 
 echo "going to sleep 2700 s (45 mn)"

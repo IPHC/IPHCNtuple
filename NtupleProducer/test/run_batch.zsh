@@ -15,8 +15,10 @@ que="cms"
 export HOME=$(pwd)
 
 dout="/home-pbs/ntonon/tHq/CMSSW_8_0_20/src/ttH/NtupleProducer/test" #Current dir.
-dout_f="/opt/sbg/scratch1/cms/ntonon/ntuples_prod_tHq" #output dir. (tmp)
-version="newLepMVA" #output subdir
+dout_f="/opt/sbg/scratch1/cms/ntonon/ntuples_prod_tHq" #tmp output dir
+
+#version="newLepMVA" #output subdir
+version="myObjDef" #output subdir # FIXME
 
 
 echo "CMSSW_RELEASE_BASE" $CMSSW_RELEASE_BASE
@@ -83,9 +85,6 @@ do
   echo "${fpath}${line}"
   echo "isdata = " ${isdata}
  
- # qsub -N ${dir} -q ${que} -o ${logName}/${sample}.log -j oe single_batch_job.sh \
-#-v dout=${dout},line2=${fpath}${line},fout=${fout},noe=${noe},xsec=${xsec},isdata=${isdata},sample=${sample},nmax=${nmax},dout_f=${dout_f},version=${version}
-
 
   qsub -N ${dir} -q ${que} -o ${logName}/${sample}.log -j oe single_batch_job.sh \
 -v dout=${dout},line2=${fpath}${line},fout=${fout},isdata=${isdata},sample=${sample},nmax=${nmax},dout_f=${dout_f},dataset=${dataset},version=${version}

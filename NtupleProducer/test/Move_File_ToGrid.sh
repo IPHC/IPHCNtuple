@@ -1,4 +1,3 @@
-
 if [ "$1" == "" ]
 then
 echo "Missing arg : file name"

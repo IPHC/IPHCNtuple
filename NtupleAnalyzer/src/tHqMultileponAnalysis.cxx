@@ -16,11 +16,29 @@
 #include "FakeRate.cxx"
 #include "ChargeFlip.cxx"
 
-#define kCat_2b_2j   0
-#define kCat_1b_2j   1
-#define kCat_2b_1j   2
-#define kCat_1b_1j   3
-#define kCat_2b_0j   4
+#define kCat_3l_2b_2j   0
+#define kCat_3l_1b_2j   1
+#define kCat_3l_2b_1j   2
+#define kCat_3l_1b_1j   3
+#define kCat_3l_2b_0j   4
+#define kCat_4l_2b      5
+#define kCat_4l_1b      6
+#define kCat_2lss_2b_4j 7
+#define kCat_2lss_1b_4j 8
+#define kCat_2lss_2b_3j 9
+#define kCat_2lss_1b_3j 10
+#define kCat_2lss_2b_2j 11
+
+#define kCat_3l_1b_0j 12
+#define kCat_3l_0b_1j 13
+#define kCat_3l_0b_0j 14
+
+#define kCat_2lss_2b_1j 15
+#define kCat_2lss_1b_2j 16
+#define kCat_2lss_1b_1j 17
+
+
+
 
 #define DEBUG           false
 
@@ -205,7 +223,7 @@ void tHqMultileponAnalysis::InitFiles()
 /**
  * Re-initialize vectors of objects
  */
-void tHqMultileponAnalysis::InitEvent()
+void tHqMultileponAnalysis::InitCollections()
 {
     //--- Re-init all vectors
     vLeptons.clear();
@@ -224,7 +242,16 @@ void tHqMultileponAnalysis::InitEvent()
     vLooseBTagJets.clear();
     vLightJets.clear();
     vLightJets_FwdPtCut.clear();
+}
 
+
+
+/**
+ * Re-initialize TLorentzVectors
+ * To be called between each sel function (use different objects, so different output)
+ */
+void tHqMultileponAnalysis::InitTLorentzVectors()
+{
     //---- Re-init all TLorentzVectors (call to constructor)
     multilepton_Lepton1_P4 = TLorentzVector();
     multilepton_Lepton2_P4 = TLorentzVector();
@@ -438,7 +465,7 @@ void tHqMultileponAnalysis::Loop()
         // #                                                         #
         // ###########################################################
 
-        InitEvent();
+        InitCollections(); //Re-init object collections for each event
 
 
         // ######################################
@@ -2087,6 +2114,12 @@ void tHqMultileponAnalysis::TwoLeptonSelection_GammaConv(int evt)
  */
 void tHqMultileponAnalysis::fillOutputTree()
 {
+	InitTLorentzVectors(); //Re-init the MEM inputs at each call of the function
+
+	bool is2lss=false, is3l=false, is4l=false;
+
+	if(is_3l_THQ_SR || is_3l_THQ_Training || is_3l_Z_CR || is_3l_AppFakes_SR || is_3l_GammaConv_SR) {is3l = true;}
+	else if(is_2l_THQ_SR || is_2l_THQ_Training || is_2l_EMU_CR || is_2l_AppFakes_SR || is_2l_GammaConv_SR || is_2l_QFlip_SR) {is2lss = true;}
 
     //--------------------------------------------
     // #####       # ###### #####  ####
@@ -2123,13 +2156,30 @@ void tHqMultileponAnalysis::fillOutputTree()
 
 
     //Define jet category
-    if (ib1!=-1 && ib2!=-1 && vSelectedJets.size()-2>=2)      catJets = kCat_2b_2j; //0
-    else if (ib1!=-1 && ib2==-1 && vSelectedJets.size()-1>=2) catJets = kCat_1b_2j; //1
-    else if (ib1!=-1 && ib2!=-1 && vSelectedJets.size()-2==1) catJets = kCat_2b_1j; //2
-    else if (ib1!=-1 && ib2==-1 && vSelectedJets.size()-1==1) catJets = kCat_1b_1j; //3
-    else if (ib1!=-1 && ib2!=-1 && vSelectedJets.size()-2==0) catJets = kCat_2b_0j; //4
-    else catJets = -1;
-    //std::cout << "catJets="<<catJets<<std::endl;
+	//2lss
+    if (is2lss && ib1!=-1 && ib2!=-1 && vSelectedJets.size()-2>=4) catJets = kCat_2lss_2b_4j;
+    else if (is2lss && ib1!=-1 && ib2==-1 && vSelectedJets.size()-1>=4) catJets = kCat_2lss_1b_4j;
+    else if (is2lss && ib1!=-1 && ib2!=-1 && vSelectedJets.size()-2==3) catJets = kCat_2lss_2b_3j;
+    else if (is2lss && ib1!=-1 && ib2==-1 && vSelectedJets.size()-1==3) catJets = kCat_2lss_1b_3j;
+	else if (is2lss && ib1!=-1 && ib2!=-1 && vSelectedJets.size()-2==2) catJets = kCat_2lss_2b_2j;
+    else if (is2lss && ib1!=-1 && ib2!=-1 && vSelectedJets.size()-2==1) catJets = kCat_2lss_2b_1j;
+    else if (is2lss && ib1!=-1 && ib2==-1 && vSelectedJets.size()-1==2) catJets = kCat_2lss_1b_2j;
+	else if (is2lss && ib1!=-1 && ib2==-1 && vSelectedJets.size()-1==1) catJets = kCat_2lss_1b_1j;
+    //4l
+    else if (is4l && ib1!=-1 && ib2!=-1) catJets = kCat_4l_2b;
+    else if (is4l && ib1!=-1 && ib2==-1) catJets = kCat_4l_1b;
+    //3l
+    else if (is3l && ib1!=-1 && ib2!=-1 && vSelectedJets.size()-2>=2) catJets = kCat_3l_2b_2j;
+    else if (is3l && ib1!=-1 && ib2==-1 && vSelectedJets.size()-1>=2) catJets = kCat_3l_1b_2j;
+    else if (is3l && ib1!=-1 && ib2!=-1 && vSelectedJets.size()-2==1) catJets = kCat_3l_2b_1j;
+    else if (is3l && ib1!=-1 && ib2==-1 && vSelectedJets.size()-1==1) catJets = kCat_3l_1b_1j;
+	else if (is3l && ib1!=-1 && ib2!=-1 && vSelectedJets.size()-2==0) catJets = kCat_3l_2b_0j;
+	else if (is3l && ib1!=-1 && ib2==-1 && vSelectedJets.size()-1==0) catJets = kCat_3l_1b_0j;
+	else if (is3l && ib1==-1 && ib2==-1 && vSelectedJets.size()==1) catJets = kCat_3l_0b_1j;
+	else if (is3l && ib1==-1 && ib2==-1 && vSelectedJets.size()==0) catJets = kCat_3l_0b_0j;
+
+	else catJets = -1;
+
 
 
 
@@ -2147,13 +2197,14 @@ void tHqMultileponAnalysis::fillOutputTree()
     multilepton_Lepton2_Id = -999;
     multilepton_Lepton3_Id = -999;
     multilepton_Lepton4_Id = -999;
-    if (vFakeableLeptons.size()>=2){
-        multilepton_Lepton1_P4 = vFakeableLeptons.at(0).p4();
-        multilepton_Lepton1_Id = vFakeableLeptons.at(0).id();
-        multilepton_Lepton2_P4 = vFakeableLeptons.at(1).p4();
-        multilepton_Lepton2_Id = vFakeableLeptons.at(1).id();
-    }
-    if (vFakeableLeptons.size()>=3)
+
+    //-- Always fill at least 2 leptons
+    multilepton_Lepton1_P4 = vFakeableLeptons.at(0).p4();
+    multilepton_Lepton1_Id = vFakeableLeptons.at(0).id();
+    multilepton_Lepton2_P4 = vFakeableLeptons.at(1).p4();
+    multilepton_Lepton2_Id = vFakeableLeptons.at(1).id();
+
+    if(is3l) //If corresponds to a 3l event
     {
         multilepton_Lepton3_P4 = vFakeableLeptons.at(2).p4();
         multilepton_Lepton3_Id = vFakeableLeptons.at(2).id();
@@ -2348,7 +2399,7 @@ void tHqMultileponAnalysis::fillOutputTree()
 
 
     //--- Fill 2nd pairs (first one is closest to mW) -- needed for 2l only (more jets)
-    if(ij1!=-1 && ij2!=-1)
+    if(is2lss && ij1!=-1 && ij2!=-1)
     {
         if (im1!=-1)
         {
@@ -2451,25 +2502,15 @@ void tHqMultileponAnalysis::fillOutputTree()
     multilepton_mHT = vEvent->at(0).metsumet();
 
     mc_ttZhypAllowed = 0;
-    /*
-        if(vSelectedLeptons.size()==3)
-        {
-            if ( vSelectedLeptons.at(0).charge()==vSelectedLeptons.at(1).charge() && vSelectedLeptons.at(1).charge()==vSelectedLeptons.at(2).charge() ) mc_ttZhypAllowed =-1;
-            else if (  ( vSelectedLeptons.at(0).id() == -vSelectedLeptons.at(1).id() )
-            || ( vSelectedLeptons.at(0).id() == -vSelectedLeptons.at(2).id() )
-            || ( vSelectedLeptons.at(1).id() == -vSelectedLeptons.at(2).id() ))
-            mc_ttZhypAllowed = 1;
-        }
-    */
-
-    if (multilepton_Lepton1_Id!=-999 && multilepton_Lepton2_Id!=-999 && multilepton_Lepton3_Id!=-999){
-        if (multilepton_Lepton1_Id*multilepton_Lepton2_Id>0 && multilepton_Lepton2_Id*multilepton_Lepton3_Id>0) mc_ttZhypAllowed =-1;
+    if (multilepton_Lepton1_Id!=-999 && multilepton_Lepton2_Id!=-999 && multilepton_Lepton3_Id!=-999)
+    {
+        //+++ && --- cases
+        if (multilepton_Lepton1_Id*multilepton_Lepton2_Id>0 && multilepton_Lepton2_Id*multilepton_Lepton3_Id>0) {mc_ttZhypAllowed =-1;}
+        //OSSF pair case
         else if ( (multilepton_Lepton1_Id==-multilepton_Lepton2_Id)
                 || (multilepton_Lepton1_Id==-multilepton_Lepton3_Id)
-                || (multilepton_Lepton2_Id==-multilepton_Lepton3_Id))
-            mc_ttZhypAllowed = 1;
+                || (multilepton_Lepton2_Id==-multilepton_Lepton3_Id)) {mc_ttZhypAllowed = 1;}
     }
-
 
     tOutput->Fill();
 
@@ -2940,7 +2981,7 @@ void tHqMultileponAnalysis::initializeOutputTree()
 
 	//-- Other, MEM necessary vars, ...
     tOutput->Branch("PV_weight",&weight_PV,"PV_weight/F");
-    tOutput->Branch("mc_ttZhypAllowed",&mc_ttZhypAllowed,"mc_ttZhypAllowed/I");
+    tOutput->Branch("mc_ttZhypAllowed",&mc_ttZhypAllowed,"mc_ttZhypAllowed/B");
 
     tOutput->Branch("catJets",&catJets,"catJets/I");
 
