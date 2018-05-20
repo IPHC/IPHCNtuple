@@ -50,6 +50,17 @@ void Muon::read()
    _lepMVA_mvaId                   = ntP->mu_lepMVA_mvaId->at(idx);
    _lepMVA_eta                     = ntP->mu_lepMVA_eta->at(idx);
    _lepMVA_jetNDauChargedMVASel    = ntP->mu_lepMVA_jetNDauChargedMVASel->at(idx);
+
+   _hasMCMatch = ntP->el_hasMCMatch->at(idx);
+   _gen_pt = ntP->el_gen_pt->at(idx);
+   _gen_eta = ntP->el_gen_eta->at(idx);
+   _gen_phi = ntP->el_gen_phi->at(idx);
+   _gen_m = ntP->el_gen_m->at(idx);
+   _gen_E = ntP->el_gen_E->at(idx);
+   _gen_status = ntP->el_gen_status->at(idx);
+   _gen_id = ntP->el_gen_id->at(idx);
+   _gen_charge = ntP->el_gen_charge->at(idx);
+   _gen_dr = ntP->el_gen_dr->at(idx);
 }
 
 void Muon::init()
@@ -99,6 +110,17 @@ void Muon::init()
    _lepMVA_mvaId                = -100.;
    _lepMVA_eta                  = -100.;
    _lepMVA_jetNDauChargedMVASel = -100.;   
+
+   _hasMCMatch = false;
+   _gen_pt = -100;
+   _gen_eta = -100;
+   _gen_phi = -100;
+   _gen_m = -100;
+   _gen_E = -100;
+   _gen_status = -100;
+   _gen_id = -100;
+   _gen_charge = -100;
+   _gen_dr = -100;
 }
 
 void Muon::sel()

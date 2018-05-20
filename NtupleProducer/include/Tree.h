@@ -153,6 +153,17 @@ class Tree {
    vector<float>   *el_ecalEnergy;
    vector<float>   *el_eSuperClusterOverP;
    vector<float>   *el_trackMomentumError;
+
+   vector<int>     *el_hasMCMatch;
+   vector<float>   *el_gen_pt;
+   vector<float>   *el_gen_eta;
+   vector<float>   *el_gen_phi;
+   vector<float>   *el_gen_m;
+   vector<float>   *el_gen_E;
+   vector<int>     *el_gen_status;
+   vector<int>     *el_gen_id;
+   vector<int>     *el_gen_charge;
+   vector<float>   *el_gen_dr;
    
    Int_t           mu_n;
    vector<float>   *mu_pt;
@@ -229,6 +240,17 @@ class Tree {
    vector<float>   *mu_innerTrack_pt;
    vector<float>   *mu_innerTrack_ptError;
 
+   vector<int>     *mu_hasMCMatch;
+   vector<float>   *mu_gen_pt;
+   vector<float>   *mu_gen_eta;
+   vector<float>   *mu_gen_phi;
+   vector<float>   *mu_gen_m;
+   vector<float>   *mu_gen_E;
+   vector<int>     *mu_gen_status;
+   vector<int>     *mu_gen_id;
+   vector<int>     *mu_gen_charge;
+   vector<float>   *mu_gen_dr;
+   
    Int_t           tau_n;
    vector<float>   *tau_E;
    vector<float>   *tau_pt;
@@ -282,6 +304,17 @@ class Tree {
    vector<float>   *tau_pfEssential_dxy;
    vector<float>   *tau_pfEssential_dxy_error;
    vector<float>   *tau_pfEssential_dxy_Sig;
+
+   vector<int>     *tau_hasMCMatch;
+   vector<float>   *tau_gen_pt;
+   vector<float>   *tau_gen_eta;
+   vector<float>   *tau_gen_phi;
+   vector<float>   *tau_gen_m;
+   vector<float>   *tau_gen_E;
+   vector<int>     *tau_gen_status;
+   vector<int>     *tau_gen_id;
+   vector<int>     *tau_gen_charge;
+   vector<float>   *tau_gen_dr;
    
    Int_t           jet_n;
    vector<float>   *jet_pt;
@@ -928,6 +961,17 @@ class Tree {
    TBranch        *b_el_eSuperClusterOverP;
    TBranch        *b_el_trackMomentumError;
 
+   TBranch        *b_el_hasMCMatch;
+   TBranch        *b_el_gen_pt;
+   TBranch        *b_el_gen_eta;
+   TBranch        *b_el_gen_phi;
+   TBranch        *b_el_gen_m;
+   TBranch        *b_el_gen_E;
+   TBranch        *b_el_gen_status;
+   TBranch        *b_el_gen_id;
+   TBranch        *b_el_gen_charge;
+   TBranch        *b_el_gen_dr;
+   
    TBranch        *b_mu_n;   //!
    TBranch        *b_mu_pt;   //!
    TBranch        *b_mu_eta;   //!
@@ -1003,6 +1047,17 @@ class Tree {
    TBranch        *b_mu_innerTrack_pt;   //!
    TBranch        *b_mu_innerTrack_ptError;   //!
 
+   TBranch        *b_mu_hasMCMatch;
+   TBranch        *b_mu_gen_pt;
+   TBranch        *b_mu_gen_eta;
+   TBranch        *b_mu_gen_phi;
+   TBranch        *b_mu_gen_m;
+   TBranch        *b_mu_gen_E;
+   TBranch        *b_mu_gen_status;
+   TBranch        *b_mu_gen_id;
+   TBranch        *b_mu_gen_charge;
+   TBranch        *b_mu_gen_dr;
+   
    TBranch   *b_tau_n;
    TBranch   *b_tau_E;
    TBranch   *b_tau_pt;
@@ -1057,6 +1112,17 @@ class Tree {
    TBranch   *b_tau_pfEssential_dxy;
    TBranch   *b_tau_pfEssential_dxy_error;
    TBranch   *b_tau_pfEssential_dxy_Sig;
+
+   TBranch        *b_tau_hasMCMatch;
+   TBranch        *b_tau_gen_pt;
+   TBranch        *b_tau_gen_eta;
+   TBranch        *b_tau_gen_phi;
+   TBranch        *b_tau_gen_m;
+   TBranch        *b_tau_gen_E;
+   TBranch        *b_tau_gen_status;
+   TBranch        *b_tau_gen_id;
+   TBranch        *b_tau_gen_charge;
+   TBranch        *b_tau_gen_dr;
    
    TBranch        *b_jet_n;   //!
    TBranch        *b_jet_pt;   //!

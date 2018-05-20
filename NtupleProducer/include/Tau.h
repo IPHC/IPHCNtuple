@@ -64,6 +64,17 @@ class Tau : public Base
    float againstMuonLoose3()                                       {return _againstMuonLoose3;};
    float againstMuonTight3()                                       {return _againstMuonTight3;};
 
+   bool hasMCMatch() {return _hasMCMatch;};
+   float gen_pt() {return _gen_pt;};
+   float gen_eta() {return _gen_eta;};
+   float gen_phi() {return _gen_phi;};
+   float gen_m() {return _gen_m;};
+   float gen_E() {return _gen_E;};
+   int gen_status() {return _gen_status;};
+   int gen_id() {return _gen_id;};
+   int gen_charge() {return _gen_charge;};
+   float gen_dr() {return _gen_dr;};
+   
  protected:
    
    int   _ID;
@@ -135,6 +146,17 @@ class Tau : public Base
    float _byCombinedIsolationDeltaBetaCorrRaw3Hits;
    float _againstMuonLoose3;
    float _againstMuonTight3;
+
+   bool _hasMCMatch;
+   float _gen_pt;
+   float _gen_eta;
+   float _gen_phi;
+   float _gen_m;
+   float _gen_E;
+   int _gen_status;
+   int _gen_id;
+   int _gen_charge;
+   float _gen_dr;
    
    ClassDef(Tau,1)
 };

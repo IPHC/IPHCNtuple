@@ -160,6 +160,17 @@ void Tree::Init(TChain *ch)
    el_ecalEnergy = 0;
    el_eSuperClusterOverP = 0;
    el_trackMomentumError = 0;
+
+   el_hasMCMatch = 0;
+   el_gen_pt = 0;
+   el_gen_eta = 0;
+   el_gen_phi = 0;
+   el_gen_m = 0;
+   el_gen_E = 0;
+   el_gen_status = 0;
+   el_gen_id = 0;
+   el_gen_charge = 0;
+   el_gen_dr = 0;
    
    mu_pt = 0;
    mu_eta = 0;
@@ -235,6 +246,17 @@ void Tree::Init(TChain *ch)
    mu_innerTrack_pt = 0;
    mu_innerTrack_ptError = 0;
 
+   mu_hasMCMatch = 0;
+   mu_gen_pt = 0;
+   mu_gen_eta = 0;
+   mu_gen_phi = 0;
+   mu_gen_m = 0;
+   mu_gen_E = 0;
+   mu_gen_status = 0;
+   mu_gen_id = 0;
+   mu_gen_charge = 0;
+   mu_gen_dr = 0;
+   
    tau_n = 0;
    tau_E = 0;
    tau_pt = 0;
@@ -289,6 +311,17 @@ void Tree::Init(TChain *ch)
    tau_pfEssential_dxy = 0;
    tau_pfEssential_dxy_error = 0;
    tau_pfEssential_dxy_Sig = 0;
+
+   tau_hasMCMatch = 0;
+   tau_gen_pt = 0;
+   tau_gen_eta = 0;
+   tau_gen_phi = 0;
+   tau_gen_m = 0;
+   tau_gen_E = 0;
+   tau_gen_status = 0;
+   tau_gen_id = 0;
+   tau_gen_charge = 0;
+   tau_gen_dr = 0;
    
    jet_pt = 0;
    jet_eta = 0;
@@ -886,6 +919,17 @@ void Tree::Init(TChain *ch)
    fChain->SetBranchAddress("el_eSuperClusterOverP", &el_eSuperClusterOverP, &b_el_eSuperClusterOverP);
    fChain->SetBranchAddress("el_trackMomentumError", &el_trackMomentumError, &b_el_trackMomentumError);
    
+   fChain->SetBranchAddress("el_hasMCMatch", &el_hasMCMatch, &b_el_hasMCMatch);
+   fChain->SetBranchAddress("el_gen_pt", &el_gen_pt, &b_el_gen_pt);
+   fChain->SetBranchAddress("el_gen_eta", &el_gen_eta, &b_el_gen_eta);
+   fChain->SetBranchAddress("el_gen_phi", &el_gen_phi, &b_el_gen_phi);
+   fChain->SetBranchAddress("el_gen_m", &el_gen_m, &b_el_gen_m);
+   fChain->SetBranchAddress("el_gen_E", &el_gen_E, &b_el_gen_E);
+   fChain->SetBranchAddress("el_gen_status", &el_gen_status, &b_el_gen_status);
+   fChain->SetBranchAddress("el_gen_id", &el_gen_id, &b_el_gen_id);
+   fChain->SetBranchAddress("el_gen_charge", &el_gen_charge, &b_el_gen_charge);
+   fChain->SetBranchAddress("el_gen_dr", &el_gen_dr, &b_el_gen_dr);
+   
    fChain->SetBranchAddress("mu_n", &mu_n, &b_mu_n);
    fChain->SetBranchAddress("mu_pt", &mu_pt, &b_mu_pt);
    fChain->SetBranchAddress("mu_eta", &mu_eta, &b_mu_eta);
@@ -960,6 +1004,17 @@ void Tree::Init(TChain *ch)
    fChain->SetBranchAddress("mu_innerTrack_ptError", &mu_innerTrack_ptError, &b_mu_innerTrack_ptError);
    fChain->SetBranchAddress("mu_lepMVA_eta", &mu_lepMVA_eta, &b_mu_lepMVA_eta);
    fChain->SetBranchAddress("mu_lepMVA_jetNDauChargedMVASel", &mu_lepMVA_jetNDauChargedMVASel, &b_mu_lepMVA_jetNDauChargedMVASel);   
+
+   fChain->SetBranchAddress("mu_hasMCMatch", &mu_hasMCMatch, &b_mu_hasMCMatch);
+   fChain->SetBranchAddress("mu_gen_pt", &mu_gen_pt, &b_mu_gen_pt);
+   fChain->SetBranchAddress("mu_gen_eta", &mu_gen_eta, &b_mu_gen_eta);
+   fChain->SetBranchAddress("mu_gen_phi", &mu_gen_phi, &b_mu_gen_phi);
+   fChain->SetBranchAddress("mu_gen_m", &mu_gen_m, &b_mu_gen_m);
+   fChain->SetBranchAddress("mu_gen_E", &mu_gen_E, &b_mu_gen_E);
+   fChain->SetBranchAddress("mu_gen_status", &mu_gen_status, &b_mu_gen_status);
+   fChain->SetBranchAddress("mu_gen_id", &mu_gen_id, &b_mu_gen_id);
+   fChain->SetBranchAddress("mu_gen_charge", &mu_gen_charge, &b_mu_gen_charge);
+   fChain->SetBranchAddress("mu_gen_dr", &mu_gen_dr, &b_mu_gen_dr);
    
    fChain->SetBranchAddress("tau_n", &tau_n, &b_tau_n);
    fChain->SetBranchAddress("tau_E", &tau_E,  &b_tau_E);
@@ -1016,6 +1071,17 @@ void Tree::Init(TChain *ch)
    fChain->SetBranchAddress("tau_pfEssential_dxy", &tau_pfEssential_dxy, &b_tau_pfEssential_dxy);
    fChain->SetBranchAddress("tau_pfEssential_dxy_error", &tau_pfEssential_dxy_error, &b_tau_pfEssential_dxy_error);
    fChain->SetBranchAddress("tau_pfEssential_dxy_Sig", &tau_pfEssential_dxy_Sig, &b_tau_pfEssential_dxy_Sig);
+
+   fChain->SetBranchAddress("tau_hasMCMatch", &tau_hasMCMatch, &b_tau_hasMCMatch);
+   fChain->SetBranchAddress("tau_gen_pt", &tau_gen_pt, &b_tau_gen_pt);
+   fChain->SetBranchAddress("tau_gen_eta", &tau_gen_eta, &b_tau_gen_eta);
+   fChain->SetBranchAddress("tau_gen_phi", &tau_gen_phi, &b_tau_gen_phi);
+   fChain->SetBranchAddress("tau_gen_m", &tau_gen_m, &b_tau_gen_m);
+   fChain->SetBranchAddress("tau_gen_E", &tau_gen_E, &b_tau_gen_E);
+   fChain->SetBranchAddress("tau_gen_status", &tau_gen_status, &b_tau_gen_status);
+   fChain->SetBranchAddress("tau_gen_id", &tau_gen_id, &b_tau_gen_id);
+   fChain->SetBranchAddress("tau_gen_charge", &tau_gen_charge, &b_tau_gen_charge);
+   fChain->SetBranchAddress("tau_gen_dr", &tau_gen_dr, &b_tau_gen_dr);
    
    fChain->SetBranchAddress("jet_n", &jet_n, &b_jet_n);
    fChain->SetBranchAddress("jet_pt", &jet_pt, &b_jet_pt);

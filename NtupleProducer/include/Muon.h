@@ -66,6 +66,17 @@ class Muon : public Base
    float lepMVA_mvaId()         	    {return _lepMVA_mvaId;};
    float lepMVA_eta()                  {return _lepMVA_eta;};
    float lepMVA_jetNDauChargedMVASel() {return _lepMVA_jetNDauChargedMVASel;};
+
+   bool hasMCMatch() {return _hasMCMatch;};
+   float gen_pt() {return _gen_pt;};
+   float gen_eta() {return _gen_eta;};
+   float gen_phi() {return _gen_phi;};
+   float gen_m() {return _gen_m;};
+   float gen_E() {return _gen_E;};
+   int gen_status() {return _gen_status;};
+   int gen_id() {return _gen_id;};
+   int gen_charge() {return _gen_charge;};
+   float gen_dr() {return _gen_dr;};
    
  protected:
    
@@ -116,6 +127,17 @@ class Muon : public Base
    float _lepMVA_mvaId;
    float _lepMVA_eta;
    float _lepMVA_jetNDauChargedMVASel;   
+
+   bool _hasMCMatch;
+   float _gen_pt;
+   float _gen_eta;
+   float _gen_phi;
+   float _gen_m;
+   float _gen_E;
+   int _gen_status;
+   int _gen_id;
+   int _gen_charge;
+   float _gen_dr;
    
    ClassDef(Muon,1)
 };
