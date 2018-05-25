@@ -150,8 +150,9 @@
 #define kCat_3l_0b_1j 13
 #define kCat_3l_0b_0j 14
 
-#define kCat_2lss_1b_2j 15
-#define kCat_2lss_1b_1j 16
+#define kCat_2lss_2b_1j 15
+#define kCat_2lss_1b_2j 16
+#define kCat_2lss_1b_1j 17
 
 using namespace std;
 using namespace LHAPDF;
@@ -857,18 +858,19 @@ int MEPhaseSpace::GetNumberIntegrationVar(int kMode, int kCatJets){
     if (kMode==kMEM_TTW_TopAntitopDecay) nparam = 8;
     if (kMode==kMEM_TTWJJ_TopAntitopDecay) nparam = 10;
     if (kMode==kMEM_TTbar_TopAntitopSemiLepDecay) nparam = 5;
-    if (kMode==kMEM_THJ_TopLepDecay) nparam = 9;
+    if (kMode==kMEM_THJ_TopLepDecay) nparam = 8;
 
-    if (kMode!=kMEM_TTW_TopAntitopDecay && kMode!=kMEM_TTbar_TopAntitopSemiLepDecay){
+    if (kMode!=kMEM_TTW_TopAntitopDecay && kMode!=kMEM_TTbar_TopAntitopSemiLepDecay && kMode!=kMEM_THJ_TopLepDecay){
       if (kCatJets==kCat_2lss_2b_3j || kCatJets==kCat_2lss_1b_4j) nparam += 2;
       if (kCatJets==kCat_2lss_1b_3j || kCatJets==kCat_2lss_2b_2j) nparam += 4;
     }
     if (kMode==kMEM_TTW_TopAntitopDecay || kMode==kMEM_TTbar_TopAntitopSemiLepDecay){
-      if (kCatJets==kCat_2lss_1b_4j || kCatJets==kCat_2lss_1b_3j) nparam += 2;
+      if (kCatJets==kCat_2lss_1b_4j || kCatJets==kCat_2lss_1b_3j || kCatJets==kCat_2lss_1b_2j) nparam += 2;
+      if (kCatJets==kCat_2lss_1b_1j) nparam += 4;
     }
     if (kMode==kMEM_THJ_TopLepDecay){
-      if (kCatJets==kCat_2lss_1b_2j) nparam += 2;
-      if (kCatJets==kCat_2lss_1b_1j) nparam += 4;
+      if (kCatJets==kCat_2lss_2b_2j || kCatJets==kCat_2lss_1b_2j) nparam += 2;
+      if (kCatJets==kCat_2lss_2b_1j || kCatJets==kCat_2lss_1b_1j) nparam += 4;
     }
   }
 

@@ -2917,6 +2917,7 @@ void ReadGenFlatTree::ReadMultilepton(Long64_t iEvent, MultiLepton* multiLepton)
 
    cout << "C"<<endl;
 
+  (*multiLepton).AllJets.clear();
   (*multiLepton).Jets.clear();
   (*multiLepton).JetsHighestPt.clear();
   (*multiLepton).JetsClosestMw.clear();

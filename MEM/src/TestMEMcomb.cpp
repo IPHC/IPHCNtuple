@@ -207,7 +207,7 @@ int main(int argc, char *argv[])
   }
  */
 
-  bool sel_tmp=0;
+  //bool sel_tmp=0;
 
     int nHypAllowed_TTH = 0, nHypAllowed_TTbar = 0;
 
@@ -287,9 +287,9 @@ int main(int argc, char *argv[])
         cout<<"2: pT = "<<tree.multilepton_JetHighestPt2_P4.Pt()<<" / eta = "<<tree.multilepton_JetHighestPt2_P4.Eta()<<endl;
 
         cout<<"--- Leptons : "<<endl;
-        cout<<"1: pT = "<<tree.multilepton_Lepton1_P4.Pt()<<" / eta = "<<tree.multilepton_Lepton1_P4.Eta()<<endl;
-        cout<<"2: pT = "<<tree.multilepton_Lepton2_P4.Pt()<<" / eta = "<<tree.multilepton_Lepton2_P4.Eta()<<endl;
-        cout<<"3: pT = "<<tree.multilepton_Lepton3_P4.Pt()<<" / eta = "<<tree.multilepton_Lepton3_P4.Eta()<<endl;
+        cout<<"1: pT = "<<tree.multilepton_Lepton1_P4.Pt()<<" / eta = "<<tree.multilepton_Lepton1_P4.Eta()<< " Id="<<tree.multilepton_Lepton1_Id <<endl;
+        cout<<"2: pT = "<<tree.multilepton_Lepton2_P4.Pt()<<" / eta = "<<tree.multilepton_Lepton2_P4.Eta()<<" Id="<< tree.multilepton_Lepton2_Id<<endl;
+        cout<<"3: pT = "<<tree.multilepton_Lepton3_P4.Pt()<<" / eta = "<<tree.multilepton_Lepton3_P4.Eta()<<" Id="<<tree.multilepton_Lepton3_Id<<endl;
      }
 
       //cout << "C"<<endl;
@@ -563,7 +563,7 @@ int main(int argc, char *argv[])
 
      if (initresult==1) MEMpermutations[ih].LoopPermutations(&hypIntegrator);
 
-
+     /*
                for(int index_cat=0; index_cat<12; index_cat++){
                   if(index_cat<=6)
                      sel_tmp = (tree.is_3l_TTH_SR)*(tree.catJets==index_cat);
@@ -586,7 +586,7 @@ int main(int argc, char *argv[])
 		    }
                   }
                }
-
+     */
 
      TLorentzVector Pnull(0,0,0,0);
      if (shyp[ih]=="TTLL"){

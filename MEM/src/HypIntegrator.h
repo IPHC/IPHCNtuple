@@ -114,6 +114,8 @@ void HypIntegrator::InitializeIntegrator(ConfigParser* cfgParser){
   meIntegrator->transferFunctions->SetTFOption(cfgParser->valTFOption);
   meIntegrator->transferFunctions->LoadTFfromHisto(cfgParser->valTFfile);
 
+  cout << "Before loading minimizers" << endl;
+
   if (cfgParser->valDoMinimization==1) minimizer = ROOT::Math::Factory::CreateMinimizer("subgradient","");
   if (cfgParser->valDoMinimization==2) minimizer = ROOT::Math::Factory::CreateMinimizer("Minuit2", "Migrad");
   if (cfgParser->valDoMinimization==3) minimizer = ROOT::Math::Factory::CreateMinimizer("Minuit2", "Simplex");
@@ -127,7 +129,7 @@ void HypIntegrator::InitializeIntegrator(ConfigParser* cfgParser){
   //if (cfgParser->valDoMinimization==5) minimizer = ROOT::Math::Factory::CreateMinimizer("GSLMultiFit", "");
   if (cfgParser->valDoMinimization==5) minimizer = ROOT::Math::Factory::CreateMinimizer("GSLSimAn", "");
 
- 
+  cout << "End of InitializeIntegrator" <<endl; 
   //minimizer->SetPrintLevel(0); //FIXME -- put back
 
  return;
@@ -174,16 +176,17 @@ void HypIntegrator::SetupIntegrationHypothesis(int kMode, int kCat, int nPoints)
     if (kCat==kCat_4l_1b) nPointsCatHyp *= 30; 
   }
   else if (meIntegrator->iNleptons==2){
-    if (kMode!=kMEM_TTW_TopAntitopDecay && kMode!=kMEM_TTbar_TopAntitopSemiLepDecay && kMode!=kMEM_THJ_TopLepDecay){
+    if (kMode!=kMEM_TTW_TopAntitopDecay && kMode!=kMEM_TTbar_TopAntitopSemiLepDecay && kMode!=kMEM_THJ_TopLepDecay && kMode!=kMEM_THJ_TopLepDecay){
       if (kCat==kCat_2lss_2b_3j || kCat==kCat_2lss_1b_4j) nPointsCatHyp *= 10;
       if (kCat==kCat_2lss_1b_3j || kCat==kCat_2lss_2b_2j) nPointsCatHyp *= 50;
     }
     if (kMode==kMEM_TTW_TopAntitopDecay || kMode==kMEM_TTbar_TopAntitopSemiLepDecay){
-      if (kCat==kCat_2lss_1b_4j || kCat==kCat_2lss_1b_3j) nPointsCatHyp *= 10;
+      if (kCat==kCat_2lss_1b_4j || kCat==kCat_2lss_1b_3j || kCat==kCat_2lss_1b_2j) nPointsCatHyp *= 10;
+      if (kCat==kCat_2lss_1b_1j) nPointsCatHyp *= 50;
     }
     if (kMode==kMEM_THJ_TopLepDecay){
-      if (kCat==kCat_2lss_1b_2j) nPointsCatHyp *= 10;
-      if (kCat==kCat_2lss_1b_1j) nPointsCatHyp *= 50;
+      if (kCat==kCat_2lss_2b_2j || kCat==kCat_2lss_1b_2j) nPointsCatHyp *= 10;
+      if (kCat==kCat_2lss_2b_1j || kCat==kCat_2lss_1b_1j) nPointsCatHyp *= 50;
     }
   }
 
