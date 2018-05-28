@@ -33,6 +33,12 @@ class Tree {
    Float_t         met_pt;
    Float_t         met_phi;
    Float_t         met_sumet;
+   Float_t         metPuppi_pt;
+   Float_t         metPuppi_phi;
+   Float_t         metPuppi_sumet;
+   Float_t         met_uncorrectedPt;
+   Float_t         met_uncorrectedPhi;
+   Float_t         met_uncorrectedSumEt;
    Double_t         met_cov00;
    Double_t         met_cov01;
    Double_t         met_cov10;
@@ -132,6 +138,7 @@ class Tree {
    vector<float>   *el_lepMVA_jetPtRelv2;
    vector<float>   *el_lepMVA_jetPtRatio;
    vector<float>   *el_lepMVA_jetBTagCSV;
+   vector<float>   *el_lepMVA_jetBTagDeepCSV;
    vector<float>   *el_lepMVA_sip3d;
    vector<float>   *el_lepMVA_dxy;
    vector<float>   *el_lepMVA_dz;
@@ -148,6 +155,7 @@ class Tree {
    vector<bool>    *el_hasMatchedConversion;
    vector<float>   *el_sigmaIetaIeta;
    vector<float>   *el_full5x5_sigmaIetaIeta;
+   vector<float>   *el_full5x5_sigmaEtaEta;
    vector<float>   *el_superCluster_eta;
    vector<float>   *el_correctedEcalEnergy;
    vector<float>   *el_ecalEnergy;
@@ -231,6 +239,7 @@ class Tree {
    vector<float>   *mu_lepMVA_jetPtRelv2;
    vector<float>   *mu_lepMVA_jetPtRatio;
    vector<float>   *mu_lepMVA_jetBTagCSV;
+   vector<float>   *mu_lepMVA_jetBTagDeepCSV;
    vector<float>   *mu_lepMVA_sip3d;
    vector<float>   *mu_lepMVA_dxy;
    vector<float>   *mu_lepMVA_dz;
@@ -266,7 +275,7 @@ class Tree {
    vector<float>   *tau_leadingTrackPt;
    vector<float>   *tau_leadingTrackCharge;
    vector<float>   *tau_decayModeFinding;
-   vector<float>   *tau_decayModeFindingOldDMs;
+//   vector<float>   *tau_decayModeFindingOldDMs;
    vector<float>   *tau_decayModeFindingNewDMs;
    vector<float>   *tau_byLooseCombinedIsolationDeltaBetaCorr3Hits;
    vector<float>   *tau_byMediumCombinedIsolationDeltaBetaCorr3Hits;
@@ -840,6 +849,12 @@ class Tree {
    TBranch        *b_met_pt;   //!
    TBranch        *b_met_phi;   //!
    TBranch        *b_met_sumet;   //!
+   TBranch        *b_metPuppi_pt;   //!
+   TBranch        *b_metPuppi_phi;   //!
+   TBranch        *b_metPuppi_sumet;   //!
+   TBranch        *b_met_uncorrectedPt;   //!
+   TBranch        *b_met_uncorrectedPhi;   //!
+   TBranch        *b_met_uncorrectedSumEt;   //!
    TBranch        *b_met_cov00;   //!
    TBranch        *b_met_cov01;   //!
    TBranch        *b_met_cov10;   //!
@@ -939,6 +954,7 @@ class Tree {
    TBranch        *b_el_lepMVA_jetPtRelv2;
    TBranch        *b_el_lepMVA_jetPtRatio;
    TBranch        *b_el_lepMVA_jetBTagCSV;
+   TBranch        *b_el_lepMVA_jetBTagDeepCSV;
    TBranch        *b_el_lepMVA_sip3d;
    TBranch        *b_el_lepMVA_dxy;
    TBranch        *b_el_lepMVA_dz;
@@ -955,6 +971,7 @@ class Tree {
    TBranch        *b_el_hasMatchedConversion;
    TBranch        *b_el_sigmaIetaIeta;
    TBranch        *b_el_full5x5_sigmaIetaIeta;
+   TBranch        *b_el_full5x5_sigmaEtaEta;
    TBranch        *b_el_superCluster_eta;
    TBranch        *b_el_correctedEcalEnergy;
    TBranch        *b_el_ecalEnergy;
@@ -1038,6 +1055,7 @@ class Tree {
    TBranch        *b_mu_lepMVA_jetPtRelv2;
    TBranch        *b_mu_lepMVA_jetPtRatio;
    TBranch        *b_mu_lepMVA_jetBTagCSV;
+   TBranch        *b_mu_lepMVA_jetBTagDeepCSV;
    TBranch        *b_mu_lepMVA_sip3d;
    TBranch        *b_mu_lepMVA_dxy;
    TBranch        *b_mu_lepMVA_dz;
@@ -1073,7 +1091,7 @@ class Tree {
    TBranch   *b_tau_leadingTrackPt;
    TBranch   *b_tau_leadingTrackCharge;
    TBranch   *b_tau_decayModeFinding;
-   TBranch   *b_tau_decayModeFindingOldDMs;
+//   TBranch   *b_tau_decayModeFindingOldDMs;
    TBranch   *b_tau_decayModeFindingNewDMs;
    TBranch   *b_tau_byLooseCombinedIsolationDeltaBetaCorr3Hits;
    TBranch   *b_tau_byMediumCombinedIsolationDeltaBetaCorr3Hits;

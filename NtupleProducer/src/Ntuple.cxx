@@ -27,6 +27,7 @@ void Ntuple::setBranchAddress()
    m_tree->Branch("MuonFakeable",      "std::vector<Muon>",        (NtMuonFakeable),32000,1);
    m_tree->Branch("MuonTight",         "std::vector<Muon>",        (NtMuonTight),32000,1);
    m_tree->Branch("TauFakeable",       "std::vector<Tau>",         (NtTauFakeable),32000,1);
+   m_tree->Branch("TauTight",          "std::vector<Tau>",         (NtTauTight),32000,1);
    m_tree->Branch("JetLoose",          "std::vector<Jet>",         (NtJetLoose),32000,1);
    m_tree->Branch("Truth",             "std::vector<Truth>",       (NtTruth),32000,1);
    m_tree->Branch("GenJet",            "std::vector<GenJet>",      (NtGenJet),32000,1);
@@ -43,6 +44,7 @@ void Ntuple::createVar()
    NtMuonFakeable       = new std::vector<Muon>;
    NtMuonTight          = new std::vector<Muon>;
    NtTauFakeable        = new std::vector<Tau>;
+   NtTauTight           = new std::vector<Tau>;
    NtJetLoose           = new std::vector<Jet>;
    NtTruth              = new std::vector<Truth>;
    NtGenJet             = new std::vector<GenJet>; 
@@ -59,6 +61,7 @@ void Ntuple::clearVar()
    NtMuonFakeable->clear();
    NtMuonTight->clear();
    NtTauFakeable->clear();
+   NtTauTight->clear();
    NtJetLoose->clear();
    NtTruth->clear();
    NtGenJet->clear(); 

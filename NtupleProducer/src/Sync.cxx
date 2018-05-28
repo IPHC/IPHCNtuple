@@ -26,6 +26,25 @@ void Sync::Init(int sync)
      {
 	m_tree_1l2tau_SR = new TTree("syncTree_1l2tau_SR","Sync Ntuple");
 	m_tree_1l2tau_Fake = new TTree("syncTree_1l2tau_Fake","Sync Ntuple");
+	m_tree_2lSS_SR = new TTree("syncTree_2lSS_SR","Sync Ntuple");
+	m_tree_2lSS_Fake = new TTree("syncTree_2lSS_Fake","Sync Ntuple");
+	m_tree_2lSS_Flip = new TTree("syncTree_2lSS_Flip","Sync Ntuple");
+	m_tree_2lSS1tau_SR = new TTree("syncTree_2lSS1tau_SR","Sync Ntuple");
+	m_tree_2lSS1tau_Fake = new TTree("syncTree_2lSS1tau_Fake","Sync Ntuple");
+	m_tree_2lSS1tau_Flip = new TTree("syncTree_2lSS1tau_Flip","Sync Ntuple");
+	m_tree_2l2tau_SR = new TTree("syncTree_2l2tau_SR","Sync Ntuple");
+	m_tree_2l2tau_Fake = new TTree("syncTree_2l2tau_Fake","Sync Ntuple");
+	m_tree_3l_SR = new TTree("syncTree_3l_SR","Sync Ntuple");
+	m_tree_3l_Fake = new TTree("syncTree_3l_Fake","Sync Ntuple");
+	m_tree_3l1tau_SR = new TTree("syncTree_3l1tau_SR","Sync Ntuple");
+	m_tree_3l1tau_Fake = new TTree("syncTree_3l1tau_Fake","Sync Ntuple");
+	m_tree_4l_SR = new TTree("syncTree_4l_SR","Sync Ntuple");
+	m_tree_4l_Fake = new TTree("syncTree_4l_Fake","Sync Ntuple");
+	m_tree_ttWctrl_SR = new TTree("syncTree_ttWctrl_SR","Sync Ntuple");
+	m_tree_ttWctrl_Fake = new TTree("syncTree_ttWctrl_Fake","Sync Ntuple");
+	m_tree_ttWctrl_Flip = new TTree("syncTree_ttWctrl_Flip","Sync Ntuple");
+	m_tree_ttZctrl_SR = new TTree("syncTree_ttZctrl_SR","Sync Ntuple");
+	m_tree_ttZctrl_Fake = new TTree("syncTree_ttZctrl_Fake","Sync Ntuple");
      }   
 }
 
@@ -36,7 +55,26 @@ void Sync::setBranchAddress(int sync)
      {
 	createBranch(m_tree_1l2tau_SR);
 	createBranch(m_tree_1l2tau_Fake);
-     }   
+	createBranch(m_tree_2lSS_SR);
+	createBranch(m_tree_2lSS_Fake);
+	createBranch(m_tree_2lSS_Flip);
+	createBranch(m_tree_2lSS1tau_SR);
+	createBranch(m_tree_2lSS1tau_Fake);
+	createBranch(m_tree_2lSS1tau_Flip);
+	createBranch(m_tree_2l2tau_SR);
+	createBranch(m_tree_2l2tau_Fake);
+	createBranch(m_tree_3l_SR);
+	createBranch(m_tree_3l_Fake);
+	createBranch(m_tree_3l1tau_SR);
+	createBranch(m_tree_3l1tau_Fake);
+	createBranch(m_tree_4l_SR);
+	createBranch(m_tree_4l_Fake);
+	createBranch(m_tree_ttWctrl_SR);
+	createBranch(m_tree_ttWctrl_Fake);
+	createBranch(m_tree_ttWctrl_Flip);
+	createBranch(m_tree_ttZctrl_SR);
+	createBranch(m_tree_ttZctrl_Fake);
+     }
 }
 
 void Sync::createBranch(TTree *tr)
@@ -622,7 +660,7 @@ void Sync::get(Ntuple *nt,int n_presel_el,int n_presel_mu,int n_presel_tau,int n
    n_mvasel_ele = -9999;
    n_presel_tau = n_presel_tau;
    n_presel_jet = n_presel_jet;
-   
+
    int nMuon = nt->NtMuonLoose->size();
    
    if( nMuon > 0 )
@@ -705,7 +743,7 @@ void Sync::get(Ntuple *nt,int n_presel_el,int n_presel_mu,int n_presel_tau,int n
 	ele1_dz = nt->NtElectronLoose->at(0).dz();
 	ele1_ntMVAeleID = nt->NtElectronLoose->at(0).lepMVA_mvaId();
 	ele1_leptonMVA = nt->NtElectronLoose->at(0).lepMVA();
-	ele1_isChargeConsistent = nt->NtElectronLoose->at(0).isGsfScPixChargeConsistent();
+	ele1_isChargeConsistent = nt->NtElectronLoose->at(0).isGsfCtfScPixChargeConsistent();
 	ele1_passesConversionVeto = nt->NtElectronLoose->at(0).passCV();
 	ele1_nMissingHits = nt->NtElectronLoose->at(0).nlosthits();
 	ele1_sigmaEtaEta = nt->NtElectronLoose->at(0).sigmaIetaIeta();
@@ -715,7 +753,7 @@ void Sync::get(Ntuple *nt,int n_presel_el,int n_presel_mu,int n_presel_tau,int n
 	ele1_OoEminusOoP = nt->NtElectronLoose->at(0).ooEmooP();
 	ele1_isfakeablesel = nt->NtElectronLoose->at(0).isFakeableTTH();
 	ele1_ismvasel = nt->NtElectronLoose->at(0).isTightTTH();
-     }   
+     }
 
    if( nElectron > 1 )
      {	   
@@ -739,7 +777,7 @@ void Sync::get(Ntuple *nt,int n_presel_el,int n_presel_mu,int n_presel_tau,int n
 	ele2_dz = nt->NtElectronLoose->at(1).dz();
 	ele2_ntMVAeleID = nt->NtElectronLoose->at(1).lepMVA_mvaId();
 	ele2_leptonMVA = nt->NtElectronLoose->at(1).lepMVA();
-	ele2_isChargeConsistent = nt->NtElectronLoose->at(1).isGsfScPixChargeConsistent();
+	ele2_isChargeConsistent = nt->NtElectronLoose->at(1).isGsfCtfScPixChargeConsistent();
 	ele2_passesConversionVeto = nt->NtElectronLoose->at(1).passCV();
 	ele2_nMissingHits = nt->NtElectronLoose->at(1).nlosthits();
 	ele2_sigmaEtaEta = nt->NtElectronLoose->at(1).sigmaIetaIeta();
@@ -749,7 +787,7 @@ void Sync::get(Ntuple *nt,int n_presel_el,int n_presel_mu,int n_presel_tau,int n
 	ele2_OoEminusOoP = nt->NtElectronLoose->at(1).ooEmooP();
 	ele2_isfakeablesel = nt->NtElectronLoose->at(1).isFakeableTTH();
 	ele2_ismvasel = nt->NtElectronLoose->at(1).isTightTTH();
-     }   
+     }
 
    int nTau = nt->NtTauFakeable->size();
 
@@ -783,7 +821,7 @@ void Sync::get(Ntuple *nt,int n_presel_el,int n_presel_mu,int n_presel_tau,int n
 	tau1_againstElectronLooseMVA6 = nt->NtTauFakeable->at(0).againstElectronLooseMVA6();
 	tau1_againstElectronMediumMVA6 = nt->NtTauFakeable->at(0).againstElectronMediumMVA6();
 	tau1_againstElectronTightMVA6 = nt->NtTauFakeable->at(0).againstElectronTightMVA6();
-     }   
+     }
 
    if( nTau > 1 )
      {	      
@@ -815,7 +853,89 @@ void Sync::get(Ntuple *nt,int n_presel_el,int n_presel_mu,int n_presel_tau,int n
 	tau2_againstElectronLooseMVA6 = nt->NtTauFakeable->at(1).againstElectronLooseMVA6();
 	tau2_againstElectronMediumMVA6 = nt->NtTauFakeable->at(1).againstElectronMediumMVA6();
 	tau2_againstElectronTightMVA6 = nt->NtTauFakeable->at(1).againstElectronTightMVA6();
+     }
+   
+   int nJet = nt->NtJetLoose->size();
+   
+   if( nJet > 0 )
+     {
+	jet1_pt = nt->NtJetLoose->at(0).pt();
+	jet1_eta = nt->NtJetLoose->at(0).eta();
+	jet1_phi = nt->NtJetLoose->at(0).phi();
+	jet1_E = nt->NtJetLoose->at(0).E();
+	jet1_CSV = nt->NtJetLoose->at(0).deepCSVb()+nt->NtJetLoose->at(0).deepCSVbb();
      }   
+
+   if( nJet > 1 )
+     {
+	jet2_pt = nt->NtJetLoose->at(1).pt();
+	jet2_eta = nt->NtJetLoose->at(1).eta();
+	jet2_phi = nt->NtJetLoose->at(1).phi();
+	jet2_E = nt->NtJetLoose->at(1).E();
+	jet2_CSV = nt->NtJetLoose->at(1).deepCSVb()+nt->NtJetLoose->at(1).deepCSVbb();
+     }   
+
+   if( nJet > 2 )
+     {
+	jet3_pt = nt->NtJetLoose->at(2).pt();
+	jet3_eta = nt->NtJetLoose->at(2).eta();
+	jet3_phi = nt->NtJetLoose->at(2).phi();
+	jet3_E = nt->NtJetLoose->at(2).E();
+	jet3_CSV = nt->NtJetLoose->at(2).deepCSVb()+nt->NtJetLoose->at(2).deepCSVbb();
+     }   
+
+   if( nJet > 3 )
+     {
+	jet4_pt = nt->NtJetLoose->at(3).pt();
+	jet4_eta = nt->NtJetLoose->at(3).eta();
+	jet4_phi = nt->NtJetLoose->at(3).phi();
+	jet4_E = nt->NtJetLoose->at(3).E();
+	jet4_CSV = nt->NtJetLoose->at(3).deepCSVb()+nt->NtJetLoose->at(3).deepCSVbb();
+     }
+   
+   TLorentzVector jet;
+   float jet_px = 0;
+   float jet_py = 0;
+   for(int ij=0;ij<nJet;ij++)
+     {	     
+	jet.SetPtEtaPhiE(nt->NtJetLoose->at(ij).pt(),
+			 nt->NtJetLoose->at(ij).eta(),
+			 nt->NtJetLoose->at(ij).phi(), 
+			 nt->NtJetLoose->at(ij).E());
+	jet_px += jet.Px();
+	jet_py += jet.Py();
+     }
+   for(int ij=0;ij<nt->NtElectronFakeable->size();ij++)
+     {	     
+	jet.SetPtEtaPhiE(nt->NtElectronFakeable->at(ij).pt(),
+			 nt->NtElectronFakeable->at(ij).eta(),
+			 nt->NtElectronFakeable->at(ij).phi(), 
+			 nt->NtElectronFakeable->at(ij).E());
+	jet_px += jet.Px();
+	jet_py += jet.Py();
+     }
+   for(int ij=0;ij<nt->NtMuonFakeable->size();ij++)
+     {
+	jet.SetPtEtaPhiE(nt->NtMuonFakeable->at(ij).pt(),
+			 nt->NtMuonFakeable->at(ij).eta(),
+			 nt->NtMuonFakeable->at(ij).phi(), 
+			 nt->NtMuonFakeable->at(ij).E());
+	jet_px += jet.Px();
+	jet_py += jet.Py();
+     }
+   for(int ij=0;ij<nTau;ij++)
+     {	     
+	jet.SetPtEtaPhiE(nt->NtTauFakeable->at(ij).pt(),
+			 nt->NtTauFakeable->at(ij).eta(),
+			 nt->NtTauFakeable->at(ij).phi(), 
+			 nt->NtTauFakeable->at(ij).E());
+	jet_px += jet.Px();
+	jet_py += jet.Py();
+     }
+   MHT = sqrt( (jet_px*jet_px) + (jet_py*jet_py) );
+   metLD = nt->NtEvent->at(0).metpt()*0.00397 + MHT*0.00265;
+   PFMET = nt->NtEvent->at(0).metpt();
+   PFMETphi = nt->NtEvent->at(0).metphi();
 }
 
 void Sync::fill(Ntuple *nt,int sync)
@@ -823,18 +943,57 @@ void Sync::fill(Ntuple *nt,int sync)
    if( sync == 1 ) m_tree->Fill();
    else
      {
-	int nElectronFakeable = nt->NtElectronFakeable->size();
-	int nMuonFakeable = nt->NtMuonFakeable->size();
+	std::vector<Base> *elmuLoose = new std::vector<Base>;
+	for(int ie=0;ie<nt->NtElectronLoose->size();ie++ )
+	  {
+	     Base lep = nt->NtElectronLoose->at(ie);
+	     lep.iElec = ie;
+	     elmuLoose->push_back(lep);
+	  }
+	for(int im=0;im<nt->NtMuonLoose->size();im++ )
+	  {
+	     Base lep = nt->NtMuonLoose->at(im);
+	     lep.iMuon = im;
+	     elmuLoose->push_back(lep);
+	  }
+	std::sort(elmuLoose->begin(),elmuLoose->end(),sort_by_pt());
+
+	std::vector<Base> *elmuTight = new std::vector<Base>;
+	for(int ie=0;ie<nt->NtElectronTight->size();ie++ )
+	  {
+	     Base lep = nt->NtElectronTight->at(ie);
+	     lep.iElec = ie;
+	     elmuTight->push_back(lep);
+	  }
+	for(int im=0;im<nt->NtMuonTight->size();im++ )
+	  {
+	     Base lep = nt->NtMuonTight->at(im);
+	     lep.iMuon = im;
+	     elmuTight->push_back(lep);
+	  }
+	std::sort(elmuTight->begin(),elmuTight->end(),sort_by_pt());
+
+	std::vector<Base> *elmuFakeable = new std::vector<Base>;
+	for(int ie=0;ie<nt->NtElectronFakeable->size();ie++ )
+	  {
+	     Base lep = nt->NtElectronFakeable->at(ie);
+	     lep.iElec = ie;
+	     elmuFakeable->push_back(lep);
+	  }
+	for(int im=0;im<nt->NtMuonFakeable->size();im++ )
+	  {
+	     Base lep = nt->NtMuonFakeable->at(im);
+	     lep.iMuon = im;
+	     elmuFakeable->push_back(lep);
+	  }
+	std::sort(elmuFakeable->begin(),elmuFakeable->end(),sort_by_pt());
+	
+	int nLepLoose = elmuLoose->size();
+	int nLepFakeable = elmuFakeable->size();
+	int nLepTight = elmuTight->size();
 	int nTauFakeable = nt->NtTauFakeable->size();
-	int nLepFakeable = nElectronFakeable+nMuonFakeable;
-	int nLepTight = nt->NtElectronTight->size()+nt->NtMuonTight->size();
-	bool pass_ele_pt = (nElectronFakeable > 0) ? (nt->NtElectronFakeable->at(0).pt() > 30.) : 0;
-	bool pass_muo_pt = (nMuonFakeable > 0) ? (nt->NtMuonFakeable->at(0).pt() > 25.) : 0;
-	bool pass_lep_pt = (pass_ele_pt || pass_muo_pt);
-	bool pass_ele_eta = (nElectronFakeable > 0) ? (fabs(nt->NtElectronFakeable->at(0).eta()) < 2.1) : 0;
-	bool pass_muo_eta = (nMuonFakeable > 0) ? (fabs(nt->NtMuonFakeable->at(0).eta()) < 2.1) : 0;
-	bool pass_lep_eta = (pass_ele_eta || pass_muo_eta);
-	bool pass_tau_pt = (nTauFakeable >= 2) ? (nt->NtTauFakeable->at(0).pt() > 30. && nt->NtTauFakeable->at(1).pt() > 20.) : 0;
+	int nTauTight = nt->NtTauTight->size();
+
 	int nJetLoose = nt->NtJetLoose->size();
 	int nJetLooseBL = 0;
 	int nJetLooseBM = 0;
@@ -842,108 +1001,370 @@ void Sync::fill(Ntuple *nt,int sync)
 	  {
 	     if( nt->NtJetLoose->at(ij).isMediumBTag() ) nJetLooseBM++;
 	     if( nt->NtJetLoose->at(ij).isLooseBTag() ) nJetLooseBL++;
-	  }	
+	  }
 	
-	bool pass_mee = 1;
-	for(int ie=0;ie<nt->NtElectronLoose->size();ie++ )
+	int nSFOS = 0;
+	float mll_min = 10E+10;
+	float mll_z_min = 10E+10;
+	float mllll = -1;
+	for(int il=0;il<nLepLoose;il++)
 	  {
 	     TLorentzVector *l1 = new TLorentzVector();
-	     l1->SetPtEtaPhiE(nt->NtElectronLoose->at(ie).pt(),
-			      nt->NtElectronLoose->at(ie).eta(),
-			      nt->NtElectronLoose->at(ie).phi(),
-			      nt->NtElectronLoose->at(ie).E());
-	     
-	     for(int iee=ie+1;iee<nt->NtElectronLoose->size();iee++ )
+	     l1->SetPtEtaPhiE(elmuLoose->at(il)._pt,
+			      elmuLoose->at(il)._eta,
+			      elmuLoose->at(il)._phi,
+			      elmuLoose->at(il)._E);
+
+	     for(int ill=il+1;ill<nLepLoose;ill++)
 	       {
 		  TLorentzVector *l2 = new TLorentzVector();
-		  l2->SetPtEtaPhiE(nt->NtElectronLoose->at(iee).pt(),
-				   nt->NtElectronLoose->at(iee).eta(),
-				   nt->NtElectronLoose->at(iee).phi(),
-				   nt->NtElectronLoose->at(iee).E());
-		  
-		  float mll = (*l1+*l2).M();
+		  l2->SetPtEtaPhiE(elmuLoose->at(ill)._pt,
+				   elmuLoose->at(ill)._eta,
+				   elmuLoose->at(ill)._phi,
+				   elmuLoose->at(ill)._E);		  
 
-		  if( mll < 12 ) pass_mee = 0;
+		  float mll = (*l1+*l2).M();
+		  float mll_z = fabs((*l1+*l2).M()-91.2);
+
+		  bool SFOS = (((elmuLoose->at(il).iElec >= 0 && elmuLoose->at(ill).iElec >= 0) ||
+				(elmuLoose->at(il).iMuon >= 0 && elmuLoose->at(ill).iMuon >= 0)) &&
+			       elmuLoose->at(il)._charge*elmuLoose->at(ill)._charge < 0);
+		  if( SFOS ) nSFOS++;
+		  
+		  if( mll < mll_min ) mll_min = mll;
+		  if( mll_z < mll_z_min && SFOS ) mll_z_min = mll_z;
 		  
 		  delete l2;
+
+		  for(int illl=ill+1;illl<nLepLoose;illl++)
+		    {
+		       TLorentzVector *l3 = new TLorentzVector();
+		       l3->SetPtEtaPhiE(elmuLoose->at(illl)._pt,
+					elmuLoose->at(illl)._eta,
+					elmuLoose->at(illl)._phi,
+					elmuLoose->at(illl)._E);
+		       
+		       for(int illll=illl+1;illll<nLepLoose;illll++)
+			 {
+			    TLorentzVector *l4 = new TLorentzVector();
+			    l4->SetPtEtaPhiE(elmuLoose->at(illll)._pt,
+					     elmuLoose->at(illll)._eta,
+					     elmuLoose->at(illll)._phi,
+					     elmuLoose->at(illll)._E);
+
+			    bool SFOS34 = (((elmuLoose->at(illl).iElec >= 0 && elmuLoose->at(illll).iElec >= 0) ||
+					    (elmuLoose->at(illl).iMuon >= 0 && elmuLoose->at(illll).iMuon >= 0)) &&
+					   elmuLoose->at(illl)._charge*elmuLoose->at(illll)._charge < 0);
+			    
+			    if( !SFOS34 ) continue;
+			    
+			    float mllll = (*l1+*l2+*l3+*l4).M();
+
+			    delete l4;
+			 }
+		       
+		       delete l3;
+		    }		  
 	       }	    
 	     
 	     delete l1;
 	  }		
+	bool pass_mll = (mll_min > 12.);
+	bool pass_mll_z = (mll_z_min > 10.);
 
-	bool pass_mmm = 1;
-	for(int im=0;im<nt->NtMuonLoose->size();im++ )
+	float mee_z_min = 10E+10;       
+	for(int ie=0;ie<nt->NtElectronLoose->size();ie++)
 	  {
-	     TLorentzVector *l1 = new TLorentzVector();
-	     l1->SetPtEtaPhiE(nt->NtMuonLoose->at(im).pt(),
-			      nt->NtMuonLoose->at(im).eta(),
-			      nt->NtMuonLoose->at(im).phi(),
-			      nt->NtMuonLoose->at(im).E());
-	     
-	     for(int imm=im+1;imm<nt->NtMuonLoose->size();imm++ )
+	     TLorentzVector *e1 = new TLorentzVector();
+	     e1->SetPtEtaPhiE(nt->NtElectronLoose->at(ie)._pt,
+			      nt->NtElectronLoose->at(ie)._eta,
+			      nt->NtElectronLoose->at(ie)._phi,
+			      nt->NtElectronLoose->at(ie)._E);
+
+	     for(int iee=ie+1;iee<nt->NtElectronLoose->size();iee++)
 	       {
-		  TLorentzVector *l2 = new TLorentzVector();
-		  l2->SetPtEtaPhiE(nt->NtMuonLoose->at(imm).pt(),
-				   nt->NtMuonLoose->at(imm).eta(),
-				   nt->NtMuonLoose->at(imm).phi(),
-				   nt->NtMuonLoose->at(imm).E());
+		  TLorentzVector *e2 = new TLorentzVector();
+		  e2->SetPtEtaPhiE(nt->NtElectronLoose->at(iee)._pt,
+				   nt->NtElectronLoose->at(iee)._eta,
+				   nt->NtElectronLoose->at(iee)._phi,
+				   nt->NtElectronLoose->at(iee)._E);		  
+
+		  float mee = fabs((*e1+*e2).M()-91.2);
 		  
-		  float mll = (*l1+*l2).M();
-		  if( mll < 12 ) pass_mmm = 0;
+		  if( mee < mee_z_min ) mee_z_min = mee;
 		  
-		  delete l2;
+		  delete e2;
 	       }	    
 	     
-	     delete l1;
+	     delete e1;
 	  }		
+	bool pass_mee = (mee_z_min > 10.);
 
-	bool pass_mem = 1;
-	for(int ie=0;ie<nt->NtElectronLoose->size();ie++ )
-	  {
-	     TLorentzVector *l1 = new TLorentzVector();
-	     l1->SetPtEtaPhiE(nt->NtElectronLoose->at(ie).pt(),
-			      nt->NtElectronLoose->at(ie).eta(),
-			      nt->NtElectronLoose->at(ie).phi(),
-			      nt->NtElectronLoose->at(ie).E());
-	     
-	     for(int im=0;im<nt->NtMuonLoose->size();im++ )
-	       {
-		  TLorentzVector *l2 = new TLorentzVector();
-		  l2->SetPtEtaPhiE(nt->NtMuonLoose->at(im).pt(),
-				   nt->NtMuonLoose->at(im).eta(),
-				   nt->NtMuonLoose->at(im).phi(),
-				   nt->NtMuonLoose->at(im).E());
+	bool pass_1l2tau_SR = 0;
+	bool pass_1l2tau_Fake = 0;
+	  {	     
+	     bool pass_nlep = (nLepFakeable > 0 && nLepTight <= 1 && nTauFakeable >= 2);
+	     if( pass_nlep )
+	       {		  
+		  bool pass_fakeable_pt = (elmuFakeable->at(0).iMuon >= 0 && elmuFakeable->at(0)._pt > 25.) ||
+		    (elmuFakeable->at(0).iElec >= 0 && elmuFakeable->at(0)._pt > 30.);	     
+		  bool pass_fakeable_eta = (fabs(elmuFakeable->at(0)._eta) < 2.1);
+		  bool pass_tau_pt = (nt->NtTauFakeable->at(0).pt() > 30. && nt->NtTauFakeable->at(0).pt() > 20.);
+		  bool pass_tau_eta = (fabs(nt->NtTauFakeable->at(0)._eta) < 2.1 && fabs(nt->NtTauFakeable->at(1)._eta) < 2.1);
+		  bool pass_njet = (nJetLoose >= 3 && (nJetLooseBL >= 2 || nJetLooseBM >= 1));
 		  
-		  float mll = (*l1+*l2).M();
-		  if( mll < 12 ) pass_mem = 0;
+		  bool pass_tight = (elmuFakeable->at(0)._isTightTTH);
+		  bool pass_tau_id = (nt->NtTauFakeable->at(0).byMediumIsolationMVArun2v1DBdR03oldDMwLT() &&
+				      nt->NtTauFakeable->at(1).byMediumIsolationMVArun2v1DBdR03oldDMwLT());
+		  bool pass_tau_charge = (nt->NtTauFakeable->at(0).charge()*nt->NtTauFakeable->at(1).charge() < 0);
+		  bool pass_truth = (elmuFakeable->at(0)._hasMCMatch &&
+				     nt->NtTauFakeable->at(0)._hasMCMatch && nt->NtTauFakeable->at(1)._hasMCMatch);
 		  
-		  delete l2;
-	       }	    
-	     
-	     delete l1;
-	  }		
-	
-	bool pass_mll = (pass_mee && pass_mmm && pass_mem);
-	
-	if( nLepFakeable > 0 && pass_lep_pt && pass_lep_eta && nLepTight <= 1 && nTauFakeable >= 2 && pass_tau_pt &&
-	    nJetLoose >= 3 && (nJetLooseBL >= 2 || nJetLooseBM >= 1) && pass_mll )
-	  {
-	     if( ((nElectronFakeable > 0 && nt->NtElectronLoose->at(0).isTightTTH()) ||
-		  (nMuonFakeable > 0 && nt->NtMuonLoose->at(0).isTightTTH())) &&
-		 (nt->NtTauFakeable->at(0).byMediumIsolationMVArun2v1DBdR03oldDMwLT() && 
-		     nt->NtTauFakeable->at(1).byMediumIsolationMVArun2v1DBdR03oldDMwLT()) &&
-		 (nt->NtTauFakeable->at(0).charge()*nt->NtTauFakeable->at(1).charge() < 0) )
-	       {
-		  m_tree_1l2tau_SR->Fill();
+		  pass_1l2tau_SR = (pass_fakeable_pt && pass_fakeable_eta && pass_tau_pt && pass_tau_eta && pass_njet && pass_mll &&
+				    pass_tight && pass_tau_id && pass_tau_charge && pass_truth);
+		  
+		  bool pass_fake = (!(elmuFakeable->at(0)._isTightTTH) ||
+				    !(nt->NtTauFakeable->at(0).byMediumIsolationMVArun2v1DBdR03oldDMwLT()) ||
+				    !(nt->NtTauFakeable->at(1).byMediumIsolationMVArun2v1DBdR03oldDMwLT()));
+
+		  bool pass_fake_os = (nt->NtTauFakeable->at(0).charge()*nt->NtTauFakeable->at(1).charge() < 0);
+
+		  pass_1l2tau_Fake = (pass_fakeable_pt && pass_fakeable_eta && pass_tau_pt && pass_tau_eta && pass_njet && pass_mll &&
+				      pass_fake && pass_fake_os);
+
+		  if( nt->NtEvent->at(0).id() == 16808086 )
+		    std::cout << 
+		    "pass_fakeable_pt=" << pass_fakeable_pt <<
+		    " pass_fakeable_eta=" << pass_fakeable_eta <<
+		    " pass_tau_pt=" << pass_tau_pt <<
+		    " pass_njet=" << pass_njet <<
+		    " pass_mll=" << pass_mll <<
+		    " pass_fake=" << pass_fake <<
+		    " n_tau=" << nt->NtTauFakeable->size() <<
+		    " pass_fake_os=" << pass_fake_os <<
+		    " pass_1l2tau_Fake=" << pass_1l2tau_Fake << std::endl;
+		  
+		  if( nt->NtEvent->at(0).id() == 16808086 )
+		    {		       
+		       if (elmuFakeable->at(0).iMuon >= 0)
+			 std::cout << "muon pt=" << elmuFakeable->at(0)._pt << std::endl;
+		       if (elmuFakeable->at(0).iElec >= 0)
+			 std::cout << "elec pt=" << elmuFakeable->at(0)._pt << std::endl;
+		    }		  
 	       }
-	     if( ((nElectronFakeable > 0 && !nt->NtElectronLoose->at(0).isTightTTH()) &&
-		  (nMuonFakeable > 0 && !nt->NtMuonLoose->at(0).isTightTTH())) ||
-		 (nt->NtTauFakeable->at(0).byMediumIsolationMVArun2v1DBdR03oldDMwLT() ||
-		     nt->NtTauFakeable->at(1).byMediumIsolationMVArun2v1DBdR03oldDMwLT()) &&
-		 (nt->NtTauFakeable->at(0).charge()*nt->NtTauFakeable->at(1).charge() < 0) )
+	  }
+
+	bool pass_2lSS_SR = 0;
+	bool pass_2lSS_Fake = 0;
+	bool pass_2lSS_Flip = 0;	
+	bool pass_ttWctrl_SR = 0;
+	bool pass_ttWctrl_Fake = 0;
+	bool pass_ttWctrl_Flip = 0;
+	  {	     
+	     bool pass_nlep = (nLepFakeable > 1 && nLepTight <= 2);
+	     if( pass_nlep )
 	       {
-		  m_tree_1l2tau_Fake->Fill();
+		  bool pass_fakeable_pt = (elmuFakeable->at(0)._pt > 25. && elmuFakeable->at(1)._pt > 15.);
+		  bool pass_tight_charge = (elmuFakeable->at(0)._tightCharge && elmuFakeable->at(1)._tightCharge);
+		  bool pass_tau_veto = (nTauTight == 0);
+		  bool pass_njet = (nJetLoose >= 4 && (nJetLooseBL >= 2 || nJetLooseBM >= 1));
+		  bool pass_njet3 = (nJetLoose == 3 && (nJetLooseBL >= 2 || nJetLooseBM >= 1));
+		  bool pass_metLD = (metLD > 0.2);
+		  if( !(elmuFakeable->at(0).iElec >= 0) || !(elmuFakeable->at(1).iElec >= 0) ) pass_metLD = 1;
+		  
+		  bool pass_tight = (elmuFakeable->at(0)._isTightTTH && elmuFakeable->at(1)._isTightTTH);
+		  bool pass_ss = (elmuFakeable->at(0)._charge*elmuFakeable->at(1)._charge > 0);
+		  bool pass_truth = (elmuFakeable->at(0)._hasMCMatch && elmuFakeable->at(1)._hasMCMatch);
+
+		  pass_2lSS_SR = (pass_fakeable_pt && pass_tight_charge && pass_mll && pass_tau_veto && pass_mee && pass_metLD && pass_njet &&
+				  pass_tight && pass_ss && pass_truth);
+
+		  pass_ttWctrl_SR = (pass_fakeable_pt && pass_tight_charge && pass_mll && pass_tau_veto && pass_mee && pass_metLD && pass_njet3 &&
+				     pass_tight && pass_ss && pass_truth);
+
+		  pass_2lSS_Fake = (pass_fakeable_pt && pass_tight_charge && pass_mll && pass_tau_veto && pass_mee && pass_metLD && pass_njet &&
+				    pass_ss && !pass_tight);
+
+		  pass_ttWctrl_Fake = (pass_fakeable_pt && pass_tight_charge && pass_mll && pass_tau_veto && pass_mee && pass_metLD && pass_njet3 &&
+				       pass_ss && !pass_tight);
+
+		  bool pass_has_elec = (elmuFakeable->at(0).iElec >= 0 || elmuFakeable->at(1).iElec >= 0);
+		  
+		  pass_2lSS_Flip = (pass_fakeable_pt && pass_tight_charge && pass_mll && pass_tau_veto && pass_mee && pass_metLD && pass_njet &&
+				    pass_has_elec && !pass_ss && pass_tight && pass_truth);
+
+		  pass_ttWctrl_Flip = (pass_fakeable_pt && pass_tight_charge && pass_mll && pass_tau_veto && pass_mee && pass_metLD && pass_njet3 &&
+				       pass_has_elec && !pass_ss && pass_tight && pass_truth);
+	       }
+	  }
+
+	bool pass_2lSS1tau_SR = 0;
+	bool pass_2lSS1tau_Fake = 0;
+	bool pass_2lSS1tau_Flip = 0;
+	  {	     
+	     bool pass_nlep = (nLepFakeable > 1 && nLepTight <= 2 && nTauFakeable >= 1);
+	     if( pass_nlep )
+	       {
+		  bool pass_fakeable_pt = (elmuFakeable->at(0)._pt > 25.);
+		  pass_fakeable_pt = pass_fakeable_pt && ((elmuLoose->at(1).iMuon >= 0) ? (elmuFakeable->at(1)._pt > 10.) : (elmuFakeable->at(1)._pt > 15.));
+		  bool pass_tight_charge = (elmuFakeable->at(0)._tightCharge && elmuFakeable->at(1)._tightCharge);
+		  bool pass_tau = (nTauFakeable >= 1);
+		  bool pass_njet = (nJetLoose >= 3 && (nJetLooseBL >= 2 || nJetLooseBM >= 1));
+		  bool pass_metLD = (metLD > 0.2);
+		  if( !(elmuFakeable->at(0).iElec >= 0) || !(elmuFakeable->at(1).iElec >= 0) ) pass_metLD = 1;
+		  
+		  bool pass_tight = (elmuFakeable->at(0)._isTightTTH && elmuFakeable->at(1)._isTightTTH);
+		  bool pass_ss = (elmuFakeable->at(0)._charge*elmuFakeable->at(1)._charge > 0);
+		  bool pass_tau_tight = (nTauTight >= 1);
+		  bool pass_os_tau = (elmuFakeable->at(0)._charge*nt->NtTauFakeable->at(0)._charge < 0) &&
+		    (elmuFakeable->at(1)._charge*nt->NtTauFakeable->at(0)._charge < 0);
+		  bool pass_ss_tau = (elmuFakeable->at(0)._charge*nt->NtTauFakeable->at(0)._charge > 0) &&
+		    (elmuFakeable->at(1)._charge*nt->NtTauFakeable->at(0)._charge > 0);
+		  bool pass_truth = (elmuFakeable->at(0)._hasMCMatch && elmuFakeable->at(1)._hasMCMatch);
+
+		  pass_2lSS1tau_SR = (pass_fakeable_pt && pass_tight_charge && pass_mll && pass_tau && pass_mee && pass_metLD && pass_njet &&
+				      pass_tight && pass_ss && pass_tau_tight && pass_os_tau && pass_truth);
+
+		  pass_2lSS1tau_Fake = (pass_fakeable_pt && pass_tight_charge && pass_mll && pass_tau && pass_mee && pass_metLD && pass_njet &&
+					pass_ss && !pass_tight && pass_tau_tight && pass_os_tau);
+		  
+		  bool pass_has_elec = (elmuFakeable->at(0).iElec >= 0 || elmuFakeable->at(1).iElec >= 0);
+		  
+		  pass_2lSS1tau_Flip = (pass_fakeable_pt && pass_tight_charge && pass_mll && pass_tau && pass_mee && pass_metLD && pass_njet &&
+					pass_has_elec && !pass_ss && pass_tight && pass_tau_tight && pass_ss_tau && pass_truth);
+	       }
+	  }
+
+	bool pass_2l2tau_SR = 0;
+	bool pass_2l2tau_Fake = 0;
+	  {
+	     bool pass_nlep = (nLepFakeable >= 2 && nTauFakeable >= 2);
+	     if( pass_nlep )
+	       {
+		  bool pass_fakeable_pt = (elmuFakeable->at(0)._pt > 25. && elmuFakeable->at(1)._pt > 10.);
+		  if( elmuFakeable->at(1).iElec >= 0 ) pass_fakeable_pt = pass_fakeable_pt && (elmuFakeable->at(1)._pt > 15.);
+		  bool pass_metLD = (((metLD > 0.2 && nSFOS == 0) || (metLD > 0.3 && nSFOS > 0)) || nJetLoose >= 4);
+		  int lep_charge_sum = elmuFakeable->at(0)._charge+elmuFakeable->at(1)._charge+nt->NtTauFakeable->at(0).charge()+nt->NtTauFakeable->at(1).charge();
+		  bool pass_charge = (lep_charge_sum == 0);
+		  bool pass_njet = (nJetLoose >= 2 && (nJetLooseBL >= 2 || nJetLooseBM >= 1));
+		  
+		  bool pass_tight = (elmuFakeable->at(0)._isTightTTH && elmuFakeable->at(1)._isTightTTH);
+		  bool pass_tau_tight = (nTauTight >= 2);
+		  bool pass_truth = (elmuFakeable->at(0)._hasMCMatch && elmuFakeable->at(1)._hasMCMatch && nt->NtTauFakeable->at(0)._hasMCMatch && nt->NtTauFakeable->at(1)._hasMCMatch);
+
+		  pass_2l2tau_SR = (pass_fakeable_pt && pass_mll && pass_mll_z && pass_metLD && pass_charge && pass_njet &&
+				    pass_tight && pass_tau_tight && pass_truth);
+
+		  pass_2l2tau_Fake = (pass_fakeable_pt && pass_mll && pass_mll_z && pass_metLD && pass_charge && pass_njet &&
+				      !pass_tight && pass_tau_tight);
+	       }
+	  }
+	
+	bool pass_3l_SR = 0;
+	bool pass_3l_Fake = 0;
+	bool pass_ttZctrl_SR = 0;
+	bool pass_ttZctrl_Fake = 0;
+	  {
+	     bool pass_nlep = (nLepFakeable > 2);
+	     if( pass_nlep )
+	       {
+		  bool pass_nlep = (nLepTight <= 3); 
+		  bool pass_fakeable_pt = (elmuFakeable->at(0)._pt > 25. && elmuFakeable->at(1)._pt > 15. && elmuFakeable->at(2)._pt > 10.);
+		  bool pass_tau_veto = (nTauTight == 0);
+		  bool pass_metLD = (((metLD > 0.2 && nSFOS == 0) || (metLD > 0.3 && nSFOS > 0)) || nJetLoose >= 4);
+		  int lep_charge_sum = elmuFakeable->at(0)._charge+elmuFakeable->at(1)._charge+elmuFakeable->at(2)._charge;
+		  bool pass_charge = (lep_charge_sum == -1 || lep_charge_sum == 1);
+		  bool pass_njet = (nJetLoose >= 2 && (nJetLooseBL >= 2 || nJetLooseBM >= 1));
+		  bool pass_mllll = (mllll > 140 || mllll < 0);
+		  
+		  bool pass_tight = (elmuFakeable->at(0)._isTightTTH && elmuFakeable->at(1)._isTightTTH && elmuFakeable->at(2)._isTightTTH);
+		  bool pass_truth = (elmuFakeable->at(0)._hasMCMatch && elmuFakeable->at(1)._hasMCMatch && elmuFakeable->at(2)._hasMCMatch);
+
+		  pass_3l_SR = (pass_nlep && pass_fakeable_pt && pass_mll && pass_mll_z && pass_tau_veto && pass_metLD && pass_charge && pass_njet && pass_mllll &&
+				pass_tight && pass_truth);
+
+		  pass_ttZctrl_SR = (pass_fakeable_pt && pass_mll && !pass_mll_z && pass_metLD && pass_charge && pass_njet &&
+				     pass_tight && pass_truth);
+		  
+		  pass_3l_Fake = (pass_nlep && pass_fakeable_pt && pass_mll && pass_mll_z && pass_tau_veto && pass_metLD && pass_charge && pass_njet && pass_mllll &&
+				  !pass_tight);
+
+		  pass_ttZctrl_Fake = (pass_fakeable_pt && pass_mll && !pass_mll_z && pass_metLD && pass_charge && pass_njet &&
+				       !pass_tight);
 	       }	     
 	  }	
+
+	bool pass_3l1tau_SR = 0;
+	bool pass_3l1tau_Fake = 0;
+	  {
+	     bool pass_nlep = (nLepFakeable > 2 && nTauFakeable >= 1);
+	     if( pass_nlep )
+	       {
+		  bool pass_fakeable_pt = (elmuFakeable->at(0)._pt > 20. && elmuFakeable->at(1)._pt > 10. && elmuFakeable->at(2)._pt > 10.);
+		  bool pass_metLD = (((metLD > 0.2 && nSFOS == 0) || (metLD > 0.3 && nSFOS > 0)) || nJetLoose >= 4);
+		  int lep_charge_sum = elmuFakeable->at(0)._charge+elmuFakeable->at(1)._charge+elmuFakeable->at(2)._charge+nt->NtTauFakeable->at(0).charge();
+		  bool pass_charge = (lep_charge_sum == 0);
+		  bool pass_njet = (nJetLoose >= 2 && (nJetLooseBL >= 2 || nJetLooseBM >= 1));
+		  
+		  bool pass_tight = (elmuFakeable->at(0)._isTightTTH && elmuFakeable->at(1)._isTightTTH && elmuFakeable->at(2)._isTightTTH);
+		  bool pass_tau_tight = (nTauTight >= 1);
+		  bool pass_truth = (elmuFakeable->at(0)._hasMCMatch && elmuFakeable->at(1)._hasMCMatch && elmuFakeable->at(2)._hasMCMatch);
+
+		  pass_3l1tau_SR = (pass_fakeable_pt && pass_mll && pass_mll_z && pass_metLD && pass_charge && pass_njet &&
+				    pass_tight && pass_tau_tight && pass_truth);
+
+		  pass_3l1tau_Fake = (pass_fakeable_pt && pass_mll && pass_mll_z && pass_metLD && pass_charge && pass_njet &&
+				      !pass_tight && pass_tau_tight);
+	       }
+	  }
+
+	bool pass_4l_SR = 0;
+	bool pass_4l_Fake = 0;
+	  {
+	     bool pass_nlep = (nLepFakeable > 3);
+	     if( pass_nlep )
+	       {
+		  bool pass_fakeable_pt = (elmuFakeable->at(0)._pt > 25. && elmuFakeable->at(1)._pt > 15. && elmuFakeable->at(2)._pt > 15. && elmuFakeable->at(3)._pt > 10.);
+		  bool pass_metLD = (((metLD > 0.2 && nSFOS == 0) || (metLD > 0.3 && nSFOS > 0)) || nJetLoose >= 4);
+		  int lep_charge_sum = elmuFakeable->at(0)._charge+elmuFakeable->at(1)._charge+elmuFakeable->at(2)._charge+elmuFakeable->at(3)._charge;
+		  bool pass_charge = (lep_charge_sum == 0);
+		  bool pass_njet = (nJetLoose >= 2 && (nJetLooseBL >= 2 || nJetLooseBM >= 1));
+		  bool pass_mllll = (mllll > 140 || mllll < 0);
+		  
+		  bool pass_tight = (elmuFakeable->at(0)._isTightTTH && elmuFakeable->at(1)._isTightTTH && elmuFakeable->at(2)._isTightTTH && elmuFakeable->at(3)._isTightTTH);
+		  bool pass_truth = (elmuFakeable->at(0)._hasMCMatch && elmuFakeable->at(1)._hasMCMatch && elmuFakeable->at(2)._hasMCMatch && elmuFakeable->at(3)._hasMCMatch);
+
+		  pass_4l_SR = (pass_fakeable_pt && pass_mll && pass_mll_z && pass_metLD && pass_charge && pass_njet && pass_mllll &&
+				pass_tight && pass_truth);
+		  
+		  pass_4l_Fake = (pass_fakeable_pt && pass_mll && pass_mll_z && pass_metLD && pass_charge && pass_njet && pass_mllll &&
+				  !pass_tight);
+	       }	     
+	  }
+	
+	if( pass_1l2tau_SR ) m_tree_1l2tau_SR->Fill();
+	if( pass_1l2tau_Fake ) m_tree_1l2tau_Fake->Fill();
+	if( pass_2lSS_SR ) m_tree_2lSS_SR->Fill();
+	if( pass_2lSS_Fake ) m_tree_2lSS_Fake->Fill();
+	if( pass_2lSS_Flip ) m_tree_2lSS_Flip->Fill();
+	if( pass_2lSS1tau_Fake ) m_tree_2lSS1tau_Fake->Fill();
+	if( pass_2lSS1tau_Flip ) m_tree_2lSS1tau_Flip->Fill();
+	if( pass_2l2tau_SR ) m_tree_2l2tau_SR->Fill();
+	if( pass_2l2tau_Fake ) m_tree_2l2tau_Fake->Fill();
+	if( pass_3l_SR ) m_tree_3l_SR->Fill();
+	if( pass_3l_Fake ) m_tree_3l_Fake->Fill();
+	if( pass_3l1tau_SR ) m_tree_3l1tau_SR->Fill();
+	if( pass_3l1tau_Fake ) m_tree_3l1tau_Fake->Fill();
+	if( pass_4l_SR ) m_tree_4l_SR->Fill();
+	if( pass_4l_Fake ) m_tree_4l_Fake->Fill();
+	if( pass_ttWctrl_SR ) m_tree_ttWctrl_SR->Fill();
+	if( pass_ttWctrl_Fake ) m_tree_ttWctrl_Fake->Fill();
+	if( pass_ttWctrl_Flip ) m_tree_ttWctrl_Flip->Fill();
+	if( pass_ttZctrl_SR ) m_tree_ttZctrl_SR->Fill();
+	if( pass_ttZctrl_Fake ) m_tree_ttZctrl_Fake->Fill();
+	
+	delete elmuLoose;
+	delete elmuTight;
+	delete elmuFakeable;
      }   
 }

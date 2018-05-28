@@ -50,7 +50,7 @@ class Sync
    float mu1_eta;
    float mu1_phi;
    float mu1_E;
-   float mu1_charge;
+   int mu1_charge;
    float mu1_miniRelIso;
    float mu1_miniIsoCharged;
    float mu1_miniIsoNeutral;
@@ -67,15 +67,15 @@ class Sync
    float mu1_leptonMVA;
    float mu1_mediumID;
    float mu1_dpt_div_pt;
-   bool mu1_isfakeablesel;
-   bool mu1_ismvasel;
+   int mu1_isfakeablesel;
+   int mu1_ismvasel;
 
    float mu2_pt;
    float mu2_conept;
    float mu2_eta;
    float mu2_phi;
    float mu2_E;
-   float mu2_charge;
+   int mu2_charge;
    float mu2_miniRelIso;
    float mu2_miniIsoCharged;
    float mu2_miniIsoNeutral;
@@ -100,7 +100,7 @@ class Sync
    float ele1_eta;
    float ele1_phi;
    float ele1_E;
-   float ele1_charge;
+   int ele1_charge;
    float ele1_miniRelIso;
    float ele1_miniIsoCharged;
    float ele1_miniIsoNeutral;
@@ -131,7 +131,7 @@ class Sync
    float ele2_eta;
    float ele2_phi;
    float ele2_E;
-   float ele2_charge;
+   int ele2_charge;
    float ele2_miniRelIso;
    float ele2_miniIsoCharged;
    float ele2_miniIsoNeutral;
@@ -161,7 +161,7 @@ class Sync
    float tau1_eta;
    float tau1_phi;
    float tau1_E;
-   float tau1_charge;
+   int tau1_charge;
    float tau1_dxy;
    float tau1_dz;
    float tau1_decayModeFindingOldDMs;
@@ -190,7 +190,7 @@ class Sync
    float tau2_eta;
    float tau2_phi;
    float tau2_E;
-   float tau2_charge;
+   int tau2_charge;
    float tau2_dxy;
    float tau2_dz;
    float tau2_decayModeFindingOldDMs;
@@ -320,6 +320,26 @@ class Sync
    TTree*  m_tree;
    TTree*  m_tree_1l2tau_SR;
    TTree*  m_tree_1l2tau_Fake;
+   TTree*  m_tree_2lSS_SR;
+   TTree*  m_tree_2lSS_Fake;
+   TTree*  m_tree_2lSS_Flip;
+   TTree*  m_tree_2lSS1tau_SR;
+   TTree*  m_tree_2lSS1tau_Fake;
+   TTree*  m_tree_2lSS1tau_Flip;
+   TTree*  m_tree_2l2tau_SR;
+   TTree*  m_tree_2l2tau_Fake;
+   TTree*  m_tree_3l_SR;
+   TTree*  m_tree_3l_Fake;
+   TTree*  m_tree_3l1tau_SR;
+   TTree*  m_tree_3l1tau_Fake;
+   TTree*  m_tree_4l_SR;
+   TTree*  m_tree_4l_Fake;
+   TTree*  m_tree_ttWctrl_SR;
+   TTree*  m_tree_ttWctrl_Fake;
+   TTree*  m_tree_ttWctrl_Flip;
+   TTree*  m_tree_ttZctrl_SR;
+   TTree*  m_tree_ttZctrl_Fake;
+   
    TChain* m_chain;
    std::string _fname_out;
    

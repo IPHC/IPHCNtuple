@@ -75,16 +75,16 @@ void Tau::read()
    _pfEssential_dxy_error	 = ntP->tau_pfEssential_dxy_error->at(idx);
    _pfEssential_dxy_Sig	 = ntP->tau_pfEssential_dxy_Sig->at(idx);        
 
-   _hasMCMatch = ntP->el_hasMCMatch->at(idx);
-   _gen_pt = ntP->el_gen_pt->at(idx);
-   _gen_eta = ntP->el_gen_eta->at(idx);
-   _gen_phi = ntP->el_gen_phi->at(idx);
-   _gen_m = ntP->el_gen_m->at(idx);
-   _gen_E = ntP->el_gen_E->at(idx);
-   _gen_status = ntP->el_gen_status->at(idx);
-   _gen_id = ntP->el_gen_id->at(idx);
-   _gen_charge = ntP->el_gen_charge->at(idx);
-   _gen_dr = ntP->el_gen_dr->at(idx);
+   _hasMCMatch = ntP->tau_hasMCMatch->at(idx);
+   _gen_pt = ntP->tau_gen_pt->at(idx);
+   _gen_eta = ntP->tau_gen_eta->at(idx);
+   _gen_phi = ntP->tau_gen_phi->at(idx);
+   _gen_m = ntP->tau_gen_m->at(idx);
+//   _gen_E = ntP->tau_gen_E->at(idx);
+   _gen_status = ntP->tau_gen_status->at(idx);
+   _gen_id = ntP->tau_gen_id->at(idx);
+   _gen_charge = ntP->tau_gen_charge->at(idx);
+   _gen_dr = ntP->tau_gen_dr->at(idx);
 }
 
 void Tau::init()
@@ -101,6 +101,7 @@ void Tau::init()
    _id       =    0;
 
    _isFakeableTTH  = 0;
+   _isTightTTH  = 0;
 
    _dxy      = -100;
    _dz       = -100;
@@ -177,6 +178,7 @@ void Tau::sel()
    
    bool pass_decayModeFinding = ( _decayModeFinding );
    bool pass_byVLooseIsolationMVArun2v1DBdR03oldDMwLT = ( _byVLooseIsolationMVArun2v1DBdR03oldDMwLT );
+   bool pass_byLooseIsolationMVArun2v1DBdR03oldDMwLT = ( _byLooseIsolationMVArun2v1DBdR03oldDMwLT );
    
    bool pass_muOverlap = 1;
    int nMuon = nt->NtMuonLoose->size();
@@ -202,17 +204,8 @@ void Tau::sel()
 		      pass_byVLooseIsolationMVArun2v1DBdR03oldDMwLT &&
 		      pass_muOverlap &&
 		      pass_elOverlap );
-   
-/*   if( evdebug->at(0) == nt->NtEvent->at(0).id() )
-     {
-	std::cout << "pass_pt = " << pass_pt << " (" << _pt << ")" << std::endl;
-	std::cout << "pass_eta = " << pass_eta << " (" << _eta << ")" << std::endl;
-	std::cout << "pass_dxy = " << pass_dxy << " (" << _dxy << ")" << std::endl;
-	std::cout << "pass_dz = " << pass_dz << " (" << _dz << ")" << std::endl;
-	std::cout << "pass_decayModeFinding = " << pass_decayModeFinding << " (" << _decayModeFinding << ")" << std::endl;
-	std::cout << "pass_byVLooseIsolationMVArun2v1DBdR03oldDMwLT = " << pass_byVLooseIsolationMVArun2v1DBdR03oldDMwLT << " (" << _byVLooseIsolationMVArun2v1DBdR03oldDMwLT << ")" << std::endl;
-	std::cout << "pass_muOverlap = " << pass_muOverlap << std::endl;
-	std::cout << "pass_elOverlap = " << pass_elOverlap << std::endl;
-     }*/
+
+   _isTightTTH = ( _isFakeableTTH &&
+		   pass_byLooseIsolationMVArun2v1DBdR03oldDMwLT );
 }
 

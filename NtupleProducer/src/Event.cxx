@@ -22,9 +22,12 @@ void Event::read(bool isdata)
     _pv_z             = ntP->pv_z;
     _pv_zError        = ntP->pv_zError;
 
-   _metpt            = ntP->met_pt;
+    _metpt            = ntP->met_pt;
     _metphi           = ntP->met_phi;
     _metsumet         = ntP->met_sumet;
+    _metUncorrectedPt            = ntP->met_uncorrectedPt;
+    _metUncorrectedPhi           = ntP->met_uncorrectedPhi;
+    _metUncorrectedSumEt         = ntP->met_uncorrectedSumEt;
     _metcov00	      = ntP->met_cov00;
     _metcov01         = ntP->met_cov01;
     _metcov10         = ntP->met_cov10;
@@ -131,6 +134,9 @@ void Event::init()
     _metpt                 = -1000;
     _metphi                = -1000;
     _metsumet              = -1000;
+    _metUncorrectedPt                 = -1000;
+    _metUncorrectedPhi                = -1000;
+    _metUncorrectedSumEt              = -1000;
     _metcov00              = -1000;
     _metcov01              = -1000;
     _metcov10              = -1000;

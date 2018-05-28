@@ -89,46 +89,85 @@ void Jet::init()
    _pt_JER_up            = 0.;
 }
 
-void Jet::sel()
+void Jet::sel(int sync)
 {
    float jet_pt_JESup = _pt*(1+_JES_uncert);
    
    bool pass_pt      = ( _pt > 25. || jet_pt_JESup > 25. );
    bool pass_eta     = (fabs(_eta) < 2.4);
    bool pass_tightJetID = (_tightJetID);
-   
-   bool pass_muOverlap = 1;
-   int nMuon = nt->NtMuonFakeable->size();
-   for(int im=0;im<nMuon;im++)
-     {
-        float dr = GetDeltaR(_eta,_phi,nt->NtMuonFakeable->at(im).eta(),nt->NtMuonFakeable->at(im).phi());
-        if( dr < 0.4 ) pass_muOverlap = 0;
-     }
-   
-   bool pass_elOverlap = 1;
-   int nElectron = nt->NtElectronFakeable->size();
-   for(int ie=0;ie<nElectron;ie++)
-     {
-	float dr = GetDeltaR(_eta,_phi,nt->NtElectronFakeable->at(ie).eta(),nt->NtElectronFakeable->at(ie).phi());
-	if( dr < 0.4 ) pass_elOverlap = 0;
-     }
-   
+
+   bool pass_lepOverlap = 1;
    bool pass_tauOverlap = 1;
+   
+   int nMuon = nt->NtMuonFakeable->size();
+   int nElectron = nt->NtElectronFakeable->size();
    int nTau = nt->NtTauFakeable->size();
+   int nTauTight = nt->NtTauTight->size();
+   int nLepTight = nt->NtMuonTight->size()+nt->NtElectronTight->size();
+   
+   std::vector<Base> *elmuFakeable = new std::vector<Base>;
+   for(int ie=0;ie<nElectron;ie++ )
+     {
+	Base lep = nt->NtElectronFakeable->at(ie);
+	lep.iElec = ie;
+	elmuFakeable->push_back(lep);
+     }
+   for(int im=0;im<nMuon;im++ )
+     {
+	Base lep = nt->NtMuonFakeable->at(im);
+	lep.iMuon = im;
+	elmuFakeable->push_back(lep);
+     }
+   std::sort(elmuFakeable->begin(),elmuFakeable->end(),sort_by_pt());
+   
+   int nLep = elmuFakeable->size();
+
+   bool is_1l2tau = (nLep > 0 && nLepTight <= 1 && nTau >= 2);
+   bool is_2lSS = (nLep > 1 && nLepTight <= 2 && nTauTight == 0);
+   bool is_2lSS1tau = (nLep > 1 && nLepTight <= 2 && nTauTight > 0);
+   bool is_2l2tau = (nLep > 1 && nTau > 1);
+   bool is_3l = (nLep > 2 && nTauTight == 0);
+   bool is_3l1tau = (nLep > 2 && nTau > 0);
+   bool is_4l = (nLep >= 4);
+   
+   for(int il=0;il<nLep;il++)
+     {
+	if( is_1l2tau && il >= 1 ) break;
+	if( is_2lSS && il >= 2 ) break;
+	if( is_2lSS1tau && il >= 2 ) break;
+	if( is_2l2tau && il >= 2 ) break;
+	if( is_3l && il >= 3 ) break;
+	if( is_3l1tau && il >= 3 ) break;
+	if( is_4l && il >= 4 ) break;
+	
+        float dr = GetDeltaR(_eta,_phi,elmuFakeable->at(il)._eta,elmuFakeable->at(il)._phi);
+        if( dr < 0.4 ) pass_lepOverlap = 0;
+     }      
+
    for(int it=0;it<nTau;it++)
      {
-	float dr = GetDeltaR(_eta,_phi,nt->NtTauFakeable->at(it).eta(),nt->NtTauFakeable->at(it).phi());
-	if( dr < 0.4 )
-	  {
-	     pass_tauOverlap = 0;
-	  }
-     }
+	if( is_1l2tau && it >= 2 ) break;
+	if( is_2lSS ) break;
+	if( is_2lSS1tau && it >= 1 ) break;
+	if( is_2l2tau && it >= 2 ) break;
+	if( is_3l ) break;
+	if( is_3l1tau && it >= 1 ) break;
+	if( is_4l ) break;
+
+        float dr = GetDeltaR(_eta,_phi,nt->NtTauFakeable->at(it).eta(),nt->NtTauFakeable->at(it).phi());
+        if( dr < 0.4 ) pass_tauOverlap = 0;
+     }      
+   
+   delete elmuFakeable;
+   
+   pass_lepOverlap = (pass_lepOverlap && sync != 1) || (sync == 1);
+   pass_tauOverlap = (pass_tauOverlap && sync != 1) || (sync == 1);
    
    _isLooseTTH = ( pass_pt &&
 		   pass_eta &&
 		   pass_tightJetID &&
-		   pass_muOverlap &&
-		   pass_elOverlap &&
+		   pass_lepOverlap &&
 		   pass_tauOverlap
 		 );
    

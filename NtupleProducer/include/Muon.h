@@ -60,6 +60,7 @@ class Muon : public Base
    float lepMVA_jetPtRelv2()           {return _lepMVA_jetPtRelv2;};
    float lepMVA_jetPtRatio()    	    {return _lepMVA_jetPtRatio;};
    float lepMVA_jetBTagCSV()    	    {return _lepMVA_jetBTagCSV;};
+   float lepMVA_jetBTagDeepCSV()    	    {return _lepMVA_jetBTagDeepCSV;};
    float lepMVA_sip3d()         	    {return _lepMVA_sip3d;};
    float lepMVA_dxy()           	    {return _lepMVA_dxy;};
    float lepMVA_dz()            	    {return _lepMVA_dz;};
@@ -84,15 +85,14 @@ class Muon : public Base
    
    int _fakeType;
    
-   float _E;
-   float _pt;
+//   float _E;
+//   float _pt;
    float _ptCor;
    float _ptUnc;
-   float _eta;
-   float _phi;
+//   float _eta;
+//   float _phi;
    float _m;
    float _conept;
-   int _charge;
    int _id;
    
    bool _isLoose;
@@ -102,7 +102,6 @@ class Muon : public Base
    
    bool _isLooseTTH;
    bool _isFakeableTTH;
-   bool _isTightTTH;
    
    float _dxy;
    float _dz;
@@ -113,22 +112,20 @@ class Muon : public Base
    float _bestTrack_ptError;
    bool _cutEventSel;
    bool _noLostHits;
-   
-   float _lepMVA;
 
    float _lepMVA_miniRelIsoCharged;
    float _lepMVA_miniRelIsoNeutral;
    float _lepMVA_jetPtRelv2;
    float _lepMVA_jetPtRatio;
    float _lepMVA_jetBTagCSV;
+   float _lepMVA_jetBTagDeepCSV;
    float _lepMVA_sip3d;
    float _lepMVA_dxy;
    float _lepMVA_dz;
    float _lepMVA_mvaId;
    float _lepMVA_eta;
-   float _lepMVA_jetNDauChargedMVASel;   
+   float _lepMVA_jetNDauChargedMVASel;
 
-   bool _hasMCMatch;
    float _gen_pt;
    float _gen_eta;
    float _gen_phi;

@@ -16,7 +16,7 @@ class Jet : public Base
    
    int   ID()          {return _ID;};
    
-   void sel();
+   void sel(int sync);
    
    float E()           {return _E;};
    float pt()          {return _pt;};

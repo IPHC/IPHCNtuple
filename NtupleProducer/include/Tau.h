@@ -34,6 +34,7 @@ class Tau : public Base
    int   id()              {return _id;};
    
    bool isFakeableTTH()    {return _isFakeableTTH;};
+   bool isTightTTH()       {return _isTightTTH;};
    float lepMVA_TTH()      {return _lepMVA_TTH;};
    bool passTightCharge()  {return _passTightCharge;};
    bool cutEventSel()      {return _cutEventSel;};
@@ -81,14 +82,13 @@ class Tau : public Base
    
    int   _fakeType;
    
-   float _E;
-   float _pt;
+//   float _E;
+//   float _pt;
    float _ptCor;
    float _ptUnc;
-   float _eta;
-   float _phi;
+//   float _eta;
+//   float _phi;
    float _m;
-   int   _charge;
    int   _id;
    
    float _dxy;
@@ -147,7 +147,6 @@ class Tau : public Base
    float _againstMuonLoose3;
    float _againstMuonTight3;
 
-   bool _hasMCMatch;
    float _gen_pt;
    float _gen_eta;
    float _gen_phi;

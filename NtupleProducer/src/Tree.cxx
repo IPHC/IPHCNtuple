@@ -139,6 +139,7 @@ void Tree::Init(TChain *ch)
    el_lepMVA_jetPtRelv2 = 0;
    el_lepMVA_jetPtRatio = 0;
    el_lepMVA_jetBTagCSV = 0;
+   el_lepMVA_jetBTagDeepCSV = 0;
    el_lepMVA_sip3d = 0;
    el_lepMVA_dxy = 0;
    el_lepMVA_dz = 0;
@@ -155,6 +156,7 @@ void Tree::Init(TChain *ch)
    el_hasMatchedConversion = 0;
    el_sigmaIetaIeta = 0;
    el_full5x5_sigmaIetaIeta = 0;
+   el_full5x5_sigmaEtaEta = 0;
    el_superCluster_eta = 0;
    el_correctedEcalEnergy = 0;
    el_ecalEnergy = 0;
@@ -237,6 +239,7 @@ void Tree::Init(TChain *ch)
    mu_lepMVA_jetPtRelv2 = 0;
    mu_lepMVA_jetPtRatio = 0;
    mu_lepMVA_jetBTagCSV = 0;
+   mu_lepMVA_jetBTagDeepCSV = 0;
    mu_lepMVA_sip3d = 0;
    mu_lepMVA_dxy = 0;
    mu_lepMVA_dz = 0;
@@ -272,7 +275,7 @@ void Tree::Init(TChain *ch)
    tau_leadingTrackPt = 0;
    tau_leadingTrackCharge = 0;
    tau_decayModeFinding = 0;
-   tau_decayModeFindingOldDMs = 0;
+//   tau_decayModeFindingOldDMs = 0;
    tau_decayModeFindingNewDMs = 0;
    tau_byLooseCombinedIsolationDeltaBetaCorr3Hits = 0;
    tau_byMediumCombinedIsolationDeltaBetaCorr3Hits = 0;
@@ -376,6 +379,16 @@ void Tree::Init(TChain *ch)
    metGen_phi = 0;
    metGen_sumet = 0;
    metGen_MuonEt = 0;
+
+   met_pt = 0;
+   met_phi = 0;
+   met_sumet = 0;
+   metPuppi_pt = 0;
+   metPuppi_phi = 0;
+   metPuppi_sumet = 0;
+   met_uncorrectedPt = 0;
+   met_uncorrectedPhi = 0;
+   met_uncorrectedSumEt = 0;
    
    gen_n = 0;
    gen_pt = 0;
@@ -798,6 +811,12 @@ void Tree::Init(TChain *ch)
    fChain->SetBranchAddress("met_pt", &met_pt, &b_met_pt);
    fChain->SetBranchAddress("met_phi", &met_phi, &b_met_phi);
    fChain->SetBranchAddress("met_sumet", &met_sumet, &b_met_sumet);
+   fChain->SetBranchAddress("metPuppi_pt", &metPuppi_pt, &b_metPuppi_pt);
+   fChain->SetBranchAddress("metPuppi_phi", &metPuppi_phi, &b_metPuppi_phi);
+   fChain->SetBranchAddress("metPuppi_sumet", &metPuppi_sumet, &b_metPuppi_sumet);
+   fChain->SetBranchAddress("met_uncorrectedPt", &met_uncorrectedPt, &b_met_uncorrectedPt);
+   fChain->SetBranchAddress("met_uncorrectedPhi", &met_uncorrectedPhi, &b_met_uncorrectedPhi);
+   fChain->SetBranchAddress("met_uncorrectedSumEt", &met_uncorrectedSumEt, &b_met_uncorrectedSumEt);
    fChain->SetBranchAddress("met_cov00", &met_cov00, &b_met_cov00);
    fChain->SetBranchAddress("met_cov01", &met_cov01, &b_met_cov01);
    fChain->SetBranchAddress("met_cov10", &met_cov10, &b_met_cov10);
@@ -897,6 +916,7 @@ void Tree::Init(TChain *ch)
    fChain->SetBranchAddress("el_lepMVA_jetPtRelv2", &el_lepMVA_jetPtRelv2, &b_el_lepMVA_jetPtRelv2);
    fChain->SetBranchAddress("el_lepMVA_jetPtRatio", &el_lepMVA_jetPtRatio, &b_el_lepMVA_jetPtRatio);
    fChain->SetBranchAddress("el_lepMVA_jetBTagCSV", &el_lepMVA_jetBTagCSV, &b_el_lepMVA_jetBTagCSV);
+   fChain->SetBranchAddress("el_lepMVA_jetBTagDeepCSV", &el_lepMVA_jetBTagDeepCSV, &b_el_lepMVA_jetBTagDeepCSV);
    fChain->SetBranchAddress("el_lepMVA_sip3d", &el_lepMVA_sip3d, &b_el_lepMVA_sip3d);
    fChain->SetBranchAddress("el_lepMVA_dxy", &el_lepMVA_dxy, &b_el_lepMVA_dxy);
    fChain->SetBranchAddress("el_lepMVA_dz", &el_lepMVA_dz, &b_el_lepMVA_dz);
@@ -913,6 +933,7 @@ void Tree::Init(TChain *ch)
    fChain->SetBranchAddress("el_hasMatchedConversion", &el_hasMatchedConversion, &b_el_hasMatchedConversion);
    fChain->SetBranchAddress("el_sigmaIetaIeta", &el_sigmaIetaIeta, &b_el_sigmaIetaIeta);
    fChain->SetBranchAddress("el_full5x5_sigmaIetaIeta", &el_full5x5_sigmaIetaIeta, &b_el_full5x5_sigmaIetaIeta);
+   fChain->SetBranchAddress("el_full5x5_sigmaEtaEta", &el_full5x5_sigmaEtaEta, &b_el_full5x5_sigmaEtaEta);
    fChain->SetBranchAddress("el_superCluster_eta", &el_superCluster_eta, &b_el_superCluster_eta);
    fChain->SetBranchAddress("el_correctedEcalEnergy", &el_correctedEcalEnergy, &b_el_correctedEcalEnergy);
    fChain->SetBranchAddress("el_ecalEnergy", &el_ecalEnergy, &b_el_ecalEnergy);
@@ -996,6 +1017,7 @@ void Tree::Init(TChain *ch)
    fChain->SetBranchAddress("mu_lepMVA_jetPtRelv2", &mu_lepMVA_jetPtRelv2, &b_mu_lepMVA_jetPtRelv2);
    fChain->SetBranchAddress("mu_lepMVA_jetPtRatio", &mu_lepMVA_jetPtRatio, &b_mu_lepMVA_jetPtRatio);
    fChain->SetBranchAddress("mu_lepMVA_jetBTagCSV", &mu_lepMVA_jetBTagCSV, &b_mu_lepMVA_jetBTagCSV);
+   fChain->SetBranchAddress("mu_lepMVA_jetBTagDeepCSV", &mu_lepMVA_jetBTagDeepCSV, &b_mu_lepMVA_jetBTagDeepCSV);
    fChain->SetBranchAddress("mu_lepMVA_sip3d", &mu_lepMVA_sip3d, &b_mu_lepMVA_sip3d);
    fChain->SetBranchAddress("mu_lepMVA_dxy", &mu_lepMVA_dxy, &b_mu_lepMVA_dxy);
    fChain->SetBranchAddress("mu_lepMVA_dz", &mu_lepMVA_dz, &b_mu_lepMVA_dz);
@@ -1031,7 +1053,7 @@ void Tree::Init(TChain *ch)
    fChain->SetBranchAddress("tau_leadingTrackPt", &tau_leadingTrackPt,  &b_tau_leadingTrackPt);
    fChain->SetBranchAddress("tau_leadingTrackCharge", &tau_leadingTrackCharge,  &b_tau_leadingTrackCharge);
    fChain->SetBranchAddress("tau_decayModeFinding", &tau_decayModeFinding, &b_tau_decayModeFinding);
-   fChain->SetBranchAddress("tau_decayModeFindingOldDMs", &tau_decayModeFindingOldDMs, &b_tau_decayModeFindingOldDMs);
+//   fChain->SetBranchAddress("tau_decayModeFindingOldDMs", &tau_decayModeFindingOldDMs, &b_tau_decayModeFindingOldDMs);
    fChain->SetBranchAddress("tau_decayModeFindingNewDMs", &tau_decayModeFindingNewDMs, &b_tau_decayModeFindingNewDMs);
    fChain->SetBranchAddress("tau_byLooseCombinedIsolationDeltaBetaCorr3Hits", &tau_byLooseCombinedIsolationDeltaBetaCorr3Hits,&b_tau_byLooseCombinedIsolationDeltaBetaCorr3Hits);
    fChain->SetBranchAddress("tau_byMediumCombinedIsolationDeltaBetaCorr3Hits", &tau_byMediumCombinedIsolationDeltaBetaCorr3Hits, &b_tau_byMediumCombinedIsolationDeltaBetaCorr3Hits);

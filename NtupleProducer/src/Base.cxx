@@ -5,6 +5,9 @@ ClassImp(Base)
 
 Base::Base()
 {
+   iElec = -1;
+   iMuon = -1;
+   iTau = -1;
 }
 
 Base::~Base()

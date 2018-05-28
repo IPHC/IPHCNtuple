@@ -29,6 +29,7 @@ class Ntuple
    std::vector<Muon>*       NtMuonFakeable;
    std::vector<Muon>*       NtMuonTight;
    std::vector<Tau>*        NtTauFakeable;
+   std::vector<Tau>*        NtTauTight;
    std::vector<Jet>*        NtJetLoose;
    std::vector<Truth>*      NtTruth;
    std::vector<GenJet>*     NtGenJet;

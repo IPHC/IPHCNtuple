@@ -22,6 +22,9 @@ class Event : public Base
    float metpx()                       {return _metpt*cos(_metphi);};
    float metpy()                       {return _metpt*sin(_metphi);};
    float metsumet()                    {return _metsumet;};
+   float metUncorrectedPt()                       {return _metUncorrectedPt;};
+   float metUncorrectedPhi()                      {return _metUncorrectedPhi;};
+   float metUncorrectedSumEt()                    {return _metUncorrectedSumEt;};
    
    double metcov00()		            {return _metcov00;};
    double metcov01()		            {return _metcov01;};
@@ -81,6 +84,9 @@ class Event : public Base
    float _metpt;
    float _metphi;
    float _metsumet;
+   float _metUncorrectedPt;
+   float _metUncorrectedPhi;
+   float _metUncorrectedSumEt;
    double _metcov00;
    double _metcov01;
    double _metcov10;

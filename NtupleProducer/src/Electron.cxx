@@ -35,8 +35,7 @@ void Electron::read()
    _isLoose	                        = ntP->el_looseCBId->at(idx);
    _isMedium                          = ntP->el_mediumCBId->at(idx);
    _passCV	                        = ntP->el_passConversionVeto->at(idx);
-   _isPCC	                            = ntP->el_isGsfCtfScPixChargeConsistent->at(idx);
-   _isGsfScPixChargeConsistent	            = ntP->el_isGsfScPixChargeConsistent->at(idx);
+   _isGsfCtfScPixChargeConsistent     = ntP->el_isGsfCtfScPixChargeConsistent->at(idx);
 
    _sip3d                          = (ntP->el_ip3dErr->at(idx)) ? ntP->el_ip3d->at(idx) / ntP->el_ip3dErr->at(idx) : -9999;
    _ooEmooP                        = ntP->el_ooEmooP->at(idx);
@@ -50,6 +49,7 @@ void Electron::read()
    _lepMVA_jetPtRelv2                 = ntP->el_lepMVA_jetPtRelv2->at(idx);
    _lepMVA_jetPtRatio                 = ntP->el_lepMVA_jetPtRatio->at(idx);
    _lepMVA_jetBTagCSV                 = ntP->el_lepMVA_jetBTagCSV->at(idx);
+   _lepMVA_jetBTagDeepCSV             = ntP->el_lepMVA_jetBTagDeepCSV->at(idx);
    _lepMVA_sip3d                      = ntP->el_lepMVA_sip3d->at(idx);
    _lepMVA_dxy                        = ntP->el_lepMVA_dxy->at(idx);
    _lepMVA_dz                         = ntP->el_lepMVA_dz->at(idx);
@@ -69,14 +69,14 @@ void Electron::read()
    _ecalEnergy	                    = ntP->el_ecalEnergy->at(idx);
    
    _trackMomentumError	            = ntP->el_trackMomentumError->at(idx);
-   _tightCharge                       = ntP->el_isGsfCtfScPixChargeConsistent->at(idx) + ntP->el_isGsfScPixChargeConsistent->at(idx);
+   _tightCharge = (ntP->el_isGsfCtfScPixChargeConsistent->at(idx) + ntP->el_isGsfScPixChargeConsistent->at(idx) > 1);
    
    _hasMCMatch = ntP->el_hasMCMatch->at(idx);
    _gen_pt = ntP->el_gen_pt->at(idx);
    _gen_eta = ntP->el_gen_eta->at(idx);
    _gen_phi = ntP->el_gen_phi->at(idx);
    _gen_m = ntP->el_gen_m->at(idx);
-   _gen_E = ntP->el_gen_E->at(idx);
+//   _gen_E = ntP->el_gen_E->at(idx);
    _gen_status = ntP->el_gen_status->at(idx);
    _gen_id = ntP->el_gen_id->at(idx);
    _gen_charge = ntP->el_gen_charge->at(idx);
@@ -115,8 +115,7 @@ void Electron::init()
    _ooEmooP                        = -100;
    
    _passCV                         = 0;
-   _isPCC                          = 0;
-   _isGsfScPixChargeConsistent     = 0;
+   _isGsfCtfScPixChargeConsistent  = 0;
    _passPtEta                      = 0;
    _ip3d                           = -100.;
    _ip3dErr                        = -100.;
@@ -128,6 +127,7 @@ void Electron::init()
    _lepMVA_jetPtRelv2              = -100.;
    _lepMVA_jetPtRatio              = -100.;
    _lepMVA_jetBTagCSV              = -100.;
+   _lepMVA_jetBTagDeepCSV          = -100.;
    _lepMVA_sip3d                   = -100.;
    _lepMVA_dxy                     = -100.;
    _lepMVA_dz                      = -100.;
@@ -222,18 +222,24 @@ void Electron::sel()
    bool pass_lepMVA = ( _lepMVA >= 0.90 );
    
    if( pass_lepMVA )
-     if( _lepMVA_jetBTagCSV < 0.4941 ) pass_fakeable_lepMVA = 1;
+     {	
+	if( _lepMVA_jetBTagDeepCSV < 0.4941 ) pass_fakeable_lepMVA = 1;
+     }   
    else
-     if( _lepMVA_jetPtRatio > 0.6 && _lepMVA_jetBTagCSV < 0.07 && _lepMVA_mvaId > 0.5 ) pass_fakeable_lepMVA = 1;
+     {	
+	if( _lepMVA_jetPtRatio > 0.6 && _lepMVA_jetBTagDeepCSV < 0.07 && _lepMVA_mvaId > 0.5 ) pass_fakeable_lepMVA = 1;
+     }   
    
-   bool pass_sc = 1;
+   bool pass_sc = 0;
    float eInvMinusPInv  = (_ecalEnergy > 0) ? (1./_ecalEnergy-_eSuperClusterOverP/_ecalEnergy) : 99;
-   if( _hadronicOverEm >= (0.10-0.03*(fabs(_superCluster_eta)>1.479)) ) pass_sc = 0;
-   if( fabs(_deltaEtaSuperClusterTrackAtVtx) >= (0.01-0.002*(fabs(_superCluster_eta)>1.479)) ) pass_sc = 0;
-   if( fabs(_deltaPhiSuperClusterTrackAtVtx) >= (0.04+0.03*(fabs(_superCluster_eta)>1.479)) ) pass_sc = 0;
-   if( eInvMinusPInv <= -0.05 ) pass_sc = 0;
-   if( eInvMinusPInv >= (0.01-0.005*(fabs(_superCluster_eta)>1.479)) ) pass_sc = 0;
-   if( _sigmaIetaIeta >= (0.011+0.019*(fabs(_superCluster_eta)>1.479)) ) pass_sc = 0;
+   if( fabs(_superCluster_eta) < 1.479 )
+     {
+	if( _sigmaIetaIeta < 0.011 && _hadronicOverEm < 0.10 && eInvMinusPInv > -0.04 ) pass_sc = 1;
+     }
+   else if( fabs(_superCluster_eta) < 2.5 )
+     {
+	if( _sigmaIetaIeta < 0.030 && _hadronicOverEm < 0.10 && eInvMinusPInv > -0.04 ) pass_sc = 1;
+     }   	
    
    _isFakeableTTH = ( _isLooseTTH &&
 		      pass_sc &&

@@ -44,7 +44,6 @@ class Electron : public Base
    float dxy()                             {return _dxy;};
    float dz()                              {return _dz;};
    bool  passPtEta()                       {return _passPtEta;};
-   int   tightCharge()                     {return _tightCharge;};
    bool passTightCharge()                  {return _passTightCharge;};
    bool cutEventSel()                      {return _cutEventSel;};
    bool noLostHits()                       {return _noLostHits;};
@@ -56,6 +55,7 @@ class Electron : public Base
    float lepMVA_jetPtRelv2()               {return _lepMVA_jetPtRelv2;};
    float lepMVA_jetPtRatio()               {return _lepMVA_jetPtRatio;};
    float lepMVA_jetBTagCSV()               {return _lepMVA_jetBTagCSV;};
+   float lepMVA_jetBTagDeepCSV()           {return _lepMVA_jetBTagDeepCSV;};
    float lepMVA_sip3d()                    {return _lepMVA_sip3d;};
    float lepMVA_dxy()                      {return _lepMVA_dxy;};
    float lepMVA_dz()                       {return _lepMVA_dz;};
@@ -67,7 +67,6 @@ class Electron : public Base
    bool hasMatchedConversion()             {return _hasMatchedConversion;};
    
    bool isGsfCtfScPixChargeConsistent()    {return _isGsfCtfScPixChargeConsistent;};
-   bool isGsfScPixChargeConsistent()    {return _isGsfScPixChargeConsistent;};
 
    float miniIso()                        {return _miniIso;};
    float isoR04()                         {return _isoR04;};
@@ -112,15 +111,14 @@ class Electron : public Base
    
    int     _fakeType;
    
-   float   _E;
-   float   _pt;
+//   float   _E;
+//   float   _pt;
    float   _ptCor;
    float   _ptUnc;
-   float   _eta;
-   float   _phi;
+//   float   _eta;
+//   float   _phi;
    float   _m;
    float   _conept;
-   int     _charge;
    int     _id;
    
    bool    _isLooseCBId;
@@ -132,7 +130,6 @@ class Electron : public Base
    bool    _isTightMVA;
    bool    _isLooseTTH;
    bool    _isFakeableTTH;
-   bool    _isTightTTH;
    
    float   _dxy;
    float   _dz;
@@ -142,22 +139,19 @@ class Electron : public Base
    float   _isoR04;
    int     _nlosthits;
    bool    _passCV;
-   bool    _isPCC;
    bool    _passPtEta;
    float   _ip3d;
    float   _ip3dErr;
-   int     _tightCharge;
    bool    _passTightCharge;
    bool    _cutEventSel;
    bool    _noLostHits;
-   
-   float _lepMVA;
    
    float _lepMVA_miniRelIsoCharged;
    float _lepMVA_miniRelIsoNeutral;
    float _lepMVA_jetPtRelv2;
    float _lepMVA_jetPtRatio;
    float _lepMVA_jetBTagCSV;
+   float _lepMVA_jetBTagDeepCSV;
    float _lepMVA_sip3d;
    float _lepMVA_dxy;
    float _lepMVA_dz;
@@ -169,7 +163,6 @@ class Electron : public Base
    bool _passChargeFlip;
    bool _hasMatchedConversion;
    bool _isGsfCtfScPixChargeConsistent;
-   bool _isGsfScPixChargeConsistent;
    
    float _sigmaIetaIeta;
    float _hadronicOverEm;
@@ -188,7 +181,6 @@ class Electron : public Base
    bool _passMuOverlap;
    bool _passConditions;
 
-   bool _hasMCMatch;
    float _gen_pt;
    float _gen_eta;
    float _gen_phi;

@@ -161,7 +161,7 @@ int main(int argc, char *argv[])
 		  nt->NtMuonTight->push_back(mu);
 	       }
 	  }
-	
+
         int n_el_evt = 0;
 	
 	// electrons
@@ -172,7 +172,7 @@ int main(int argc, char *argv[])
 	     el.init();
 	     el.read();
 	     el.sel();
-	     
+
 	     if( el.isLooseTTH()  )
 	       {
 		  nt->NtElectronLoose->push_back(el);
@@ -204,6 +204,10 @@ int main(int argc, char *argv[])
 		  nt->NtTauFakeable->push_back(tau);
 		  n_tau_evt++;
 	       }
+	     if( tau.isTightTTH() )
+	       {
+		  nt->NtTauTight->push_back(tau);
+	       }
 	  }
 	
         int n_jet_evt = 0;
@@ -220,7 +224,7 @@ int main(int argc, char *argv[])
 	     jesTotal->setJetEta(ntP->jet_eta->at(idx));	     
 	     jet.setJESUncertainty(jesTotal->getUncertainty(true));
 	     
-	     jet.sel();
+	     jet.sel(sync);
 	     
 	     if( jet.isLooseTTH() )
 	       {
@@ -249,7 +253,7 @@ int main(int argc, char *argv[])
 	     
 	     nt->NtTruth->push_back(truth);
 	  }
-	
+
 	if( n_el_evt > 0 ) n_presel_el++;
 	if( n_mu_evt > 0 ) n_presel_mu++;
 	if( n_tau_evt > 0 ) n_presel_tau++;

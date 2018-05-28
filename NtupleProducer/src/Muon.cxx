@@ -37,6 +37,8 @@ void Muon::read()
    _bestTrack_pt                   = ntP->mu_bestTrack_pt->at(idx);
    _bestTrack_ptError              = ntP->mu_bestTrack_ptError->at(idx);
    
+   _tightCharge = (_bestTrack_pt) ? (_bestTrack_ptError/_bestTrack_pt < 0.2) : 0;
+   
    _lepMVA	                        = ntP->mu_lepMVA->at(idx);
    
    _lepMVA_miniRelIsoCharged       = ntP->mu_lepMVA_miniRelIsoCharged->at(idx);
@@ -44,6 +46,7 @@ void Muon::read()
    _lepMVA_jetPtRelv2              = ntP->mu_lepMVA_jetPtRelv2->at(idx);
    _lepMVA_jetPtRatio              = ntP->mu_lepMVA_jetPtRatio->at(idx);
    _lepMVA_jetBTagCSV              = ntP->mu_lepMVA_jetBTagCSV->at(idx);
+   _lepMVA_jetBTagDeepCSV          = ntP->mu_lepMVA_jetBTagDeepCSV->at(idx);
    _lepMVA_sip3d                   = ntP->mu_lepMVA_sip3d->at(idx);
    _lepMVA_dxy                     = ntP->mu_lepMVA_dxy->at(idx);
    _lepMVA_dz                      = ntP->mu_lepMVA_dz->at(idx);
@@ -51,16 +54,16 @@ void Muon::read()
    _lepMVA_eta                     = ntP->mu_lepMVA_eta->at(idx);
    _lepMVA_jetNDauChargedMVASel    = ntP->mu_lepMVA_jetNDauChargedMVASel->at(idx);
 
-   _hasMCMatch = ntP->el_hasMCMatch->at(idx);
-   _gen_pt = ntP->el_gen_pt->at(idx);
-   _gen_eta = ntP->el_gen_eta->at(idx);
-   _gen_phi = ntP->el_gen_phi->at(idx);
-   _gen_m = ntP->el_gen_m->at(idx);
-   _gen_E = ntP->el_gen_E->at(idx);
-   _gen_status = ntP->el_gen_status->at(idx);
-   _gen_id = ntP->el_gen_id->at(idx);
-   _gen_charge = ntP->el_gen_charge->at(idx);
-   _gen_dr = ntP->el_gen_dr->at(idx);
+   _hasMCMatch = ntP->mu_hasMCMatch->at(idx);
+   _gen_pt = ntP->mu_gen_pt->at(idx);
+   _gen_eta = ntP->mu_gen_eta->at(idx);
+   _gen_phi = ntP->mu_gen_phi->at(idx);
+   _gen_m = ntP->mu_gen_m->at(idx);
+//   _gen_E = ntP->mu_gen_E->at(idx);
+   _gen_status = ntP->mu_gen_status->at(idx);
+   _gen_id = ntP->mu_gen_id->at(idx);
+   _gen_charge = ntP->mu_gen_charge->at(idx);
+   _gen_dr = ntP->mu_gen_dr->at(idx);
 }
 
 void Muon::init()
@@ -104,6 +107,7 @@ void Muon::init()
    _lepMVA_jetPtRelv2           = -100.;
    _lepMVA_jetPtRatio           = -100.;
    _lepMVA_jetBTagCSV           = -100.;
+   _lepMVA_jetBTagDeepCSV       = -100.;
    _lepMVA_sip3d                = -100.;
    _lepMVA_dxy                  = -100.;
    _lepMVA_dz                   = -100.;
@@ -149,9 +153,13 @@ void Muon::sel()
    bool pass_lepMVA = ( _lepMVA >= 0.90 );
    
    if( pass_lepMVA )
-     if( _lepMVA_jetBTagCSV < 0.4941 ) pass_fakeable_lepMVA = 1;
+     {	
+	if( _lepMVA_jetBTagDeepCSV < 0.4941 ) pass_fakeable_lepMVA = 1;
+     }  
    else
-     if( _lepMVA_jetPtRatio > 0.6 && _lepMVA_jetBTagCSV < 0.07 && _lepMVA_mvaId > 0.3 ) pass_fakeable_lepMVA = 1;
+     {	
+	if( _lepMVA_jetPtRatio > 0.6 && _lepMVA_jetBTagDeepCSV < 0.07 && _lepMVA_mvaId > 0.3 ) pass_fakeable_lepMVA = 1;
+     }   
    
    bool pass_conept = ( _conept > 10. );
    
