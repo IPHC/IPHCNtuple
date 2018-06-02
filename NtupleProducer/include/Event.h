@@ -10,133 +10,51 @@ class Event : public Base
  public:
    Event();
    virtual ~Event();
+
+   long int   id;
+   int   run;
+   int   lumi;
    
-   long int id()                       {return _id;};
-   int run()                           {return _run;};
-   int lumi()                          {return _lumi;};
+   bool is_1l2tau_SR;
+   bool is_1l2tau_Fake;
+   bool is_2lSS_SR;
+   bool is_2lSS_Fake;
+   bool is_2lSS_Flip;
+   bool is_2lSS1tau_SR;
+   bool is_2lSS1tau_Fake;
+   bool is_2lSS1tau_Flip;
+   bool is_2l2tau_SR;
+   bool is_2l2tau_Fake;
+   bool is_3l_SR;
+   bool is_3l_Fake;
+   bool is_3l1tau_SR;
+   bool is_3l1tau_Fake;
+   bool is_4l_SR;
+   bool is_4l_Fake;
+   bool is_ttWctrl_SR;
+   bool is_ttWctrl_Fake;
+   bool is_ttWctrl_Flip;
+   bool is_ttZctrl_SR;
+   bool is_ttZctrl_Fake;   
+
+   float metpt;
    
-   float rho()                         {return _rho;};
+   float metcov00;
+   float metcov01;
+   float metcov10;
+   float metcov11;
    
-   float metpt()                       {return _metpt;};
-   float metphi()                      {return _metphi;};
-   float metpx()                       {return _metpt*cos(_metphi);};
-   float metpy()                       {return _metpt*sin(_metphi);};
-   float metsumet()                    {return _metsumet;};
-   float metUncorrectedPt()                       {return _metUncorrectedPt;};
-   float metUncorrectedPhi()                      {return _metUncorrectedPhi;};
-   float metUncorrectedSumEt()                    {return _metUncorrectedSumEt;};
+   bool trig_e;
+   bool trig_m;
    
-   double metcov00()		            {return _metcov00;};
-   double metcov01()		            {return _metcov01;};
-   double metcov10()		            {return _metcov10;};
-   double metcov11()		            {return _metcov11;};
-   
-   float metNoHF_pt()                  {return _metNoHF_pt;};
-   float metNoHF_phi()                 {return _metNoHF_phi;};
-   float metNoHF_sumet()               {return _metNoHF_sumet;};
-   
-   int pv_n()                          {return _pv_n;};
-   float pv_z()                        {return _pv_z;};
-   float pv_zError()                   {return _pv_zError;};
-   
-   float weight_scale_muF0p5()         {return _weight_scale_muF0p5;};
-   float weight_scale_muF2()           {return _weight_scale_muF2;};
-   float weight_scale_muR0p5()         {return _weight_scale_muR0p5;};
-   float weight_scale_muR2()           {return _weight_scale_muR2;};
-   std::vector<float> pdf_weights()    {return _pdf_weights;};
-   std::vector<std::string> pdf_ids()  {return _pdf_ids;};
-   
-   float mc_weight()                   {return _mc_weight;};
-   float mc_ptHat()                    {return _mc_ptHat;};
-   int mc_pu_trueNumInt()              {return _mc_pu_trueNumInt;};
-   
-   bool  is_TRIGm()    {return  _TRIGm;   };
-   bool  is_TRIGe()    {return  _TRIGe;   };
-   bool  is_TRIGmTk()  {return  _TRIGmTk; };
-   bool  is_TRIGee()   {return  _TRIGee;  };
-   bool  is_TRIGmm()   {return  _TRIGmm;  };
-   bool  is_TRIGme()   {return  _TRIGme;  };
-   bool  is_TRIGem()   {return  _TRIGem;  };
-   bool  is_TRIGmmTk() {return  _TRIGmmTk;};
-   bool  is_TRIGeee()  {return  _TRIGeee; };
-   bool  is_TRIGmme()  {return  _TRIGmme; };
-   bool  is_TRIGeem()  {return  _TRIGeem; };
-   bool  is_TRIGmmm()  {return  _TRIGmmm; };
-   bool  is_TRIGee_noDz()  {return  _TRIGee_noDz;   };
-   bool  is_TRIGmm_noDz()  {return  _TRIGmm_noDz;   };
-   bool  is_TRIGmmTk_noDz(){return  _TRIGmmTk_noDz; };
-   
-   int tth_channel()                   {return _tth_channel;};
-   
-   float disc_TT()                     {return _disc_TT;};
-   
-   void read(bool isdata);
-   void init();
-   
- protected:
-   
-   long int   _id;
-   int   _run;
-   int   _lumi;
-   
-   float _rho;
-   
-   float _metpt;
-   float _metphi;
-   float _metsumet;
-   float _metUncorrectedPt;
-   float _metUncorrectedPhi;
-   float _metUncorrectedSumEt;
-   double _metcov00;
-   double _metcov01;
-   double _metcov10;
-   double _metcov11;
-   
-   float _metNoHF_pt;
-   float _metNoHF_phi;
-   float _metNoHF_sumet;
-   
-   int   _pv_n;
-   float _pv_z;
-   float _pv_zError;
-   
-   float _weight_scale_muF0p5;
-   float _weight_scale_muF2;
-   float _weight_scale_muR0p5;
-   float _weight_scale_muR2;
-   
-   std::vector<float> _pdf_weights;
-   std::vector<std::string> _pdf_ids;
-   
-   float _mc_weight;
-   float _mc_ptHat;
-   int   _mc_pu_trueNumInt;
-   
-   /* int   _trigger_pass;
-    int   _trigger_pass_byname;
-    int   _trigger_pass_byname_1;
-    int   _trigger_pass_byname_1_noDz;*/
-   
-   bool _TRIGm;
-   bool _TRIGe;
-   bool _TRIGmTk;
-   bool _TRIGee;
-   bool _TRIGmm;
-   bool _TRIGme;
-   bool _TRIGem;
-   bool _TRIGmmTk;
-   bool _TRIGeee;
-   bool _TRIGmme;
-   bool _TRIGeem;
-   bool _TRIGmmm;
-   bool _TRIGee_noDz;
-   bool _TRIGmm_noDz;
-   bool _TRIGmmTk_noDz;
-   
-   float _disc_TT;
-   
- public:
-   int _tth_channel;
+   bool trig_ee;
+   bool trig_em;
+   bool trig_mm;
+	     
+   bool trig_eee;
+   bool trig_eem;
+   bool trig_emm;
+   bool trig_mmm;
    
    ClassDef(Event,1)
 };

@@ -1,14 +1,14 @@
 #ifndef SYNC_H
 #define SYNC_H
 
-#include "Event.h"
-#include "Electron.h"
-#include "Muon.h"
-#include "Tau.h"
-#include "Jet.h"
-#include "Truth.h"
-#include "GenJet.h"
-#include "TriggerObj.h"
+#include "EventExt.h"
+#include "ElectronExt.h"
+#include "MuonExt.h"
+#include "TauExt.h"
+#include "JetExt.h"
+#include "TruthExt.h"
+#include "GenJetExt.h"
+#include "TriggerObjExt.h"
 #include "Ntuple.h"
 
 #include "TFile.h"
@@ -19,15 +19,15 @@ class Sync
 {
  public:
    
-   Sync(std::string fname_out);
+   Sync(std::string fname_out,int sync);
    virtual ~Sync();
    
-   void Init(int sync);
+   void Init();
    
-   void setBranchAddress(int sync);
+   void setBranchAddress();
    void initVar();
    void get(Ntuple *nt,int n_presel_el,int n_presel_mu,int n_presel_tau,int n_presel_jet);
-   void fill(Ntuple *nt,int sync);
+   bool fill(Ntuple *nt);
    
    TFile*  m_file;
 
@@ -341,7 +341,8 @@ class Sync
    TTree*  m_tree_ttZctrl_Fake;
    
    TChain* m_chain;
-   std::string _fname_out;
+   std::string fname_out;
+   int sync;
    
    void createBranch(TTree *tr);
 };

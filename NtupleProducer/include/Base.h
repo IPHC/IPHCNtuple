@@ -29,18 +29,23 @@ class Base : public TObject
    float GetDPhi(float phi1,float phi2);
    float GetDeltaR(float eta1,float phi1,float eta2,float phi2);
    
-   float _pt;
-   float _eta;
-   float _phi;
-   float _E;
+   float pt;
+   float conept;
+   float eta;
+   float phi;
+   float E;
+   float m;
    int   iElec;
    int   iMuon;
    int   iTau;
-   bool  _isTightTTH;
-   bool  _hasMCMatch;
-   int   _charge;
-   bool  _tightCharge;
-   float _lepMVA;
+   bool  isFakeableTTH;
+   bool  isLooseTTH;
+   bool  isMediumTTH;
+   bool  isTightTTH;
+   bool  hasMCMatch;
+   int   charge;
+   bool  tightCharge;
+   float lepMVA;
    
    ClassDef(Base,1)
 };
@@ -49,7 +54,15 @@ struct sort_by_pt
 {   
    bool operator () (const Base& lhs, const Base& rhs)
      {	
-	return lhs._pt > rhs._pt;
+	return lhs.pt > rhs.pt;
+     }
+};
+
+struct sort_by_conept
+{   
+   bool operator () (const Base& lhs, const Base& rhs)
+     {	
+	return lhs.conept > rhs.conept;
      }
 };
 

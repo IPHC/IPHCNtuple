@@ -76,28 +76,24 @@ int main(int argc, char *argv[])
    nt->createVar();
    nt->setBranchAddress();
 
-   if( sync )
-     {	
-	std::cout << "Running in sync mode" << std::endl;
-	TString fname_sync_root = fname_out;
-	fname_sync_root += "_sync.root";
-	sc = new Sync(fname_sync_root.Data());
-	sc->Init(sync);
-	sc->setBranchAddress(sync);
-     }
+   TString fname_sync_root = fname_out;
+   fname_sync_root += "_sync.root";
+   sc = new Sync(fname_sync_root.Data(),sync);
+   sc->Init();
+   sc->setBranchAddress();
+
+   EventExt     ev;
+   ElectronExt  el;
+   MuonExt      mu;
+   TauExt      tau;
+   JetExt      jet;
    
-   Event     ev;
-   Electron  el;
-   Muon      mu;
-   Tau      tau;
-   Jet      jet;
-   
-   Truth  truth;
-   GenJet genjet;
-   TriggerObj trigObj;
+   TruthExt  truth;
+   GenJetExt genjet;
+   TriggerObjExt trigObj;
    
    evdebug = new std::vector<int>();
-//   evdebug->push_back(13579585);
+   evdebug->push_back(16808086);
 
    int nlep = 0;
    int njet = 0;
@@ -119,25 +115,18 @@ int main(int argc, char *argv[])
    for(Long64_t i=0;i<nentries;i++)
      {
 	if( i > nmax && nmax >= 0 ) break;
-	
+
 	ch->GetEntry(i);
 	nt->clearVar();
-	if( sync ) sc->initVar();
+	sc->initVar();
 	
-        //	if( !(isHtoWW || isHtoZZ || isHtoTT) ) continue;
-	
-        // event
         ev.init();
         ev.read(isdata);
 	
-        //	if( isHtoWW ) ev._tth_channel = 0;
-        //	else if( isHtoZZ ) ev._tth_channel = 1;
-        //	else if( isHtoTT ) ev._tth_channel = 2;
-	
-        nt->NtEvent->push_back(ev);
+        nt->NtEventExt->push_back(ev);
 	
         int n_mu_evt = 0;
-	
+
         // muons
         for(int j=0;j<ntP->mu_n;j++)
 	  {
@@ -147,18 +136,18 @@ int main(int argc, char *argv[])
 	     mu.read();
 	     mu.sel();
 	     
-	     if( mu.isLooseTTH() )
+	     if( mu.isLooseTTH )
 	       {
-		  nt->NtMuonLoose->push_back(mu);
+		  nt->NtMuonLooseExt->push_back(mu);
 		  n_mu_evt++;
 	       }
-	     if( mu.isFakeableTTH() )
+	     if( mu.isFakeableTTH )
 	       {
-		  nt->NtMuonFakeable->push_back(mu);
+		  nt->NtMuonFakeableExt->push_back(mu);
 	       }
-	     if( mu.isTightTTH() )
+	     if( mu.isTightTTH )
 	       {
-		  nt->NtMuonTight->push_back(mu);
+		  nt->NtMuonTightExt->push_back(mu);
 	       }
 	  }
 
@@ -173,21 +162,21 @@ int main(int argc, char *argv[])
 	     el.read();
 	     el.sel();
 
-	     if( el.isLooseTTH()  )
+	     if( el.isLooseTTH  )
 	       {
-		  nt->NtElectronLoose->push_back(el);
+		  nt->NtElectronLooseExt->push_back(el);
 		  n_el_evt++;
 	       }
-	     if( el.isFakeableTTH()  )
+	     if( el.isFakeableTTH  )
 	       {
-		  nt->NtElectronFakeable->push_back(el);
+		  nt->NtElectronFakeableExt->push_back(el);
 	       }
-	     if( el.isTightTTH()  )
+	     if( el.isTightTTH  )
 	       {
-		  nt->NtElectronTight->push_back(el);
+		  nt->NtElectronTightExt->push_back(el);
 	       }
 	  }
-	
+
 	int n_tau_evt = 0;
 	
         // taus
@@ -199,17 +188,21 @@ int main(int argc, char *argv[])
 	     tau.read();
 	     tau.sel();
 	     
-	     if( tau.isFakeableTTH() )
+	     if( tau.isFakeableTTH )
 	       {
-		  nt->NtTauFakeable->push_back(tau);
+		  nt->NtTauFakeableExt->push_back(tau);
 		  n_tau_evt++;
 	       }
-	     if( tau.isTightTTH() )
+	     if( tau.isLooseTTH )
 	       {
-		  nt->NtTauTight->push_back(tau);
+		  nt->NtTauLooseExt->push_back(tau);
+	       }
+	     if( tau.isMediumTTH )
+	       {
+		  nt->NtTauMediumExt->push_back(tau);
 	       }
 	  }
-	
+
         int n_jet_evt = 0;
 	
         // jets
@@ -226,9 +219,9 @@ int main(int argc, char *argv[])
 	     
 	     jet.sel(sync);
 	     
-	     if( jet.isLooseTTH() )
+	     if( jet.isLooseTTH )
 	       {
-		  nt->NtJetLoose->push_back(jet);
+		  nt->NtJetLooseExt->push_back(jet);
 		  n_jet_evt++;
 	       }
 	  }
@@ -243,7 +236,7 @@ int main(int argc, char *argv[])
 		  genjet.init();
 		  genjet.read();
 		  
-		  if (genjet.sel()) nt->NtGenJet->push_back(genjet);
+		  if (genjet.sel()) nt->NtGenJetExt->push_back(genjet);
 	       }
 	     
 	     // truth
@@ -251,7 +244,7 @@ int main(int argc, char *argv[])
 	     truth.read();
 	     truth.readMultiLepton();
 	     
-	     nt->NtTruth->push_back(truth);
+	     nt->NtTruthExt->push_back(truth);
 	  }
 
 	if( n_el_evt > 0 ) n_presel_el++;
@@ -262,7 +255,9 @@ int main(int argc, char *argv[])
 	sc->get(nt,n_presel_el,n_presel_mu,n_presel_tau,n_presel_jet);
 	
 	nt->fill();
-	if( sync ) sc->fill(nt,sync);
+	
+	bool pass = sc->fill(nt);
+	if( pass ) nt->write();
      }
    
    if( sync )
