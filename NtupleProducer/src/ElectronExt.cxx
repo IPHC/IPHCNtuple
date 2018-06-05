@@ -36,6 +36,7 @@ void ElectronExt::read()
    isMedium                          = ntP->el_mediumCBId->at(idx);
    passCV	                        = ntP->el_passConversionVeto->at(idx);
    isGsfCtfScPixChargeConsistent     = ntP->el_isGsfCtfScPixChargeConsistent->at(idx);
+   isGsfScPixChargeConsistent     = ntP->el_isGsfScPixChargeConsistent->at(idx);
 
    sip3d                          = (ntP->el_ip3dErr->at(idx)) ? ntP->el_ip3d->at(idx) / ntP->el_ip3dErr->at(idx) : -9999;
    ooEmooP                        = ntP->el_ooEmooP->at(idx);
@@ -69,8 +70,8 @@ void ElectronExt::read()
    ecalEnergy	                    = ntP->el_ecalEnergy->at(idx);
    
    trackMomentumError	            = ntP->el_trackMomentumError->at(idx);
-   tightCharge = (ntP->el_isGsfCtfScPixChargeConsistent->at(idx) + ntP->el_isGsfScPixChargeConsistent->at(idx) > 1);
-   
+   tightCharge = (isGsfCtfScPixChargeConsistent + isGsfScPixChargeConsistent > 1);
+
    hasMCMatch = ntP->el_hasMCMatch->at(idx);
    gen_pt = ntP->el_gen_pt->at(idx);
    gen_eta = ntP->el_gen_eta->at(idx);
@@ -117,6 +118,7 @@ void ElectronExt::init()
    
    passCV                         = 0;
    isGsfCtfScPixChargeConsistent  = 0;
+   isGsfScPixChargeConsistent     = 0;
    passPtEta                      = 0;
    ip3d                           = -100.;
    ip3dErr                        = -100.;
@@ -186,8 +188,9 @@ void ElectronExt::sel()
 	else if( fabs(eta) < 1.479 ) isLoose = ( mvaNoIso > -0.8107642141584835 );
 	else isLoose = ( mvaNoIso > -0.7179265933023059 );
      }   
-
-   isoR04 = (pt > 0.) ? (ntP->el_pfIso_sumChargedHadronPt->at(idx) + std::max( 0.0, ntP->el_pfIso_sumNeutralHadronEt->at(idx)+ntP->el_pfIso_sumPhotonEt->at(idx) - 0.5*ntP->el_pfIso_sumPUPt->at(idx) ))/pt : -9999;
+   
+   float EffArea = getEffArea(superCluster_eta);
+   isoR04 = (pt > 0.) ? (ntP->el_pfIso_sumChargedHadronPt->at(idx) + std::max( 0.0, double(ntP->el_pfIso_sumNeutralHadronEt->at(idx)+ntP->el_pfIso_sumPhotonEt->at(idx) - nt->NtEventExt->at(0).rho*EffArea )))/pt : -9999;
    
    bool pass_pt       = ( pt > 7 );
    bool pass_eta      = ( fabs(eta) < 2.5 );
@@ -238,16 +241,19 @@ void ElectronExt::sel()
    else if( fabs(superCluster_eta) < 2.5 )
      {
 	if( sigmaIetaIeta < 0.030 && hadronicOverEm < 0.10 && eInvMinusPInv > -0.04 ) pass_sc = 1;
-     }   	
+     }
    
+   bool pass_nlosthits = (nlosthits == 0);
+
    isFakeableTTH = ( isLooseTTH &&
 		     pass_sc &&
+		     pass_nlosthits &&
+		     passCV &&
 		     pass_fakeable_lepMVA &&
 		     pass_conept );
    
    isTightTTH = ( isFakeableTTH &&
-		  pass_lepMVA &&
-		  passCV );
+		  pass_lepMVA );
 
    for(int d=0;d<evdebug->size();d++)
      {		       
@@ -259,6 +265,9 @@ void ElectronExt::sel()
 	     std::cout << "  electron #" << ID << std::endl;
 	     std::cout << "  conept = " << conept << std::endl;
 	     std::cout << "  pt = " << pt << std::endl;
+	     std::cout << "  isGsfCtfScPixChargeConsistent = " << isGsfCtfScPixChargeConsistent << std::endl;
+	     std::cout << "  isGsfScPixChargeConsistent = " << isGsfScPixChargeConsistent << std::endl;
+	     std::cout << "  tightCharge = " << tightCharge << std::endl;
 	     std::cout << "  isLooseTTH = " << isLooseTTH << std::endl;
 	     std::cout << "  pass_sc = " << pass_sc << std::endl;
 	     std::cout << "  pass_fakeable_lepMVA = " << pass_fakeable_lepMVA << std::endl;
@@ -266,4 +275,19 @@ void ElectronExt::sel()
 	     std::cout << "  = isFakeableTTH = " << isFakeableTTH << std::endl;
 	  }		  
      }		  
+}
+
+float ElectronExt::getEffArea(float eta)
+{   
+   float ea = -1;
+   
+   if(fabs(eta) < 1.0)        ea = 0.1566;
+   else if(fabs(eta) < 1.479) ea = 0.1626;
+   else if(fabs(eta) < 2.0)   ea = 0.1073;
+   else if(fabs(eta) < 2.2)   ea = 0.0854;
+   else if(fabs(eta) < 2.3)   ea = 0.1051;
+   else if(fabs(eta) < 2.4)   ea = 0.1204;
+   else                       ea = 0.1524;
+   
+   return ea;
 }

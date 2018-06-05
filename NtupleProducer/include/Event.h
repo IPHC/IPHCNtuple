@@ -45,7 +45,9 @@ class Event : public Base
    float metcov11;
    
    bool trig_e;
+   bool trig_etau;
    bool trig_m;
+   bool trig_mtau;
    
    bool trig_ee;
    bool trig_em;

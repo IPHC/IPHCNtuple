@@ -53,47 +53,69 @@ void EventExt::read(bool isdata)
         pdf_ids = *ntP->mc_pdfweightIds;    
      }
 
+   bool e1_trig = 0;
+   bool e2_trig = 0;
+   bool e3_trig = 0;
+   bool m1_trig = 0;
+   bool m2_trig = 0;
+   bool m3_trig = 0;
+
+   bool ee_trig  = 0;
+   bool ee2_trig = 0;
+   bool em_trig  = 0;
+   bool em2_trig = 0;
+   bool em3_trig = 0;
+   bool mm_trig  = 0;
+   bool mm2_trig = 0;
+   
+   bool eee_trig = 0;
+   bool eem_trig = 0;
+   bool emm_trig = 0;
+   bool mmm_trig = 0;
+   
    for(int i=0;i<ntP->trigger->size();i++)
      {
         std::string tpath("");
 	
-        if( ntP->trigger_pass->at(i) == 1) 
+        if( ntP->trigger_pass->at(i) == 1 )
 	  {
 	     tpath = ntP->trigger_name->at(i);
 
-	     std::size_t e1    = tpath.find("HLT_Ele32_WPTight_Gsf_v");
-	     std::size_t e2    = tpath.find("HLT_Ele35_WPTight_Gsf_v");
-	     std::size_t e3    = tpath.find("HLT_Ele24_eta2p1_WPTight_Gsf_LooseChargedIsoPFTau30_eta2p1_CrossL1_v");
-	     std::size_t m1    = tpath.find("HLT_IsoMu24_v");
-	     std::size_t m2    = tpath.find("HLT_IsoMu27_v");
-	     std::size_t m3    = tpath.find("HLT_IsoMu20_eta2p1_LooseChargedIsoPFTau27_eta2p1_CrossL1_v");
+	     if( !e1_trig && (tpath.find("HLT_Ele32_WPTight_Gsf_v") != std::string::npos) ) {e1_trig=1;}
+	     if( !e2_trig && (tpath.find("HLT_Ele35_WPTight_Gsf_v") != std::string::npos) ) {e2_trig=1;}
+	     if( !e3_trig && (tpath.find("HLT_Ele24_eta2p1_WPTight_Gsf_LooseChargedIsoPFTau30_eta2p1_CrossL1_v") != std::string::npos) ) {e3_trig=1;}
+	     if( !m1_trig && (tpath.find("HLT_IsoMu24_v") != std::string::npos) ) {m1_trig=1;}
+	     if( !m2_trig && (tpath.find("HLT_IsoMu27_v") != std::string::npos) ) {m2_trig=1;}
+	     if( !m3_trig && (tpath.find("HLT_IsoMu20_eta2p1_LooseChargedIsoPFTau27_eta2p1_CrossL1_v") != std::string::npos) ) {m3_trig=1;}
 
-	     std::size_t ee    = tpath.find("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v");
-	     std::size_t ee2   = tpath.find("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v");
-	     std::size_t em    = tpath.find("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v");
-	     std::size_t em2   = tpath.find("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v");
-	     std::size_t em3   = tpath.find("HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v");
-	     std::size_t mm    = tpath.find("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v");
-	     std::size_t mm2   = tpath.find("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8_v");
+	     if( !ee_trig  && (tpath.find("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v") != std::string::npos) ) {ee_trig=1;};
+	     if( !ee2_trig && (tpath.find("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v") != std::string::npos) ) {ee2_trig=1;};
+	     if( !em_trig  && (tpath.find("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v") != std::string::npos) ) {em_trig=1;};
+	     if( !em2_trig && (tpath.find("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v") != std::string::npos) ) {em2_trig=1;};
+	     if( !em3_trig && (tpath.find("HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v") != std::string::npos) ) {em3_trig=1;};
+	     if( !mm_trig  && (tpath.find("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v") != std::string::npos) ) {mm_trig=1;};
+	     if( !mm2_trig && (tpath.find("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8_v") != std::string::npos) ) {mm2_trig=1;};
 
-	     std::size_t eee   = tpath.find("HLT_Ele16_Ele12_Ele8_CaloIdL_TrackIdL_v");
-	     std::size_t eem   = tpath.find("HLT_Mu8_DiEle12_CaloIdL_TrackIdL_v");
-	     std::size_t emm   = tpath.find("HLT_DiMu9_Ele9_CaloIdL_TrackIdL_DZ_v");
-	     std::size_t mmm   = tpath.find("HLT_TripleMu_12_10_5_v");
-
-	     trig_e = (e1!=std::string::npos || e2!=std::string::npos || e3!=std::string::npos);
-	     trig_m = (m1!=std::string::npos || m2!=std::string::npos || m3!=std::string::npos);
-	     
-	     trig_ee = (ee!=std::string::npos || ee2!=std::string::npos);
-	     trig_em = (em!=std::string::npos || em2!=std::string::npos || em3!=std::string::npos);
-	     trig_mm = (mm!=std::string::npos || mm2!=std::string::npos);
-	     
-	     trig_eee = (eee!=std::string::npos);
-	     trig_eem = (eee!=std::string::npos);
-	     trig_emm = (eee!=std::string::npos);
-	     trig_mmm = (eee!=std::string::npos);
+	     if( !eee_trig && (tpath.find("HLT_Ele16_Ele12_Ele8_CaloIdL_TrackIdL_v") != std::string::npos) ) {eee_trig=1;};
+	     if( !eem_trig && (tpath.find("HLT_Mu8_DiEle12_CaloIdL_TrackIdL_v") != std::string::npos) ) {eem_trig=1;};
+	     if( !emm_trig && (tpath.find("HLT_DiMu9_Ele9_CaloIdL_TrackIdL_DZ_v") != std::string::npos) ) {emm_trig=1;};
+	     if( !mmm_trig && (tpath.find("HLT_TripleMu_12_10_5_v") != std::string::npos) ) {mmm_trig=1;};
 	  }
      }   
+
+   trig_e = (e1_trig || e2_trig);
+   trig_etau = (e3_trig);
+   trig_m = (m1_trig || m2_trig);
+   trig_mtau = (m3_trig);
+   
+   trig_ee = (ee_trig || ee2_trig);
+   trig_em = (em_trig || em2_trig || em3_trig);
+   trig_mm = (mm_trig || mm2_trig);
+   
+   trig_eee = (eee_trig);
+   trig_eem = (eem_trig);
+   trig_emm = (emm_trig);
+   trig_mmm = (mmm_trig);
 }
 
 void EventExt::init()
@@ -139,7 +161,9 @@ void EventExt::init()
    pdf_ids.clear();
    
    trig_e = 0;
+   trig_etau = 0;
    trig_m = 0;
+   trig_mtau = 0;
    
    trig_ee = 0;
    trig_em = 0;

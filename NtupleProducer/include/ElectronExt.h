@@ -15,6 +15,7 @@ class ElectronExt : public Electron
    void sel();
    void read();
    void init();
+   float getEffArea(float eta);
    
    int     ID;
    
@@ -63,7 +64,8 @@ class ElectronExt : public Electron
    
    bool passChargeFlip;
    bool hasMatchedConversion;
-   bool isGsfCtfScPixChargeConsistent;
+   int isGsfCtfScPixChargeConsistent;
+   int isGsfScPixChargeConsistent;
    
    float sigmaIetaIeta;
    float hadronicOverEm;

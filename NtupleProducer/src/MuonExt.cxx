@@ -140,7 +140,8 @@ void MuonExt::sel()
    bool pass_SIP     = ( fabs(sip3d) < 8 );
    bool pass_isLoose = ( isLoose );
 
-   isoR04 = (pt > 0.) ? (ntP->mu_pfIso04_sumChargedHadronPt->at(idx) + std::max( 0.0, ntP->mu_pfIso04_sumNeutralHadronEt->at(idx)+ntP->mu_pfIso04_sumPhotonEt->at(idx) - 0.5*ntP->mu_pfIso04_sumPUPt->at(idx) ))/pt : -9999;
+   float EffArea = getEffArea(eta);
+   isoR04 = (pt > 0.) ? (ntP->mu_pfIso04_sumChargedHadronPt->at(idx) + std::max( 0.0, double(ntP->mu_pfIso04_sumNeutralHadronEt->at(idx)+ntP->mu_pfIso04_sumPhotonEt->at(idx) - nt->NtEventExt->at(0).rho*EffArea )))/pt : -9999;
    
    isLooseTTH = ( pass_pt      &&
 		  pass_eta     &&
@@ -188,4 +189,17 @@ void MuonExt::sel()
 	     std::cout << "  = isFakeableTTH = " << isFakeableTTH << std::endl;
 	  }		  
      }		  
+}
+
+float MuonExt::getEffArea(float eta)
+{   
+   float ea = -1;
+   
+   if(fabs(eta) < 0.8)      ea = 0.0566;
+   else if(fabs(eta) < 1.3) ea = 0.0562;
+   else if(fabs(eta) < 2.0) ea = 0.0363;
+   else if(fabs(eta) < 2.2) ea = 0.0119;
+   else                     ea = 0.0064;
+   
+   return ea;
 }

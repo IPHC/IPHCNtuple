@@ -93,8 +93,9 @@ void JetExt::sel(int sync)
 {
    float jet_pt_JESup = pt*(1+JES_uncert);
 
-   bool pass_pt      = ( pt > 25. || jet_pt_JESup > 25. );
-   bool pass_eta     = (fabs(eta) < 2.4);
+   bool pass_pt = (pt > 25.);
+   if( sync != 2 ) pass_pt = pass_pt || (jet_pt_JESup > 25.);
+   bool pass_eta = (fabs(eta) < 2.4);
    bool pass_tightJetID = (tightJetID);
 
    bool pass_lepOverlap = 1;
@@ -104,6 +105,7 @@ void JetExt::sel(int sync)
    int nElectron = nt->NtElectronFakeableExt->size();
    int nTau = nt->NtTauFakeableExt->size();
    int nTauLoose = nt->NtTauLooseExt->size();
+   int nTauMedium = nt->NtTauMediumExt->size();
    int nLepTight = nt->NtMuonTightExt->size()+nt->NtElectronTightExt->size();
    
    std::vector<Base> *elmuFakeable = new std::vector<Base>;
@@ -123,13 +125,19 @@ void JetExt::sel(int sync)
    
    int nLep = elmuFakeable->size();
 
-   bool is_1l2tau = (nLep > 0 && nLepTight <= 1 && nTau >= 2);
-   bool is_2lSS = (nLep > 1 && nLepTight <= 2 && nTauLoose == 0);
-   bool is_2lSS1tau = (nLep > 1 && nLepTight <= 2 && nTauLoose > 0);
-   bool is_2l2tau = (nLep > 1 && nTau > 1);
-   bool is_3l = (nLep > 2 && nTauLoose == 0);
-   bool is_3l1tau = (nLep > 2 && nTau > 0);
-   bool is_4l = (nLep >= 4);
+   int is_1l2tau = (nLep > 0 && nLepTight <= 1 && nTau >= 2);
+   int is_2lSS = (nLep > 1 && nLepTight <= 2 && nTauLoose == 0);
+   int is_2lSS1tau = (nLep > 1 && nLepTight <= 2 && nTauLoose > 0 && nTauMedium <= 1);
+   int is_2l2tau = (nLep > 1 && nLepTight <= 2 && nTau > 1);
+   int is_3l = (nLep > 2 && nLepTight <= 3 && nTauLoose == 0);
+   int is_3l1tau = (nLep > 2 && nLepTight <= 3 && nTau > 0);
+   int is_4l = (nLep > 3 && nLepTight > 3);
+
+//   if( is_1l2tau+is_2lSS+is_2lSS1tau+is_2l2tau+is_3l+is_3l1tau+is_4l > 1 )
+//     std::cout << "is_1l2tau=" << is_1l2tau << " is_2lSS=" << is_2lSS <<
+//     " is_2lSS1tau=" << is_2lSS1tau << " is_2l2tau=" << is_2l2tau <<
+//     " is_3l=" << is_3l << " is_3l1tau=" << is_3l1tau <<
+//     " is_4l=" << is_4l << std::endl;
    
    for(int il=0;il<nLep;il++)
      {
@@ -140,7 +148,7 @@ void JetExt::sel(int sync)
 	if( is_3l && il >= 3 ) break;
 	if( is_3l1tau && il >= 3 ) break;
 	if( is_4l && il >= 4 ) break;
-	
+
         float dr = GetDeltaR(eta,phi,elmuFakeable->at(il).eta,elmuFakeable->at(il).phi);
         if( dr < 0.4 ) pass_lepOverlap = 0;
      }      
@@ -183,6 +191,8 @@ void JetExt::sel(int sync)
 	     std::cout << "------------------------------" << std::endl;
 	     std::cout << "Event #" << evId << std::endl;
 	     std::cout << "  jet #" << ID << std::endl;
+	     std::cout << "  pt = " << pt << std::endl;
+	     std::cout << "  jet_pt_JESup = " << jet_pt_JESup << std::endl;
 	     std::cout << "  isLooseTTH = " << isLooseTTH << std::endl;
 	     std::cout << "  pass_pt = " << pass_pt << std::endl;
 	     std::cout << "  pass_eta = " << pass_eta << std::endl;

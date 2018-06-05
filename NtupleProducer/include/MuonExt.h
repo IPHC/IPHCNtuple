@@ -15,6 +15,7 @@ class MuonExt : public Muon
    void sel();
    void read();
    void init();
+   float getEffArea(float eta);
    
    int ID;
    
