@@ -125,19 +125,13 @@ void JetExt::sel(int sync)
    
    int nLep = elmuFakeable->size();
 
-   int is_1l2tau = (nLep > 0 && nLepTight <= 1 && nTau >= 2);
-   int is_2lSS = (nLep > 1 && nLepTight <= 2 && nTauLoose == 0);
-   int is_2lSS1tau = (nLep > 1 && nLepTight <= 2 && nTauLoose > 0 && nTauMedium <= 1);
-   int is_2l2tau = (nLep > 1 && nLepTight <= 2 && nTau > 1);
-   int is_3l = (nLep > 2 && nLepTight <= 3 && nTauLoose == 0);
-   int is_3l1tau = (nLep > 2 && nLepTight <= 3 && nTau > 0);
-   int is_4l = (nLep > 3 && nLepTight > 3);
-
-//   if( is_1l2tau+is_2lSS+is_2lSS1tau+is_2l2tau+is_3l+is_3l1tau+is_4l > 1 )
-//     std::cout << "is_1l2tau=" << is_1l2tau << " is_2lSS=" << is_2lSS <<
-//     " is_2lSS1tau=" << is_2lSS1tau << " is_2l2tau=" << is_2l2tau <<
-//     " is_3l=" << is_3l << " is_3l1tau=" << is_3l1tau <<
-//     " is_4l=" << is_4l << std::endl;
+   bool is_1l2tau = (nLep > 0 && nLepTight <= 1 && nTau >= 2);
+   bool is_2lSS = (nLep > 1 && nLepTight <= 2 && nTauLoose == 0);
+   bool is_2lSS1tau = (nLep > 1 && nLepTight <= 2 && nTauLoose > 0 && nTauMedium <= 1);
+   bool is_2l2tau = (nLep > 1 && nLepTight <= 2 && nTau > 1);
+   bool is_3l = (nLep > 2 && nLepTight <= 3 && nTauLoose == 0);
+   bool is_3l1tau = (nLep > 2 && nLepTight <= 3 && nTau > 0);
+   bool is_4l = (nLep > 3 && nLepTight > 3);
    
    for(int il=0;il<nLep;il++)
      {

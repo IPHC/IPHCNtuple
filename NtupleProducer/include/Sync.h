@@ -13,6 +13,7 @@
 
 #include "TFile.h"
 #include "TTree.h"
+#include "TH2F.h"
 #include "TChain.h"
 
 class Sync
@@ -339,6 +340,8 @@ class Sync
    TTree*  m_tree_ttWctrl_Flip;
    TTree*  m_tree_ttZctrl_SR;
    TTree*  m_tree_ttZctrl_Fake;
+   
+   TH2F*  m_hist_overlap;
    
    TChain* m_chain;
    std::string fname_out;

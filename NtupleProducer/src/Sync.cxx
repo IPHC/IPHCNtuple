@@ -47,6 +47,8 @@ void Sync::Init()
 	m_tree_ttWctrl_Flip = new TTree("syncTree_ttWctrl_Flip","Sync Ntuple");
 	m_tree_ttZctrl_SR = new TTree("syncTree_ttZctrl_SR","Sync Ntuple");
 	m_tree_ttZctrl_Fake = new TTree("syncTree_ttZctrl_Fake","Sync Ntuple");
+	
+	m_hist_overlap = new TH2F("overlap","overlap",21,0.,21.,21,0.,21.);
      }   
 }
 
@@ -1690,30 +1692,57 @@ bool Sync::fill(Ntuple *nt)
 	delete elmuTight;
 	delete elmuFakeable;
 	
-	bool pass_event = (pass_1l2tau_SR || 
-			   pass_1l2tau_Fake ||
-			   pass_2lSS_SR ||
-			   pass_2lSS_Fake ||
-			   pass_2lSS_Flip ||
-			   pass_2lSS1tau_SR ||
-			   pass_2lSS1tau_Fake ||
-			   pass_2lSS1tau_Flip ||
-			   pass_2l2tau_SR ||
-			   pass_2l2tau_Fake ||
-			   pass_3l_SR ||
-			   pass_3l_Fake ||
-			   pass_3l1tau_SR ||
-			   pass_3l1tau_Fake ||
-			   pass_4l_SR ||
-			   pass_4l_Fake ||
-			   pass_ttWctrl_SR ||
-			   pass_ttWctrl_Fake ||
-			   pass_ttWctrl_Flip ||
-			   pass_ttZctrl_SR ||
-			   pass_ttZctrl_Fake);
+	int pass_cat[21];
+	std::string name_cat[21];
 	
-	if( !pass_event ) pass = 0;
-     }   
+	pass_cat[0] = pass_1l2tau_SR;        name_cat[0] = "1l2tau_SR";
+	pass_cat[1] = pass_1l2tau_Fake;      name_cat[1] = "1l2tau_Fake";
+	pass_cat[2] = pass_2lSS_SR;          name_cat[2] = "2lSS_SR";
+	pass_cat[3] = pass_2lSS_Fake;        name_cat[3] = "2lSS_Fake";
+	pass_cat[4] = pass_2lSS_Flip;        name_cat[4] = "2lSS_Flip";
+	pass_cat[5] = pass_2lSS1tau_SR;      name_cat[5] = "2lSS1tau_SR";
+	pass_cat[6] = pass_2lSS1tau_Fake;    name_cat[6] = "2lSS1tau_Fake";
+	pass_cat[7] = pass_2lSS1tau_Flip;    name_cat[7] = "2lSS1tau_Flip";
+	pass_cat[8] = pass_2l2tau_SR;        name_cat[8] = "2l2tau_SR";
+	pass_cat[9] = pass_2l2tau_Fake;      name_cat[9] = "2l2tau_Fake";
+	pass_cat[10] = pass_3l_SR;           name_cat[10] = "3l_SR";
+	pass_cat[11] = pass_3l_Fake;         name_cat[11] = "3l_Fake";
+	pass_cat[12] = pass_3l1tau_SR;       name_cat[12] = "3l1tau_SR";	 
+	pass_cat[13] = pass_3l1tau_Fake;     name_cat[13] = "3l1tau_Fake";
+	pass_cat[14] = pass_4l_SR;           name_cat[14] = "4l_SR";
+	pass_cat[15] = pass_4l_Fake;         name_cat[15] = "4l_Fake";
+	pass_cat[16] = pass_ttWctrl_SR;      name_cat[16] = "ttWctrl_SR";
+	pass_cat[17] = pass_ttWctrl_Fake;    name_cat[17] = "ttWctrl_Fake";
+	pass_cat[18] = pass_ttWctrl_Flip;    name_cat[18] = "ttWctrl_Flip";
+	pass_cat[19] = pass_ttZctrl_SR;      name_cat[19] = "ttZctrl_SR";
+	pass_cat[20] = pass_ttZctrl_Fake;    name_cat[20] = "ttZctrl_Fake";
+	
+	int pass_event = 0;
+	for(int ic=0;ic<21;ic++)
+	  {	     
+	     pass_event += pass_cat[ic];
+	     m_hist_overlap->GetXaxis()->SetBinLabel(ic+1,name_cat[ic].c_str());
+	     m_hist_overlap->GetYaxis()->SetBinLabel(ic+1,name_cat[ic].c_str());
+	  }	
+
+	if( pass_event == 0 ) pass = 0;
+	else
+	  {
+	     for(int ic=0;ic<21;ic++)
+	       {
+		  if( pass_cat[ic] == 1 )
+		    {
+		       for(int icc=0;icc<21;icc++)
+			 {		       
+			    if( pass_cat[icc] == 1 )
+			      {			    
+				 m_hist_overlap->Fill(ic,icc);
+			      }			    
+			 }		       
+		    }		  
+	       }	     
+	  }
+     }  
    
    return pass;
 }
