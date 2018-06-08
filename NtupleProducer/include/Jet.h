@@ -16,6 +16,8 @@ class Jet : public Base
    bool isMediumBTag;
    bool isTightBTag;
    
+   float CSVv2; //Also add other btaggers ?
+
    ClassDef(Jet,1)
 };
 

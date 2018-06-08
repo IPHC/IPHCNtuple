@@ -1,6 +1,6 @@
 # NtProd - NtAnalyzer Workflow
 
-README for the tHq-2016 branch, describing the basic steps to run the production chain from FlatTrees to ntuples ready for MVA analysis.
+README for the tHq2017 branch, describing the basic steps to run the production chain from FlatTrees to ntuples ready for MVA analysis.
 
 *Do not forget to source :*
 ```
@@ -15,7 +15,7 @@ voms-proxy-init -voms cms -hours 192
 
 ## FlatTreeProducer
 
-(( Follow instructions from [IPHCFlatTree's README](https://github.com/IPHC/IPHCFlatTree/tree/tHq) ))
+(( Follow instructions from [IPHCFlatTree's README](https://github.com/IPHC/IPHCFlatTree/tree/master) ))
 
 
 ## IPHCNtuple
@@ -28,13 +28,12 @@ Ntuple Production & Analysis codes
 cd /home-pbs/username
 mkdir MyAnalysis/; cd MyAnalysis/
 
-#Could install it in 8_0_25, as IPHCFlatTree ?
-cmsrel CMSSW_8_0_20
-cd CMSSW_8_0_20/src/
+cmsrel CMSSW_9_4_3
+cd CMSSW_9_4_3/src/
 cmsenv
 
 # get the code from GIT
-git clone -b tHq2016  https://github.com/IPHC/ttH
+git clone -b tHq2017  https://github.com/IPHC/IPHCNtuple.git
 
 
 cd IPHCNtuple/
@@ -55,21 +54,24 @@ make
 git add .
 git commit -m "update" //Comment your modif
 git status //Check modif
-git push origin tHq2016
+git push origin tHq2017
 ```
 
 ### Set-up & Run NtupleProducer
 
 
 ```
-cd /home-pbs/username/MyAnalysis/CMSSW_8_0_20/src/ttH/NtupleProducer/src
+cd /home-pbs/username/MyAnalysis/CMSSW_9_4_3/src/ttH/NtupleProducer/src
 ```
 
-* **NtupleProducer.cxx** - modify path to JEC files for data and MC, e.g. : 
+* **NtupleProducer.cxx** - make sure paths to JEC files for data and MC are up-to-date : 
 
 ```
-jesTotal = new JetCorrectionUncertainty(*(new JetCorrectorParameters("/home-pbs/ntonon/tHq/CMSSW_8_0_25/src/IPHCFlatTree/FlatTreeProducer/data/jecFiles/Summer16_23Sep2016V3_MC/Summer16_23Sep2016V3_MC_UncertaintySources_AK4PFchs.txt", "Total")));
+jesTotal = new JetCorrectionUncertainty(*(new JetCorrectorParameters("XXX", "Total")));
 ```
+
+
+
 
 
 
@@ -118,7 +120,7 @@ cd /home-pbs/username/MyAnalysis/CMSSW_8_0_20/src/ttH/NtupleProducer/test
 ...
 export X509_USER_PROXY=/home-pbs/ntonon/proxy/x509up_u8066
 ...
-cd /home-pbs/ntonon/tHq/CMSSW_8_0_20/src/
+cd /home-pbs/ntonon/tHq/CMSSW_9_4_3/src/
 ...
 ```
 
@@ -171,7 +173,7 @@ fdir=$(ls -d lists_priority*) //Can modify dir. containing list of files on whic
 NB : paths to weight files may need to be changed (look for ".root" in src/TTbarHiggsMultileptonAnalysis.cxx)
 
 ```
-cd /home-pbs/username/MyAnalysis/CMSSW_8_0_20/src/ttH/NtupleAnalyzer/test
+cd /home-pbs/username/MyAnalysis/CMSSW_9_4_3/src/ttH/NtupleAnalyzer/test
 ```
 * **table.txt** - add list of samples, with cross section (pb-1) and sum of weights of events from FlatTrees (SWE, to account for efficiency from skimming, see below), e.g. : 
 
@@ -189,10 +191,10 @@ The safer option, is to re-compute the SWE of your FlatTree files yourself (it i
 ./a.out #execute the compiled code
 
 #Enter complete path to files
-/dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/Walrus-patch2/TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2_PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_v1_MINIAODSIM/180126_150054/0000
+> /dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/Walrus-patch2/TTJets_SingleLeptFromTbar_TuneCUETP8M1_13TeV-madgraphMLM-pythia8/RunIISummer16MiniAODv2_PUMoriond17_80X_mcRun2_asymptotic_2016_TrancheIV_v6_v1_MINIAODSIM/180126_150054/0000
 
 #Enter number of files
-98
+> 98
 ```
 
 
@@ -216,7 +218,7 @@ then run the script to produce automatically the lists of files on which to run,
 ...
 export X509_USER_PROXY=/home-pbs/ntonon/proxy/x509up_u8066
 
-cd /home-pbs/ntonon/tHq/CMSSW_8_0_20/src/
+cd /home-pbs/ntonon/tHq/CMSSW_9_4_3/src/
 ...
 ```
 

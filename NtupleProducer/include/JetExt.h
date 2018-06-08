@@ -27,7 +27,7 @@ class JetExt : public Jet
    
    int ntrk;
    
-   float CSVv2;
+   //float CSVv2; //Declared in Jet.h -- do the same with other btaggers ?
    float cMVAv2;
    float deepCSV;
    float deepCSVudsg;
