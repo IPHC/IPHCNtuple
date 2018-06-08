@@ -16,8 +16,6 @@ class EventExt : public Event
    
    float rho;
    
-   float metphi;
-   float metsumet;
    float metUncorrectedPt;
    float metUncorrectedPhi;
    float metUncorrectedSumEt;
@@ -38,7 +36,6 @@ class EventExt : public Event
    std::vector<float> pdf_weights;
    std::vector<std::string> pdf_ids;
    
-   float mc_weight;
    float mc_ptHat;
    int   mc_pu_trueNumInt;
    

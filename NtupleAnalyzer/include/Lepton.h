@@ -13,90 +13,72 @@ class Lepton
 
         Lepton();
         virtual ~Lepton();
+	
+	float           pt;
+        //float           ptCor;
+        //float           ptUnc;
+        float           eta;
+        float           phi;
+        float           E;
 
-        float pt()                  {return _pt;};
-        float ptCor()               {return _ptCor;};
-        float ptUnc()               {return _ptUnc;};
-        float eta()                 {return _eta;};
-        float phi()                 {return _phi;};
-        float E()                   {return _E;};
+        TLorentzVector  p4;
+	
+	int id;
+        int             idx;
 
-        TLorentzVector p4()         {return _p4;};
+        bool            isFakeableTTH;
+	bool            isLooseTTH;
+        bool            isTightTTH;
+        float           lepMVA;
 
-        int     id()                {return _id;};
+        bool            cutEventSel;
+        bool            noLostHits;
 
-        int     idx()               {return _idx;};
-        bool    isElectron()        {return _isElectron;};
-        bool    isMuon()            {return _isMuon;};
-        float   lepMVA_TTH()        {return _lepMVA_TTH;};
-
-        bool    passTightCharge()   {return _passTightCharge;};
-        bool    cutEventSel()       {return _cutEventSel;};
-        bool    noLostHits()        {return _noLostHits;};
-
-        bool isFakeableTTH()        {return _isFakeableTTH;};
-	bool isLooseTTH()           {return _isLooseTTH;};
-        bool isTightTTH()           {return _isTightTTH;};
-
-        int charge()                {return _charge;};
-
+        int             charge;
+	
+	int Get_LeptonID(int iElec, int iMuon, int iTau, int charge)
+	{
+		int id = 0;
+		if(iElec>=0) {id=11;}
+		else if(iMuon>=0) {id=13;}
+		else if(iTau>=0) {id=15;}	
+		
+		id*= charge;
+		
+		return id;
+	}
+	
+	
         template <class T> void setLepton(T *lep, int idx, bool isE, bool isMu)
         {
-            _pt                 = lep->pt();
-            _ptCor              = lep->ptCor();
-            _ptUnc              = lep->ptUnc();
-            _eta                = lep->eta();
-            _phi                = lep->phi();
-            _E                  = lep->E();
+            pt                 = lep->pt;
+            //ptCor              = lep->ptCor();
+            //ptUnc              = lep->ptUnc();
+            eta                = lep->eta;
+            phi                = lep->phi;
+            E                  = lep->E;
 
-            _p4.SetPtEtaPhiE(_ptUnc,_eta,_phi,_E);
+            //p4.SetPtEtaPhiE(ptUnc,eta,phi,E);
+	    p4.SetPtEtaPhiE(pt,eta,phi,E); //FIXME -- ptUnc ?
 
-            _id                 = lep->id();
+            idx                = idx;
 
-            _idx                = idx;
-            _isElectron         = isE;
-    	    _isMuon             = isMu;
+            charge             = lep->charge;
 
-            _charge             = lep->charge();
+    	    isFakeableTTH      = lep->isFakeableTTH;
+	    isLooseTTH = lep->isLooseTTH;
+            //if(isE || isMu) {_isLooseTTH = lep->isLooseTTH;}
+	    //else {_isLooseTTH = true;} //isLooseTTH not implemented for tau
+	    isTightTTH         = lep->isTightTTH;
+            lepMVA         = lep->lepMVA;
+	    
+	    id = Get_LeptonID(lep->iElec, lep->iMuon, lep->iTau, lep->charge);
 
-    	    _isFakeableTTH      = lep->isFakeableTTH();
-            if(isE || isMu) {_isLooseTTH = lep->isLooseTTH();}
-	    else {_isLooseTTH = true;} //isLooseTTH not implemented for tau
-	    _isTightTTH         = lep->isTightTTH();
-            _lepMVA_TTH         = lep->lepMVA_TTH();
 
-            _passTightCharge    = lep->passTightCharge();
-            _cutEventSel        = lep->cutEventSel();       // last set of cuts for electron, used at event selection only
-            _noLostHits         = lep->noLostHits();
+            //cutEventSel        = lep->cutEventSel();       // last set of cuts for electron, used at event selection only
+            //noLostHits         = lep->noLostHits();
         }
-
-    protected:
-
-        float           _pt;
-        float           _ptCor;
-        float           _ptUnc;
-        float           _eta;
-        float           _phi;
-        float           _E;
-
-        int             _id;
-
-        TLorentzVector  _p4;
-
-        int             _idx;
-        bool            _isElectron;
-        bool            _isMuon;
-
-        bool            _isFakeableTTH;
-	bool            _isLooseTTH;
-        bool            _isTightTTH;
-        float           _lepMVA_TTH;
-
-        bool            _passTightCharge;
-        bool            _cutEventSel;
-        bool            _noLostHits;
-
-        int             _charge;
+	
 };
 
 #endif

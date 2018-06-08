@@ -11,7 +11,8 @@ class Event : public Base
    Event();
    virtual ~Event();
 
-   long int   id;
+   float mc_weight;
+   float   id;
    int   run;
    int   lumi;
    
@@ -37,8 +38,10 @@ class Event : public Base
    bool is_ttZctrl_SR;
    bool is_ttZctrl_Fake;   
 
+   float metphi;
    float metpt;
-   
+   float metsumet;
+
    float metcov00;
    float metcov01;
    float metcov10;
