@@ -1,4 +1,5 @@
 #include "include/Base.h"
+#include "include/Helper.h"
 
 #include "include/EventExt.h"
 #include "include/ElectronExt.h"
@@ -20,6 +21,8 @@
 
 #pragma link C++ class Base+;
 #pragma link C++ class std::vector<Base>+;
+#pragma link C++ class Helper+;
+#pragma link C++ class std::vector<Helper>+;
 
 #pragma link C++ class Event+;
 #pragma link C++ class std::vector<Event>+;
