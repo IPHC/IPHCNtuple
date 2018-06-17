@@ -10,8 +10,24 @@ TruthExt::~TruthExt()
 {
 }
 
+void TruthExt::coup()
+{
+   // https://twiki.cern.ch/twiki/pub/CMS/SingleTopHiggsGeneration13TeV/reweight_encondig.txt
+   // SM coupling corresponds to the index 11 [0..] of 
+   for(int i=0;i<ntP->mc_pdfweightIds->size();i++)
+     {
+	std::string wid = ntP->mc_pdfweightIds->at(i);
+	std::size_t found = wid.find("rwgt");	
+	
+	if( found != std::string::npos )
+	  coupWeight.push_back(ntP->mc_pdfweights->at(i));
+     }
+}
+
 void TruthExt::read()
 {
+   coup();
+   
    int UNINT = -1000;
    
    int gen_n = ntP->gen_n;
@@ -1486,5 +1502,7 @@ void TruthExt::init()
    
    boson_decay = -1; // 0:Higgs->dilep, 1:Higgs->semilep, 2:Z->ll, 3:W->lnu 
    ttbar_decay = -1; // 1:ttbar->semilep, 2:ttbar->dilep
+   
+   coupWeight.clear();
 }
 

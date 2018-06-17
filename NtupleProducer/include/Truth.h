@@ -27,6 +27,8 @@ class Truth : public Helper
    std::vector<int>    gen_status;
    std::vector<int>    gen_mother_id;
    
+   std::vector<float>  coupWeight;
+   
    Truth();
    virtual ~Truth();
    
