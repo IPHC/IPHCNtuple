@@ -15,9 +15,12 @@ Sync::Sync(std::string fname,int syncFlag)
 }
 
 Sync::~Sync()
-{   
-   m_file->Write();
-   m_file->Close();
+{  
+   if( sync != 0 )
+     {	
+	m_file->Write();
+	m_file->Close();
+     }   
 }
 
 void Sync::Init()
