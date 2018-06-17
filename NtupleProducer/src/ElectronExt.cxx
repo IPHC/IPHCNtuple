@@ -12,7 +12,7 @@ ElectronExt::~ElectronExt()
 {
 }
 
-void ElectronExt::read()
+void ElectronExt::read(bool isdata)
 {
    ID                                = idx;
    
@@ -72,16 +72,19 @@ void ElectronExt::read()
    trackMomentumError	            = ntP->el_trackMomentumError->at(idx);
    tightCharge = (isGsfCtfScPixChargeConsistent + isGsfScPixChargeConsistent > 1);
 
-   hasMCMatch = ntP->el_hasMCMatch->at(idx);
-   gen_pt = ntP->el_gen_pt->at(idx);
-   gen_eta = ntP->el_gen_eta->at(idx);
-   gen_phi = ntP->el_gen_phi->at(idx);
-   gen_m = ntP->el_gen_m->at(idx);
-   gen_E = ntP->el_gen_E->at(idx);
-   gen_status = ntP->el_gen_status->at(idx);
-   gen_id = ntP->el_gen_id->at(idx);
-   gen_charge = ntP->el_gen_charge->at(idx);
-   gen_dr = ntP->el_gen_dr->at(idx);
+   if( !isdata ) 
+     {
+	hasMCMatch = ntP->el_hasMCMatch->at(idx);
+	gen_pt = ntP->el_gen_pt->at(idx);
+	gen_eta = ntP->el_gen_eta->at(idx);
+	gen_phi = ntP->el_gen_phi->at(idx);
+	gen_m = ntP->el_gen_m->at(idx);
+	gen_E = ntP->el_gen_E->at(idx);
+	gen_status = ntP->el_gen_status->at(idx);
+	gen_id = ntP->el_gen_id->at(idx);
+	gen_charge = ntP->el_gen_charge->at(idx);
+	gen_dr = ntP->el_gen_dr->at(idx);
+     }   
 }
 
 void ElectronExt::init()

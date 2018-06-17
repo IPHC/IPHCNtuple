@@ -13,7 +13,7 @@ class TauExt : public Tau
    virtual ~TauExt();
    
    void sel();
-   void read();
+   void read(bool isdata);
    void init();
    
    int   ID;

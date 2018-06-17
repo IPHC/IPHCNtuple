@@ -12,7 +12,7 @@ TauExt::~TauExt()
 {
 }
 
-void TauExt::read()
+void TauExt::read(bool isdata)
 {
    ID = idx;
    
@@ -74,16 +74,19 @@ void TauExt::read()
    pfEssential_dxy_error	 = ntP->tau_pfEssential_dxy_error->at(idx);
    pfEssential_dxy_Sig	 = ntP->tau_pfEssential_dxy_Sig->at(idx);        
 
-   hasMCMatch = ntP->tau_hasMCMatch->at(idx);
-   gen_pt = ntP->tau_gen_pt->at(idx);
-   gen_eta = ntP->tau_gen_eta->at(idx);
-   gen_phi = ntP->tau_gen_phi->at(idx);
-   gen_m = ntP->tau_gen_m->at(idx);
-   gen_E = ntP->tau_gen_E->at(idx);
-   gen_status = ntP->tau_gen_status->at(idx);
-   gen_id = ntP->tau_gen_id->at(idx);
-   gen_charge = ntP->tau_gen_charge->at(idx);
-   gen_dr = ntP->tau_gen_dr->at(idx);
+   if( !isdata ) 
+     {
+	hasMCMatch = ntP->tau_hasMCMatch->at(idx);
+	gen_pt = ntP->tau_gen_pt->at(idx);
+	gen_eta = ntP->tau_gen_eta->at(idx);
+	gen_phi = ntP->tau_gen_phi->at(idx);
+	gen_m = ntP->tau_gen_m->at(idx);
+	gen_E = ntP->tau_gen_E->at(idx);
+	gen_status = ntP->tau_gen_status->at(idx);
+	gen_id = ntP->tau_gen_id->at(idx);
+	gen_charge = ntP->tau_gen_charge->at(idx);
+	gen_dr = ntP->tau_gen_dr->at(idx);
+     }   
 }
 
 void TauExt::init()

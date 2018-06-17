@@ -13,7 +13,7 @@ class MuonExt : public Muon
    virtual ~MuonExt();
    
    void sel();
-   void read();
+   void read(bool isdata);
    void init();
    float getEffArea(float eta);
    
