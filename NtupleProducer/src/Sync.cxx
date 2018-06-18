@@ -15,14 +15,17 @@ Sync::Sync(std::string fname,int syncFlag)
 }
 
 Sync::~Sync()
-{   
-   m_file->Write();
-   m_file->Close();
+{  
+   if( sync != 0 )
+     {	
+	m_file->Write();
+	m_file->Close();
+     }   
 }
 
 void Sync::Init()
 {
-   m_file = new TFile(fname_out.c_str(),"RECREATE");
+   if( sync != 0 ) m_file = new TFile(fname_out.c_str(),"RECREATE");
    if( sync == 1 ) m_tree = new TTree("syncTree","Sync Ntuple");
    if( sync == 2 )
      {

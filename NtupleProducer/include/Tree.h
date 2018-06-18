@@ -36,9 +36,9 @@ class Tree {
    Float_t         metPuppi_pt;
    Float_t         metPuppi_phi;
    Float_t         metPuppi_sumet;
-   Float_t         met_uncorrectedPt;
-   Float_t         met_uncorrectedPhi;
-   Float_t         met_uncorrectedSumEt;
+//   Float_t         met_uncorrectedPt;
+//   Float_t         met_uncorrectedPhi;
+//   Float_t         met_uncorrectedSumEt;
    Double_t         met_cov00;
    Double_t         met_cov01;
    Double_t         met_cov10;
@@ -852,9 +852,9 @@ class Tree {
    TBranch        *b_metPuppi_pt;   //!
    TBranch        *b_metPuppi_phi;   //!
    TBranch        *b_metPuppi_sumet;   //!
-   TBranch        *b_met_uncorrectedPt;   //!
-   TBranch        *b_met_uncorrectedPhi;   //!
-   TBranch        *b_met_uncorrectedSumEt;   //!
+//   TBranch        *b_met_uncorrectedPt;   //!
+//   TBranch        *b_met_uncorrectedPhi;   //!
+//   TBranch        *b_met_uncorrectedSumEt;   //!
    TBranch        *b_met_cov00;   //!
    TBranch        *b_met_cov01;   //!
    TBranch        *b_met_cov10;   //!

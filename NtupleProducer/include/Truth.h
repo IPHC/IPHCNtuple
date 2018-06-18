@@ -3,9 +3,9 @@
 
 #include "TObject.h"
 #include "TLorentzVector.h"
-#include "Base.h"
+#include "Helper.h"
 
-class Truth : public Base
+class Truth : public Helper
 {
  public:
    
@@ -26,6 +26,8 @@ class Truth : public Base
    std::vector<int>    gen_id;
    std::vector<int>    gen_status;
    std::vector<int>    gen_mother_id;
+   
+   std::vector<float>  coupWeight;
    
    Truth();
    virtual ~Truth();

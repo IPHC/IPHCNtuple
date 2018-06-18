@@ -386,9 +386,9 @@ void Tree::Init(TChain *ch)
    metPuppi_pt = 0;
    metPuppi_phi = 0;
    metPuppi_sumet = 0;
-   met_uncorrectedPt = 0;
-   met_uncorrectedPhi = 0;
-   met_uncorrectedSumEt = 0;
+//   met_uncorrectedPt = 0;
+//   met_uncorrectedPhi = 0;
+//   met_uncorrectedSumEt = 0;
    
    gen_n = 0;
    gen_pt = 0;
@@ -814,9 +814,9 @@ void Tree::Init(TChain *ch)
    fChain->SetBranchAddress("metPuppi_pt", &metPuppi_pt, &b_metPuppi_pt);
    fChain->SetBranchAddress("metPuppi_phi", &metPuppi_phi, &b_metPuppi_phi);
    fChain->SetBranchAddress("metPuppi_sumet", &metPuppi_sumet, &b_metPuppi_sumet);
-   fChain->SetBranchAddress("met_uncorrectedPt", &met_uncorrectedPt, &b_met_uncorrectedPt);
-   fChain->SetBranchAddress("met_uncorrectedPhi", &met_uncorrectedPhi, &b_met_uncorrectedPhi);
-   fChain->SetBranchAddress("met_uncorrectedSumEt", &met_uncorrectedSumEt, &b_met_uncorrectedSumEt);
+//   fChain->SetBranchAddress("met_uncorrectedPt", &met_uncorrectedPt, &b_met_uncorrectedPt);
+//   fChain->SetBranchAddress("met_uncorrectedPhi", &met_uncorrectedPhi, &b_met_uncorrectedPhi);
+//   fChain->SetBranchAddress("met_uncorrectedSumEt", &met_uncorrectedSumEt, &b_met_uncorrectedSumEt);
    fChain->SetBranchAddress("met_cov00", &met_cov00, &b_met_cov00);
    fChain->SetBranchAddress("met_cov01", &met_cov01, &b_met_cov01);
    fChain->SetBranchAddress("met_cov10", &met_cov10, &b_met_cov10);

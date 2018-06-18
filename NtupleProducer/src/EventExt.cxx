@@ -25,9 +25,9 @@ void EventExt::read(bool isdata)
    metpt            = ntP->met_pt;
    metphi           = ntP->met_phi;
    metsumet         = ntP->met_sumet;
-   metUncorrectedPt            = ntP->met_uncorrectedPt;
-   metUncorrectedPhi           = ntP->met_uncorrectedPhi;
-   metUncorrectedSumEt         = ntP->met_uncorrectedSumEt;
+//   metUncorrectedPt            = ntP->met_uncorrectedPt;
+//   metUncorrectedPhi           = ntP->met_uncorrectedPhi;
+//   metUncorrectedSumEt         = ntP->met_uncorrectedSumEt;
    metcov00	      = ntP->met_cov00;
    metcov01         = ntP->met_cov01;
    metcov10         = ntP->met_cov10;
@@ -132,9 +132,9 @@ void EventExt::init()
    metpt                 = -1000;
    metphi                = -1000;
    metsumet              = -1000;
-   metUncorrectedPt      = -1000;
-   metUncorrectedPhi     = -1000;
-   metUncorrectedSumEt   = -1000;
+//   metUncorrectedPt      = -1000;
+//   metUncorrectedPhi     = -1000;
+//   metUncorrectedSumEt   = -1000;
    metcov00              = -1000;
    metcov01              = -1000;
    metcov10              = -1000;

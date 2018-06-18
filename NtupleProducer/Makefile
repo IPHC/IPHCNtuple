@@ -26,17 +26,17 @@ GLIBS          = $(ROOTGLIBS)
 
 EXE           = test/NtupleProducer
 
-INC 	      = include/NtupleProducer.h include/Tree.h include/Base.h \
+INC 	      = include/NtupleProducer.h include/Tree.h include/Base.h include/Helper.h \
                 include/Electron.h include/Muon.h include/Ntuple.h \
 		include/Event.h include/Jet.h include/Truth.h include/Tau.h include/GenJet.h \
 		include/TriggerObj.h
 
-SRC	      = src/NtupleProducer.cxx src/Tree.cxx src/Base.cxx \
+SRC	      = src/NtupleProducer.cxx src/Tree.cxx src/Base.cxx src/Helper.cxx \
                 src/Electron.cxx src/Muon.cxx src/Ntuple.cxx \
 		src/Event.cxx src/Jet.cxx src/Truth.cxx src/Tau.cxx src/GenJet.cxx \
 		src/TriggerObj.cxx
 
-OBJS          = obj/NtupleProducer.o obj/Tree.o obj/Base.o \
+OBJS          = obj/NtupleProducer.o obj/Tree.o obj/Base.o obj/Helper.o \
                 obj/Electron.o obj/Muon.o obj/Ntuple.o \
 		obj/Event.o obj/Jet.o obj/Truth.o obj/Tau.o obj/GenJet.o \
 		obj/TriggerObj.o

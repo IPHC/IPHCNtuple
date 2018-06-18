@@ -1,12 +1,11 @@
 #ifndef BASE_H
 #define BASE_H
 
-#include "TObject.h"
-#include "TLorentzVector.h"
+#include "Helper.h"
 
 extern unsigned int idx;
 
-class Base : public TObject
+class Base : public Helper
 {
  public:
    Base();
@@ -25,9 +24,6 @@ class Base : public TObject
 	  
 	  return res;
        }
-   
-   float GetDPhi(float phi1,float phi2);
-   float GetDeltaR(float eta1,float phi1,float eta2,float phi2);
    
    float pt;
    float conept;

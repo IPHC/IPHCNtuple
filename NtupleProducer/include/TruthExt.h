@@ -14,6 +14,7 @@ class TruthExt : public Truth
 
    void read();
    void readMultiLepton();
+   void coup();
    void init();
 
  protected:
@@ -74,6 +75,9 @@ class TruthExt : public Truth
    std::vector<float> JetsLowestMjj_E;
    std::vector<float> QuarksFromWs_E;
    std::vector<float> JetsFromWs_E;
+   
+   std::vector<float> mc_pdfweights;
+   std::vector<int>   mc_pdfweightIds;
    
    int boson_decay;
    int ttbar_decay;
