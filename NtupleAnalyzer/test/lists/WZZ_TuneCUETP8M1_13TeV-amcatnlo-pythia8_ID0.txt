@@ -1,1 +1,0 @@
-/opt/sbg/scratch1/cms/ntonon/ntuples_prod_tHq/toyprod_tHqAnalysis/WZZ_TuneCUETP8M1_13TeV-amcatnlo-pythia8/WZZ_TuneCUETP8M1_13TeV-amcatnlo-pythia8_ID0_0.root

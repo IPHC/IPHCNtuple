@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
      }
    
    std::string cmssw = std::string(getenv("CMSSW_BASE"));
-   
+
    const char *fname = fname_str;
    const char *stream = stream_str;
    const char *fname_out = fname_out_str;
@@ -106,6 +106,7 @@ int main(int argc, char *argv[])
    JetCorrectionUncertainty *jesTotal;
 
    std::string jecFilesPath = cmssw+"/src/IPHCNtuple/NtupleProducer/data/jecFiles/";
+//   std::string jecFilesPath = cmssw+"/src/NtupleProducer/data/jecFiles/";
    std::string jecMC = jecFilesPath+"Fall17_17Nov2017_V6_MC_UncertaintySources_AK4PFchs.txt";
    std::string jecData = jecFilesPath+"Fall17_17Nov2017F_V6_DATA_UncertaintySources_AK4PFchs.txt";
    
@@ -115,7 +116,7 @@ int main(int argc, char *argv[])
    for(Long64_t i=0;i<nentries;i++)
      {
 	if( i > nmax && nmax >= 0 ) break;
-
+	
 	ch->GetEntry(i);
 	nt->clearVar();
 	sc->initVar();
@@ -133,7 +134,7 @@ int main(int argc, char *argv[])
 	     idx = j;
 	     
 	     mu.init();
-	     mu.read();
+	     mu.read(isdata);
 	     mu.sel();
 	     
 	     if( mu.isLooseTTH )
@@ -159,7 +160,7 @@ int main(int argc, char *argv[])
 	     idx = j;
 	     
 	     el.init();
-	     el.read();
+	     el.read(isdata);
 	     el.sel();
 
 	     if( el.isLooseTTH  )
@@ -178,16 +179,16 @@ int main(int argc, char *argv[])
 	  }
 
 	int n_tau_evt = 0;
-	
+
         // taus
         for(int j=0;j<ntP->tau_n;j++)
 	  {
 	     idx = j;
 	     
 	     tau.init();
-	     tau.read();
+	     tau.read(isdata);
 	     tau.sel();
-	     
+
 	     if( tau.isFakeableTTH )
 	       {
 		  nt->NtTauFakeableExt->push_back(tau);
@@ -204,7 +205,7 @@ int main(int argc, char *argv[])
 	  }
 
         int n_jet_evt = 0;
-	
+
         // jets
         for(int j=0;j<ntP->jet_n;j++)
 	  {

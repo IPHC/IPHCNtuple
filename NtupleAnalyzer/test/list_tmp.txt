@@ -1,2 +1,0 @@
-/dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/Walrus-patch2/ttZJets_13TeV_madgraphMLM/RunIISummer16MiniAODv2_80X_mcRun2_asymptotic_2016_TrancheIV_v6_v1_MINIAODSIM/180126_144903/0000 / nfiles = 109 / sum_hweight = 10790776 / sum_hcount = 10790776
-

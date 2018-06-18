@@ -11,17 +11,6 @@ export LD_LIBRARY_PATH=${cdir}:${NtupleDir}:${NtupleDir}/obj:$LD_LIBRARY_PATH
 --nmax -1  \
 --isdata 0 \
 --doSystCombine 0 \
---nowe 3495652 \
---xsec 0.7927 \
---lumi 35900 \
-
-#./../Analyzer \
-#--file input.txt \
-#--tree Nt \
-#--outfile ./output_tHq_MC \
-#--nmax -1 \
-#--isdata 0 \
-#--doSystCombine 0 \
-#--nowe 1 \
-#--xsec 1 \
-#--lumi 1 \
+--nowe 123798 \
+--xsec 0.07096 \
+--lumi 41500 \

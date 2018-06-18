@@ -1,0 +1,1 @@
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/tHq2017/THW_5f_Hincl_13TeV_madgraph_pythia8_Fall17/THW_5f_Hincl_13TeV_madgraph_pythia8_Fall17_ID0_0.root

@@ -98,11 +98,11 @@ void Load_MVA()
     // std::streambuf* oldStdout = std::cout.rdbuf(tmpBuffer.rdbuf());
 
     std::string NtupleAnalyzerMVAPath = std::string("/home-pbs/ntonon/tHq/CMSSW_8_0_20/src/ttH/NtupleAnalyzer");
-    mva_3l_tt  = Book_3L_THQ_MVAReader(NtupleAnalyzerMVAPath, "test/weights_2016/thq_vs_tt_3l_BDTG.weights.xml");
-	mva_3l_ttV = Book_3L_THQ_MVAReader(NtupleAnalyzerMVAPath, "test/weights_2016/thq_vs_ttv_3l_BDTG.weights.xml");
+    // mva_3l_tt  = Book_3L_THQ_MVAReader(NtupleAnalyzerMVAPath, "test/weights_2016/thq_vs_tt_3l_BDTG.weights.xml");
+	// mva_3l_ttV = Book_3L_THQ_MVAReader(NtupleAnalyzerMVAPath, "test/weights_2016/thq_vs_ttv_3l_BDTG.weights.xml");
 
-	mva_2lss_tt = Book_2L_THQ_MVAReader(NtupleAnalyzerMVAPath, "test/weights_2016/thq_vs_tt_2lss_BDTG.weights.xml");
-	mva_2lss_ttV = Book_2L_THQ_MVAReader(NtupleAnalyzerMVAPath, "test/weights_2016/thq_vs_ttv_2lss_BDTG.weights.xml");
+	// mva_2lss_tt = Book_2L_THQ_MVAReader(NtupleAnalyzerMVAPath, "test/weights_2016/thq_vs_tt_2lss_BDTG.weights.xml.weights.xml");
+	// mva_2lss_ttV = Book_2L_THQ_MVAReader(NtupleAnalyzerMVAPath, "test/weights_2016/thq_vs_ttv_2lss_BDTG.weights.xml.weights.xml");
 
     // std::cout.rdbuf(oldStdout);
     //std::cout << "Stdout now restored." << std::endl;

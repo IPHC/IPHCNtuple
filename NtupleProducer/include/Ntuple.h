@@ -1,6 +1,8 @@
 #ifndef NTUPLE_H
 #define NTUPLE_H
 
+#include <iostream>
+
 #include "EventExt.h"
 #include "ElectronExt.h"
 #include "MuonExt.h"

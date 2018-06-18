@@ -1,1 +1,0 @@
-/opt/sbg/scratch1/cms/xcoubez/ntuples_prod_walrus_patch1_priority/toyPriority/TTGJets_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8/TTGJets_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8_ID3_0.root

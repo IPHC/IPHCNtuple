@@ -12,4 +12,4 @@ nmax=-1
 --tree FlatTree/tree \
 --nmax ${nmax} \
 --isdata 0 \
---sync 2
+--sync 0

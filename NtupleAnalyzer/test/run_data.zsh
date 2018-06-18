@@ -13,4 +13,4 @@ export LD_LIBRARY_PATH=${cdir}:${NtupleDir}:${NtupleDir}/obj:$LD_LIBRARY_PATH
 --doSystCombine 0 \
 --nowe -1 \
 --xsec -1 \
---lumi 35900 \
+--lumi 41500 \

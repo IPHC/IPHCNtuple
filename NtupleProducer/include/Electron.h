@@ -9,6 +9,8 @@ class Electron : public Base
 {
  public:
    
+   int id;
+   
    Electron();
    virtual ~Electron();
    

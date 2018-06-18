@@ -12,7 +12,7 @@ MuonExt::~MuonExt()
 {
 }
 
-void MuonExt::read()
+void MuonExt::read(bool isdata)
 {
    ID                             = idx;
    E                              = ntP->mu_E->at(idx);
@@ -54,16 +54,20 @@ void MuonExt::read()
    lepMVA_eta                     = ntP->mu_lepMVA_eta->at(idx);
    lepMVA_jetNDauChargedMVASel    = ntP->mu_lepMVA_jetNDauChargedMVASel->at(idx);
 
-   hasMCMatch = ntP->mu_hasMCMatch->at(idx);
-   gen_pt = ntP->mu_gen_pt->at(idx);
-   gen_eta = ntP->mu_gen_eta->at(idx);
-   gen_phi = ntP->mu_gen_phi->at(idx);
-   gen_m = ntP->mu_gen_m->at(idx);
-   gen_E = ntP->mu_gen_E->at(idx);
-   gen_status = ntP->mu_gen_status->at(idx);
-   gen_id = ntP->mu_gen_id->at(idx);
-   gen_charge = ntP->mu_gen_charge->at(idx);
-   gen_dr = ntP->mu_gen_dr->at(idx);
+
+   if( !isdata )
+   {
+      hasMCMatch = ntP->mu_hasMCMatch->at(idx);
+      gen_pt = ntP->mu_gen_pt->at(idx);
+      gen_eta = ntP->mu_gen_eta->at(idx);
+      gen_phi = ntP->mu_gen_phi->at(idx);
+      gen_m = ntP->mu_gen_m->at(idx);
+      gen_E = ntP->mu_gen_E->at(idx);
+      gen_status = ntP->mu_gen_status->at(idx);
+      gen_id = ntP->mu_gen_id->at(idx);
+      gen_charge = ntP->mu_gen_charge->at(idx);
+      gen_dr = ntP->mu_gen_dr->at(idx);
+   }
 }
 
 void MuonExt::init()

@@ -1,1 +1,0 @@
-/opt/sbg/scratch1/cms/ntonon/ntuples_prod_tHq/toyprod_tHqAnalysis/tZq_ll_4f_13TeV-amcatnlo-herwigpp/tZq_ll_4f_13TeV-amcatnlo-herwigpp_ID10_0.root

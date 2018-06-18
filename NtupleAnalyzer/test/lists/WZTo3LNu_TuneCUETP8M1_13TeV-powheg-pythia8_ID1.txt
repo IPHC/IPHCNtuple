@@ -1,1 +1,0 @@
-/opt/sbg/scratch1/cms/xcoubez/ntuples_prod_walrus_patch1_priority/toyPriority/WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8/WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8_ID1_0.root

@@ -8,6 +8,8 @@
 class Muon : public Base
 {
  public:
+  
+   int id;
    
    Muon();
    virtual ~Muon();

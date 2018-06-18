@@ -11,15 +11,19 @@ fi
 
 sync=0
 
-que="cms"
-#que="cms_local_mdm" #local queue
+#que="cms" #no reserved slots, higher demand, <72h
+#que="cms_local" #100 reserved local slots, <72h
+#que="sbg_local" #100 reserved local slots, <72h
+que="cms_local_mdm" #reseved slots, faster, <4h jobs only
+
 
 export HOME=$(pwd)
 
-dout="/home-pbs/ntonon/tHq/CMSSW_8_0_20/src/ttH/NtupleProducer/test"
+dout="/home-pbs/ntonon/tHq/IPHCNtuple_2017/CMSSW_9_4_3/src/IPHCNtuple/NtupleProducer/test"
 
 dout_f="/opt/sbg/scratch1/cms/ntonon/ntuples_prod_tHq"
 
+version="tHq2017" #output subdir.
 
 echo "CMSSW_RELEASE_BASE" $CMSSW_RELEASE_BASE
 
@@ -90,7 +94,7 @@ do
 
 
   qsub -N ${dir} -q ${que} -o ${logName}/${sample}.log -j oe single_batch_job.sh \
--v dout=${dout},line2=${fpath}${line},fout=${fout},isdata=${isdata},sample=${sample},nmax=${nmax},dout_f=${dout_f},dataset=${dataset},sync=${sync}
+-v dout=${dout},line2=${fpath}${line},fout=${fout},isdata=${isdata},sample=${sample},nmax=${nmax},dout_f=${dout_f},dataset=${dataset},sync=${sync},version=${version}
 done
 
 #echo ${dataset}

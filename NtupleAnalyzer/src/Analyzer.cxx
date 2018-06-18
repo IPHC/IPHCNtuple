@@ -69,36 +69,11 @@ int main(int argc, char *argv[])
     std::cout << "--doSystCombine=" << doSystCombine  << std::endl;
     std::cout << "--dataset=" << dataset  << std::endl;
 
-    //TChain *thetree = 0;
-
-    // TTH Transfer Function analysis
-
-    // TTbarHiggsTFAnalysis *TTHTFanalysis = new TTbarHiggsTFAnalysis(fname,thetree,"TTbarHiggs",stream);
-    // TTHTFanalysis->createHistograms();
-    // TTHTFanalysis->Loop();
-    // TTHTFanalysis->writeHistograms();
-
-    // TTH Trigger Studies
-
-    // TTbar...
-
-    // TTH Charge Flip Determination
-
-    // TTbar...
-
-    // TTH Fake Rate Determination
-
-    // TTbar...
-  
-      
+    
     //tHq analysis
     tHqMultileponAnalysis* tHqAnalysis = new tHqMultileponAnalysis(fname,dataset,stream,outfile,isdata,doSystCombine,xsec,lumi,nowe,nmax);
-    
-    //tHqAnalysis->createHistograms();
-    
+        
     tHqAnalysis->Loop();
-    
-    //tHqAnalysis->writeHistograms();
-    
+        
     delete tHqAnalysis;
 }

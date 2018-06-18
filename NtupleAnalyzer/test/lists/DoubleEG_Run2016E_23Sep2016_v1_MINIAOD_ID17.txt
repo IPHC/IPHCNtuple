@@ -1,1 +1,0 @@
-/opt/sbg/scratch1/cms/xcoubez/ntuples_prod_walrus_patch1_priority/toyPriority/DoubleEG_Run2016E_23Sep2016_v1_MINIAOD/DoubleEG_Run2016E_23Sep2016_v1_MINIAOD_ID24_0.root

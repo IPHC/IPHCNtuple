@@ -36,19 +36,7 @@ class Lepton
 
         int             charge;
 	
-	int Get_LeptonID(int iElec, int iMuon, int iTau, int charge)
-	{
-		int id = 0;
-		if(iElec>=0) {id=11;}
-		else if(iMuon>=0) {id=13;}
-		else if(iTau>=0) {id=15;}	
-		
-		id*= charge;
-		
-		return id;
-	}
-	
-	
+
         template <class T> void setLepton(T *lep, int idx, bool isE, bool isMu)
         {
             pt                 = lep->pt;
@@ -72,11 +60,7 @@ class Lepton
 	    isTightTTH         = lep->isTightTTH;
             lepMVA         = lep->lepMVA;
 	    
-	    id = Get_LeptonID(lep->iElec, lep->iMuon, lep->iTau, lep->charge);
-
-
-            //cutEventSel        = lep->cutEventSel();       // last set of cuts for electron, used at event selection only
-            //noLostHits         = lep->noLostHits();
+	    id = lep->id;
         }
 	
 };

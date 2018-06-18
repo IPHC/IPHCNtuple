@@ -1,1 +1,0 @@
-root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/Walrus-patch2/TTLL_m1to10/custom_prod/180308_140000/0000/output_1.root

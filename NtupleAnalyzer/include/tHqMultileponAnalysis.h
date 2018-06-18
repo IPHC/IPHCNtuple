@@ -101,31 +101,28 @@ class tHqMultileponAnalysis
         TChain *fChain;   //!pointer to the analyzed TTree or TChain
 
         std::vector<Event>    *vEvent;
-        std::vector<Electron> *vElectron;
-        std::vector<Muon>     *vMuon;
-        std::vector<Tau>      *vTau;
-        std::vector<Jet>      *vJet;
-        std::vector<Truth>    *vTruth;
+		std::vector<Electron> *vElectronLoose;
+		std::vector<Electron> *vElectronFakeable;
+		std::vector<Electron> *vElectronTight;
+		std::vector<Muon>     *vMuonLoose;
+		std::vector<Muon>     *vMuonFakeable;
+		std::vector<Muon>     *vMuonTight;
+		// std::vector<Tau>      *vTauLoose;
+		// std::vector<Tau>      *vTauMedium;
+		// std::vector<Tau>      *vTauTight;
+        std::vector<Jet>      *vJetLoose;
+		std::vector<Truth>    *vTruth;
+		// std::vector<Truth>    *vGenJet;
 
-        std::vector<Lepton>   vLeptons;
-        std::vector<Lepton>   vSelectedLeptons;
-        std::vector<Muon>	  vSelectedMuons;
-        std::vector<Electron> vSelectedElectrons;
-        std::vector<Tau>      vSelectedTaus;
-
-        std::vector<Muon>	  vFakeMuons;     // inverted MVA cut
-        std::vector<Electron> vFakeElectrons; // inverted MVA cut
-        std::vector<Lepton>   vFakeLeptons;   // inverted MVA cut
-
-        std::vector<Jet>	  vSelectedJets; //All jets with pT>25
+		std::vector<Lepton>   vLeptonLoose;
+		std::vector<Lepton>   vLeptonFakeable;
+		std::vector<Lepton>   vLeptonTight;
 
         //New categories
         std::vector<Jet>	  vLooseBTagJets; //Loose-CSV jets (+pT/eta cuts)
 		std::vector<Jet>      vLightJets; //Non-loose CSV jets
 		std::vector<Jet>      vLightJets_FwdPtCut; //Non-loose CSV jets (with pT>40 cut on forward jets, SR)
-        std::vector<Lepton>   vFakeableLeptons;
-        std::vector<Lepton>   vLooseLeptons;
-        std::vector<Lepton>   vTightLeptons;
+
 
         float nLooseBJets;
         float nMediumBJets;

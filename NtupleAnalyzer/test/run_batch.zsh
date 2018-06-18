@@ -1,12 +1,11 @@
 #!/bin/env zsh
 
-# don't forget /opt/sbg/scratch1/cms
-
-echo "Don't forget to update the lumi and the maximum number of events to run on in this script if needed !"
+echo ""
+#Don't forget to update the lumi and the xsec table
 
 isdata=0
 doSystCombine=0
-lumi=35900
+lumi=41500 #CHECK
 
 cp /tmp/x509up_u8066 /home-pbs/ntonon/proxy
 
@@ -16,13 +15,17 @@ if [[ ${jName} == "" ]]; then
   exit 1
 fi
 
-que="cms_local_mdm"
+#que="cms_local_mdm"
 #que="cms"
+que="cms_local_short" #reseved slots, fast, <1h jobs only
+
 
 export HOME=$(pwd)
 
-dout="/home-pbs/ntonon/tHq/CMSSW_8_0_20/src/ttH/NtupleAnalyzer/test"
-dout_f="/opt/sbg/scratch1/cms/ntonon/Analyzer_ntuples_tHq"
+dout="/home-pbs/ntonon/tHq/IPHCNtuple_2017/CMSSW_9_4_3/src/IPHCNtuple/NtupleAnalyzer/test" #Current dir.
+dout_f="/opt/sbg/scratch1/cms/ntonon/Analyzer_ntuples_tHq" #tmp output dir
+
+version="tHq2017" #output subdir
 
 runName="toy_${jName}"
 logName="log_${jName}"
@@ -85,12 +88,15 @@ do
   #fout=$(echo ${runName}/${dataset}/${line}_${jidx} | sed 's%.txt%%g')
   #lout=$(echo ${line}_${jidx} | sed 's%.txt%%g')
 
-  echo "${dataset}: $nowe $xsec $lumi"
+  echo "* ${dataset} :"
+  echo "- nowe = $nowe"
+  echo "- xsec = $xsec" 
+  echo "- lumi = $lumi"
+  echo "- isdata = " ${isdata}
   #echo "${fpath}${line}"
-  echo "isdata = " ${isdata}
  
   qsub -N ${dir} -q ${que} -o ${logName}/${sample}.log -j oe single_batch_job.sh \
--v dout=${dout},line2=${fpath}${line},dout_f=${dout_f},fout=${fout},nowe=${nowe},xsec=${xsec},lumi=${lumi},isdata=${isdata},doSystCombine=${doSystCombine},dataset=${dataset},nmax=${nmax}
+-v dout=${dout},line2=${fpath}${line},dout_f=${dout_f},fout=${fout},nowe=${nowe},xsec=${xsec},lumi=${lumi},isdata=${isdata},doSystCombine=${doSystCombine},dataset=${dataset},nmax=${nmax},version=${version}
 done
 
 echo "going to sleep 2700 s (45 mn)"

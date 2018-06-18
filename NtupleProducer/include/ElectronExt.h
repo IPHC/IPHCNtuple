@@ -13,7 +13,7 @@ class ElectronExt : public Electron
    virtual ~ElectronExt();
 
    void sel();
-   void read();
+   void read(bool isdata);
    void init();
    float getEffArea(float eta);
    
@@ -23,7 +23,6 @@ class ElectronExt : public Electron
    
    float   ptCor;
    float   ptUnc;
-   int     id;
    
    bool    isLooseCBId;
    bool    isMediumCBId;

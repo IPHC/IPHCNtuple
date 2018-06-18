@@ -1,1 +1,0 @@
-/opt/sbg/scratch1/cms/ntonon/ntuples_prod_tHq/toyprod_tHqAnalysis/TTWJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8/TTWJetsToLNu_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8_ID0_0.root

@@ -1,1 +1,0 @@
-/opt/sbg/scratch1/cms/ntonon/ntuples_prod_tHq/toyprod_tHqAnalysis/ZZTo4L_13TeV_powheg_pythia8/ZZTo4L_13TeV_powheg_pythia8_ID4_0.root

@@ -1,1 +1,0 @@
-/opt/sbg/scratch1/cms/xcoubez/ntuples_prod_walrus_patch1_priority/toyPriority/SingleMuon_Run2016H_PromptReco_v2_MINIAOD/SingleMuon_Run2016H_PromptReco_v2_MINIAOD_ID2_0.root

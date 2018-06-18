@@ -8,6 +8,8 @@
 class Tau : public Base
 {
  public:
+ 
+   int   id;
    
    Tau();
    virtual ~Tau();

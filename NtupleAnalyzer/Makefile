@@ -4,8 +4,6 @@
 CC = g++ -g -Wno-writable-strings -Wno-write-strings -lTMVA
 
 NTUPLEINC    = -I../NtupleProducer/include -I$(CMSSW_RELEASE_BASE)/src
-
-#Replaced gcc530 by gcc630
 NTUPLELIB    = -L../NtupleProducer -L$(CMSSW_RELEASE_BASE)/lib/slc6_amd64_gcc630 -lCondFormatsJetMETObjects \
               -lNtuple
 
@@ -19,6 +17,8 @@ ROOTCFLAGS              = $(shell $(ROOTCONF) --cflags)
 INCLUDES                = $(shell $(ROOTCONF) --incdir) $(ROOTCFLAGS)
 CINTINCLUDES            = $(shell $(ROOTCONF) --incdir)
 LIBS                    = $(ROOTLIBS)
+ROOTFLAGS2 		= `root-config --glibs --cflags`
+
 
 LDLIBS  = $(ROOTLIBS) $(NTUPLELIB) $(KINFITLIB) 
 
@@ -43,13 +43,31 @@ OBJ = tHqMultileponAnalysis.o \
 
 EXE = Analyzer
 
-all:  	     		$(EXE)
+SUMWEIGHT = test/Get_SumWeightEvents_FlatTrees.exe
+
+
+all:  	     		$(EXE) $(SUMWEIGHT)
 #@rm -f *.o
 
 $(EXE):     	 	$(OBJ) $@
 
 $(OBJ):     		$(SRC) $(INC)
-		        $(CC) -c $(ROOTCFLAGS) $(ADDINC) $(SRC)
+		        @$(CC) -c $(ROOTCFLAGS) $(ADDINC) $(SRC)
+			@echo ""
+			@echo "###################################"
+			@echo "-- Creating executable $(EXE) --"
+			@echo "-- Done --"
+			@echo "###################################"
+			@echo ""
+
+$(SUMWEIGHT):		
+			@echo ""
+			@echo "###################################"
+			@echo "-- Creating executable $(SUMWEIGHT) --"
+			@$(CC) $(ROOTFLAGS2) test/Get_SumWeightEvents_FlatTrees.cxx -o $@
+			@echo "-- Done --"
+			@echo "###################################"
+			@echo ""
 
 clean: 		
-			@rm -f $(OBJ) $(EXE)
+			@rm -f $(OBJ) $(EXE) $(SUMWEIGHT)

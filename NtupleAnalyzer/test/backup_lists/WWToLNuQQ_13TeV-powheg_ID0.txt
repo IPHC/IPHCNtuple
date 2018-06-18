@@ -1,1 +1,0 @@
-/opt/sbg/scratch1/cms/xcoubez/ntuples_prod_walrus_patch1_priority/toyPriority/WWToLNuQQ_13TeV-powheg/WWToLNuQQ_13TeV-powheg_ID0_0.root

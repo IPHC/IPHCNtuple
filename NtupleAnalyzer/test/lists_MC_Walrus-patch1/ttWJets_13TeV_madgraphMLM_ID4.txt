@@ -1,1 +1,0 @@
-/opt/sbg/scratch1/cms/xcoubez/ntuples_prod_walrus_patch1_priority/toyPriority/ttWJets_13TeV_madgraphMLM/ttWJets_13TeV_madgraphMLM_ID8_0.root

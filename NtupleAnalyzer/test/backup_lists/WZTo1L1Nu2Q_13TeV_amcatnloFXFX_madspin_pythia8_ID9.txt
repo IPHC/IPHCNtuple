@@ -1,1 +1,0 @@
-/opt/sbg/scratch1/cms/xcoubez/ntuples_prod_walrus_patch1_priority/toyPriority/WZTo1L1Nu2Q_13TeV_amcatnloFXFX_madspin_pythia8/WZTo1L1Nu2Q_13TeV_amcatnloFXFX_madspin_pythia8_ID24_0.root
