@@ -1720,19 +1720,22 @@ bool Sync::fill(Ntuple *nt)
 	pass_cat[19] = pass_ttZctrl_SR;      name_cat[19] = "ttZctrl_SR";
 	pass_cat[20] = pass_ttZctrl_Fake;    name_cat[20] = "ttZctrl_Fake";
 
-	if( sync != 0 )
-	  {	    
-	     int pass_event = 0;
-	     for(int ic=0;ic<21;ic++)
-	       {	     
-		  pass_event += pass_cat[ic];
+	int pass_event = 0;
+	for(int ic=0;ic<21;ic++)
+	  {	     
+	     pass_event += pass_cat[ic];
+	     if( sync != 0 )
+	       {	    
 		  m_hist_overlap->GetXaxis()->SetBinLabel(ic+1,name_cat[ic].c_str());
 		  m_hist_overlap->GetYaxis()->SetBinLabel(ic+1,name_cat[ic].c_str());
-	       }	
-	     
-	     if( pass_event == 0 ) pass = 0;
-	     else
-	       {
+	       }		  
+	  }	
+	
+	if( pass_event == 0 ) pass = 0;
+	else
+	  {
+	     if( sync != 0 )
+	       {	    
 		  for(int ic=0;ic<21;ic++)
 		    {
 		       if( pass_cat[ic] == 1 )
@@ -1745,9 +1748,9 @@ bool Sync::fill(Ntuple *nt)
 				   }			    
 			      }		       
 			 }		  
-		    }	     
-	       }	
-	  }   
+		    }
+	       }		  
+	  }	
      }   
    
    return pass;
