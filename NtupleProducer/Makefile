@@ -3,65 +3,67 @@ CMSINC      = -I$(CMSSW_BASE)/src
 #EGAMLIB      = -L$(CMSSW_BASE)/lib/slc6_amd64_gcc481 -lEgammaAnalysisElectronTools
 #FORMLIB      = -L$(CMSSW_BASE)/lib/slc6_amd64_gcc481 -lEgammaAnalysisElectronTools
 
-JETLIBS     = -L$(CMSSW_RELEASE_BASE)/lib/slc6_amd64_gcc493 -lCondFormatsJetMETObjects
+JETLIBS     = -L$(CMSSW_RELEASE_BASE)/lib/slc6_amd64_gcc630 -lCondFormatsJetMETObjects -lFWCoreMessageLogger
 JETINC      = -I$(CMSSW_RELEASE_BASE)/src
 
+BOOSTSYS       = $(shell scram tool tag boost BOOST_BASE)
+BOOSTINC       = -I$(BOOSTSYS)/include
 
-
-# escape c11
-ROOTCFLAGS    = $(shell root-config --cflags | sed -e "s%-std=c++0x %%g")
-#ROOTCFLAGS    = $(shell root-config --cflags | sed -e "s%-std=c++11 %%g")
+ROOTCFLAGS    = $(shell root-config --cflags)
 ROOTLIBS      = $(shell root-config --libs)
 ROOTGLIBS     = $(shell root-config --glibs)
 
-CXX           = g++ -fPIC -Wno-write-strings -Wno-writable-strings
+CXX           = g++ -std=c++11 -fPIC -Wno-write-strings -Wno-writable-strings -Wno-attributes 
 LD            = g++
 LDFLAGS       = -g
 SOFLAGS       = -shared
 
 CXXFLAGS       = $(ROOTCFLAGS)
-INCLUDE_FLAGS  = $(JETINC)
-LDLIBS         = $(ROOTLIBS) $(JETLIBS)
+INCLUDE_FLAGS  = $(JETINC) $(BOOSTINC)
+LDLIBS         = $(JETLIBS) $(ROOTLIBS)
 GLIBS          = $(ROOTGLIBS)
 
 EXE           = test/NtupleProducer
 
 INC 	      = include/NtupleProducer.h include/Tree.h include/Base.h include/Helper.h \
                 include/Electron.h include/Muon.h include/Ntuple.h \
+		include/ElectronExt.h include/MuonExt.h \
 		include/Event.h include/Jet.h include/Truth.h include/Tau.h include/GenJet.h \
-		include/TriggerObj.h
+		include/EventExt.h include/JetExt.h include/TruthExt.h include/TauExt.h include/GenJetExt.h \
+		include/TriggerObj.h include/TriggerObjExt.h include/Sync.h
 
 SRC	      = src/NtupleProducer.cxx src/Tree.cxx src/Base.cxx src/Helper.cxx \
                 src/Electron.cxx src/Muon.cxx src/Ntuple.cxx \
+		src/ElectronExt.cxx src/MuonExt.cxx \
 		src/Event.cxx src/Jet.cxx src/Truth.cxx src/Tau.cxx src/GenJet.cxx \
-		src/TriggerObj.cxx
+		src/EventExt.cxx src/JetExt.cxx src/TruthExt.cxx src/TauExt.cxx src/GenJetExt.cxx \
+		src/TriggerObj.cxx src/TriggerObjExt.cxx src/Sync.cxx
 
 OBJS          = obj/NtupleProducer.o obj/Tree.o obj/Base.o obj/Helper.o \
                 obj/Electron.o obj/Muon.o obj/Ntuple.o \
+		obj/ElectronExt.o obj/MuonExt.o \
 		obj/Event.o obj/Jet.o obj/Truth.o obj/Tau.o obj/GenJet.o \
-		obj/TriggerObj.o
+		obj/EventExt.o obj/JetExt.o obj/TruthExt.o obj/TauExt.o obj/GenJetExt.o \
+		obj/TriggerObj.o obj/TriggerObjExt.o obj/Sync.o
 
-LIB = libNtuple.so
+LIB           = libNtuple.so
 
-DIC	      = obj/NtupleProducerDict.cxx
+all: 	      $(LIB) $(EXE)
 
-all: 	      $(DIC) $(LIB) $(EXE)
-
-$(DIC):	      $(INC)
+$(LIB):	      $(INC) $(SRC)
 	      @echo "####### Generating dictionary"
-	      @rootcint -f $(DIC) -c -p $(CXXFLAGS) \
+	      @rootcint -f obj/NtupleProducerDict.cxx -c -p $(CXXFLAGS) \
 	      $(INCLUDE_FLAGS) -I. $(INC) include/LinkDef.h
 
-$(LIB):       $(DIC) $(SRC)
 	      @echo "####### Building library $(LIB)"
 	      @$(CXX) $(SOFLAGS) $(CXXFLAGS) $(ROOTLIBS) $(INCLUDE_FLAGS) -I. $(SRC) \
 	      obj/NtupleProducerDict.cxx -o $(LIB) $(ROOTLIBS) 
 	      
-	      #@echo  "####### Removing generated dictionary"
-	      #@rm -f obj/Nt#upleProducerDict.cxx obj/NtupleProducerDict.h
-	      #@rm -f *.o
+	      @echo  "####### Removing generated dictionary"
+	      @rm -f obj/NtupleProducerDict.cxx obj/NtupleProducerDict.h
+	      @rm -f *.o
 
-$(EXE):	      $(LIB)
+$(EXE):	      $(LIB) src/NtupleProducer.cxx
 	      @echo "####### Building object file for executable"
 	      @$(CXX) -c $(CXXFLAGS) $(INCLUDE_FLAGS) src/NtupleProducer.cxx -o obj/NtupleProducer.o
 	      @echo "####### Building executable"
