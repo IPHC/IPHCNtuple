@@ -28,7 +28,7 @@ class Sync
    void setBranchAddress();
    void initVar();
    void get(Ntuple *nt,int n_presel_el,int n_presel_mu,int n_presel_tau,int n_presel_jet);
-   bool fill(Ntuple *nt);
+   bool fill(Ntuple *nt,EventExt *ev);
    
    TFile*  m_file;
 

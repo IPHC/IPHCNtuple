@@ -193,7 +193,7 @@ void ElectronExt::sel()
      }   
    
    float EffArea = getEffArea(superCluster_eta);
-   isoR04 = (pt > 0.) ? (ntP->el_pfIso_sumChargedHadronPt->at(idx) + std::max( 0.0, double(ntP->el_pfIso_sumNeutralHadronEt->at(idx)+ntP->el_pfIso_sumPhotonEt->at(idx) - nt->NtEventExt->at(0).rho*EffArea )))/pt : -9999;
+   isoR04 = (pt > 0.) ? (ntP->el_pfIso_sumChargedHadronPt->at(idx) + std::max( 0.0, double(ntP->el_pfIso_sumNeutralHadronEt->at(idx)+ntP->el_pfIso_sumPhotonEt->at(idx) - ntP->ev_rho*EffArea )))/pt : -9999;
    
    bool pass_pt       = ( pt > 7 );
    bool pass_eta      = ( fabs(eta) < 2.5 );
@@ -260,7 +260,7 @@ void ElectronExt::sel()
 
    for(int d=0;d<evdebug->size();d++)
      {		       
-	int evId = nt->NtEventExt->at(0).id;
+	int evId = ntP->ev_id;
 	if( evId == evdebug->at(d) )
 	  {
 	     std::cout << "------------------------------" << std::endl;

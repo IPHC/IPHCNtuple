@@ -179,7 +179,7 @@ void JetExt::sel(int sync)
 
    for(int d=0;d<evdebug->size();d++)
      {		       
-	int evId = nt->NtEventExt->at(0).id;
+	int evId = ntP->ev_id;
 	if( evId == evdebug->at(d) )
 	  {
 	     std::cout << "------------------------------" << std::endl;

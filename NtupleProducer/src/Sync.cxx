@@ -656,9 +656,9 @@ void Sync::initVar()
 
 void Sync::get(Ntuple *nt,int n_presel_el,int n_presel_mu,int n_presel_tau,int n_presel_jet)
 {
-   nEvent = nt->NtEventExt->at(0).id;
-   ls = nt->NtEventExt->at(0).lumi;
-   run = nt->NtEventExt->at(0).run;
+   nEvent = ntP->ev_id;
+   ls = ntP->ev_lumi;
+   run = ntP->ev_run;
    n_presel_mu = n_presel_mu;
    n_fakeablesel_mu = -9999;
    n_mvasel_mu = -9999;
@@ -973,31 +973,31 @@ void Sync::get(Ntuple *nt,int n_presel_el,int n_presel_mu,int n_presel_tau,int n
 	  isGenMatched = 0;
      }
    MHT = sqrt( (jet_px*jet_px) + (jet_py*jet_py) );
-   metLD = nt->NtEventExt->at(0).metpt*0.00397 + MHT*0.00265;
-   PFMET = nt->NtEventExt->at(0).metpt;
-   PFMETphi = nt->NtEventExt->at(0).metphi;
+   metLD = ntP->met_pt*0.00397 + MHT*0.00265;
+   PFMET = ntP->met_pt;
+   PFMETphi = ntP->met_phi;
 }
 
-bool Sync::fill(Ntuple *nt)
+bool Sync::fill(Ntuple *nt,EventExt *ev)
 {
    bool pass = 1;
    
    if( sync == 1 ) m_tree->Fill();
    else
      {
-	bool trig_e = nt->NtEventExt->at(0).trig_e;
-	bool trig_etau = nt->NtEventExt->at(0).trig_etau;
-	bool trig_m = nt->NtEventExt->at(0).trig_m;
-	bool trig_mtau = nt->NtEventExt->at(0).trig_mtau;
+	bool trig_e = ev->trig_e;
+	bool trig_etau = ev->trig_etau;
+	bool trig_m = ev->trig_m;
+	bool trig_mtau = ev->trig_mtau;
 	
-	bool trig_ee = nt->NtEventExt->at(0).trig_ee;
-	bool trig_em = nt->NtEventExt->at(0).trig_em;
-	bool trig_mm = nt->NtEventExt->at(0).trig_mm;
+	bool trig_ee = ev->trig_ee;
+	bool trig_em = ev->trig_em;
+	bool trig_mm = ev->trig_mm;
 	
-	bool trig_eee = nt->NtEventExt->at(0).trig_eee;
-	bool trig_eem = nt->NtEventExt->at(0).trig_eem;
-	bool trig_emm = nt->NtEventExt->at(0).trig_emm;
-	bool trig_mmm = nt->NtEventExt->at(0).trig_mmm;
+	bool trig_eee = ev->trig_eee;
+	bool trig_eem = ev->trig_eem;
+	bool trig_emm = ev->trig_emm;
+	bool trig_mmm = ev->trig_mmm;
 
 	std::vector<Base> *elmuLoose = new std::vector<Base>;
 	for(int ie=0;ie<nt->NtElectronLooseExt->size();ie++ )
@@ -1190,7 +1190,7 @@ bool Sync::fill(Ntuple *nt)
 		  
 		  for(int d=0;d<evdebug->size();d++)
 		    {		       
-		       int evId = nt->NtEventExt->at(0).id;
+		       int evId = ntP->ev_id;
 		       if( evId == evdebug->at(d) )
 			 {
 			    std::cout << "------------------------------" << std::endl;
@@ -1264,7 +1264,7 @@ bool Sync::fill(Ntuple *nt)
 
 		  for(int d=0;d<evdebug->size();d++)
 		    {		       
-		       int evId = nt->NtEventExt->at(0).id;
+		       int evId = ntP->ev_id;
 		       if( evId == evdebug->at(d) )
 			 {
 			    std::cout << "------------------------------" << std::endl;
@@ -1357,7 +1357,7 @@ bool Sync::fill(Ntuple *nt)
 
 		  for(int d=0;d<evdebug->size();d++)
 		    {		       
-		       int evId = nt->NtEventExt->at(0).id;
+		       int evId = ntP->ev_id;
 		       if( evId == evdebug->at(d) )
 			 {
 			    std::cout << "------------------------------" << std::endl;
@@ -1424,7 +1424,7 @@ bool Sync::fill(Ntuple *nt)
 
 		  for(int d=0;d<evdebug->size();d++)
 		    {		       
-		       int evId = nt->NtEventExt->at(0).id;
+		       int evId = ntP->ev_id;
 		       if( evId == evdebug->at(d) )
 			 {
 			    std::cout << "------------------------------" << std::endl;
@@ -1492,7 +1492,7 @@ bool Sync::fill(Ntuple *nt)
 
 		  for(int d=0;d<evdebug->size();d++)
 		    {		       
-		       int evId = nt->NtEventExt->at(0).id;
+		       int evId = ntP->ev_id;
 		       if( evId == evdebug->at(d) )
 			 {
 			    std::cout << "------------------------------" << std::endl;
@@ -1562,7 +1562,7 @@ bool Sync::fill(Ntuple *nt)
 
 		  for(int d=0;d<evdebug->size();d++)
 		    {		       
-		       int evId = nt->NtEventExt->at(0).id;
+		       int evId = ntP->ev_id;
 		       if( evId == evdebug->at(d) )
 			 {
 			    std::cout << "------------------------------" << std::endl;
@@ -1620,7 +1620,7 @@ bool Sync::fill(Ntuple *nt)
 
 		  for(int d=0;d<evdebug->size();d++)
 		    {		       
-		       int evId = nt->NtEventExt->at(0).id;
+		       int evId = ntP->ev_id;
 		       if( evId == evdebug->at(d) )
 			 {
 			    std::cout << "------------------------------" << std::endl;
@@ -1644,28 +1644,29 @@ bool Sync::fill(Ntuple *nt)
 	       }	     
 	  }
 
-	nt->NtEventExt->at(0).is_1l2tau_SR = pass_1l2tau_SR;
-	nt->NtEventExt->at(0).is_1l2tau_Fake = pass_1l2tau_Fake;
-	nt->NtEventExt->at(0).is_2lSS_SR = pass_2lSS_SR;
-	nt->NtEventExt->at(0).is_2lSS_Fake = pass_2lSS_Fake;
-	nt->NtEventExt->at(0).is_2lSS_Flip = pass_2lSS_Flip;
-	nt->NtEventExt->at(0).is_2lSS1tau_SR = pass_2lSS1tau_SR;
-	nt->NtEventExt->at(0).is_2lSS1tau_Fake = pass_2lSS1tau_Fake;
-	nt->NtEventExt->at(0).is_2lSS1tau_Flip = pass_2lSS1tau_Flip;
-	nt->NtEventExt->at(0).is_2l2tau_SR = pass_2l2tau_SR;
-	nt->NtEventExt->at(0).is_2l2tau_Fake = pass_2l2tau_Fake;
-	nt->NtEventExt->at(0).is_3l_SR = pass_3l_SR;
-	nt->NtEventExt->at(0).is_3l_Fake = pass_3l_Fake;
-	nt->NtEventExt->at(0).is_3l1tau_SR = pass_3l1tau_SR;
-	nt->NtEventExt->at(0).is_3l1tau_Fake = pass_3l1tau_Fake;
-	nt->NtEventExt->at(0).is_4l_SR = pass_4l_SR;
-	nt->NtEventExt->at(0).is_4l_Fake = pass_4l_Fake;
-	nt->NtEventExt->at(0).is_ttWctrl_SR = pass_ttWctrl_SR;
-	nt->NtEventExt->at(0).is_ttWctrl_Fake = pass_ttWctrl_Fake;
-	nt->NtEventExt->at(0).is_ttWctrl_Flip = pass_ttWctrl_Flip;
-	nt->NtEventExt->at(0).is_ttZctrl_SR = pass_ttZctrl_SR;
-	nt->NtEventExt->at(0).is_ttZctrl_Fake = pass_ttZctrl_Fake;
-	
+	ev->is_1l2tau_SR = pass_1l2tau_SR;
+	ev->is_1l2tau_Fake = pass_1l2tau_Fake;
+	ev->is_2lSS_SR = pass_2lSS_SR;
+	ev->is_2lSS_SR = pass_2lSS_SR;
+	ev->is_2lSS_Fake = pass_2lSS_Fake;
+	ev->is_2lSS_Flip = pass_2lSS_Flip;
+	ev->is_2lSS1tau_SR = pass_2lSS1tau_SR;
+	ev->is_2lSS1tau_Fake = pass_2lSS1tau_Fake;
+	ev->is_2lSS1tau_Flip = pass_2lSS1tau_Flip;
+	ev->is_2l2tau_SR = pass_2l2tau_SR;
+	ev->is_2l2tau_Fake = pass_2l2tau_Fake;
+	ev->is_3l_SR = pass_3l_SR;
+	ev->is_3l_Fake = pass_3l_Fake;
+	ev->is_3l1tau_SR = pass_3l1tau_SR;
+	ev->is_3l1tau_Fake = pass_3l1tau_Fake;
+	ev->is_4l_SR = pass_4l_SR;
+	ev->is_4l_Fake = pass_4l_Fake;
+	ev->is_ttWctrl_SR = pass_ttWctrl_SR;
+	ev->is_ttWctrl_Fake = pass_ttWctrl_Fake;
+	ev->is_ttWctrl_Flip = pass_ttWctrl_Flip;
+	ev->is_ttZctrl_SR = pass_ttZctrl_SR;
+	ev->is_ttZctrl_Fake = pass_ttZctrl_Fake;
+
 	if( sync == 2 )
 	  {	     
 	     if( pass_1l2tau_SR ) m_tree_1l2tau_SR->Fill();

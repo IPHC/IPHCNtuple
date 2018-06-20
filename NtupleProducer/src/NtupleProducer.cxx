@@ -47,7 +47,7 @@ int main(int argc, char *argv[])
         if( ! strcmp(argv[i],"--isdata") ) isdata = (bool) atoi(argv[i+1]);
 	if( ! strcmp(argv[i],"--sync") ) sync = atoi(argv[i+1]);
      }
-   
+
    std::string cmssw = std::string(getenv("CMSSW_BASE"));
 
    const char *fname = fname_str;
@@ -106,7 +106,6 @@ int main(int argc, char *argv[])
    JetCorrectionUncertainty *jesTotal;
 
    std::string jecFilesPath = cmssw+"/src/IPHCNtuple/NtupleProducer/data/jecFiles/";
-//   std::string jecFilesPath = cmssw+"/src/NtupleProducer/data/jecFiles/";
    std::string jecMC = jecFilesPath+"Fall17_17Nov2017_V6_MC_UncertaintySources_AK4PFchs.txt";
    std::string jecData = jecFilesPath+"Fall17_17Nov2017F_V6_DATA_UncertaintySources_AK4PFchs.txt";
    
@@ -120,11 +119,9 @@ int main(int argc, char *argv[])
 	ch->GetEntry(i);
 	nt->clearVar();
 	sc->initVar();
-	
+
         ev.init();
         ev.read(isdata);
-	
-        nt->NtEventExt->push_back(ev);
 	
         int n_mu_evt = 0;
 
@@ -255,9 +252,12 @@ int main(int argc, char *argv[])
 
 	sc->get(nt,n_presel_el,n_presel_mu,n_presel_tau,n_presel_jet);
 	
+	bool pass = sc->fill(nt,&ev);
+
+	nt->NtEventExt->push_back(ev);
+	
 	nt->fill();
 	
-	bool pass = sc->fill(nt);
 	if( pass ) nt->write();
      }
    

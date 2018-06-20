@@ -145,7 +145,7 @@ void MuonExt::sel()
    bool pass_isLoose = ( isLoose );
 
    float EffArea = getEffArea(eta);
-   isoR04 = (pt > 0.) ? (ntP->mu_pfIso04_sumChargedHadronPt->at(idx) + std::max( 0.0, double(ntP->mu_pfIso04_sumNeutralHadronEt->at(idx)+ntP->mu_pfIso04_sumPhotonEt->at(idx) - nt->NtEventExt->at(0).rho*EffArea )))/pt : -9999;
+   isoR04 = (pt > 0.) ? (ntP->mu_pfIso04_sumChargedHadronPt->at(idx) + std::max( 0.0, double(ntP->mu_pfIso04_sumNeutralHadronEt->at(idx)+ntP->mu_pfIso04_sumPhotonEt->at(idx) - ntP->ev_rho*EffArea )))/pt : -9999;
    
    isLooseTTH = ( pass_pt      &&
 		  pass_eta     &&
@@ -179,7 +179,7 @@ void MuonExt::sel()
 
    for(int d=0;d<evdebug->size();d++)
      {		       
-	int evId = nt->NtEventExt->at(0).id;
+	int evId = ntP->ev_id;
 	if( evId == evdebug->at(d) )
 	  {
 	     std::cout << "------------------------------" << std::endl;
