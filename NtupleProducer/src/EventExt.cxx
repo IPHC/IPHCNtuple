@@ -174,25 +174,34 @@ void EventExt::init()
    trig_emm = 0;
    trig_mmm = 0;
 
+   is_1l2tau        = 0;
    is_1l2tau_SR     = 0;
    is_1l2tau_Fake   = 0;
+   is_2lSS          = 0;
    is_2lSS_SR       = 0;
    is_2lSS_Fake     = 0;
    is_2lSS_Flip     = 0;
+   is_2lSS1tau      = 0;
    is_2lSS1tau_SR   = 0;
    is_2lSS1tau_Fake = 0;
    is_2lSS1tau_Flip = 0;
+   is_2l2tau        = 0;
    is_2l2tau_SR     = 0;
    is_2l2tau_Fake   = 0;
+   is_3l            = 0;
    is_3l_SR         = 0;
    is_3l_Fake       = 0;
+   is_3l1tau        = 0;
    is_3l1tau_SR     = 0;
    is_3l1tau_Fake   = 0;
+   is_4l            = 0;
    is_4l_SR         = 0;
    is_4l_Fake       = 0;
+   is_ttWctrl       = 0;
    is_ttWctrl_SR    = 0;
    is_ttWctrl_Fake  = 0;
    is_ttWctrl_Flip  = 0;
+   is_ttZctrl       = 0;
    is_ttZctrl_SR    = 0;
    is_ttZctrl_Fake  = 0;
 }

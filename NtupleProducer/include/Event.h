@@ -16,25 +16,34 @@ class Event : public Base
    int   run;
    int   lumi;
    
+   bool is_1l2tau;
    bool is_1l2tau_SR;
    bool is_1l2tau_Fake;
+   bool is_2lSS;
    bool is_2lSS_SR;
    bool is_2lSS_Fake;
    bool is_2lSS_Flip;
+   bool is_2lSS1tau;
    bool is_2lSS1tau_SR;
    bool is_2lSS1tau_Fake;
    bool is_2lSS1tau_Flip;
+   bool is_2l2tau;
    bool is_2l2tau_SR;
    bool is_2l2tau_Fake;
+   bool is_3l;
    bool is_3l_SR;
    bool is_3l_Fake;
+   bool is_3l1tau;
    bool is_3l1tau_SR;
    bool is_3l1tau_Fake;
+   bool is_4l;
    bool is_4l_SR;
    bool is_4l_Fake;
+   bool is_ttWctrl;
    bool is_ttWctrl_SR;
    bool is_ttWctrl_Fake;
    bool is_ttWctrl_Flip;
+   bool is_ttZctrl;
    bool is_ttZctrl_SR;
    bool is_ttZctrl_Fake;   
 
