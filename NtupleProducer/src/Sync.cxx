@@ -1731,33 +1731,42 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 	delete elmuTight;
 	delete elmuFakeable;
 	
-	int pass_cat[21];
-	std::string name_cat[21];
+	int pass_cat[30];
+	std::string name_cat[30];
 	
-	pass_cat[0] = pass_1l2tau_SR;        name_cat[0] = "1l2tau_SR";
-	pass_cat[1] = pass_1l2tau_Fake;      name_cat[1] = "1l2tau_Fake";
-	pass_cat[2] = pass_2lSS_SR;          name_cat[2] = "2lSS_SR";
-	pass_cat[3] = pass_2lSS_Fake;        name_cat[3] = "2lSS_Fake";
-	pass_cat[4] = pass_2lSS_Flip;        name_cat[4] = "2lSS_Flip";
-	pass_cat[5] = pass_2lSS1tau_SR;      name_cat[5] = "2lSS1tau_SR";
-	pass_cat[6] = pass_2lSS1tau_Fake;    name_cat[6] = "2lSS1tau_Fake";
-	pass_cat[7] = pass_2lSS1tau_Flip;    name_cat[7] = "2lSS1tau_Flip";
-	pass_cat[8] = pass_2l2tau_SR;        name_cat[8] = "2l2tau_SR";
-	pass_cat[9] = pass_2l2tau_Fake;      name_cat[9] = "2l2tau_Fake";
-	pass_cat[10] = pass_3l_SR;           name_cat[10] = "3l_SR";
-	pass_cat[11] = pass_3l_Fake;         name_cat[11] = "3l_Fake";
-	pass_cat[12] = pass_3l1tau_SR;       name_cat[12] = "3l1tau_SR";	 
-	pass_cat[13] = pass_3l1tau_Fake;     name_cat[13] = "3l1tau_Fake";
-	pass_cat[14] = pass_4l_SR;           name_cat[14] = "4l_SR";
-	pass_cat[15] = pass_4l_Fake;         name_cat[15] = "4l_Fake";
-	pass_cat[16] = pass_ttWctrl_SR;      name_cat[16] = "ttWctrl_SR";
-	pass_cat[17] = pass_ttWctrl_Fake;    name_cat[17] = "ttWctrl_Fake";
-	pass_cat[18] = pass_ttWctrl_Flip;    name_cat[18] = "ttWctrl_Flip";
-	pass_cat[19] = pass_ttZctrl_SR;      name_cat[19] = "ttZctrl_SR";
-	pass_cat[20] = pass_ttZctrl_Fake;    name_cat[20] = "ttZctrl_Fake";
+	pass_cat[0] = pass_1l2tau;           name_cat[0] = "1l2tau";
+	pass_cat[1] = pass_1l2tau_SR;        name_cat[1] = "1l2tau_SR";
+	pass_cat[2] = pass_1l2tau_Fake;      name_cat[2] = "1l2tau_Fake";
+	pass_cat[3] = pass_2lSS;             name_cat[3] = "2lSS";
+	pass_cat[4] = pass_2lSS_SR;          name_cat[4] = "2lSS_SR";
+	pass_cat[5] = pass_2lSS_Fake;        name_cat[5] = "2lSS_Fake";
+	pass_cat[6] = pass_2lSS_Flip;        name_cat[6] = "2lSS_Flip";
+	pass_cat[7] = pass_2lSS1tau;         name_cat[7] = "2lSS1tau";
+	pass_cat[8] = pass_2lSS1tau_SR;      name_cat[8] = "2lSS1tau_SR";
+	pass_cat[9] = pass_2lSS1tau_Fake;    name_cat[9] = "2lSS1tau_Fake";
+	pass_cat[10] = pass_2lSS1tau_Flip;    name_cat[10] = "2lSS1tau_Flip";
+	pass_cat[11] = pass_2l2tau;           name_cat[11] = "2l2tau";
+	pass_cat[12] = pass_2l2tau_SR;        name_cat[12] = "2l2tau_SR";
+	pass_cat[13] = pass_2l2tau_Fake;      name_cat[13] = "2l2tau_Fake";
+	pass_cat[14] = pass_3l;              name_cat[14] = "3l";
+	pass_cat[15] = pass_3l_SR;           name_cat[15] = "3l_SR";
+	pass_cat[16] = pass_3l_Fake;         name_cat[16] = "3l_Fake";
+	pass_cat[17] = pass_3l1tau;          name_cat[17] = "3l1tau";
+	pass_cat[18] = pass_3l1tau_SR;       name_cat[18] = "3l1tau_SR";
+	pass_cat[19] = pass_3l1tau_Fake;     name_cat[19] = "3l1tau_Fake";
+	pass_cat[20] = pass_4l;              name_cat[20] = "4l";
+	pass_cat[21] = pass_4l_SR;           name_cat[21] = "4l_SR";
+	pass_cat[22] = pass_4l_Fake;         name_cat[22] = "4l_Fake";
+	pass_cat[23] = pass_ttWctrl;         name_cat[23] = "ttWctrl";
+	pass_cat[24] = pass_ttWctrl_SR;      name_cat[24] = "ttWctrl_SR";
+	pass_cat[25] = pass_ttWctrl_Fake;    name_cat[25] = "ttWctrl_Fake";
+	pass_cat[26] = pass_ttWctrl_Flip;    name_cat[26] = "ttWctrl_Flip";
+	pass_cat[27] = pass_ttZctrl;         name_cat[27] = "ttZctrl";
+	pass_cat[28] = pass_ttZctrl_SR;      name_cat[28] = "ttZctrl_SR";
+	pass_cat[29] = pass_ttZctrl_Fake;    name_cat[29] = "ttZctrl_Fake";
 
 	int pass_event = 0;
-	for(int ic=0;ic<21;ic++)
+	for(int ic=0;ic<30;ic++)
 	  {	     
 	     pass_event += pass_cat[ic];
 	     if( sync != 0 )
@@ -1771,12 +1780,12 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 	else
 	  {
 	     if( sync != 0 )
-	       {	    
-		  for(int ic=0;ic<21;ic++)
+	       {
+		  for(int ic=0;ic<30;ic++)
 		    {
 		       if( pass_cat[ic] == 1 )
 			 {
-			    for(int icc=0;icc<21;icc++)
+			    for(int icc=0;icc<30;icc++)
 			      {		       
 				 if( pass_cat[icc] == 1 )
 				   {			    
