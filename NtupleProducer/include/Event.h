@@ -62,6 +62,7 @@ class Event : public Base
    float metphi;
    float metpt;
    float metsumet;
+   float metLD;
 
    float metcov00;
    float metcov01;

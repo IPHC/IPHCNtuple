@@ -27,7 +27,7 @@ void TauExt::read(bool isdata)
    dz   = ntP->tau_leadingTrackDz->at(idx);
    charge = ntP->tau_charge->at(idx);
    id     = ntP->tau_id->at(idx);
-
+   
    decayMode = ntP->tau_decayMode->at(idx); 
    hasLeadChargedHadrCand = ntP->tau_hasLeadChargedHadrCand->at(idx); 
    leadingTrackPt = ntP->tau_leadingTrackPt->at(idx); 
@@ -99,7 +99,7 @@ void TauExt::init()
    m        = -100;
    charge   =    0;
    id       =    0;
-
+   
    isFakeableTTH  = 0;
    isLooseTTH  = 0;
    isMediumTTH  = 0;

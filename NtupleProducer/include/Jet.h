@@ -17,6 +17,7 @@ class Jet : public Base
    bool isTightBTag;
    
    float CSVv2; //Also add other btaggers ?
+   float DeepCSVbtag; // <-> (jet_DeepCSVProbb + jet_DeepCSVProbbb)
 
    ClassDef(Jet,1)
 };

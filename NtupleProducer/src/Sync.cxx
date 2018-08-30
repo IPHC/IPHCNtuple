@@ -982,6 +982,8 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 {
    bool pass = 1;
    
+   ev->metLD = metLD;
+   
    if( sync == 1 ) m_tree->Fill();
    else
      {

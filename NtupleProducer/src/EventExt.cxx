@@ -131,6 +131,7 @@ void EventExt::init()
    
    metpt                 = -1000;
    metphi                = -1000;
+   metLD              	 = -1000;
    metsumet              = -1000;
 //   metUncorrectedPt      = -1000;
 //   metUncorrectedPhi     = -1000;

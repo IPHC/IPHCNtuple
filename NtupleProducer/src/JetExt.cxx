@@ -34,6 +34,8 @@ void JetExt::read(bool isdata)
    deepCSVc       = ntP->jet_DeepCSVProbc->at(idx);
    deepCSVcc      = ntP->jet_DeepCSVProbcc->at(idx);
    
+   DeepCSVbtag	  = ntP->jet_DeepCSVProbb->at(idx) + ntP->jet_DeepCSVProbbb->at(idx);
+   
    if( !isdata )
      {
         jet_partonFlavour    = ntP->jet_partonFlavour->at(idx);
@@ -70,6 +72,8 @@ void JetExt::init()
    deepCSVbb      = -100.;
    deepCSVc       = -100.;
    deepCSVcc      = -100.;
+   
+   DeepCSVbtag    = -100;
 
    isLooseBTag = 0;
    isMediumBTag = 0;
@@ -95,7 +99,8 @@ void JetExt::sel(int sync)
 
    bool pass_pt = (pt > 25.);
    if( sync != 2 ) pass_pt = pass_pt || (jet_pt_JESup > 25.);
-   bool pass_eta = (fabs(eta) < 2.4);
+   bool pass_eta = (fabs(eta) < 2.4); //ttH2017
+   //bool pass_eta = (fabs(eta) < 4.7); //tHq2017
    bool pass_tightJetID = (tightJetID);
 
    bool pass_lepOverlap = 1;

@@ -70,7 +70,7 @@ do
     #xsec=1
   #fi
   datamc=""
-  if [[ $sample == *Run2016* ]]; then
+  if [[ $sample == *Run2017* ]]; then
     isdata=1
     datamc="DATA"
     nmax=${nmax}
