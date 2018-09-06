@@ -1523,7 +1523,8 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 		  bool pass_tight = (elmuFakeable->at(0).isTightTTH && elmuFakeable->at(1).isTightTTH && elmuFakeable->at(2).isTightTTH);
 		  bool pass_truth = (elmuFakeable->at(0).hasMCMatch && elmuFakeable->at(1).hasMCMatch && elmuFakeable->at(2).hasMCMatch);
 
-		  pass_3l = (pass_trig && pass_fakeable_pt && pass_mll && pass_mll_z && pass_tau_veto && pass_metLD && pass_charge && pass_njet && pass_mllll);
+		  pass_3l = (pass_trig && pass_fakeable_pt && pass_mll && pass_mll_z && pass_tau_veto && pass_metLD && pass_charge && pass_njet &&
+		  pass_mllll && pass_nlep);
 		  
 		  pass_ttZctrl = (pass_trig && pass_fakeable_pt && pass_mll && !pass_mll_z && pass_metLD && pass_charge && pass_njet);
 
