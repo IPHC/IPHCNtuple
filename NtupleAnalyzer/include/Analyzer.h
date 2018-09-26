@@ -16,8 +16,6 @@
 #include "TH1D.h"
 #include "TRandom3.h"
 
-#include "../include/TTbarHiggsMultileptonAnalysis.h"
-
 #define CHECK_BIT(var,pos) (((var) & (1<<(pos))) != 0 )
 
 #endif

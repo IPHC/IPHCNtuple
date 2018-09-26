@@ -3,12 +3,13 @@
 // fill the histograms (done once)
 void fillFRhistos(TFile* fileFR)
 {
-
-    h_FR_wgt_el = (TH2D*)fileFR->Get("FR_mva075_el_data_comb");
-    h_FR_wgt_mu = (TH2D*)fileFR->Get("FR_mva075_mu_data_comb");
+    //2016
+    //h_FR_wgt_el = (TH2D*)fileFR->Get("FR_mva075_el_data_comb");
+    //h_FR_wgt_mu = (TH2D*)fileFR->Get("FR_mva075_mu_data_comb");
     
-    //h_FR_wgt_el = (TH2D*)fileFR->Get("FR_mva090_el_data_comb_NC");
-    //h_FR_wgt_mu = (TH2D*)fileFR->Get("FR_mva090_mu_data_comb");
+    //2017
+    h_FR_wgt_el = (TH2D*)fileFR->Get("FR_mva090_el_data_comb_NC");
+    h_FR_wgt_mu = (TH2D*)fileFR->Get("FR_mva090_mu_data_comb");
 
     //std::cout << "Fake Rate Electrons ==========" << std::endl;
 
@@ -28,7 +29,6 @@ void fillFRhistos(TFile* fileFR)
 }
 
 
-//--- CHANGED : keep only 1 function, use negative factors (cf. tHq AN), ...
 double get_FR_weight( std::vector<double> leptonsPts, std::vector<double> leptonsEtas, std::vector<int> leptonsIds)
 {
     double weight    = -1; //CHANGED to negative
@@ -53,7 +53,7 @@ double get_FR_weight( std::vector<double> leptonsPts, std::vector<double> lepton
             f2 = h_FR_wgt_el->GetBinContent(x,y);
             //std::cout << "electron - pt : " << leptonPt << " eta : " << leptonEta << " weigt: " << weight_FR << std::endl;
         }
-        else if (leptonId == 13)
+        else if(leptonId == 13)
         {
             f2 = h_FR_wgt_mu->GetBinContent(x,y);
             //std::cout << "muon - pt : " << leptonPt << " eta : " << leptonEta << " weight: " << weight_FR << std::endl;
@@ -63,7 +63,6 @@ double get_FR_weight( std::vector<double> leptonsPts, std::vector<double> lepton
         weight    = weight * weight_FR;
 
         //std::cout << "weight: " << weight << std::endl;
-
     }
 
     return weight;

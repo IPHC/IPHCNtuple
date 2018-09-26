@@ -15,6 +15,7 @@ class Lepton
         virtual ~Lepton();
 	
 	float           pt;
+	float           conept;
         //float           ptCor;
         //float           ptUnc;
         float           eta;
@@ -32,14 +33,17 @@ class Lepton
         float           lepMVA;
 
         bool            cutEventSel;
+	bool            passTightCharge;
         bool            noLostHits;
 
         int             charge;
+	bool		hasMCMatch;
 	
 
         template <class T> void setLepton(T *lep, int idx, bool isE, bool isMu)
         {
             pt                 = lep->pt;
+	    conept                 = lep->conept;
             //ptCor              = lep->ptCor();
             //ptUnc              = lep->ptUnc();
             eta                = lep->eta;
@@ -55,12 +59,17 @@ class Lepton
 
     	    isFakeableTTH      = lep->isFakeableTTH;
 	    isLooseTTH = lep->isLooseTTH;
+	    
             //if(isE || isMu) {_isLooseTTH = lep->isLooseTTH;}
 	    //else {_isLooseTTH = true;} //isLooseTTH not implemented for tau
+	    
+	    passTightCharge    = lep->tightCharge;
 	    isTightTTH         = lep->isTightTTH;
             lepMVA         = lep->lepMVA;
 	    
 	    id = lep->id;
+	    
+	    hasMCMatch = lep->hasMCMatch;
         }
 	
 };

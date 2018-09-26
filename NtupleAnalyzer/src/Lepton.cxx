@@ -3,6 +3,7 @@
 Lepton::Lepton()
 {
     pt                 = 0.;
+    conept                 = 0.;
     //ptCor              = 0.;
     //ptUnc              = 0.;
     eta                = 0.;
@@ -21,10 +22,12 @@ Lepton::Lepton()
 
     lepMVA         = 0.;
     
-    //passTightCharge    = false;
-    //cutEventSel        = false;
+    passTightCharge    = false;
+    cutEventSel        = false;
 
     charge             =  0;
+    
+    hasMCMatch		= 0;
 }
 
 Lepton::~Lepton()

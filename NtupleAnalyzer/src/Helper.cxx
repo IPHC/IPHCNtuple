@@ -11,6 +11,12 @@ bool SortingLeptonPt( Lepton l1, Lepton l2)
     else return false;
 }
 
+bool SortingLeptonConePt( Lepton l1, Lepton l2)
+{
+    if( l1.conept > l2.conept ) return true;
+    else return false;
+}
+
 float DeltaRLeptonJet( Lepton l1, Jet j1)
 {
     float dEta = l1.eta - j1.eta;

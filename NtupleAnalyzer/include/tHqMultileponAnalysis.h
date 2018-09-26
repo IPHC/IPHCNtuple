@@ -22,7 +22,11 @@
 
 #include <TString.h>
 #include <TH1F.h>
+#include <TH2.h>
 #include <TH2F.h>
+#include <TH2D.h>
+#include <TH2F.h>
+#include <TGraph.h>
 #include <TChain.h>
 #include <TFile.h>
 #include <TObject.h>
@@ -40,40 +44,33 @@
 
 //NTAnalyzer
 #include "Lepton.h"
-#include "BTagCalibrationXStandalone.h"
+#include "ScaleFactors.h" //Class for Scale factors
+
+// #include "BTagCalibrationXStandalone.h"
 
 class tHqMultileponAnalysis
 {
 
     public:
 
-        tHqMultileponAnalysis(); //Default constructor
+        // tHqMultileponAnalysis(); //Default constructor
         tHqMultileponAnalysis(TString inputFileName, TString sampleName, TString treeName, TString outputFileName, bool isdata, bool doSystCombine, float xsec, float lumi, int nowe, int nmax); //Constructor
         ~tHqMultileponAnalysis(); //Destructor
 
         // void Debug_Selection(int evt);
 
-        //-- 3l selections
-        void ThreeLeptonSelection_THQ3l_SR(int evt);
-        void ThreeLeptonSelection_THQ3l_Training(int evt);
-        void ThreeLeptonSelection_THQ3l_Z_CR(int evt);
+        //-- ttH basic selections
+		bool ThreeLeptonSelection_THQ3l(int evt);
+		bool TwoLeptonSelection_THQ2lSSl(int evt);
 
-        //-- 2l selections
-        void TwoLeptonSelection_THQ2l_SR(int evt);
-        void TwoLeptonSelection_THQ2l_Training(int evt);
-        void TwoLeptonSelection_THQ2l_EMU_OS_CR(int evt);
-
-		//-- Custom samples : fakes, gamma-conv, charge flips
-		void ThreeLeptonSelection_ApplicationFakes(int evt);
-		void TwoLeptonSelection_ApplicationFakes(int evt);
-		void TwoLeptonSelection_ApplicationChargeFlip(int evt);
-
-        //-- Gamma conv
-        void ThreeLeptonSelection_GammaConv(int evt);
-        void TwoLeptonSelection_GammaConv(int evt);
+		//-- ttH regions
+		bool ThreeLeptonSelection_THQ3l_Regions(int evt);
+		bool TwoLeptonSelection_THQ2lSS_Regions(int evt);
 
 		void InitFiles();
 		void InitCollections();
+		void InitPredefinedCategories();
+		void InitCustomCategories();
 		void InitTLorentzVectors();
 		void InitVariables();
 		void InitTree();
@@ -92,11 +89,28 @@ class tHqMultileponAnalysis
 		float GetDeltaR(float eta1,float phi1,float eta2,float phi2);
         bool Sample_isUsed_forTraining();
 		bool Sample_isUsed_forGammaConv();
+		double comp_MT_met_lep(TLorentzVector, double, double);
+		double Compute_METLD(double);
+		int Read_Predefined_Categories();
+		void Apply_FakeRate_Weight(TString);
+		void Apply_FlipRate_Weight();
+		double Get_Distance(double, double, double, double, double, double);
+		bool is_GammaConv_Event();
+		bool is_Electron_Matched_To_Gamma(int);
+		int Ele_To_Lepton_Matching(int);
+		int Ele_To_Gamma_Matching(int);
+
+		bool TwoLeptonSelection_THQ2lSS_TrainingSelection(int evt);
+		bool ThreeLeptonSelection_THQ3l_TrainingSelection(int evt);
+
+		void Apply_ScaleFactors(int);
 
 		//NEW
 		// TString Convert_Number_To_TString(double, int/*=10*/)
 		// double Convert_TString_To_Number(TString)
 		// bool Check_File_Existence(const TString&)
+
+		ScaleFactors* sf;
 
         TChain *fChain;   //!pointer to the analyzed TTree or TChain
 
@@ -107,9 +121,9 @@ class tHqMultileponAnalysis
 		std::vector<Muon>     *vMuonLoose;
 		std::vector<Muon>     *vMuonFakeable;
 		std::vector<Muon>     *vMuonTight;
-		// std::vector<Tau>      *vTauLoose;
-		// std::vector<Tau>      *vTauMedium;
-		// std::vector<Tau>      *vTauTight;
+		std::vector<Tau>      *vTauLoose;
+		std::vector<Tau>      *vTauFakeable;
+		std::vector<Tau>      *vTauMedium;
         std::vector<Jet>      *vJetLoose;
 		std::vector<Truth>    *vTruth;
 		// std::vector<Truth>    *vGenJet;
@@ -123,31 +137,78 @@ class tHqMultileponAnalysis
 		std::vector<Jet>      vLightJets; //Non-loose CSV jets
 		std::vector<Jet>      vLightJets_FwdPtCut; //Non-loose CSV jets (with pT>40 cut on forward jets, SR)
 
-
+		//Nof objects
         float nLooseBJets;
         float nMediumBJets;
 		float nLightJets;
 		float nLightJets_Fwd40;
-
 		float nTightLep;
 		float nFakeableLep;
 
+		//NB -- input vars (tHq2016, ttH2017) are declared in SignalExtraction.h !
 
-        //-- Categories are encoded as Char_t (not booleans, bc vector<bool> is 'broken' in C++)
-        //-- NB : WHEN ADDING A CATEG, MUST IMPLEMENT IN FILLOUTPUTTREE() WHETHER IT CORRESPONDS TO 2L, 3L, etc !
-        Char_t is_3l_THQ_SR;    // Category : training events tHQ3l analysis
-        Char_t is_3l_THQ_Training; //Category : training events tHQ3l analysis
-        Char_t is_3l_Z_CR;
-        Char_t is_2l_THQ_SR;
-        Char_t is_2l_THQ_Training;
-        Char_t is_2l_EMU_CR;
-        Char_t is_3l_AppFakes_SR;
-        Char_t is_3l_GammaConv_SR;
-	    Char_t is_2l_AppFakes_SR;
-        Char_t is_2l_GammaConv_SR;
-        Char_t is_2l_QFlip_SR;
+		//Additional vars
+		bool pass_Zveto;
+		bool pass_Zveto_ee;
+		bool pass_cleanup;
+		int nSFOS;
+		double mllll;
 
-        bool is_trigger;
+        //NB : all categories (used for cuts) should start with "is_" <-> automated in analysis code
+		//tHq2017 categories : based on ttH2017, defined at NTA level
+		Char_t is_tHq_2lSS;
+		Char_t is_tHq_2lSS_SR;
+		Char_t is_tHq_2lSS_Training;
+		Char_t is_tHq_2lSS_Fake;
+        Char_t is_tHq_2lSS_Flip;
+        Char_t is_tHq_2lSS_GammaConv;
+        Char_t is_tHq_3l;
+		Char_t is_tHq_3l_SR;
+		Char_t is_tHq_3l_Training;
+		Char_t is_tHq_3l_Fake;
+		Char_t is_tHq_ttWctrl;
+		Char_t is_tHq_ttWctrl_SR;
+		Char_t is_tHq_ttWctrl_Fake;
+        Char_t is_tHq_ttWctrl_Flip;
+        Char_t is_tHq_ttWctrl_GammaConv;
+		Char_t is_tHq_ttZctrl;
+		Char_t is_tHq_ttZctrl_SR;
+		Char_t is_tHq_ttZctrl_Fake;
+		Char_t is_tHq_WZctrl;
+		Char_t is_tHq_WZctrl_SR;
+		Char_t is_tHq_WZctrl_Fake;
+
+		//-- Predefined ttH 2017 categories (implemented at NTP level)
+        Char_t is_ttH_2lSS;
+        Char_t is_ttH_2lSS_SR;
+        Char_t is_ttH_2lSS_SR_Data;
+		Char_t is_ttH_2lSS_Fake;
+        Char_t is_ttH_2lSS_Flip;
+        Char_t is_ttH_2lSS_Flip_Data;
+        Char_t is_ttH_3l;
+        Char_t is_ttH_3l_SR;
+        Char_t is_ttH_3l_SR_Data;
+		Char_t is_ttH_3l_Fake;
+		Char_t is_ttH_ttWctrl;
+		Char_t is_ttH_ttWctrl_SR;
+        Char_t is_ttH_ttWctrl_SR_Data;
+		Char_t is_ttH_ttWctrl_Fake;
+        Char_t is_ttH_ttWctrl_Flip;
+        Char_t is_ttH_ttWctrl_Flip_Data;
+		Char_t is_ttH_ttZctrl;
+		Char_t is_ttH_ttZctrl_SR;
+        Char_t is_ttH_ttZctrl_SR_Data;
+		Char_t is_ttH_ttZctrl_Fake;
+		Char_t is_ttH_WZctrl;
+		Char_t is_ttH_WZctrl_SR;
+        Char_t is_ttH_WZctrl_SR_Data;
+		Char_t is_ttH_WZctrl_Fake;
+
+
+		Char_t is_trigger;
+        Char_t is_trigger_ttH;
+
+        Char_t is_hasJetTransitionRegion;
 
 		//3l : 0 uuu, 1 uue, 2 eeu, 3 eee
 		//2l : 0 uu, 1 eu+ue, 2 ee
@@ -158,17 +219,16 @@ class tHqMultileponAnalysis
 		Float_t event_run;
 
 
-        //-- NB : input variables declared in SignalExtractionMVA.h
+		//NB -- input vars (tHq2016, ttH2017) are declared in SignalExtractionMVA.h !
         //Additionnal variables, for control plots
         float lep1Pt, lep2Pt, lep3Pt, inv_mll, hardestBjetPt, hardestBjetEta, fwdJetPt;
-		float MET;
+		float MET, metLD;
 
 
 
 
-        //--- Lots of variables, used for MEM computation
-        BTagCalibrationX       calib;
-        BTagCalibrationXReader reader;
+        // BTagCalibrationX       calib;
+        // BTagCalibrationXReader reader;
 
         // all weights
         Float_t weight;
@@ -179,12 +239,15 @@ class tHqMultileponAnalysis
         Float_t weight_trigger;
         Float_t weight_QF_ee;                                                                        // weight charge flip (only to 2lss where l=e)
         Float_t weight_FR_2lss, weight_FR_3l;                                                        // weight fake rate (to 2lss and 3l)
-        Float_t weight_scale_muF0p5, weight_scale_muF2, weight_scale_muR0p5, weight_scale_muR2;
+        // Float_t weight_scale_muF0p5, weight_scale_muF2, weight_scale_muR0p5, weight_scale_muR2;
         std::vector<Float_t> weights_pdf;
         std::vector<std::string> ids_pdf;
 
         Float_t weight_csv_up, weight_csv_down;
 
+
+
+		//--- Lots of variables, used for MEM computation
         Int_t mc_ttZhypAllowed;
         Int_t catJets;
 

@@ -3,8 +3,12 @@
 // fill the histograms (done once)
 void fillQFhistos(TFile* fileFR)
 {
-
-    h_QF_wgt = (TH2D*)fileFR->Get("chargeMisId");
+    //20160
+    //h_QF_wgt = (TH2D*)fileFR->Get("chargeMisId");
+    
+    //2017
+    h_QF_wgt = (TH2D*)fileFR->Get("eChargeMisIdRates");
+    
 
     //for( int iEta=1; iEta<3; iEta++)
     //{

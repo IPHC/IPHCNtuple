@@ -3,6 +3,7 @@
 #CC = g++ -g -Wno-writable-strings -Wno-write-strings -fsanitize=address -lTMVA
 CC = g++ -g -Wno-writable-strings -Wno-write-strings -lTMVA
 
+#NB : first, must compile NtupleProducer, to produce libNtuple.so !
 NTUPLEINC    = -I../NtupleProducer/include -I$(CMSSW_RELEASE_BASE)/src
 NTUPLELIB    = -L../NtupleProducer -L$(CMSSW_RELEASE_BASE)/lib/slc6_amd64_gcc630 -lCondFormatsJetMETObjects \
               -lNtuple
@@ -27,19 +28,18 @@ ADDINC = $(NTUPLEINC) $(KINFITINC)
 SRC = src/tHqMultileponAnalysis.cxx \
  src/Analyzer.cxx \
  src/Lepton.cxx \
- src/BTagCalibrationXStandalone.cxx \
+ src/ScaleFactors.cxx \
 
 
 INC = include/tHqMultileponAnalysis.h \
  include/Analyzer.h \
  include/Lepton.h \
- include/BTagCalibrationXStandalone.h \
- include/Ranges.h \
+ include/ScaleFactors.h \
 
 OBJ = tHqMultileponAnalysis.o \
  Analyzer.o\
  Lepton.o \
- BTagCalibrationXStandalone.o \
+ ScaleFactors.o \
 
 EXE = Analyzer
 
@@ -52,10 +52,10 @@ all:  	     		$(EXE) $(SUMWEIGHT)
 $(EXE):     	 	$(OBJ) $@
 
 $(OBJ):     		$(SRC) $(INC)
-		        @$(CC) -c $(ROOTCFLAGS) $(ADDINC) $(SRC)
 			@echo ""
 			@echo "###################################"
 			@echo "-- Creating executable $(EXE) --"
+		        @$(CC) -c $(ROOTCFLAGS) $(ADDINC) $(SRC)
 			@echo "-- Done --"
 			@echo "###################################"
 			@echo ""
