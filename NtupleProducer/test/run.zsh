@@ -10,6 +10,6 @@ nmax=-1
 --file input.txt \
 --outfile output \
 --tree FlatTree/tree \
---nmax 100000 \
+--nmax -1 \
 --isdata 0 \
 --sync 0

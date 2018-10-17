@@ -217,4 +217,8 @@ void EventExt::init()
    is_ttZctrl_SR_Data    = 0;
    is_ttZctrl_SR         = 0;
    is_ttZctrl_Fake       = 0;
+   is_WZctrl             = 0;
+   is_WZctrl_SR_Data     = 0;
+   is_WZctrl_SR          = 0;
+   is_WZctrl_Fake        = 0;
 }

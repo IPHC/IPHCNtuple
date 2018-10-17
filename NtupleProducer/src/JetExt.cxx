@@ -21,10 +21,10 @@ void JetExt::read(bool isdata)
    eta        = ntP->jet_eta->at(idx);   
    phi        = ntP->jet_phi->at(idx);
    m          = ntP->jet_m->at(idx);
-   qg         = ntP->jet_qgtag->at(idx);
-
-   tightJetID    = ntP->jet_tightJetID->at(idx);
+   qg 	      = ntP->jet_qgtag->at(idx);
    
+   tightJetID    = ntP->jet_tightJetID->at(idx);
+      
    ntrk           = ntP->jet_ntrk->at(idx);
    CSVv2          = ntP->jet_CSVv2->at(idx);
    cMVAv2         = ntP->jet_cMVAv2->at(idx);
@@ -33,7 +33,7 @@ void JetExt::read(bool isdata)
    deepCSVbb      = ntP->jet_DeepCSVProbbb->at(idx);
    deepCSVc       = ntP->jet_DeepCSVProbc->at(idx);
    deepCSVcc      = ntP->jet_DeepCSVProbcc->at(idx);
-   
+      
    DeepCSVbtag	  = ntP->jet_DeepCSVProbb->at(idx) + ntP->jet_DeepCSVProbbb->at(idx);
    
    if( !isdata )
@@ -46,7 +46,7 @@ void JetExt::read(bool isdata)
         jet_genParton_id     = ntP->jet_genParton_id ->at(idx);
         jet_genParton_E      = ntP->jet_genParton_E->at(idx);      
      }
-   
+        	
    JECUncertainty();
 }
 
@@ -99,8 +99,8 @@ void JetExt::sel(int sync)
 
    bool pass_pt = (pt > 25.);
    if( sync != 2 ) pass_pt = pass_pt || (jet_pt_JESup > 25.);
-   bool pass_eta = (fabs(eta) < 2.4); //ttH2017
-   //bool pass_eta = (fabs(eta) < 4.7); //tHq2017
+   //bool pass_eta = (fabs(eta) < 2.4); //ttH2017 //FIXME
+   bool pass_eta = (fabs(eta) < 5.0); //tHq2017 //FIXME
    bool pass_tightJetID = (tightJetID);
 
    bool pass_lepOverlap = 1;

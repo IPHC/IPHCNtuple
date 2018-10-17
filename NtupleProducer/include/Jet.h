@@ -18,6 +18,10 @@ class Jet : public Base
    
    float CSVv2; //Also add other btaggers ?
    float DeepCSVbtag; // <-> (jet_DeepCSVProbb + jet_DeepCSVProbbb)
+   
+   float jet_partonFlavour  ;
+   float jet_hadronFlavour  ;
+   float qg;
 
    ClassDef(Jet,1)
 };

@@ -1,0 +1,9 @@
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/tHq2017/MuonEG/Run2017F_17Nov2017_v1_MINIAOD/180618_114058/0005/output_5841.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/tHq2017/MuonEG/Run2017F_17Nov2017_v1_MINIAOD/180618_114058/0005/output_5842.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/tHq2017/MuonEG/Run2017F_17Nov2017_v1_MINIAOD/180618_114058/0005/output_5843.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/tHq2017/MuonEG/Run2017F_17Nov2017_v1_MINIAOD/180618_114058/0005/output_5844.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/tHq2017/MuonEG/Run2017F_17Nov2017_v1_MINIAOD/180618_114058/0005/output_5845.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/tHq2017/MuonEG/Run2017F_17Nov2017_v1_MINIAOD/180618_114058/0005/output_5846.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/tHq2017/MuonEG/Run2017F_17Nov2017_v1_MINIAOD/180618_114058/0005/output_5847.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/tHq2017/MuonEG/Run2017F_17Nov2017_v1_MINIAOD/180618_114058/0005/output_5848.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/tHq2017/MuonEG/Run2017F_17Nov2017_v1_MINIAOD/180618_114058/0005/output_5849.root

@@ -1,0 +1,1 @@
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/tHq2017/TTWJetsToLNu_TuneCP5_PSweights_13TeV-amcatnloFXFX-madspin-pythia8/RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v1_MINIAODSIM/180611_134324/0000/output_9.root

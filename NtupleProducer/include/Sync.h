@@ -340,6 +340,8 @@ class Sync
    TTree*  m_tree_ttWctrl_Flip;
    TTree*  m_tree_ttZctrl_SR;
    TTree*  m_tree_ttZctrl_Fake;
+   TTree*  m_tree_WZctrl_SR;
+   TTree*  m_tree_WZctrl_Fake;
    
    TH2F*  m_hist_overlap;
    

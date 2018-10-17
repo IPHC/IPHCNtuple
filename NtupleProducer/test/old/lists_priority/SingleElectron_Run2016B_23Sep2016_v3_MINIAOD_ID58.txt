@@ -1,4 +1,0 @@
-root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/kskovpen/FlatTree/Walrus-patch1-v20170127/SingleElectron/Run2016B_23Sep2016_v3_MINIAOD/170127_162809/0001/output_1740.root
-root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/kskovpen/FlatTree/Walrus-patch1-v20170127/SingleElectron/Run2016B_23Sep2016_v3_MINIAOD/170127_162809/0001/output_1741.root
-root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/kskovpen/FlatTree/Walrus-patch1-v20170127/SingleElectron/Run2016B_23Sep2016_v3_MINIAOD/170127_162809/0001/output_1742.root
-root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/kskovpen/FlatTree/Walrus-patch1-v20170127/SingleElectron/Run2016B_23Sep2016_v3_MINIAOD/170127_162809/0001/output_1743.root

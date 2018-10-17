@@ -19,15 +19,13 @@ class JetExt : public Jet
    void  JECUncertainty();
 
    int ID;
-   
-   float qg;
-   
+      
    bool isTight;
    bool tightJetID;
    
    int ntrk;
    
-   //float CSVv2; //Declared in Jet.h -- do the same with other btaggers ?
+   //float CSVv2; //Declared in Jet.h (-> available in output files)
    float cMVAv2;
    float deepCSV;
    float deepCSVudsg;
@@ -35,9 +33,6 @@ class JetExt : public Jet
    float deepCSVbb;
    float deepCSVc;
    float deepCSVcc;
-   
-   float jet_partonFlavour  ;
-   float jet_hadronFlavour  ;
    
    float jet_genJet_pt      ;
    float jet_genJet_E       ;

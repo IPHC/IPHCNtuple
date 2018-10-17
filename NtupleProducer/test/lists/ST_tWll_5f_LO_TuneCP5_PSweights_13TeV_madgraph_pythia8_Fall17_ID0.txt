@@ -1,0 +1,1 @@
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/tHq2017/ST_tWll_5f_LO_TuneCP5_PSweights_13TeV_madgraph_pythia8_Fall17/ST_tWll_5f_LO_TuneCP5_PSweights_13TeV_madgraph_pythia8_Fall17/180610_093231/0000/output_1.root

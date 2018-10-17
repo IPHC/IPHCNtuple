@@ -23,6 +23,9 @@ sync=${sync}
 version=${version}
 
 
+#Printing result of "env" command, to get infos on machine used by job, etc.
+env
+
 echo "Executing .././NtupleProducer --file ${line2} --outfile ${dout_f}/${fout} --isdata ${isdata} --noe ${noe} --xsec ${xsec} --nmax ${nmax}"
 
 #Run the job

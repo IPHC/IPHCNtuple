@@ -115,6 +115,8 @@ int main(int argc, char *argv[])
    for(Long64_t i=0;i<nentries;i++)
      {
 	if( i > nmax && nmax >= 0 ) break;
+
+	if(i%100000 == 0) {cout<<"-- "<<i<<" / "<<nentries<<endl;}
 	
 	ch->GetEntry(i);
 	nt->clearVar();
@@ -124,7 +126,7 @@ int main(int argc, char *argv[])
         ev.read(isdata);
 	
         int n_mu_evt = 0;
-
+	
         // muons
         for(int j=0;j<ntP->mu_n;j++)
 	  {
@@ -150,7 +152,7 @@ int main(int argc, char *argv[])
 	  }
 
         int n_el_evt = 0;
-	
+			
 	// electrons
         for(int j=0;j<ntP->el_n;j++)
 	  {
@@ -176,7 +178,7 @@ int main(int argc, char *argv[])
 	  }
 
 	int n_tau_evt = 0;
-
+		
         // taus
         for(int j=0;j<ntP->tau_n;j++)
 	  {
@@ -202,12 +204,12 @@ int main(int argc, char *argv[])
 	  }
 
         int n_jet_evt = 0;
-
+		
         // jets
         for(int j=0;j<ntP->jet_n;j++)
 	  {
 	     idx = j;
-	     
+	     	     
 	     jet.init();
 	     jet.read(isdata);
 	     
@@ -223,6 +225,7 @@ int main(int argc, char *argv[])
 		  n_jet_evt++;
 	       }
 	  }
+	  	  
 
         if( !isdata )
 	  {
@@ -249,13 +252,13 @@ int main(int argc, char *argv[])
 	if( n_mu_evt > 0 ) n_presel_mu++;
 	if( n_tau_evt > 0 ) n_presel_tau++;
 	if( n_jet_evt > 0 ) n_presel_jet++;
-
+		
 	sc->get(nt,n_presel_el,n_presel_mu,n_presel_tau,n_presel_jet);
-	
+		
 	bool pass = sc->fill(nt,&ev);
 
 	nt->NtEventExt->push_back(ev);
-	
+		
 	nt->fill();
 	
 	if( pass ) nt->write();

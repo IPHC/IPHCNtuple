@@ -58,6 +58,12 @@ class Event : public Base
    bool is_ttZctrl_SR_Data;
    bool is_ttZctrl_SR;
    bool is_ttZctrl_Fake;
+   bool is_WZctrl;
+   bool is_WZctrl_SR_Data;
+   bool is_WZctrl_SR;
+   bool is_WZctrl_Fake;
+   bool is_2lSS_Training;
+   bool is_3l_Training;
 
    float metphi;
    float metpt;
@@ -83,6 +89,8 @@ class Event : public Base
    bool trig_emm;
    bool trig_mmm;
    
+   int mc_pu_trueNumInt; //Moved from EventExt.h
+
    ClassDef(Event,1)
 };
 

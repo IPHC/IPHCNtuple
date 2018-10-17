@@ -50,7 +50,8 @@ void Sync::Init()
 	m_tree_ttWctrl_Flip = new TTree("syncTree_ttWctrl_Flip","Sync Ntuple");
 	m_tree_ttZctrl_SR = new TTree("syncTree_ttZctrl_SR","Sync Ntuple");
 	m_tree_ttZctrl_Fake = new TTree("syncTree_ttZctrl_Fake","Sync Ntuple");
-	
+	m_tree_WZctrl_SR = new TTree("syncTree_WZctrl_SR","Sync Ntuple");
+	m_tree_WZctrl_Fake = new TTree("syncTree_WZctrl_Fake","Sync Ntuple");	
 	m_hist_overlap = new TH2F("overlap","overlap",21,0.,21.,21,0.,21.);
      }   
 }
@@ -81,6 +82,8 @@ void Sync::setBranchAddress()
 	createBranch(m_tree_ttWctrl_Flip);
 	createBranch(m_tree_ttZctrl_SR);
 	createBranch(m_tree_ttZctrl_Fake);
+	createBranch(m_tree_WZctrl_SR);
+	createBranch(m_tree_WZctrl_Fake);     
      }
 }
 
@@ -973,7 +976,10 @@ void Sync::get(Ntuple *nt,int n_presel_el,int n_presel_mu,int n_presel_tau,int n
 	  isGenMatched = 0;
      }
    MHT = sqrt( (jet_px*jet_px) + (jet_py*jet_py) );
-   metLD = ntP->met_pt*0.00397 + MHT*0.00265;
+   
+   metLD = ntP->met_pt*0.6 + MHT*0.4; //CHANGED -- cf. PreApp slides
+   //metLD = ntP->met_pt*0.00397 + MHT*0.00265;
+   
    PFMET = ntP->met_pt;
    PFMETphi = ntP->met_phi;
 }
@@ -1235,30 +1241,37 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 	bool pass_ttWctrl_Fake = 0;
 	bool pass_ttWctrl_Flip_Data = 0;
 	bool pass_ttWctrl_Flip = 0;
+	bool pass_2lSS_Training = 0; //NEW -- ttH training selection
 	  {	     
-	     bool pass_nlep = (nLepFakeable > 1 && nLepTight <= 2);
+	     bool pass_nlep = (nLepFakeable > 1);
 	     if( pass_nlep )
 	       {
+	       /*
 		  bool pass_trig = (nElectronFakeable >= 1 && trig_e) ||
 		    (nMuonFakeable >= 1 && trig_m) ||
 		    (nElectronFakeable >= 2 && trig_ee) ||
 		    (nMuonFakeable >= 2 && trig_mm) ||
-		    (nElectronFakeable >= 1 && nMuonFakeable >= 1 && trig_em);
+		    (nElectronFakeable >= 1 && nMuonFakeable >= 1 && trig_em); */ //From Kirill -- CHANGED
+		    
+		  bool pass_trig = (trig_e || trig_m || trig_ee || trig_mm || trig_em);
 		  bool pass_fakeable_pt = (elmuFakeable->at(0).conept > 25. && elmuFakeable->at(1).conept > 15.);
 		  bool pass_tight_charge = (elmuFakeable->at(0).tightCharge && elmuFakeable->at(1).tightCharge);
 		  bool pass_tau_veto = (nTauLoose == 0);
 		  bool pass_njet = (nJetLoose >= 4 && (nJetLooseBL >= 2 || nJetLooseBM >= 1));
 		  bool pass_njet3 = (nJetLoose == 3 && (nJetLooseBL >= 2 || nJetLooseBM >= 1));
-		  bool pass_metLD = (metLD > 0.2);
+		  bool pass_lepTight = (nLepTight <= 2);
+		  bool pass_metLD = (metLD > 30);
+		  //bool pass_metLD = (metLD > 0.2); //CHANGED
 		  if( !(elmuFakeable->at(0).iElec >= 0) || !(elmuFakeable->at(1).iElec >= 0) ) pass_metLD = 1;
-		  
+  		  bool pass_has_elec = (elmuFakeable->at(0).iElec >= 0 || elmuFakeable->at(1).iElec >= 0);
+  
 		  bool pass_tight = (elmuFakeable->at(0).isTightTTH && elmuFakeable->at(1).isTightTTH);
 		  bool pass_ss = (elmuFakeable->at(0).charge*elmuFakeable->at(1).charge > 0);
 		  bool pass_truth = (elmuFakeable->at(0).hasMCMatch && elmuFakeable->at(1).hasMCMatch);
 
-		  pass_2lSS = (pass_trig && pass_fakeable_pt && pass_tight_charge && pass_mll && pass_tau_veto && pass_mee && pass_metLD && pass_njet);
+		  pass_2lSS = (pass_trig && pass_lepTight && pass_fakeable_pt && pass_tight_charge && pass_mll && pass_tau_veto && pass_mee && pass_metLD && pass_njet);
 		  
-		  pass_ttWctrl = (pass_trig && pass_fakeable_pt && pass_tight_charge && pass_mll && pass_tau_veto && pass_mee && pass_metLD && pass_njet3);
+		  pass_ttWctrl = (pass_trig && pass_lepTight && pass_fakeable_pt && pass_tight_charge && pass_mll && pass_tau_veto && pass_mee && pass_metLD && pass_njet3);
 
 		  pass_2lSS_SR_Data = (pass_2lSS &&
 				       pass_tight && pass_ss);
@@ -1276,8 +1289,6 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 		  pass_ttWctrl_Fake = (pass_ttWctrl &&
 				       pass_ss && !pass_tight);
 
-		  bool pass_has_elec = (elmuFakeable->at(0).iElec >= 0 || elmuFakeable->at(1).iElec >= 0);
-
 		  pass_2lSS_Flip_Data = (pass_2lSS &&
 					 pass_has_elec && !pass_ss && pass_tight);
 		  
@@ -1287,6 +1298,8 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 					    pass_has_elec && !pass_ss && pass_tight);
 
 		  pass_ttWctrl_Flip = (pass_ttWctrl_Flip_Data && pass_truth);
+		  
+		  pass_2lSS_Training = (pass_trig && pass_fakeable_pt && pass_ss && pass_njet);
 		  
 		  for(int d=0;d<evdebug->size();d++)
 		    {		       
@@ -1361,7 +1374,7 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 		  bool pass_tight_charge = (elmuFakeable->at(0).tightCharge && elmuFakeable->at(1).tightCharge);
 		  bool pass_tau = (nTauLoose >= 1);
 		  bool pass_njet = (nJetLoose >= 3 && (nJetLooseBL >= 2 || nJetLooseBM >= 1));
-		  bool pass_metLD = (metLD > 0.2);
+		  bool pass_metLD = (metLD > 0.2); //FIXME -- definition changed
 		  if( !(elmuFakeable->at(0).iElec >= 0) || !(elmuFakeable->at(1).iElec >= 0) ) pass_metLD = 1;
 		  
 		  bool pass_tight = (elmuFakeable->at(0).isTightTTH && elmuFakeable->at(1).isTightTTH);
@@ -1444,7 +1457,7 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 		    (nElectronFakeable >= 1 && nMuonFakeable >= 1 && trig_em);
 		  bool pass_fakeable_pt = (elmuFakeable->at(0).conept > 25. && elmuFakeable->at(1).conept > 10.);
 		  if( elmuFakeable->at(1).iElec >= 0 ) pass_fakeable_pt = pass_fakeable_pt && (elmuFakeable->at(1).conept > 15.);
-		  bool pass_metLD = (((metLD > 0.2 && nSFOS == 0) || (metLD > 0.3 && nSFOS > 0)) || nJetLoose >= 4);
+		  bool pass_metLD = (((metLD > 0.2 && nSFOS == 0) || (metLD > 0.3 && nSFOS > 0)) || nJetLoose >= 4); //FIXME -- definition changed
 		  int lep_charge_sum = elmuFakeable->at(0).charge+elmuFakeable->at(1).charge+nt->NtTauFakeableExt->at(0).charge+nt->NtTauFakeableExt->at(1).charge;
 		  bool pass_charge = (lep_charge_sum == 0);
 		  bool pass_njet = (nJetLoose >= 2 && (nJetLooseBL >= 2 || nJetLooseBM >= 1));
@@ -1498,10 +1511,16 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 	bool pass_ttZctrl_SR_Data = 0;
 	bool pass_ttZctrl_SR = 0;
 	bool pass_ttZctrl_Fake = 0;
+	bool pass_WZctrl = 0;
+	bool pass_WZctrl_SR_Data = 0;
+	bool pass_WZctrl_SR = 0;
+	bool pass_WZctrl_Fake = 0;
+	bool pass_3l_Training = 0; //NEW -- ttH training selection
 	  {
 	     bool pass_nlep = (nLepFakeable > 2);
 	     if( pass_nlep )
 	       {
+	          /*
 		  bool pass_trig = (nElectronFakeable >= 1 && trig_e) ||
 		    (nMuonFakeable >= 1 && trig_m) ||
 		    (nElectronFakeable >= 2 && trig_ee) ||
@@ -1510,14 +1529,20 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 		    (nElectronFakeable >= 3 && trig_eee) ||
 		    (nElectronFakeable >= 2 && nMuonFakeable >= 1 && trig_eem) ||
 		    (nElectronFakeable >= 1 && nMuonFakeable >= 2 && trig_emm) ||
-		    (nMuonFakeable >= 3 && trig_mmm);
+		    (nMuonFakeable >= 3 && trig_mmm);*/ //From Kirill -- CHANGED
+		    
+		  bool pass_trig = (trig_e || trig_m || trig_ee || trig_mm || trig_em || trig_eee || trig_mmm || trig_eem || trig_emm);
 		  bool pass_nlep = (nLepTight <= 3);
-		  bool pass_fakeable_pt = (elmuFakeable->at(0).conept > 25. && elmuFakeable->at(1).conept > 15. && elmuFakeable->at(2).conept > 10.);
+		  bool pass_fakeable_pt = (elmuFakeable->at(0).conept > 25. && elmuFakeable->at(1).conept > 15. && elmuFakeable->at(2).conept > 15.);
+		  //Changed 3rd pT cut from 10 to 15
 		  bool pass_tau_veto = (nTauLoose == 0);
-		  bool pass_metLD = (((metLD > 0.2 && nSFOS == 0) || (metLD > 0.3 && nSFOS > 0)) || nJetLoose >= 4);
+		  bool pass_metLD = (((metLD > 30 && nSFOS == 0) || (metLD > 45 && nSFOS > 0)) || nJetLoose >= 4);
+		  // bool pass_metLD = (((metLD > 0.2 && nSFOS == 0) || (metLD > 0.3 && nSFOS > 0)) || nJetLoose >= 4); //CHANGED
 		  int lep_charge_sum = elmuFakeable->at(0).charge+elmuFakeable->at(1).charge+elmuFakeable->at(2).charge;
 		  bool pass_charge = (lep_charge_sum == -1 || lep_charge_sum == 1);
 		  bool pass_njet = (nJetLoose >= 2 && (nJetLooseBL >= 2 || nJetLooseBM >= 1));
+		  bool pass_njet_ttZ = (nJetLoose >= 2 && nJetLooseBL >= 2 && nJetLooseBM >= 1);
+		  bool pass_njet_WZ = (nJetLoose >= 2 && nJetLooseBL <= 1 && nJetLooseBM == 0);
 		  bool pass_mllll = (mllll > 140 || mllll < 0);
 		  
 		  bool pass_tight = (elmuFakeable->at(0).isTightTTH && elmuFakeable->at(1).isTightTTH && elmuFakeable->at(2).isTightTTH);
@@ -1526,23 +1551,32 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 		  pass_3l = (pass_trig && pass_fakeable_pt && pass_mll && pass_mll_z && pass_tau_veto && pass_metLD && pass_charge && pass_njet &&
 		  pass_mllll && pass_nlep);
 		  
-		  pass_ttZctrl = (pass_trig && pass_fakeable_pt && pass_mll && !pass_mll_z && pass_metLD && pass_charge && pass_njet);
+		  pass_ttZctrl = (pass_trig && pass_fakeable_pt && pass_mll && !pass_mll_z && pass_metLD && pass_charge && pass_njet_ttZ);
+		  
+		  pass_WZctrl = (pass_trig && pass_fakeable_pt && pass_mll && !pass_mll_z && pass_tau_veto && pass_metLD && pass_charge &&
+		  pass_njet_WZ && pass_mllll && pass_nlep);
 
 		  pass_3l_SR_Data = (pass_3l &&
 				     pass_tight);
 		  
 		  pass_3l_SR = (pass_3l_SR_Data && pass_truth);
 
-		  pass_ttZctrl_SR_Data = (pass_ttZctrl &&
-					  pass_tight);
+		  pass_ttZctrl_SR_Data = (pass_ttZctrl && pass_tight);
+		  
+		  pass_WZctrl_SR_Data = (pass_WZctrl && pass_tight);
 
 		  pass_ttZctrl_SR = (pass_ttZctrl_SR_Data && pass_truth);
+		  
+		  pass_WZctrl_SR = (pass_WZctrl_SR_Data && pass_truth);
 		  
 		  pass_3l_Fake = (pass_3l &&
 				  !pass_tight);
 
-		  pass_ttZctrl_Fake = (pass_ttZctrl &&
-				       !pass_tight);
+		  pass_ttZctrl_Fake = (pass_ttZctrl && !pass_tight);
+		  
+		  pass_WZctrl_Fake = (pass_WZctrl && !pass_tight);
+		  
+		  pass_3l_Training = (pass_trig && pass_fakeable_pt && pass_mll_z && nJetLooseBL >= 2); //NB : missing metLD cut (different metLD def used...)
 
 		  for(int d=0;d<evdebug->size();d++)
 		    {		       
@@ -1752,6 +1786,12 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 	ev->is_ttZctrl_SR_Data = pass_ttZctrl_SR_Data;
 	ev->is_ttZctrl_SR = pass_ttZctrl_SR;
 	ev->is_ttZctrl_Fake = pass_ttZctrl_Fake;
+	ev->is_WZctrl = pass_WZctrl;
+	ev->is_WZctrl_SR_Data = pass_WZctrl_SR_Data;
+	ev->is_WZctrl_SR = pass_WZctrl_SR;
+	ev->is_WZctrl_Fake = pass_WZctrl_Fake;
+	ev->is_2lSS_Training = pass_2lSS_Training;
+	ev->is_3l_Training = pass_3l_Training;
 
 	if( sync == 2 )
 	  {	     
@@ -1776,15 +1816,17 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 	     if( pass_ttWctrl_Flip ) m_tree_ttWctrl_Flip->Fill();
 	     if( pass_ttZctrl_SR ) m_tree_ttZctrl_SR->Fill();
 	     if( pass_ttZctrl_Fake ) m_tree_ttZctrl_Fake->Fill();
+	     if( pass_WZctrl_SR ) m_tree_WZctrl_SR->Fill();
+	     if( pass_WZctrl_Fake ) m_tree_WZctrl_Fake->Fill();
 	  }	
 	
 	delete elmuLoose;
 	delete elmuTight;
 	delete elmuFakeable;
 	
-	int pass_cat[30];
-	int pass_cat_data[12];
-	std::string name_cat[30];
+	int pass_cat[35];
+	int pass_cat_data[13];
+	std::string name_cat[35];
 	
 	pass_cat[0] = pass_1l2tau;           name_cat[0] = "1l2tau";
 	pass_cat[1] = pass_1l2tau_SR;        name_cat[1] = "1l2tau_SR";
@@ -1816,6 +1858,11 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 	pass_cat[27] = pass_ttZctrl;         name_cat[27] = "ttZctrl";
 	pass_cat[28] = pass_ttZctrl_SR;      name_cat[28] = "ttZctrl_SR";
 	pass_cat[29] = pass_ttZctrl_Fake;    name_cat[29] = "ttZctrl_Fake";
+	pass_cat[30] = pass_WZctrl;          name_cat[30] = "WZctrl";
+	pass_cat[31] = pass_WZctrl_SR;       name_cat[31] = "WZctrl_SR";
+	pass_cat[32] = pass_WZctrl_Fake;     name_cat[32] = "WZctrl_Fake";
+	pass_cat[33] = pass_2lSS_Training;   name_cat[33] = "2lSS_Training";
+	pass_cat[34] = pass_3l_Training;     name_cat[34] = "3l_Training";
 
 	pass_cat_data[0] = pass_1l2tau_SR_Data;
 	pass_cat_data[1] = pass_2lSS_SR_Data;
@@ -1829,9 +1876,10 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 	pass_cat_data[9] = pass_ttWctrl_SR_Data;
 	pass_cat_data[10] = pass_ttWctrl_Flip_Data;
 	pass_cat_data[11] = pass_ttZctrl_SR_Data;
+	pass_cat_data[12] = pass_WZctrl_SR_Data;
 	
 	int pass_event = 0;
-	for(int ic=0;ic<30;ic++)
+	for(int ic=0;ic<35;ic++)
 	  {	     
 	     pass_event += pass_cat[ic];
 	     if( sync != 0 )
@@ -1842,7 +1890,7 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 	  }
 	if( sync == 0 )
 	  {	     
-	     for(int ic=0;ic<12;ic++) pass_event += pass_cat_data[ic];
+	     for(int ic=0;ic<13;ic++) pass_event += pass_cat_data[ic];
 	  }	
 	
 	if( pass_event == 0 ) pass = 0;
@@ -1850,11 +1898,11 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 	  {
 	     if( sync != 0 )
 	       {
-		  for(int ic=0;ic<30;ic++)
+		  for(int ic=0;ic<35;ic++)
 		    {
 		       if( pass_cat[ic] == 1 )
 			 {
-			    for(int icc=0;icc<30;icc++)
+			    for(int icc=0;icc<35;icc++)
 			      {		       
 				 if( pass_cat[icc] == 1 )
 				   {			    

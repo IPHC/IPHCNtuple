@@ -37,7 +37,6 @@ class EventExt : public Event
    std::vector<std::string> pdf_ids;
    
    float mc_ptHat;
-   int   mc_pu_trueNumInt;
    
    float disc_TT;
   
