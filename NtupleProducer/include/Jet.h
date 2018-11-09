@@ -21,7 +21,8 @@ class Jet : public Base
    
    float jet_partonFlavour  ;
    float jet_hadronFlavour  ;
-   float qg;
+   float qgtag;
+   float pileupJetId;
 
    ClassDef(Jet,1)
 };

@@ -22,7 +22,7 @@ class Tree {
    // Declaration of leaf types
    // 
    Int_t           ev_run;
-   Int_t           ev_id;
+   Double_t        ev_id;
    Int_t           ev_lumi;
    Float_t         ev_rho;
    

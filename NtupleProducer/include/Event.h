@@ -12,7 +12,7 @@ class Event : public Base
    virtual ~Event();
 
    float mc_weight;
-   float   id;
+   Double_t id;
    int   run;
    int   lumi;
    
@@ -64,6 +64,8 @@ class Event : public Base
    bool is_WZctrl_Fake;
    bool is_2lSS_Training;
    bool is_3l_Training;
+   bool is_2lSS_LooseSel;
+   bool is_3l_LooseSel;
 
    float metphi;
    float metpt;

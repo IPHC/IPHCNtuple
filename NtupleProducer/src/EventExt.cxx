@@ -14,6 +14,7 @@ EventExt::~EventExt()
 void EventExt::read(bool isdata)
 {
    id               = ntP->ev_id;
+   
    run              = ntP->ev_run;
    lumi             = ntP->ev_lumi;
    rho              = ntP->ev_rho;

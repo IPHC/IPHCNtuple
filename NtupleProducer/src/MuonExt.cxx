@@ -179,7 +179,7 @@ void MuonExt::sel()
 
    for(int d=0;d<evdebug->size();d++)
      {		       
-	int evId = ntP->ev_id;
+	double evId = ntP->ev_id;
 	if( evId == evdebug->at(d) )
 	  {
 	     std::cout << "------------------------------" << std::endl;

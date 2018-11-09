@@ -27,14 +27,14 @@ class Sync
    
    void setBranchAddress();
    void initVar();
-   void get(Ntuple *nt,int n_presel_el,int n_presel_mu,int n_presel_tau,int n_presel_jet);
+   void get(Ntuple *nt,int npresel_el,int npresel_mu,int npresel_tau,int npresel_jet,int nfakeable_el,int nfakeable_mu,int nBL);
    bool fill(Ntuple *nt,EventExt *ev);
    
    TFile*  m_file;
 
    // https://gitlab.cern.ch/ttH_leptons/doc/blob/master/2017/taus/sync/vars.md
    
-   int nEvent;
+   double nEvent; //changed from int to double
    int ls;
    int run;
    int n_presel_mu;

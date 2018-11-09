@@ -21,7 +21,8 @@ void JetExt::read(bool isdata)
    eta        = ntP->jet_eta->at(idx);   
    phi        = ntP->jet_phi->at(idx);
    m          = ntP->jet_m->at(idx);
-   qg 	      = ntP->jet_qgtag->at(idx);
+   qgtag      = ntP->jet_qgtag->at(idx);
+   pileupJetId = ntP->jet_pileupJetId->at(idx);
    
    tightJetID    = ntP->jet_tightJetID->at(idx);
       
@@ -57,7 +58,8 @@ void JetExt::init()
    eta     = -100.;
    phi     = -100.;
    m       = -100.;
-   qg      = -100.;
+   qgtag      = -100.;
+   pileupJetId = -100.;
    
    tightJetID = 0;
    isLooseTTH = 0;
@@ -98,9 +100,18 @@ void JetExt::sel(int sync)
    float jet_pt_JESup = pt*(1+JES_uncert);
 
    bool pass_pt = (pt > 25.);
-   if( sync != 2 ) pass_pt = pass_pt || (jet_pt_JESup > 25.);
-   //bool pass_eta = (fabs(eta) < 2.4); //ttH2017 //FIXME
-   bool pass_eta = (fabs(eta) < 5.0); //tHq2017 //FIXME
+   
+   bool pass_eta = false;
+   if( sync != 2 ) 
+   {
+   	 pass_pt = pass_pt || (jet_pt_JESup > 25.);
+	 pass_eta = (fabs(eta) < 5.0); //tHq2017 //Default cut now (always store tHq events)
+   }   
+   else //For synchro with ttH, remove forward jets and don't apply pt cut
+   {
+   	pass_eta = (fabs(eta) < 2.4); //ttH2017 
+   }
+
    bool pass_tightJetID = (tightJetID);
 
    bool pass_lepOverlap = 1;
@@ -184,7 +195,7 @@ void JetExt::sel(int sync)
 
    for(int d=0;d<evdebug->size();d++)
      {		       
-	int evId = ntP->ev_id;
+	double evId = ntP->ev_id;
 	if( evId == evdebug->at(d) )
 	  {
 	     std::cout << "------------------------------" << std::endl;

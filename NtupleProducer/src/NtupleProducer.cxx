@@ -93,7 +93,6 @@ int main(int argc, char *argv[])
    TriggerObjExt trigObj;
    
    evdebug = new std::vector<int>();
-//   evdebug->push_back(14140553);
 
    int nlep = 0;
    int njet = 0;
@@ -125,7 +124,7 @@ int main(int argc, char *argv[])
         ev.init();
         ev.read(isdata);
 	
-        int n_mu_evt = 0;
+        int n_mu_evt = 0, n_mu_fakeable_evt = 0;
 	
         // muons
         for(int j=0;j<ntP->mu_n;j++)
@@ -144,6 +143,7 @@ int main(int argc, char *argv[])
 	     if( mu.isFakeableTTH )
 	       {
 		  nt->NtMuonFakeableExt->push_back(mu);
+		  n_mu_fakeable_evt++;
 	       }
 	     if( mu.isTightTTH )
 	       {
@@ -151,7 +151,7 @@ int main(int argc, char *argv[])
 	       }
 	  }
 
-        int n_el_evt = 0;
+        int n_el_evt = 0, n_el_fakeable_evt = 0;
 			
 	// electrons
         for(int j=0;j<ntP->el_n;j++)
@@ -170,6 +170,7 @@ int main(int argc, char *argv[])
 	     if( el.isFakeableTTH  )
 	       {
 		  nt->NtElectronFakeableExt->push_back(el);
+		  n_el_fakeable_evt++;
 	       }
 	     if( el.isTightTTH  )
 	       {
@@ -204,6 +205,7 @@ int main(int argc, char *argv[])
 	  }
 
         int n_jet_evt = 0;
+	int nBL = 0;
 		
         // jets
         for(int j=0;j<ntP->jet_n;j++)
@@ -223,8 +225,10 @@ int main(int argc, char *argv[])
 	       {
 		  nt->NtJetLooseExt->push_back(jet);
 		  n_jet_evt++;
+		  
+		  if(jet.isLooseBTag) {nBL++;}
 	       }
-	  }
+	       	  }
 	  	  
 
         if( !isdata )
@@ -253,7 +257,7 @@ int main(int argc, char *argv[])
 	if( n_tau_evt > 0 ) n_presel_tau++;
 	if( n_jet_evt > 0 ) n_presel_jet++;
 		
-	sc->get(nt,n_presel_el,n_presel_mu,n_presel_tau,n_presel_jet);
+	sc->get(nt,n_el_evt,n_mu_evt,n_tau_evt,n_jet_evt,n_el_fakeable_evt,n_mu_fakeable_evt, nBL);
 		
 	bool pass = sc->fill(nt,&ev);
 
