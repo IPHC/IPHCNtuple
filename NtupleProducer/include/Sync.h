@@ -34,7 +34,7 @@ class Sync
 
    // https://gitlab.cern.ch/ttH_leptons/doc/blob/master/2017/taus/sync/vars.md
    
-   double nEvent; //changed from int to double
+   Int_t nEvent;
    int ls;
    int run;
    int n_presel_mu;

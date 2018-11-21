@@ -28,6 +28,7 @@ Sync::~Sync()
 void Sync::Init()
 {
    if( sync != 0 ) m_file = new TFile(fname_out.c_str(),"RECREATE");
+
    if( sync == 1 ) m_tree = new TTree("syncTree","Sync Ntuple");
    if( sync == 2 )
      {
@@ -91,7 +92,7 @@ void Sync::setBranchAddress()
 
 void Sync::createBranch(TTree *tr)
 {
-   tr->Branch("nEvent",&nEvent,"nEvent/I");
+   tr->Branch("nEvent",&nEvent,"nEvent/I"); //changed from int to double
    tr->Branch("ls",&ls,"ls/I");
    tr->Branch("run",&run,"run/I");
    tr->Branch("n_presel_mu",&n_presel_mu,"n_presel_mu/I");
@@ -674,6 +675,12 @@ void Sync::get(Ntuple *nt,int npresel_el,int npresel_mu,int npresel_tau,int npre
    n_presel_jet = npresel_jet;
    nBJetLoose = nbl;
 
+   //CHANGED -- sort by conePt (leptons) & pT (jets) the original collections themselves, so that we get ordered object for object sync
+   std::sort(nt->NtMuonLooseExt->begin(),nt->NtMuonLooseExt->end(),sort_by_conept());
+   std::sort(nt->NtElectronLooseExt->begin(),nt->NtElectronLooseExt->end(),sort_by_conept());
+   std::sort(nt->NtTauLooseExt->begin(),nt->NtTauLooseExt->end(),sort_by_conept());
+   std::sort(nt->NtJetLooseExt->begin(),nt->NtJetLooseExt->end(),sort_by_pt());
+
    int nMuon = nt->NtMuonLooseExt->size();
 
    if( nMuon > 0 )
@@ -689,7 +696,7 @@ void Sync::get(Ntuple *nt,int npresel_el,int npresel_mu,int npresel_tau,int npre
 	mu1_miniRelIso             = mu.iso;
 	mu1_miniIsoCharged         = mu.lepMVA_miniRelIsoCharged*mu1_pt;
 	mu1_miniIsoNeutral         = mu.lepMVA_miniRelIsoNeutral*mu1_pt;
-	mu1_PFRelIso04             = mu.isoR04;
+	mu1_PFRelIso04             = mu.PFRelIso04;
 	mu1_jetNDauChargedMVASel   = mu.lepMVA_jetNDauChargedMVASel;
 	mu1_jetPtRel               = mu.lepMVA_jetPtRelv2;
 	mu1_jetPtRatio             = mu.lepMVA_jetPtRatio;
@@ -720,7 +727,7 @@ void Sync::get(Ntuple *nt,int npresel_el,int npresel_mu,int npresel_tau,int npre
 	mu2_miniRelIso             = mu.iso;
 	mu2_miniIsoCharged         = mu.lepMVA_miniRelIsoCharged*mu1_pt;
 	mu2_miniIsoNeutral         = mu.lepMVA_miniRelIsoNeutral*mu1_pt;
-	mu2_PFRelIso04             = mu.isoR04;
+	mu2_PFRelIso04             = mu.PFRelIso04;
 	mu2_jetNDauChargedMVASel   = mu.lepMVA_jetNDauChargedMVASel;
 	mu2_jetPtRel               = mu.lepMVA_jetPtRelv2;
 	mu2_jetPtRatio             = mu.lepMVA_jetPtRatio;
@@ -753,7 +760,7 @@ void Sync::get(Ntuple *nt,int npresel_el,int npresel_mu,int npresel_tau,int npre
 	ele1_miniRelIso             = ele.miniIso;
 	ele1_miniIsoCharged         = ele.lepMVA_miniRelIsoCharged*ele1_pt;
 	ele1_miniIsoNeutral         = ele.lepMVA_miniRelIsoNeutral*ele1_pt;
-	ele1_PFRelIso04             = ele.isoR04;
+	ele1_PFRelIso04             = ele.PFRelIso04;
 	ele1_jetNDauChargedMVASel   = ele.lepMVA_jetNDauChargedMVASel;
 	ele1_jetPtRel               = ele.lepMVA_jetPtRelv2;
 	ele1_jetPtRatio             = ele.lepMVA_jetPtRatio;
@@ -790,7 +797,7 @@ void Sync::get(Ntuple *nt,int npresel_el,int npresel_mu,int npresel_tau,int npre
 	ele2_miniRelIso             = ele.miniIso;
 	ele2_miniIsoCharged         = ele.lepMVA_miniRelIsoCharged*ele1_pt;
 	ele2_miniIsoNeutral         = ele.lepMVA_miniRelIsoNeutral*ele1_pt;
-	ele2_PFRelIso04             = ele.isoR04;
+	ele2_PFRelIso04             = ele.PFRelIso04;
 	ele2_jetNDauChargedMVASel   = ele.lepMVA_jetNDauChargedMVASel;
 	ele2_jetPtRel               = ele.lepMVA_jetPtRelv2;
 	ele2_jetPtRatio             = ele.lepMVA_jetPtRatio;
@@ -1547,7 +1554,7 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 		  int lep_charge_sum = elmuFakeable->at(0).charge+elmuFakeable->at(1).charge+elmuFakeable->at(2).charge;
 		  bool pass_charge = (lep_charge_sum == -1 || lep_charge_sum == 1);
 		  bool pass_njet = (nJetLoose >= 2 && (nJetLooseBL >= 2 || nJetLooseBM >= 1));
-		  bool pass_njet_ttZ = (nJetLoose >= 2 && nJetLooseBL >= 2 && nJetLooseBM >= 1);
+		  // bool pass_njet_ttZ = (nJetLoose >= 2 && nJetLooseBL >= 2 && nJetLooseBM >= 1);
 		  bool pass_njet_WZ = (nJetLoose >= 2 && nJetLooseBL <= 1 && nJetLooseBM == 0);
 		  bool pass_njet_loose = (nJetLoose >= 2 && nJetLooseBL >= 1);
 		  bool pass_mllll = (mllll > 140 || mllll < 0);
@@ -1558,7 +1565,7 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 		  pass_3l = (pass_trig && pass_fakeable_pt && pass_mll && pass_mll_z && pass_tau_veto && pass_metLD && pass_charge && pass_njet &&
 		  pass_mllll && pass_nlep);
 
-		  pass_ttZctrl = (pass_trig && pass_fakeable_pt && pass_mll && !pass_mll_z && pass_metLD && pass_charge && pass_njet_ttZ);
+		  pass_ttZctrl = (pass_trig && pass_fakeable_pt && pass_mll && !pass_mll_z && pass_metLD && pass_charge && pass_njet);
 
 		  pass_WZctrl = (pass_trig && pass_fakeable_pt && pass_mll && !pass_mll_z && pass_tau_veto && pass_metLD && pass_charge && nJetLoose >= 2 && !pass_njet && pass_mllll && pass_nlep);
 

@@ -98,6 +98,7 @@ void Tree::Init(TChain *ch)
    el_ip3dErr = 0;
    el_miniIso = 0;
    el_miniIsoTTH = 0;
+   el_PFRelIso04 = 0;
    el_conept = 0;
    el_ooEmooP = 0;
    
@@ -185,6 +186,7 @@ void Tree::Init(TChain *ch)
    mu_ip3dErr = 0;
    mu_miniIso = 0;
    mu_miniIsoTTH = 0;
+   mu_PFRelIso04 = 0;
    mu_isLooseMuon = 0;
    mu_conept = 0;
    
@@ -875,6 +877,7 @@ void Tree::Init(TChain *ch)
    fChain->SetBranchAddress("el_ip3dErr", &el_ip3dErr, &b_el_ip3dErr);
    fChain->SetBranchAddress("el_miniIso", &el_miniIso, &b_el_miniIso);
    fChain->SetBranchAddress("el_miniIsoTTH", &el_miniIsoTTH, &b_el_miniIsoTTH);
+   fChain->SetBranchAddress("el_PFRelIso04", &el_PFRelIso04, &b_el_PFRelIso04);
    fChain->SetBranchAddress("el_conept", &el_conept, &b_el_conept);
    fChain->SetBranchAddress("el_ooEmooP", &el_ooEmooP, &b_el_ooEmooP);
    
@@ -963,6 +966,7 @@ void Tree::Init(TChain *ch)
    fChain->SetBranchAddress("mu_ip3dErr", &mu_ip3dErr, &b_mu_ip3dErr);
    fChain->SetBranchAddress("mu_miniIso", &mu_miniIso, &b_mu_miniIso);
    fChain->SetBranchAddress("mu_miniIsoTTH", &mu_miniIsoTTH, &b_mu_miniIsoTTH);
+   fChain->SetBranchAddress("mu_PFRelIso04", &mu_PFRelIso04, &b_mu_PFRelIso04);
    fChain->SetBranchAddress("mu_conept", &mu_conept, &b_mu_conept);
    fChain->SetBranchAddress("mu_isLooseMuon", &mu_isLooseMuon, &b_mu_isLooseMuon);
 

@@ -16,7 +16,8 @@ class JetExt : public Jet
    void  read(bool isdata);
    void  init();
    void  setJESUncertainty(float unc);
-   void  JECUncertainty();
+   //void  JECUncertainty(); //obsolete JER
+   void apply_JER_smearing(bool, float, float, float, float);
 
    int ID;
       
@@ -40,12 +41,6 @@ class JetExt : public Jet
    float jet_genParton_pt     ;
    float jet_genParton_E      ;
    float jet_genParton_id     ;
-   
-   float JES_uncert;
-   
-   float pt_JER;
-   float pt_JER_down;
-   float pt_JER_up;
    
    ClassDef(JetExt,1)
 };

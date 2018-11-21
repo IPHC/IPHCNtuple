@@ -212,5 +212,28 @@ void TauExt::sel()
    
    isLooseTTH = ( isFakeableTTH &&
 		  pass_byLooseIsolationMVArun2v1DBdR03oldDMwLT );
+		  
+		  
+		  
+     for(int d=0;d<evdebug->size();d++)
+     {		       
+	double evId = ntP->ev_id;
+	if( evId == evdebug->at(d) )
+	  {
+	     std::cout << "------------------------------" << std::endl;
+	     std::cout << "Event #" << evId << std::endl;
+	     std::cout << "  Tau #" << ID << std::endl;
+	     std::cout << "  pt = " << pt << std::endl;
+	     std::cout << "  eta = " << eta << std::endl;
+	     std::cout << "  phi = " << phi << std::endl;
+	     std::cout << "  pass_pt = " << pass_pt << std::endl;
+	     std::cout << "  pass_eta = " << pass_eta << std::endl;
+	     std::cout << "  pass_dxy = " << pass_dxy << std::endl;
+	     std::cout << "  pass_elOverlap = " << pass_elOverlap << std::endl;
+	     std::cout << "  pass_muOverlap = " << pass_muOverlap << std::endl;
+	     std::cout << "  isFakeableTTH = " << isFakeableTTH << std::endl;
+	     std::cout << "  isLooseTTH = " << isLooseTTH << std::endl;
+	  }		  
+     }	
 }
 

@@ -9,4 +9,4 @@ export LD_LIBRARY_PATH=${cdir}:${cdir}/obj:$LD_LIBRARY_PATH
 --tree FlatTree/tree \
 --nmax -1 \
 --isdata 0 \
---sync 2
+--sync $1

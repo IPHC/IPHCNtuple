@@ -12,7 +12,7 @@ class Event : public Base
    virtual ~Event();
 
    float mc_weight;
-   Double_t id;
+   Int_t id;
    int   run;
    int   lumi;
    

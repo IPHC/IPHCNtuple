@@ -25,6 +25,7 @@ dout_f="/opt/sbg/scratch1/cms/ntonon/ntuples_prod_tHq"
 
 #version="ttH2017" #output subdir.
 version="tHq2017" #output subdir.
+#version="tHq2017_v2" #output subdir.
 
 echo "CMSSW_RELEASE_BASE" $CMSSW_RELEASE_BASE
 

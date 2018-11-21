@@ -37,7 +37,7 @@ class ElectronExt : public Electron
    float   sip3d;
    float   ooEmooP;
    float   miniIso;
-   float   isoR04;
+   float   PFRelIso04; //renamed
    int     nlosthits;
    bool    passCV;
    bool    passPtEta;

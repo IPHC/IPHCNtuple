@@ -22,7 +22,7 @@ class Tree {
    // Declaration of leaf types
    // 
    Int_t           ev_run;
-   Double_t        ev_id;
+   Int_t        ev_id;
    Int_t           ev_lumi;
    Float_t         ev_rho;
    
@@ -97,6 +97,7 @@ class Tree {
    vector<float>   *el_ip3dErr;
    vector<float>   *el_miniIso;
    vector<float>   *el_miniIsoTTH;
+   vector<float>   *el_PFRelIso04;
    vector<float>   *el_conept;
    vector<float>   *el_ooEmooP;
    
@@ -185,6 +186,7 @@ class Tree {
    vector<float>   *mu_ip3dErr;
    vector<float>   *mu_miniIso;
    vector<float>   *mu_miniIsoTTH;
+   vector<float>   *mu_PFRelIso04;
    vector<bool>    *mu_isLooseMuon;
    vector<float>   *mu_conept;
    
@@ -913,6 +915,7 @@ class Tree {
    TBranch        *b_el_ip3dErr;
    TBranch        *b_el_miniIso;
    TBranch        *b_el_miniIsoTTH;
+   TBranch        *b_el_PFRelIso04;
    TBranch        *b_el_conept;   //!
    TBranch        *b_el_ooEmooP;   //!
    
@@ -1001,6 +1004,7 @@ class Tree {
    TBranch        *b_mu_ip3dErr;   //!
    TBranch        *b_mu_miniIso;
    TBranch        *b_mu_miniIsoTTH;
+   TBranch	  *b_mu_PFRelIso04;
    TBranch        *b_mu_isLooseMuon;
    TBranch        *b_mu_conept;   //!
 

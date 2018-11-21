@@ -85,6 +85,9 @@ void ElectronExt::read(bool isdata)
 	gen_charge = ntP->el_gen_charge->at(idx);
 	gen_dr = ntP->el_gen_dr->at(idx);
    } 
+   
+   //FIXME -- test
+   //PFRelIso04 = ntP->el_PFRelIso04->at(idx);
 }
 
 void ElectronExt::init()
@@ -114,7 +117,7 @@ void ElectronExt::init()
    dxy                            = -100;
    dz                             = -100;
    miniIso                        = -100;
-   isoR04                         = -100;
+   PFRelIso04                     = -100;
    nlosthits                      = -100;
    sip3d                          = -100;
    ooEmooP                        = -100;
@@ -193,7 +196,11 @@ void ElectronExt::sel()
      }   
    
    float EffArea = getEffArea(superCluster_eta);
-   isoR04 = (pt > 0.) ? (ntP->el_pfIso_sumChargedHadronPt->at(idx) + std::max( 0.0, double(ntP->el_pfIso_sumNeutralHadronEt->at(idx)+ntP->el_pfIso_sumPhotonEt->at(idx) - ntP->ev_rho*EffArea )))/pt : -9999;
+   
+   //CHANGED -- was using cone size of 0.3 instead of 0.4 ==> Need to call different variables, and rescale effArea
+   //isoR04 = (pt > 0.) ? (ntP->el_chargedHadronIso->at(idx) + std::max( 0.0, double(ntP->el_neutralHadronIso->at(idx)+ntP->el_photonIso->at(idx) - ntP->ev_rho*EffArea )))/pt : -9999;
+   
+   //isoR04 = (pt > 0.) ? (ntP->el_pfIso_sumChargedHadronPt->at(idx) + std::max( 0.0, double(ntP->el_pfIso_sumNeutralHadronEt->at(idx)+ntP->el_pfIso_sumPhotonEt->at(idx) - ntP->ev_rho*EffArea )))/pt : -9999; //previous
    
    bool pass_pt       = ( pt > 7 );
    bool pass_eta      = ( fabs(eta) < 2.5 );
@@ -268,6 +275,19 @@ void ElectronExt::sel()
 	     std::cout << "  electron #" << ID << std::endl;
 	     std::cout << "  conept = " << conept << std::endl;
 	     std::cout << "  pt = " << pt << std::endl;
+	     std::cout << "  eta = " << eta << std::endl;
+	     std::cout << " phi = " << phi << std::endl;
+	     std::cout << " nlosthits = " << nlosthits << std::endl;
+	     std::cout << " isLoose = " << isLoose << std::endl;
+	     std::cout << " sip3d = " << sip3d << std::endl;
+	     std::cout << " miniIso = " << miniIso << std::endl;
+	     std::cout << " PFRelIso04 = " << PFRelIso04 << std::endl;
+	     std::cout << " pass_sc = " << pass_sc << std::endl;
+	     std::cout << " passCV = " << passCV << std::endl;
+	     std::cout << " lepMVA = " << lepMVA << std::endl;
+	     std::cout << " lepMVA_jetPtRatio = " << lepMVA_jetPtRatio << std::endl;
+	     std::cout << " lepMVA_jetBTagDeepCSV = " << lepMVA_jetBTagDeepCSV << std::endl;
+	     std::cout << " lepMVA_mvaId = " << lepMVA_mvaId << std::endl;
 	     std::cout << "  isGsfCtfScPixChargeConsistent = " << isGsfCtfScPixChargeConsistent << std::endl;
 	     std::cout << "  isGsfScPixChargeConsistent = " << isGsfScPixChargeConsistent << std::endl;
 	     std::cout << "  tightCharge = " << tightCharge << std::endl;
@@ -280,6 +300,8 @@ void ElectronExt::sel()
      }		  
 }
 
+
+//EffArea values for DR=0.3, rescaled for DR=0.4 (also done in FlatTreePeroducer.cc -- for electrons, different for muons)
 float ElectronExt::getEffArea(float eta)
 {   
    float ea = -1;
@@ -291,6 +313,9 @@ float ElectronExt::getEffArea(float eta)
    else if(fabs(eta) < 2.3)   ea = 0.1051;
    else if(fabs(eta) < 2.4)   ea = 0.1204;
    else                       ea = 0.1524;
+   
+   //Warning: EAs not computed for cone DR=0.4, use the values for DR=0.3 scaled by 16/9 instead
+   ea*=16./9.;
    
    return ea;
 }

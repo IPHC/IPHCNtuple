@@ -32,7 +32,7 @@ class MuonExt : public Muon
    float dxy;
    float dz;
    float iso;
-   float isoR04;
+   float PFRelIso04; //renamed
    float sip3d;
    float bestTrack_pt;
    float bestTrack_ptError;

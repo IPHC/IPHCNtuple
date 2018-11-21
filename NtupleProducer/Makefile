@@ -3,7 +3,7 @@ CMSINC      = -I$(CMSSW_BASE)/src
 #EGAMLIB      = -L$(CMSSW_BASE)/lib/slc6_amd64_gcc481 -lEgammaAnalysisElectronTools
 #FORMLIB      = -L$(CMSSW_BASE)/lib/slc6_amd64_gcc481 -lEgammaAnalysisElectronTools
 
-JETLIBS     = -L$(CMSSW_RELEASE_BASE)/lib/slc6_amd64_gcc630 -lCondFormatsJetMETObjects -lFWCoreMessageLogger
+JETLIBS     = -L$(CMSSW_RELEASE_BASE)/lib/slc6_amd64_gcc630 -lCondFormatsJetMETObjects -lJetMETCorrectionsModules -lFWCoreMessageLogger
 JETINC      = -I$(CMSSW_RELEASE_BASE)/src
 
 BOOSTSYS       = $(shell scram tool tag boost BOOST_BASE)
@@ -22,6 +22,8 @@ CXXFLAGS       = $(ROOTCFLAGS)
 INCLUDE_FLAGS  = $(JETINC) $(BOOSTINC)
 LDLIBS         = $(JETLIBS) $(ROOTLIBS)
 GLIBS          = $(ROOTGLIBS)
+
+PILEUP	      = test/Make_PU_Histograms.exe
 
 EXE           = test/NtupleProducer
 
@@ -48,7 +50,7 @@ OBJS          = obj/NtupleProducer.o obj/Tree.o obj/Base.o obj/Helper.o \
 
 LIB           = libNtuple.so
 
-all: 	      $(LIB) $(EXE)
+all: 	      $(LIB) $(EXE) $(PILEUP)
 
 $(LIB):	      $(INC) $(SRC)
 	      @echo "####### Generating dictionary"
@@ -68,6 +70,10 @@ $(EXE):	      $(LIB) src/NtupleProducer.cxx
 	      @$(CXX) -c $(CXXFLAGS) $(INCLUDE_FLAGS) src/NtupleProducer.cxx -o obj/NtupleProducer.o
 	      @echo "####### Building executable"
 	      @$(CXX) $(CXXFLAGS) obj/NtupleProducer.o -o $(EXE) $(LDLIBS) $(LIB)
+	      
+$(PILEUP):   src/Make_PU_Histograms.cxx
+	     @$(CXX) $(CXXFLAGS) $(GLIBS) src/Make_PU_Histograms.cxx -o $(PILEUP)
+
 
 clean:
 	      @rm -f $(OBJS) $(EXE) obj/NtupleProducerDict.cxx obj/NtupleProducerDict.h $(LIB)

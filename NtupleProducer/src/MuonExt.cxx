@@ -68,6 +68,9 @@ void MuonExt::read(bool isdata)
       gen_charge = ntP->mu_gen_charge->at(idx);
       gen_dr = ntP->mu_gen_dr->at(idx);
    }
+   
+   //FIXME -- testing
+   //PFRelIso04 = ntP->mu_PFRelIso04->at(idx);
 }
 
 void MuonExt::init()
@@ -97,7 +100,7 @@ void MuonExt::init()
    dxy                = -100.;
    dz                 = -100.;
    iso                = -100.;
-   isoR04             = -100.;
+   PFRelIso04         = -100.;
    sip3d              = -100.;
    bestTrack_pt       = -100.;
    bestTrack_ptError  = -100.;
@@ -145,7 +148,10 @@ void MuonExt::sel()
    bool pass_isLoose = ( isLoose );
 
    float EffArea = getEffArea(eta);
-   isoR04 = (pt > 0.) ? (ntP->mu_pfIso04_sumChargedHadronPt->at(idx) + std::max( 0.0, double(ntP->mu_pfIso04_sumNeutralHadronEt->at(idx)+ntP->mu_pfIso04_sumPhotonEt->at(idx) - ntP->ev_rho*EffArea )))/pt : -9999;
+   
+   //Changed definition, ttH uses "deltaBeta" for Muons and "rhoArea" correction for electrons -- see : https://github.com/peruzzim/cmg-cmssw/blob/heppy_94X_dev_ttH/PhysicsTools/Heppy/python/analyzers/objects/LeptonAnalyzer.py#L331
+   //isoR04 = (pt > 0.) ? (ntP->mu_pfIso04_sumChargedHadronPt->at(idx) + std::max( 0.0, double(ntP->mu_pfIso04_sumNeutralHadronEt->at(idx)+ntP->mu_pfIso04_sumPhotonEt->at(idx) - ntP->mu_pfIso04_sumPUPt->at(idx) / 2. )))/pt : -9999;
+   //isoR04 = (pt > 0.) ? (ntP->mu_pfIso04_sumChargedHadronPt->at(idx) + std::max( 0.0, double(ntP->mu_pfIso04_sumNeutralHadronEt->at(idx)+ntP->mu_pfIso04_sumPhotonEt->at(idx) - ntP->ev_rho*EffArea )))/pt : -9999; //previous
    
    isLooseTTH = ( pass_pt      &&
 		  pass_eta     &&
@@ -187,6 +193,19 @@ void MuonExt::sel()
 	     std::cout << "  muon #" << ID << std::endl;
 	     std::cout << "  conept = " << conept << std::endl;
 	     std::cout << "  pt = " << pt << std::endl;
+	     std::cout << "  eta = " << eta << std::endl;
+	     std::cout << "  phi = " << phi << std::endl;
+	     std::cout << "  dxy = " << dxy << std::endl;
+	     std::cout << "  dz = " << dz << std::endl;
+	     std::cout << "  iso = " << iso << std::endl;
+	     std::cout << "  sip3d = " << sip3d << std::endl;
+	     std::cout << "  lepMVA_jetPtRatio = " << lepMVA_jetPtRatio << std::endl;
+	     std::cout << "  lepMVA = " << lepMVA << std::endl;
+	     std::cout << "  lepMVA_jetBTagDeepCSV = " << lepMVA_jetBTagDeepCSV << std::endl;
+	     std::cout << "  lepMVA_mvaId = " << lepMVA_mvaId << std::endl;
+	     std::cout << "  iso = " << iso << iso <<std::endl;
+	     std::cout << "  PFRelIso04 = " << PFRelIso04 << std::endl;
+	     std::cout << "  isLoose = " << isLoose << std::endl;
 	     std::cout << "  isLooseTTH = " << isLooseTTH << std::endl;
 	     std::cout << "  pass_fakeable_lepMVA = " << pass_fakeable_lepMVA << std::endl;
 	     std::cout << "  pass_conept = " << pass_conept << std::endl;
