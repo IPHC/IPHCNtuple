@@ -100,6 +100,8 @@ class Tree {
    vector<float>   *el_PFRelIso04;
    vector<float>   *el_conept;
    vector<float>   *el_ooEmooP;
+   vector<float>   *el_E_postCorr;
+   vector<float>   *el_pt_postCorr;
    
    vector<int>     *el_id;
    vector<int>     *el_charge;
@@ -164,6 +166,8 @@ class Tree {
    vector<float>   *el_trackMomentumError;
 
    vector<int>     *el_hasMCMatch;
+   vector<int>     *el_hasChargeMCMatch;
+   vector<int>     *el_hasPhotonMCMatch;
    vector<float>   *el_gen_pt;
    vector<float>   *el_gen_eta;
    vector<float>   *el_gen_phi;
@@ -224,7 +228,7 @@ class Tree {
    vector<float>   *mu_innerTrack_dzError;
    vector<float>   *mu_innerTrack_validFraction;
    vector<float>   *mu_bestTrack_dxy;
-   vector<float>   *mu_bestTrack_dz;
+   vector<float>   *mu_bestTrack_PV_dz;
    vector<float>   *mu_bestTrack_dxyError;
    vector<float>   *mu_bestTrack_dzError;
    vector<float>   *mu_bestTrack_pt;
@@ -252,6 +256,7 @@ class Tree {
    vector<float>   *mu_innerTrack_ptError;
 
    vector<int>     *mu_hasMCMatch;
+   vector<int>     *mu_hasChargeMCMatch;
    vector<float>   *mu_gen_pt;
    vector<float>   *mu_gen_eta;
    vector<float>   *mu_gen_phi;
@@ -317,6 +322,7 @@ class Tree {
    vector<float>   *tau_pfEssential_dxy_Sig;
 
    vector<int>     *tau_hasMCMatch;
+   vector<int>     *tau_hasChargeMCMatch;
    vector<float>   *tau_gen_pt;
    vector<float>   *tau_gen_eta;
    vector<float>   *tau_gen_phi;
@@ -347,6 +353,7 @@ class Tree {
    vector<int>     *jet_hadronFlavour;
    vector<float>   *jet_neutralHadronEnergy;
    vector<float>   *jet_neutralEmEnergy;
+   vector<float>   *jet_neutralEmEnergyFraction; //CHANGED -- for debug
    vector<float>   *jet_chargedHadronEnergy;
    vector<float>   *jet_chargedEmEnergy;
    vector<float>   *jet_electronEnergy;
@@ -918,6 +925,8 @@ class Tree {
    TBranch        *b_el_PFRelIso04;
    TBranch        *b_el_conept;   //!
    TBranch        *b_el_ooEmooP;   //!
+   TBranch        *b_el_E_postCorr;   //!
+   TBranch        *b_el_pt_postCorr;   //!
    
    TBranch        *b_el_id;   //!
    TBranch        *b_el_charge;   //!
@@ -982,6 +991,8 @@ class Tree {
    TBranch        *b_el_trackMomentumError;
 
    TBranch        *b_el_hasMCMatch;
+   TBranch        *b_el_hasChargeMCMatch;
+   TBranch        *b_el_hasPhotonMCMatch;
    TBranch        *b_el_gen_pt;
    TBranch        *b_el_gen_eta;
    TBranch        *b_el_gen_phi;
@@ -1042,7 +1053,7 @@ class Tree {
    TBranch        *b_mu_innerTrack_dzError;   //!
    TBranch        *b_mu_innerTrack_validFraction;   //!
    TBranch        *b_mu_bestTrack_dxy;   //!
-   TBranch        *b_mu_bestTrack_dz;   //!
+   TBranch        *b_mu_bestTrack_PV_dz;   //!
    TBranch        *b_mu_bestTrack_dxyError;   //!
    TBranch        *b_mu_bestTrack_dzError;   //!
    TBranch        *b_mu_bestTrack_pt;
@@ -1070,6 +1081,7 @@ class Tree {
    TBranch        *b_mu_innerTrack_ptError;   //!
 
    TBranch        *b_mu_hasMCMatch;
+   TBranch        *b_mu_hasChargeMCMatch;
    TBranch        *b_mu_gen_pt;
    TBranch        *b_mu_gen_eta;
    TBranch        *b_mu_gen_phi;
@@ -1136,6 +1148,7 @@ class Tree {
    TBranch   *b_tau_pfEssential_dxy_Sig;
 
    TBranch        *b_tau_hasMCMatch;
+   TBranch        *b_tau_hasChargeMCMatch;
    TBranch        *b_tau_gen_pt;
    TBranch        *b_tau_gen_eta;
    TBranch        *b_tau_gen_phi;
@@ -1166,6 +1179,7 @@ class Tree {
    TBranch        *b_jet_hadronFlavour;   //!
    TBranch        *b_jet_neutralHadronEnergy;   //!
    TBranch        *b_jet_neutralEmEnergy;   //!
+   TBranch        *b_jet_neutralEmEnergyFraction;   //!
    TBranch        *b_jet_chargedHadronEnergy;   //!
    TBranch        *b_jet_chargedEmEnergy;   //!
    TBranch        *b_jet_electronEnergy;   //!

@@ -10,6 +10,7 @@ class Electron : public Base
  public:
    
    int id;
+   int hasPhotonMCMatch;
    
    Electron();
    virtual ~Electron();

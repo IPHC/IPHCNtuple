@@ -90,22 +90,45 @@ TMVA::Reader* Book_2L_THQ_MVAReader(std::string basePath, std::string weightFile
     return reader;
 }
 
+TMVA::Reader* Book_HJTagger_MVAReader(std::string weightPath)
+{
+  if(!Check_File_Existence(weightPath) )
+  {
+    cout<<BOLD(FRED("Weight file"<<weightPath<<" not found !"))<<endl;
+    return 0;
+  }
+
+  TMVA::Reader* reader = new TMVA::Reader("!Color:!Silent");
+
+  reader->AddVariable("Jet25_lepdrmin", &Jet25_lepdrmin);
+  reader->AddVariable("max(Jet25_bDiscriminator,0.)", &Jet25_bDiscriminator);
+  reader->AddVariable("max(Jet25_qg,0.)", &Jet25_qg);
+  reader->AddVariable("Jet25_lepdrmax", &Jet25_lepdrmax);
+  reader->AddVariable("Jet25_pt", &Jet25_pt);
+
+  reader->BookMVA("BDTG method", weightPath);
+
+  return reader;
+}
+
 
 void Load_MVA()
 {
-    //std::cout << "Temporarily redirecting stdout to avoid huge TMVA dump when loading MVA readers..." << std::endl;
+    std::cout << "Temporarily redirecting stdout to avoid huge TMVA dump when loading MVA readers..." << std::endl;
     std::stringstream tmpBuffer;
-    // std::streambuf* oldStdout = std::cout.rdbuf(tmpBuffer.rdbuf());
+    std::streambuf* oldStdout = std::cout.rdbuf(tmpBuffer.rdbuf());
 
-    std::string NtupleAnalyzerMVAPath = std::string("/home-pbs/ntonon/tHq/CMSSW_8_0_20/src/ttH/NtupleAnalyzer");
+    // std::string NtupleAnalyzerMVAPath = std::string("/home-pbs/ntonon/tHq/CMSSW_8_0_20/src/ttH/NtupleAnalyzer");
     // mva_3l_tt  = Book_3L_THQ_MVAReader(NtupleAnalyzerMVAPath, "test/weights_2016/thq_vs_tt_3l_BDTG.weights.xml");
-	// mva_3l_ttV = Book_3L_THQ_MVAReader(NtupleAnalyzerMVAPath, "test/weights_2016/thq_vs_ttv_3l_BDTG.weights.xml");
+    // mva_3l_ttV = Book_3L_THQ_MVAReader(NtupleAnalyzerMVAPath, "test/weights_2016/thq_vs_ttv_3l_BDTG.weights.xml");
+    // mva_2lss_tt = Book_2L_THQ_MVAReader(NtupleAnalyzerMVAPath, "test/weights_2016/thq_vs_tt_2lss_BDTG.weights.xml.weights.xml");
+    // mva_2lss_ttV = Book_2L_THQ_MVAReader(NtupleAnalyzerMVAPath, "test/weights_2016/thq_vs_ttv_2lss_BDTG.weights.xml.weights.xml");
 
-	// mva_2lss_tt = Book_2L_THQ_MVAReader(NtupleAnalyzerMVAPath, "test/weights_2016/thq_vs_tt_2lss_BDTG.weights.xml.weights.xml");
-	// mva_2lss_ttV = Book_2L_THQ_MVAReader(NtupleAnalyzerMVAPath, "test/weights_2016/thq_vs_ttv_2lss_BDTG.weights.xml.weights.xml");
+    std::string HJTagger_weight_path = "/home-pbs/ntonon/tHq/IPHCNtuple_2017/CMSSW_9_4_3/src/IPHCNtuple/NtupleAnalyzer/test/weights_2017/Hj_tagger/Hj_deepcsv_BDTG_2017.weights.xml";
+    mva_HjTagger = Book_HJTagger_MVAReader(HJTagger_weight_path);
 
-    // std::cout.rdbuf(oldStdout);
-    //std::cout << "Stdout now restored." << std::endl;
+    std::cout.rdbuf(oldStdout);
+    std::cout << "Stdout now restored." << std::endl;
 
     return;
 }

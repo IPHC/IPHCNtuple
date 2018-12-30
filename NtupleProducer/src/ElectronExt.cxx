@@ -15,15 +15,27 @@ ElectronExt::~ElectronExt()
 void ElectronExt::read(bool isdata)
 {
    ID                                = idx;
-   
-   E 	                            = ntP->el_E->at(idx);
-   pt	                            = ntP->el_pt->at(idx);
-   ptUnc                             = ntP->el_pt->at(idx);
+
+/* OBSOLETE -- REMOVE WHEN NEXT VERSION AVAILABLE   
+   //E 	                            = ntP->el_E->at(idx); //before smearing (preCorr)
+   //pt	                            = ntP->el_pt->at(idx); //before smearing (preCorr)
+   E_preCorr                        = ntP->el_ecalTrkEnergyPreCorr->at(idx); //before smearing (preCorr)
+   pt_preCorr                       = ntP->el_pt->at(idx); //before smearing (preCorr)     
+   E 	                            = ntP->el_ecalTrkEnergyPostCorr->at(idx); //after smearing (postCorr)
+   pt 	 			    = pt_preCorr * (E / E_preCorr); //correct pT by smearing correction factor
+   errCorr                          = ntP->el_ecalTrkEnergyErrPostCorr->at(idx); //error on smearing
+*/
+
+   E_preCorr                        = ntP->el_E->at(idx); //before smearing (preCorr)
+   E 	                            = ntP->el_E_postCorr->at(idx);
+   pt_preCorr                       = ntP->el_pt->at(idx); //before smearing (preCorr)     
+   pt 	 			    = ntP->el_pt_postCorr->at(idx);
+  
    eta	                            = ntP->el_eta->at(idx);
    phi	                            = ntP->el_phi->at(idx);
    m 	                            = ntP->el_m->at(idx);
    conept	                    = ntP->el_conept->at(idx);
-   charge	                        = ntP->el_charge->at(idx);
+   charge	                    = ntP->el_charge->at(idx);
    id	                            = ntP->el_id->at(idx);
    
    dxy	                            = ntP->el_gsfTrack_PV_dxy->at(idx);
@@ -75,6 +87,8 @@ void ElectronExt::read(bool isdata)
    if( !isdata ) 
    {
 	hasMCMatch = ntP->el_hasMCMatch->at(idx);
+	hasChargeMCMatch = ntP->el_hasChargeMCMatch->at(idx);
+	hasPhotonMCMatch = ntP->el_hasPhotonMCMatch->at(idx);
 	gen_pt = ntP->el_gen_pt->at(idx);
 	gen_eta = ntP->el_gen_eta->at(idx);
 	gen_phi = ntP->el_gen_phi->at(idx);
@@ -86,15 +100,16 @@ void ElectronExt::read(bool isdata)
 	gen_dr = ntP->el_gen_dr->at(idx);
    } 
    
-   //FIXME -- test
-   //PFRelIso04 = ntP->el_PFRelIso04->at(idx);
+   PFRelIso04 = ntP->el_PFRelIso04->at(idx);
 }
 
 void ElectronExt::init()
 {   
    E                              = -100.;
    pt                             = -100.;
-   ptUnc                          = -100.;
+   pt_preCorr                     = -100.;
+   E_preCorr			  = -100.;
+   
    eta                            = -100.;
    phi                            = -100.;
    m                              = -100.;
@@ -167,6 +182,8 @@ void ElectronExt::init()
    mvaNoIso                   = -100;
 
    hasMCMatch = false;
+   hasChargeMCMatch = false;
+   hasPhotonMCMatch = false;
    gen_pt = -100;
    gen_eta = -100;
    gen_phi = -100;
@@ -216,7 +233,7 @@ void ElectronExt::sel()
    for(int im=0;im<nMuonLoose;im++)
      {
         float dr = GetDeltaR(eta,phi,nt->NtMuonLooseExt->at(im).eta,nt->NtMuonLooseExt->at(im).phi);
-        if( dr < 0.05 ) passMuOverlap = 0;
+        if( dr < 0.3 ) passMuOverlap = 0; //CHANGED from 0.05 (agreed in ttH meeting)
      }
    
    isLooseTTH = ( pass_pt          &&
@@ -271,31 +288,38 @@ void ElectronExt::sel()
 	if( evId == evdebug->at(d) )
 	  {
 	     std::cout << "------------------------------" << std::endl;
-	     std::cout << "Event #" << evId << std::endl;
-	     std::cout << "  electron #" << ID << std::endl;
+	     std::cout << "Event #" << std::setprecision(12) << evId << std::endl;
+	     std::cout << "  electron #" << ID << std::endl << std::endl;
 	     std::cout << "  conept = " << conept << std::endl;
 	     std::cout << "  pt = " << pt << std::endl;
 	     std::cout << "  eta = " << eta << std::endl;
-	     std::cout << " phi = " << phi << std::endl;
-	     std::cout << " nlosthits = " << nlosthits << std::endl;
+	     std::cout << " phi = " << phi << std::endl << std::endl;
+	     std::cout << " E = " << E << std::endl << std::endl;
+	     std::cout << " charge = " << charge << std::endl << std::endl;
 	     std::cout << " isLoose = " << isLoose << std::endl;
+	     std::cout << " passMuOverlap = " << passMuOverlap << std::endl;
 	     std::cout << " sip3d = " << sip3d << std::endl;
+	     std::cout << " dxy = " << dxy << std::endl;
+	     std::cout << " dz = " << dz << std::endl;
 	     std::cout << " miniIso = " << miniIso << std::endl;
 	     std::cout << " PFRelIso04 = " << PFRelIso04 << std::endl;
-	     std::cout << " pass_sc = " << pass_sc << std::endl;
-	     std::cout << " passCV = " << passCV << std::endl;
+	     std::cout << " mvaNoIso = " << mvaNoIso << std::endl;
 	     std::cout << " lepMVA = " << lepMVA << std::endl;
 	     std::cout << " lepMVA_jetPtRatio = " << lepMVA_jetPtRatio << std::endl;
 	     std::cout << " lepMVA_jetBTagDeepCSV = " << lepMVA_jetBTagDeepCSV << std::endl;
 	     std::cout << " lepMVA_mvaId = " << lepMVA_mvaId << std::endl;
-	     std::cout << "  isGsfCtfScPixChargeConsistent = " << isGsfCtfScPixChargeConsistent << std::endl;
-	     std::cout << "  isGsfScPixChargeConsistent = " << isGsfScPixChargeConsistent << std::endl;
-	     std::cout << "  tightCharge = " << tightCharge << std::endl;
-	     std::cout << "  isLooseTTH = " << isLooseTTH << std::endl;
-	     std::cout << "  pass_sc = " << pass_sc << std::endl;
-	     std::cout << "  pass_fakeable_lepMVA = " << pass_fakeable_lepMVA << std::endl;
-	     std::cout << "  pass_conept = " << pass_conept << std::endl;
-	     std::cout << "  = isFakeableTTH = " << isFakeableTTH << std::endl;
+	     std::cout << " isGsfCtfScPixChargeConsistent = " << isGsfCtfScPixChargeConsistent << std::endl;
+	     std::cout << " isGsfScPixChargeConsistent = " << isGsfScPixChargeConsistent << std::endl;
+	     std::cout << " tightCharge = " << tightCharge << std::endl;
+	     std::cout << " isLooseTTH = " << isLooseTTH << std::endl << std::endl;
+	     std::cout << " pass_sc = " << pass_sc << std::endl;
+     	     std::cout << " nlosthits = " << nlosthits << std::endl;
+     	     std::cout << " passCV = " << passCV << std::endl;
+	     std::cout << " pass_fakeable_lepMVA = " << pass_fakeable_lepMVA << std::endl;
+	     std::cout << " pass_conept = " << pass_conept << std::endl;
+	     std::cout << " isFakeableTTH = " << isFakeableTTH << std::endl<<std::endl;
+	     std::cout << " pass_lepMVA = " << pass_lepMVA << std::endl;
+	     std::cout << " isTightTTH = " << isTightTTH << std::endl;
 	  }		  
      }		  
 }
@@ -306,15 +330,17 @@ float ElectronExt::getEffArea(float eta)
 {   
    float ea = -1;
    
-   if(fabs(eta) < 1.0)        ea = 0.1566;
-   else if(fabs(eta) < 1.479) ea = 0.1626;
-   else if(fabs(eta) < 2.0)   ea = 0.1073;
-   else if(fabs(eta) < 2.2)   ea = 0.0854;
-   else if(fabs(eta) < 2.3)   ea = 0.1051;
-   else if(fabs(eta) < 2.4)   ea = 0.1204;
-   else                       ea = 0.1524;
+   //CHANGED values from 92X to 94X -- from : https://github.com/cms-sw/cmssw/blob/CMSSW_10_4_X/RecoEgamma/ElectronIdentification/data/Fall17/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_94X.txt
+   if(fabs(eta) < 1.0)        ea = 0.1440;
+   else if(fabs(eta) < 1.479) ea = 0.1562;
+   else if(fabs(eta) < 2.0)   ea = 0.1032;
+   else if(fabs(eta) < 2.2)   ea = 0.0859;
+   else if(fabs(eta) < 2.3)   ea = 0.1116;
+   else if(fabs(eta) < 2.4)   ea = 0.1321;
+   else                       ea = 0.1654;
    
    //Warning: EAs not computed for cone DR=0.4, use the values for DR=0.3 scaled by 16/9 instead
+   //NB : dr=0.4 only used for PFRelIso04 ? other variables use dr=0.3 ?
    ea*=16./9.;
    
    return ea;

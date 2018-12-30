@@ -21,8 +21,8 @@ class ElectronExt : public Electron
    
    int     fakeType;
    
-   float   ptCor;
-   float   ptUnc;
+   float   E_preCorr;
+   float   pt_preCorr;
    
    bool    isLooseCBId;
    bool    isMediumCBId;

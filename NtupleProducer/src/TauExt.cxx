@@ -77,6 +77,7 @@ void TauExt::read(bool isdata)
    if( !isdata ) 
    {
 	hasMCMatch = ntP->tau_hasMCMatch->at(idx);
+	hasChargeMCMatch = ntP->tau_hasChargeMCMatch->at(idx);
 	gen_pt = ntP->tau_gen_pt->at(idx);
 	gen_eta = ntP->tau_gen_eta->at(idx);
 	gen_phi = ntP->tau_gen_phi->at(idx);
@@ -159,6 +160,8 @@ void TauExt::init()
    pfEssential_dxy_Sig         = -1.;
 
    hasMCMatch = false;
+   hasChargeMCMatch = false;
+   hasPhotonMCMatch = false;
    gen_pt = -100;
    gen_eta = -100;
    gen_phi = -100;
@@ -221,7 +224,7 @@ void TauExt::sel()
 	if( evId == evdebug->at(d) )
 	  {
 	     std::cout << "------------------------------" << std::endl;
-	     std::cout << "Event #" << evId << std::endl;
+	     std::cout << "Event #" << std::setprecision(12) << evId << std::endl;
 	     std::cout << "  Tau #" << ID << std::endl;
 	     std::cout << "  pt = " << pt << std::endl;
 	     std::cout << "  eta = " << eta << std::endl;

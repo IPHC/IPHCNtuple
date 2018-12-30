@@ -59,7 +59,7 @@ $(LIB):	      $(INC) $(SRC)
 
 	      @echo "####### Building library $(LIB)"
 	      @$(CXX) $(SOFLAGS) $(CXXFLAGS) $(ROOTLIBS) $(INCLUDE_FLAGS) -I. $(SRC) \
-	      obj/NtupleProducerDict.cxx -o $(LIB) $(ROOTLIBS) 
+	      obj/NtupleProducerDict.cxx $(LDLIBS) -o $(LIB) $(ROOTLIBS) 
 	      
 	      @echo  "####### Removing generated dictionary"
 	      @rm -f obj/NtupleProducerDict.cxx obj/NtupleProducerDict.h

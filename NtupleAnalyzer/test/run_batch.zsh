@@ -1,11 +1,14 @@
 #!/bin/env zsh
 
+version="ttH2017" #output subdir
+#version="tHq2017" #output subdir
+
 echo ""
 #Don't forget to update the lumi and the xsec table
 
 isdata=0
 doSystCombine=0
-lumi=41500 #CHECK
+lumi=41500
 
 cp /tmp/x509up_u8066 /home-pbs/ntonon/proxy
 
@@ -24,8 +27,6 @@ export HOME=$(pwd)
 
 dout="/home-pbs/ntonon/tHq/IPHCNtuple_2017/CMSSW_9_4_3/src/IPHCNtuple/NtupleAnalyzer/test" #Current dir.
 dout_f="/opt/sbg/scratch1/cms/ntonon/Analyzer_ntuples_tHq" #tmp output dir
-
-version="tHq2017" #output subdir
 
 runName="toy_${jName}"
 logName="log_${jName}"
@@ -58,9 +59,10 @@ do
   if [[ ! -d ${runName}/${dataset} ]]; then
     mkdir ${dout_f}/${runName}/${dataset} 
   fi
-  linexsec=$(grep $dataset $fxsec)
+  linexsec=$(grep -m 1 $dataset $fxsec) #grep -m 1 <-> only first occurence
   nowe=$(echo $linexsec | awk '{print $3}')
   xsec=$(echo $linexsec | awk '{printf $2}')
+  
   if [[ $nowe == "" ]]; then
     nowe=1
   fi
@@ -68,7 +70,7 @@ do
     xsec=1
   fi
   datamc=""
-  if [[ $sample == *Run2016* ]]; then
+  if [[ $sample == *Run2017* ]]; then
     isdata=1
     doSystCombine=0
     datamc="DATA"

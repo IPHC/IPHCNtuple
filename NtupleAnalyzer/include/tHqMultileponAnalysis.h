@@ -32,6 +32,7 @@
 #include <TObject.h>
 #include <TROOT.h>
 #include <iostream>
+#include <iomanip>
 #include <fstream>
 
 //NTProducer
@@ -46,7 +47,6 @@
 #include "Lepton.h"
 #include "ScaleFactors.h" //Class for Scale factors
 
-// #include "BTagCalibrationXStandalone.h"
 
 class tHqMultileponAnalysis
 {
@@ -57,15 +57,17 @@ class tHqMultileponAnalysis
         tHqMultileponAnalysis(TString inputFileName, TString sampleName, TString treeName, TString outputFileName, bool isdata, bool doSystCombine, float xsec, float lumi, int nowe, int nmax); //Constructor
         ~tHqMultileponAnalysis(); //Destructor
 
-        // void Debug_Selection(int evt);
-
         //-- ttH basic selections
 		bool ThreeLeptonSelection_THQ3l(int evt);
-		bool TwoLeptonSelection_THQ2lSSl(int evt);
+        bool TwoLeptonSelection_THQ2lSSl(int evt);
+        bool FourLeptonSelection_THQ4l(int evt);
 
 		//-- ttH regions
-		bool ThreeLeptonSelection_THQ3l_Regions(int evt);
+        bool ThreeLeptonSelection_THQ3l_Regions(int evt);
 		bool TwoLeptonSelection_THQ2lSS_Regions(int evt);
+        bool FourLeptonSelection_THQ4l_Regions(int evt);
+		bool TwoLeptonSelection_THQ2lSS_TrainingSelection(int evt);
+		bool ThreeLeptonSelection_THQ3l_TrainingSelection(int evt);
 
 		void InitFiles();
 		void InitCollections();
@@ -74,12 +76,12 @@ class tHqMultileponAnalysis
 		void InitTLorentzVectors();
 		void InitVariables();
 		void InitTree();
-		void initializeOutputTree();
+		void initializeOutputTree(int);
 
 		void Loop();
 
 		void Compute_Variables(TString);
-		void fillOutputTree();
+		void fillOutputTree(int);
 		void FillJetInfoOutputTree(int*, int, TLorentzVector*, TLorentzVector, float*, float, float*, float*, float, float*, float*, float, float, float);
 
         void SelectBjets(int&, int&, bool);
@@ -90,29 +92,36 @@ class tHqMultileponAnalysis
         bool Sample_isUsed_forTraining();
 		bool Sample_isUsed_forGammaConv();
 		double comp_MT_met_lep(TLorentzVector, double, double);
-		double Compute_METLD(double);
-		int Read_Predefined_Categories();
-		void Apply_FakeRate_Weight(TString);
+        double Compute_mHT();
+        double Compute_metLD_Alternative(double);
+		void Compute_Top_W_variables();
+		bool Get_Polynom2_Root(double, double, double, vector<double>&);
+		void Read_Predefined_Categories();
+		void Apply_FakeRate_Weight();
 		void Apply_FlipRate_Weight();
 		double Get_Distance(double, double, double, double, double, double);
-		bool is_GammaConv_Event();
-		bool is_Electron_Matched_To_Gamma(int);
-		int Ele_To_Lepton_Matching(int);
-		int Ele_To_Gamma_Matching(int);
-
-		bool TwoLeptonSelection_THQ2lSS_TrainingSelection(int evt);
-		bool ThreeLeptonSelection_THQ3l_TrainingSelection(int evt);
-
-		void Apply_ScaleFactors(int);
-
-		//NEW
-		// TString Convert_Number_To_TString(double, int/*=10*/)
-		// double Convert_TString_To_Number(TString)
-		// bool Check_File_Existence(const TString&)
+		bool is_GammaConv_Event(int);
+		// bool is_Electron_Matched_To_Gamma(int);
+		// int Ele_To_Lepton_Matching(int);
+		// int Ele_To_Gamma_Matching(int);
+		void Dump_EventInfo_Synchro(std::ofstream&);
+		int Check_If_Save_Event(bool);
+		void Apply_ScaleFactors(int, int);
+		void Fill_Overlap_Histo();
+        void Check_Disagreement_Category_NTP_NTA_Codes();
+        void Define_New_Categorization();
+		float Compute_SumWeights_ctcvCouplings(vector<float>, vector<string>);
 
 		ScaleFactors* sf;
 
         TChain *fChain;   //!pointer to the analyzed TTree or TChain
+
+		TH1F* h_PU_noCorr;
+        TH1F* h_PU_withCorr;
+		TH1F* h_nPV_noCorr;
+        TH1F* h_nPV_withCorr;
+		Int_t nPU;
+		Int_t nPV;
 
         std::vector<Event>    *vEvent;
 		std::vector<Electron> *vElectronLoose;
@@ -124,7 +133,7 @@ class tHqMultileponAnalysis
 		std::vector<Tau>      *vTauLoose;
 		std::vector<Tau>      *vTauFakeable;
 		std::vector<Tau>      *vTauMedium;
-        std::vector<Jet>      *vJetLoose;
+        std::vector<Jet>      *vJetLoose_original; //This is the 'original' vector of loose jets, directly taken from NtupleProducer output TTree
 		std::vector<Truth>    *vTruth;
 		// std::vector<Truth>    *vGenJet;
 
@@ -133,17 +142,25 @@ class tHqMultileponAnalysis
 		std::vector<Lepton>   vLeptonTight;
 
         //New categories
-        std::vector<Jet>	  vLooseBTagJets; //Loose-CSV jets (+pT/eta cuts)
-		std::vector<Jet>      vLightJets; //Non-loose CSV jets
-		std::vector<Jet>      vLightJets_FwdPtCut; //Non-loose CSV jets (with pT>40 cut on forward jets, SR)
+		std::vector<Jet>      *vJetLoose_tmp; //Exact copy of 'vJetLoose_original', but we use this temporary collec to be able to modify pT by JES or JER variations
+
+		//Then, fill several different of jets from there, that later serve the purposes of the analysis
+		std::vector<Jet>	  vJetLoose; //Jets to be used
+		std::vector<Jet>	  vJetLoose_tHq; //Jets included in tHq analysis
+		std::vector<Jet>	  vJetLoose_ttH; //Jets included in ttH analysis
+		std::vector<Jet>      vLightJets; //Non-loose CSV jets to be used
+		std::vector<Jet>      vLightJets_tHq; //Non-loose CSV jets included in tHq analysis
+		std::vector<Jet>      vLightJets_ttH; //Non-loose CSV jets included in ttH analysis
+		// std::vector<Jet>      vLightJets_FwdPtCut; //Non-loose CSV jets (with pT>40 cut on forward jets, SR)
+		std::vector<Jet>	  vLooseBTagJets; //Loose-CSV jets (+pT/eta cuts)
 
 		//Nof objects
         float nLooseBJets;
         float nMediumBJets;
-		float nLightJets;
-		float nLightJets_Fwd40;
+		float nLightJets, nLightJets_tHq, nLightJets_ttH, nLightJets_Fwd;
 		float nTightLep;
 		float nFakeableLep;
+		float nLightJets_eta_Gt2;
 
 		//NB -- input vars (tHq2016, ttH2017) are declared in SignalExtraction.h !
 
@@ -166,6 +183,7 @@ class tHqMultileponAnalysis
 		Char_t is_tHq_3l_SR;
 		Char_t is_tHq_3l_Training;
 		Char_t is_tHq_3l_Fake;
+		Char_t is_tHq_3l_GammaConv;
 		Char_t is_tHq_ttWctrl;
 		Char_t is_tHq_ttWctrl_SR;
 		Char_t is_tHq_ttWctrl_Fake;
@@ -174,82 +192,182 @@ class tHqMultileponAnalysis
 		Char_t is_tHq_ttZctrl;
 		Char_t is_tHq_ttZctrl_SR;
 		Char_t is_tHq_ttZctrl_Fake;
+		Char_t is_tHq_ttZctrl_GammaConv;
 		Char_t is_tHq_WZctrl;
 		Char_t is_tHq_WZctrl_SR;
 		Char_t is_tHq_WZctrl_Fake;
+		Char_t is_tHq_WZctrl_GammaConv;
+		Char_t is_tHq_4l_SR;
+		Char_t is_tHq_ZZctrl_SR;
 
-		//-- Predefined ttH 2017 categories (implemented at NTP level)
-        Char_t is_ttH_2lSS;
+		//-- ttH 2017 categories
+		Char_t is_ttH_2lSS;
+		Char_t is_ttH_2lSS_Training;
         Char_t is_ttH_2lSS_SR;
-        Char_t is_ttH_2lSS_SR_Data;
+        // Char_t is_ttH_2lSS_SR_Data;
 		Char_t is_ttH_2lSS_Fake;
         Char_t is_ttH_2lSS_Flip;
-        Char_t is_ttH_2lSS_Flip_Data;
-        Char_t is_ttH_3l;
-        Char_t is_ttH_3l_SR;
-        Char_t is_ttH_3l_SR_Data;
+		Char_t is_ttH_2lSS_GammaConv;
+		Char_t is_ttH_3l;
+		Char_t is_ttH_3l_Training;
+		Char_t is_ttH_3l_SR;
+		Char_t is_ttH_3l_GammaConv;
 		Char_t is_ttH_3l_Fake;
 		Char_t is_ttH_ttWctrl;
 		Char_t is_ttH_ttWctrl_SR;
-        Char_t is_ttH_ttWctrl_SR_Data;
 		Char_t is_ttH_ttWctrl_Fake;
-        Char_t is_ttH_ttWctrl_Flip;
-        Char_t is_ttH_ttWctrl_Flip_Data;
+		Char_t is_ttH_ttWctrl_Flip;
+		Char_t is_ttH_ttWctrl_GammaConv;
 		Char_t is_ttH_ttZctrl;
 		Char_t is_ttH_ttZctrl_SR;
-        Char_t is_ttH_ttZctrl_SR_Data;
 		Char_t is_ttH_ttZctrl_Fake;
+		Char_t is_ttH_ttZctrl_GammaConv;
 		Char_t is_ttH_WZctrl;
 		Char_t is_ttH_WZctrl_SR;
-        Char_t is_ttH_WZctrl_SR_Data;
 		Char_t is_ttH_WZctrl_Fake;
+		Char_t is_ttH_WZctrl_GammaConv;
+		Char_t is_ttH_4l_SR;
+		Char_t is_ttH_ZZctrl_SR;
+
+        //NEW -- test orthogonal regions
+        Char_t is_ttH_2lSS_SR_fwd;
+        Char_t is_ttH_3l_SR_fwd;
+        Char_t is_tHq_2lSS_SR_fwd;
+        Char_t is_tHq_3l_SR_fwd;
+
+        Char_t is_ttH_2lSS_SR_btag;
+        Char_t is_ttH_3l_SR_btag;
+        Char_t is_tHq_2lSS_SR_btag;
+        Char_t is_tHq_3l_SR_btag;
+
+        Char_t is_ttH_2lSS_SR_njet;
+        Char_t is_ttH_3l_SR_njet;
+        Char_t is_tHq_2lSS_SR_njet;
+        Char_t is_tHq_3l_SR_njet;
+		Char_t is_ttH_ttWctrl_SR_njet;
+
+		Char_t is_tHq_2lSS_SR_fwd2;
+		Char_t is_ttH_ttWctrl_SR_fwd2;
+
+        Char_t is_tHq_3l_SR_njet2;
+		Char_t is_ttH_3l_SR_njet2;
+
+        Char_t is_tHq_3l_SR_njet3;
+        Char_t is_ttH_3l_SR_njet3;
 
 
-		Char_t is_trigger;
-        Char_t is_trigger_ttH;
 
-        Char_t is_hasJetTransitionRegion;
+        Char_t is_trigger_1lep;
+        Char_t is_trigger_2lep;
+        Char_t is_trigger_3lep;
+        Char_t is_trigger;
+		Char_t is_trigger_2lss;
+		Char_t is_trigger_3l;
+
+        //Xcheck HCAL noisy region
+		Char_t is_hasJetNoisyHCAL;
+		Char_t is_hasManyJetNoisyHCAL;
+		Float_t JetNoisyHCALPt;
+		Float_t JetNoisyHCALEta;
 
 		//3l : 0 uuu, 1 uue, 2 eeu, 3 eee
 		//2l : 0 uu, 1 eu+ue, 2 ee
 		float channel;
 
-        TTree* tOutput;
-        Float_t event_id;
+		// TTree* tOutput;
+		vector<TTree*> v_tOutput;
+        Int_t event_id;
 		Float_t event_run;
+		Int_t event_lumi;
 
 
-		//NB -- input vars (tHq2016, ttH2017) are declared in SignalExtractionMVA.h !
-        //Additionnal variables, for control plots
-        float lep1Pt, lep2Pt, lep3Pt, inv_mll, hardestBjetPt, hardestBjetEta, fwdJetPt;
-		float MET, metLD;
+		//NB -- all variables that may be needed to compute BDT output at NTA level (i.e. variables used in ttH2017 or tHq2016 BDTs) are defined in SignalExtraction.h
+
+        //-- New variables -- inspired from other analysis (to be tested, ...) -- OR for control plots
+        Float_t inv_mll;
+		Float_t metpt, metphi, metLD, mHT;
+		Float_t hardestBjetPt;
+		Float_t hardestBjetEta;
+		Float_t minv_FwdJetBJet;
+        Float_t FwdJetEta;
+        Float_t FwdJetPt;
+        Float_t LeadJetEta;
+        Float_t LeadJetPt;
+        Float_t dRjj;
+        Float_t deepCSV_max;
+        Float_t deepCSV_2nd;
+        Float_t Mjj_max;
+        Float_t dPhiLepBJet_max;
+        Float_t dPhijj_max;
+        Float_t m3l;
+        Float_t dPhiLepLep_max;
+        Float_t top_mass;
+        Float_t mTW;
+		Float_t lW_asym;
+		Float_t dRBjetRecoilJet;
+		Float_t dRLepWRecoilJet;
+		Float_t RecoilJetPt;
+		Float_t RecoilJetEta;
+		Float_t LepWPt;
+		Float_t LepWEta;
+        Float_t top_Pt;
+        Float_t mass_LepBJet_min;
+        Float_t sum_jetPt;
+
+		Float_t HjTag_max;
+		Float_t HjTag_mean;
+
+        //Low-level variables (for DNN tests, ...)
+        Float_t lep1_conePt, lep2_conePt, lep3_conePt, lep1Eta, lep2Eta, lep3Eta, lep1Phi, lep2Phi, lep3Phi;
 
 
 
-
-        // BTagCalibrationX       calib;
-        // BTagCalibrationXReader reader;
-
-        // all weights
+        //Event weights
         Float_t weight;
+        Float_t mc_weight;
         Float_t weightfake;
         Float_t weightflip;
-        Float_t mc_weight;                                                                           // weight MC
-        Float_t weight_PV;                                                                           // PU reweighting from PV distribution
-        Float_t weight_trigger;
-        Float_t weight_QF_ee;                                                                        // weight charge flip (only to 2lss where l=e)
-        Float_t weight_FR_2lss, weight_FR_3l;                                                        // weight fake rate (to 2lss and 3l)
-        // Float_t weight_scale_muF0p5, weight_scale_muF2, weight_scale_muR0p5, weight_scale_muR2;
+
+		//Scale factors
+        Float_t lepton_SF;
+		Float_t trigger_SF;
+		Float_t btag_SF;
+		Float_t PU_SF;
+		Float_t total_SF;
+
+
         std::vector<Float_t> weights_pdf;
         std::vector<std::string> ids_pdf;
 
-        Float_t weight_csv_up, weight_csv_down;
+		//Systematic weights
+		Float_t TrigEff__plus, TrigEff__minus;
+		Float_t MuEff__plus, MuEff__minus;
+		Float_t EleEff__plus, EleEff__minus;
 
+		Float_t LFcont__plus, LFcont__minus;
+		Float_t HFstats1__plus, HFstats1__minus;
+		Float_t HFstats2__plus, HFstats2__minus;
+		Float_t CFerr1__plus, CFerr1__minus;
+		Float_t CFerr2__plus, CFerr2__minus;
+		Float_t HFcont__plus, HFcont__minus;
+		Float_t LFstats1__plus, LFstats1__minus;
+		Float_t LFstats2__plus, LFstats2__minus;
+		Float_t PU__plus, PU__minus;
+		Float_t Q2__plus, Q2__minus;
+		Float_t pdf__plus, pdf__minus;
 
 
 		//--- Lots of variables, used for MEM computation
         Int_t mc_ttZhypAllowed;
         Int_t catJets;
+
+        //NEW -- add collections of jets without selection -- store all infos in vectors of float
+        Int_t nJets, nJets_tHq, nJets_ttH;
+		vector<Float_t>* JetsPt;
+        vector<Float_t>* JetsEta;
+        vector<Float_t>* JetsPhi;
+        vector<Float_t>* JetsE;
+        vector<Float_t>* JetsCSV;
 
         Int_t           multilepton_Lepton1_Id,             multilepton_Lepton2_Id,                 multilepton_Lepton3_Id,             multilepton_Lepton4_Id;
         TLorentzVector  multilepton_Lepton1_P4,             multilepton_Lepton2_P4,                 multilepton_Lepton3_P4,             multilepton_Lepton4_P4;
@@ -297,7 +415,7 @@ class tHqMultileponAnalysis
         TLorentzVector  multilepton_h0_P4,      multilepton_t1_P4,      multilepton_t2_P4;
 
         TLorentzVector multilepton_mET, multilepton_Ptot;
-        Float_t multilepton_mHT;
+        Float_t multilepton_sumET;
         Double_t multilepton_mETcov00;
         Double_t multilepton_mETcov01;
         Double_t multilepton_mETcov10;
@@ -307,7 +425,8 @@ class tHqMultileponAnalysis
     private:
         TFile * outputfile;
 
-        TFile *f_CSVwgt_HF, *f_CSVwgt_LF, *f_BTag_eff, *f_QFwgt, *f_FRwgt;
+        // TFile *f_CSVwgt_HF, *f_CSVwgt_LF, *f_BTag_eff, *f_QFwgt, *f_FRwgt;
+		TFile *f_QFwgt, *f_FRwgt;
 
         TString _sampleName;
         TString _process; // Needed for Combine
@@ -319,15 +438,33 @@ class tHqMultileponAnalysis
         int   _nowe; // number of weighted events
         int   _nmax; // max number of events to process
 
-        TFile * _file_PVreweighting;
-        TH1F* _h_PV;
+        //SYNCHRO
+		std::ofstream outfile_2lSS_SR;
+		std::ofstream outfile_3l_SR;
+		std::ofstream outfile_ttW_CR;
+		std::ofstream outfile_ttZ_CR;
+		std::ofstream outfile_WZ_CR;
 
-        std::ofstream fout_MC;
+		TString inputFileName;
 
-        std::ofstream fout_RECO;
+        TH2F* h_overlap_ttH_tHq_cat;
+        TH1F* h_totalYield_tHq_cat;
+		TH1F* h_totalYield_ttH_cat;
 
-        std::string del;
-        std::string trig;
+		vector<TString> v_systTree; //can choose to store JES/JER TTrees, in addition to default
+
+		//LHE weights
+		float weight_originalXWGTUP;
+		float weight_scale_muF0p5;
+		float weight_scale_muF2;
+		float weight_scale_muR0p5;
+		float weight_scale_muR2;
+		float weight_scale_muR2muF2;
+		float weight_scale_muR0p5muF0p5;
+
+		std::vector<float> LHEweights; //LHE weights
+		std::vector<std::string> LHEweights_Ids; //LHE weights ids
+        float sumWeight_ctcv_couplings; //Need to normalize all ctcv couplings with sum
 };
 
 #endif

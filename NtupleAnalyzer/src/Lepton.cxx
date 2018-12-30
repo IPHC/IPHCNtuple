@@ -28,6 +28,8 @@ Lepton::Lepton()
     charge             =  0;
     
     hasMCMatch		= 0;
+    hasChargeMCMatch	= 0;
+    hasPhotonMCMatch	= 0;
 }
 
 Lepton::~Lepton()

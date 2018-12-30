@@ -5,8 +5,7 @@ CC = g++ -g -Wno-writable-strings -Wno-write-strings -lTMVA
 
 #NB : first, must compile NtupleProducer, to produce libNtuple.so !
 NTUPLEINC    = -I../NtupleProducer/include -I$(CMSSW_RELEASE_BASE)/src
-NTUPLELIB    = -L../NtupleProducer -L$(CMSSW_RELEASE_BASE)/lib/slc6_amd64_gcc630 -lCondFormatsJetMETObjects \
-              -lNtuple
+NTUPLELIB    = -L../NtupleProducer -L$(CMSSW_RELEASE_BASE)/lib/slc6_amd64_gcc630 -lCondFormatsJetMETObjects -lNtuple
 
 SOVERSION               = $(shell echo $(VERSION) | \
                                sed 's/\(.*\)\.\(.*\)\.\(.*\)/\1:\2:0/')
@@ -28,33 +27,39 @@ ADDINC = $(NTUPLEINC) $(KINFITINC)
 SRC = src/tHqMultileponAnalysis.cxx \
  src/Analyzer.cxx \
  src/Lepton.cxx \
+ src/BTagCalibrationXStandalone.cxx \
  src/ScaleFactors.cxx \
+ src/Pileup.cxx \
 
 
 INC = include/tHqMultileponAnalysis.h \
  include/Analyzer.h \
  include/Lepton.h \
+ include/BTagCalibrationXStandalone.h \
  include/ScaleFactors.h \
+ include/Pileup.h \
 
 OBJ = tHqMultileponAnalysis.o \
  Analyzer.o\
  Lepton.o \
+ BTagCalibrationXStandalone.o \
  ScaleFactors.o \
+ Pileup.o \
 
 EXE = Analyzer
 
 SUMWEIGHT = test/Get_SumWeightEvents_FlatTrees.exe
-
 
 all:  	     		$(EXE) $(SUMWEIGHT)
 #@rm -f *.o
 
 $(EXE):     	 	$(OBJ) $@
 
+
 $(OBJ):     		$(SRC) $(INC)
 			@echo ""
 			@echo "###################################"
-			@echo "-- Creating executable $(EXE) --"
+			@echo "-- Creating object file $(OBJ) --"
 		        @$(CC) -c $(ROOTCFLAGS) $(ADDINC) $(SRC)
 			@echo "-- Done --"
 			@echo "###################################"

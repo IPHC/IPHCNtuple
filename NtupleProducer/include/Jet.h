@@ -24,10 +24,15 @@ class Jet : public Base
    float qgtag;
    float pileupJetId;
 
-   //Moved from JetExt.h
-   float JES_uncert;
-   float pt_JER_down;
+   float pt_JES_up;
+   float pt_JES_down;
    float pt_JER_up;
+   float pt_JER_down;
+   
+   float E_JES_up;
+   float E_JES_down;
+   float E_JER_up;
+   float E_JER_down;
 
    ClassDef(Jet,1)
 };

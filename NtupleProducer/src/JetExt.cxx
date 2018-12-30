@@ -89,22 +89,26 @@ void JetExt::init()
    jet_genJet_E         = -100.;
    jet_genParton_E      = -100.;
 
-   JES_uncert           = 0.;
-   pt_JER_down          = 0.;
-   pt_JER_up            = 0.;
+   pt_JES_up           = 0.;
+   pt_JES_down         = 0.;
+   pt_JER_up           = 0.;
+   pt_JER_down         = 0.;
+   
+   E_JES_up           = 0.;
+   E_JES_down         = 0.;
+   E_JER_up           = 0.;
+   E_JER_down         = 0.;
 }
 
 void JetExt::sel(int sync)
 {
-   float jet_pt_JESup = pt*(1+JES_uncert);
-
    bool pass_pt = (pt > 25.);
 
    bool pass_eta = false;
 
    if(sync == 0)
    {
-	 pass_pt = pass_pt || (jet_pt_JESup > 25.);
+	 pass_pt = pass_pt || (pt_JES_up > 25.);
 	 pass_eta = (fabs(eta) < 5.0); //tHq2017 //Default cut now (always store tHq events)
    }
    else //For synchro with ttH, never care about fwd jets
@@ -208,31 +212,28 @@ void JetExt::sel(int sync)
 	if( evId == evdebug->at(d) )
 	  {
 	     std::cout << "------------------------------" << std::endl;
-	     std::cout << "Event #" << evId << std::endl;
+	     std::cout << "Event #" << std::setprecision(12)<< evId << std::endl;
 	     std::cout << "  jet #" << ID << std::endl;
 	     std::cout << "  pt = " << pt << std::endl;
 	     std::cout << "  eta = " << eta << std::endl;
 	     std::cout << "  phi = " << phi << std::endl;
-	     std::cout << "  jet_pt_JESup = " << jet_pt_JESup << std::endl;
+	     std::cout << "  pt_JES_up = " << pt_JES_up << std::endl;
 	     std::cout << "  isLooseTTH = " << isLooseTTH << std::endl;
 	     std::cout << "  pass_pt = " << pass_pt << std::endl;
 	     std::cout << "  pass_eta = " << pass_eta << std::endl;
 	     std::cout << "  tightJetID = " << tightJetID << std::endl;
+	     std::cout << "  (( jet_neutralEmEnergyFraction = " <<
+	     ntP->jet_neutralEmEnergyFraction->at(idx) << std::endl;
 	     std::cout << "  pass_lepOverlap = " << pass_lepOverlap << std::endl;
 	     std::cout << "  pass_tauOverlap = " << pass_tauOverlap << std::endl;
 	  }
      }
 }
 
-void JetExt::setJESUncertainty(float unc)
-{
-   JES_uncert = unc;
-}
-
 
 void JetExt::apply_JER_smearing(bool isdata, float JER_res, float JER_sf, float JER_sf_up, float JER_sf_down)
 {
-    if(isdata) {JES_uncert = 0; pt_JER_up = pt; pt_JER_down = pt;}
+    if(isdata) {pt_JER_up = pt; pt_JER_down = pt;}
 
     //Check if jet is gen matched
     float dpt = 0;
@@ -288,9 +289,25 @@ void JetExt::apply_JER_smearing(bool isdata, float JER_res, float JER_sf, float 
     //Store up/down variations
     pt_JER_up = pt * JER_corr_up;
     pt_JER_down = pt * JER_corr_down;
+    E_JER_up = E * JER_corr_up;
+    E_JER_down = E * JER_corr_down;
 
-    //Correct jet pt by JER correcting factor
+    //Correct jet pt/E by JER correcting factor
     pt*= JER_corr;
+    E*= JER_corr;
+
+    return;
+}
+
+void JetExt::setJESUncertainty(bool isdata, float unc)
+{
+    if(isdata) {pt_JES_up = pt; pt_JES_down = pt;}
+
+    pt_JES_up = pt * (1+unc);
+    pt_JES_down = pt * (1-unc);
+    
+    E_JES_up = E * (1+unc);
+    E_JES_down = E * (1-unc);
 
     return;
 }

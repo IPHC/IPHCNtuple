@@ -1,8 +1,8 @@
 #!/bin/env zsh
 export x509_USER_PROXY=/home-pbs/ntonon/proxy/x509up_u8066
 
-fpath="/dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/tHq2017/"
-#fpath="/dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/tHq2017_v2/"
+#fpath="/dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/tHq2017_v0/"
+fpath="/dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/tHq2017_v1/"
 
 dataStr="SingleElectron|SingleMuon|DoubleEG|DoubleMuon|MuonEG"
 
@@ -12,7 +12,7 @@ liMC=($(/usr/bin/rfdir ${fpath} | egrep -v "$dataStr" | awk '{print $9}'))
 fpathDATAXRD=$(echo ${fpath} | sed "s%/dpm%root://sbgse1.in2p3.fr//dpm%g")
 fpathMCXRD=$(echo ${fpath} | sed "s%/dpm%root://sbgse1.in2p3.fr//dpm%g")
 
-nFilesDATA=20
+nFilesDATA=40
 nFilesMC=10
 outDir="lists/"
 

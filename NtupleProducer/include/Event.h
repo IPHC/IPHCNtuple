@@ -15,6 +15,17 @@ class Event : public Base
    Int_t id;
    int   run;
    int   lumi;
+      
+   float weight_originalXWGTUP;
+   float weight_scale_muF0p5;
+   float weight_scale_muF2;
+   float weight_scale_muR0p5;
+   float weight_scale_muR2;
+   float weight_scale_muR2muF2;
+   float weight_scale_muR0p5muF0p5;
+   
+   std::vector<float> pdf_weights;
+   std::vector<std::string> pdf_ids;
    
    bool is_1l2tau;
    bool is_1l2tau_SR_Data;
@@ -62,6 +73,8 @@ class Event : public Base
    bool is_WZctrl_SR_Data;
    bool is_WZctrl_SR;
    bool is_WZctrl_Fake;
+   bool is_ZZctrl_SR_Data;
+   bool is_ZZctrl_SR;
    bool is_2lSS_Training;
    bool is_3l_Training;
    bool is_2lSS_LooseSel;
@@ -91,7 +104,8 @@ class Event : public Base
    bool trig_emm;
    bool trig_mmm;
    
-   int mc_pu_trueNumInt; //Moved from EventExt.h
+   int mc_pu_trueNumInt;
+   int pv_n;
 
    ClassDef(Event,1)
 };

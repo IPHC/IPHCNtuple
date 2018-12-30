@@ -24,17 +24,8 @@ class EventExt : public Event
    float metNoHF_phi;
    float metNoHF_sumet;
    
-   int   pv_n;
    float pv_z;
    float pv_zError;
-   
-   float weight_scale_muF0p5;
-   float weight_scale_muF2;
-   float weight_scale_muR0p5;
-   float weight_scale_muR2;
-   
-   std::vector<float> pdf_weights;
-   std::vector<std::string> pdf_ids;
    
    float mc_ptHat;
    

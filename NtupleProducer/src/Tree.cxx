@@ -101,6 +101,8 @@ void Tree::Init(TChain *ch)
    el_PFRelIso04 = 0;
    el_conept = 0;
    el_ooEmooP = 0;
+   el_E_postCorr = 0;
+   el_pt_postCorr = 0;
    
    el_id = 0;
    el_charge = 0;
@@ -165,6 +167,8 @@ void Tree::Init(TChain *ch)
    el_trackMomentumError = 0;
 
    el_hasMCMatch = 0;
+   el_hasChargeMCMatch = 0;
+   el_hasPhotonMCMatch = 0;
    el_gen_pt = 0;
    el_gen_eta = 0;
    el_gen_phi = 0;
@@ -224,7 +228,7 @@ void Tree::Init(TChain *ch)
    mu_innerTrack_dzError = 0;
    mu_innerTrack_validFraction = 0;
    mu_bestTrack_dxy = 0;
-   mu_bestTrack_dz = 0;
+   mu_bestTrack_PV_dz = 0;
    mu_bestTrack_dxyError = 0;
    mu_bestTrack_dzError  = 0;
    mu_bestTrack_pt       = 0;
@@ -252,6 +256,7 @@ void Tree::Init(TChain *ch)
    mu_innerTrack_ptError = 0;
 
    mu_hasMCMatch = 0;
+   mu_hasChargeMCMatch = 0;
    mu_gen_pt = 0;
    mu_gen_eta = 0;
    mu_gen_phi = 0;
@@ -318,6 +323,7 @@ void Tree::Init(TChain *ch)
    tau_pfEssential_dxy_Sig = 0;
 
    tau_hasMCMatch = 0;
+   tau_hasChargeMCMatch = 0;
    tau_gen_pt = 0;
    tau_gen_eta = 0;
    tau_gen_phi = 0;
@@ -347,6 +353,7 @@ void Tree::Init(TChain *ch)
    jet_hadronFlavour = 0;
    jet_neutralHadronEnergy = 0;
    jet_neutralEmEnergy = 0;
+   jet_neutralEmEnergyFraction = 0;
    jet_chargedHadronEnergy = 0;
    jet_chargedEmEnergy = 0;
    jet_electronEnergy = 0;
@@ -880,7 +887,8 @@ void Tree::Init(TChain *ch)
    fChain->SetBranchAddress("el_PFRelIso04", &el_PFRelIso04, &b_el_PFRelIso04);
    fChain->SetBranchAddress("el_conept", &el_conept, &b_el_conept);
    fChain->SetBranchAddress("el_ooEmooP", &el_ooEmooP, &b_el_ooEmooP);
-   
+   fChain->SetBranchAddress("el_E_postCorr", &el_E_postCorr, &b_el_E_postCorr);
+   fChain->SetBranchAddress("el_pt_postCorr", &el_pt_postCorr, &b_el_pt_postCorr);   
    fChain->SetBranchAddress("el_id", &el_id, &b_el_id);
    fChain->SetBranchAddress("el_charge", &el_charge, &b_el_charge);
    fChain->SetBranchAddress("el_neutralHadronIso", &el_neutralHadronIso, &b_el_neutralHadronIso);
@@ -944,6 +952,8 @@ void Tree::Init(TChain *ch)
    fChain->SetBranchAddress("el_trackMomentumError", &el_trackMomentumError, &b_el_trackMomentumError);
    
    fChain->SetBranchAddress("el_hasMCMatch", &el_hasMCMatch, &b_el_hasMCMatch);
+   fChain->SetBranchAddress("el_hasChargeMCMatch", &el_hasChargeMCMatch, &b_el_hasChargeMCMatch);
+   fChain->SetBranchAddress("el_hasPhotonMCMatch", &el_hasPhotonMCMatch, &b_el_hasPhotonMCMatch);
    fChain->SetBranchAddress("el_gen_pt", &el_gen_pt, &b_el_gen_pt);
    fChain->SetBranchAddress("el_gen_eta", &el_gen_eta, &b_el_gen_eta);
    fChain->SetBranchAddress("el_gen_phi", &el_gen_phi, &b_el_gen_phi);
@@ -1004,7 +1014,7 @@ void Tree::Init(TChain *ch)
    //fChain->SetBranchAddress("mu_innerTrack_dzError", &mu_innerTrack_dzError, &b_mu_innerTrack_dzError);
    //fChain->SetBranchAddress("mu_innerTrack_validFraction", &mu_innerTrack_validFraction, &b_mu_innerTrack_validFraction);
    //fChain->SetBranchAddress("mu_bestTrack_dxy", &mu_bestTrack_dxy, &b_mu_bestTrack_dxy);
-   //fChain->SetBranchAddress("mu_bestTrack_dz", &mu_bestTrack_dz, &b_mu_bestTrack_dz);
+   fChain->SetBranchAddress("mu_bestTrack_PV_dz", &mu_bestTrack_PV_dz, &b_mu_bestTrack_PV_dz);
    //fChain->SetBranchAddress("mu_bestTrack_dxyError", &mu_bestTrack_dxyError, &b_mu_bestTrack_dxyError);
    //fChain->SetBranchAddress("mu_bestTrack_dzError", &mu_bestTrack_dzError, &b_mu_bestTrack_dzError);
    fChain->SetBranchAddress("mu_bestTrack_pt",      &mu_bestTrack_pt,      &b_mu_bestTrack_pt     );
@@ -1032,6 +1042,7 @@ void Tree::Init(TChain *ch)
    fChain->SetBranchAddress("mu_lepMVA_jetNDauChargedMVASel", &mu_lepMVA_jetNDauChargedMVASel, &b_mu_lepMVA_jetNDauChargedMVASel);   
 
    fChain->SetBranchAddress("mu_hasMCMatch", &mu_hasMCMatch, &b_mu_hasMCMatch);
+   fChain->SetBranchAddress("mu_hasChargeMCMatch", &mu_hasChargeMCMatch, &b_mu_hasChargeMCMatch);
    fChain->SetBranchAddress("mu_gen_pt", &mu_gen_pt, &b_mu_gen_pt);
    fChain->SetBranchAddress("mu_gen_eta", &mu_gen_eta, &b_mu_gen_eta);
    fChain->SetBranchAddress("mu_gen_phi", &mu_gen_phi, &b_mu_gen_phi);
@@ -1099,6 +1110,7 @@ void Tree::Init(TChain *ch)
    fChain->SetBranchAddress("tau_pfEssential_dxy_Sig", &tau_pfEssential_dxy_Sig, &b_tau_pfEssential_dxy_Sig);
 
    fChain->SetBranchAddress("tau_hasMCMatch", &tau_hasMCMatch, &b_tau_hasMCMatch);
+   fChain->SetBranchAddress("tau_hasChargeMCMatch", &tau_hasChargeMCMatch, &b_tau_hasChargeMCMatch);
    fChain->SetBranchAddress("tau_gen_pt", &tau_gen_pt, &b_tau_gen_pt);
    fChain->SetBranchAddress("tau_gen_eta", &tau_gen_eta, &b_tau_gen_eta);
    fChain->SetBranchAddress("tau_gen_phi", &tau_gen_phi, &b_tau_gen_phi);
@@ -1129,6 +1141,7 @@ void Tree::Init(TChain *ch)
    fChain->SetBranchAddress("jet_hadronFlavour", &jet_hadronFlavour, &b_jet_hadronFlavour);
    fChain->SetBranchAddress("jet_neutralHadronEnergy", &jet_neutralHadronEnergy, &b_jet_neutralHadronEnergy);
    fChain->SetBranchAddress("jet_neutralEmEnergy", &jet_neutralEmEnergy, &b_jet_neutralEmEnergy);
+   fChain->SetBranchAddress("jet_neutralEmEnergyFraction", &jet_neutralEmEnergyFraction, &b_jet_neutralEmEnergyFraction); //CHANGED -- for debug
    fChain->SetBranchAddress("jet_chargedHadronEnergy", &jet_chargedHadronEnergy, &b_jet_chargedHadronEnergy);
    fChain->SetBranchAddress("jet_chargedEmEnergy", &jet_chargedEmEnergy, &b_jet_chargedEmEnergy);
    fChain->SetBranchAddress("jet_electronEnergy", &jet_electronEnergy, &b_jet_electronEnergy);

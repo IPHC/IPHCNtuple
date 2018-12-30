@@ -23,9 +23,8 @@ dout="/home-pbs/ntonon/tHq/IPHCNtuple_2017/CMSSW_9_4_3/src/IPHCNtuple/NtupleProd
 
 dout_f="/opt/sbg/scratch1/cms/ntonon/ntuples_prod_tHq"
 
-#version="ttH2017" #output subdir.
-version="tHq2017" #output subdir.
-#version="tHq2017_v2" #output subdir.
+#version="tHq2017_v0" #output subdir.
+version="tHq2017_v1" #output subdir.
 
 echo "CMSSW_RELEASE_BASE" $CMSSW_RELEASE_BASE
 

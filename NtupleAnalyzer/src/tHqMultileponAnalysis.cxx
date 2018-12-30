@@ -1,14 +1,11 @@
-//ThreeLeptonSelection_THQ3l
+// ThreeLeptonSelection_THQ3l
 // tHqMultileponAnalysis::fillOutputTree()
 
 
 //----------  FIXMES  -------------------------
-// -- mHT value for MEM ?
-//--------------------------------------------
-
-//--------------------------------------------
-// -- changed SR selections from ttH to tHq
-// -- added boolean to choose tHq or ttH selections
+// - Gamma Conv
+// - Pileup disactivated
+// - noisy jets ?
 //--------------------------------------------
 
 #include "../include/tHqMultileponAnalysis.h"
@@ -18,7 +15,6 @@
 #include "Helper.cxx"
 #include "FakeRate.cxx"
 #include "ChargeFlip.cxx"
-// #include "BTagging.cxx"
 
 #define kCat_3l_2b_2j   0
 #define kCat_3l_1b_2j   1
@@ -41,18 +37,31 @@
 #define kCat_2lss_1b_2j 16
 #define kCat_2lss_1b_1j 17
 
-#define DEBUG false
+bool DEBUG = false;
 
 using namespace std;
 
-//Cutflow vector --> Count events for THQ_3l_SR selection, after each cut
-vector<double> v_cutflow(15);
+// --- OPTIONS
+//--------------------------------------------
+bool do_tHq_analysis = false; // false <-> will save events passing >=1 ttH cat ; true <-> idem with tHq cat
 
-bool use_ttH_selections = true; //FIXME
+bool add_JES_TTrees = false;
+bool add_JER_TTrees = false;
+
+bool make_ntuples_for_overlap_studies = false; //true <-> adds histograms containing overlaps between categs
+bool add_orthogocal_cat = false; //true <-> adds new categs for overlap/ortho studies
+
+bool write_branches_forMEM = false;
+
+bool write_LHE_weights_allFiles = false; //true <-> store LHE weights for all samples (~1k weights per event for now...) ; else only THQ/THW
+
+bool dump_synchro_info = false;
 //--------------------------------------------
 
-
-
+//--------------------------------------------
+//--- DEBUGGING - global variables
+// vector<double> v_cutflow(15); //Cutflow vector --> Count events for THQ_3l_SR selection, after each cut
+// int counter = 0; //For debug checks
 
 
 
@@ -85,18 +94,31 @@ bool use_ttH_selections = true; //FIXME
  */
 tHqMultileponAnalysis::~tHqMultileponAnalysis()
 {
+    cout<<"--- Destroy 'tHqMultileponAnalysis' object..."<<endl;
+
     delete vEvent;
-    delete vElectronLoose ; delete vElectronFakeable ; delete vElectronTight;
+    delete vElectronLoose; delete vElectronFakeable; delete vElectronTight;
     delete vMuonLoose; delete vMuonFakeable; delete vMuonTight;
     delete vTauLoose; delete vTauMedium; delete vTauFakeable;
-    delete vJetLoose;
+    delete vJetLoose_original;
+    delete vJetLoose_tmp;
     delete vTruth;
 
-    delete tOutput;
+    // delete tOutput;
+    for(int itree=0; itree<v_tOutput.size(); itree++)
+    {
+        delete v_tOutput[itree];
+    }
+
     delete outputfile;
 
-    // delete f_CSVwgt_HF; delete f_CSVwgt_LF; delete f_BTag_eff;
 	delete f_QFwgt; delete f_FRwgt;
+
+    delete h_PU_noCorr; delete h_PU_withCorr;
+    delete h_nPV_noCorr; delete h_nPV_withCorr;
+    delete h_overlap_ttH_tHq_cat; h_overlap_ttH_tHq_cat = NULL;
+    delete h_totalYield_ttH_cat; h_totalYield_ttH_cat = NULL;
+    delete h_totalYield_tHq_cat; h_totalYield_tHq_cat = NULL;
 
     sf->~ScaleFactors(); //Destroy SF object
 }
@@ -116,7 +138,6 @@ tHqMultileponAnalysis::~tHqMultileponAnalysis()
  */
 tHqMultileponAnalysis::tHqMultileponAnalysis(TString inputFileName, TString sampleName, TString treeName, TString outputFileName, bool isdata, bool doSystCombine, float xsec, float lumi, int nowe, int nmax)
 {
-    //
     _isdata = isdata;
     _xsec = xsec;
     _lumi = lumi;
@@ -124,7 +145,10 @@ tHqMultileponAnalysis::tHqMultileponAnalysis(TString inputFileName, TString samp
     _nmax = nmax;
     _outputFileName = outputFileName;
     _sampleName = sampleName;
-    _process = "toto";
+    this->inputFileName = inputFileName;
+    // _process = "toto";
+
+    cout<<endl<<endl<<"* Sample name = "<<_sampleName<<endl<<endl<<endl;
 
     fChain = new TChain(treeName);
 
@@ -142,10 +166,36 @@ tHqMultileponAnalysis::tHqMultileponAnalysis(TString inputFileName, TString samp
     TString outputfileNameRoot = _outputFileName+".root";
     outputfile = new TFile(outputfileNameRoot, "RECREATE");
 
-    sf = new ScaleFactors(); //Opens all the SF files, fills SF histograms
+    bool debug_pileup = false; //true <-> print PU weights
+    sf = new ScaleFactors(_sampleName, debug_pileup); //Opens all the SF files, fills SF histograms
+
+    h_PU_noCorr = new TH1F("", "", 100, 0, 100);
+    h_PU_withCorr = new TH1F("", "", 100, 0, 100);
+    h_nPV_noCorr = new TH1F("", "", 100, 0, 100);
+    h_nPV_withCorr = new TH1F("", "", 100, 0, 100);
+
+    //For overlap studies -- NB : events entering any of the 2 analyses are accounted for
+    h_overlap_ttH_tHq_cat = new TH2F("", "", 25, 0, 25, 25, 0, 25); //Contains total yield of events overlapping between categories of both analyses
+    h_totalYield_ttH_cat = new TH1F("", "", 25, 0, 25); //Contains total yield of events entering each ttH cat
+    h_totalYield_tHq_cat = new TH1F("", "", 25, 0, 25); //Contains total yield of events entering each tHq cat
 
     InitFiles();
-    initializeOutputTree();
+
+    //Systematics TTrees
+    v_systTree.push_back(""); //Default TTree
+    if(add_JES_TTrees) {v_systTree.push_back("JES_up"); v_systTree.push_back("JES_down");}
+    if(add_JER_TTrees) {v_systTree.push_back("JER_up"); v_systTree.push_back("JER_down");}
+
+    //Create 2 output TTree per syst (+1 default)
+    outputfile->cd();
+    v_tOutput.resize(v_systTree.size());
+    for(int itree=0; itree<v_tOutput.size(); itree++)
+    {
+        if(!itree) {v_tOutput[itree] = new TTree("Tree", "Tree");}
+        else {v_tOutput[itree] = new TTree(v_systTree[itree], v_systTree[itree]);}
+    }
+
+    if(_sampleName.Contains("THQ_ctcvcp") || _sampleName.Contains("THW_ctcvcp")) {write_LHE_weights_allFiles = true;} //Always store LHE info for THQ/THW
 }
 
 
@@ -158,18 +208,19 @@ void tHqMultileponAnalysis::InitTree()
     if (!fChain) return;
 
 	//Object collections defined in NtupleProducer
-    vEvent            = new std::vector<Event>();
-    vElectronLoose    = new std::vector<Electron>();
-    vElectronFakeable = new std::vector<Electron>();
-    vElectronTight    = new std::vector<Electron>();
-    vMuonLoose        = new std::vector<Muon>();
-    vMuonFakeable     = new std::vector<Muon>();
-    vMuonTight        = new std::vector<Muon>();
-    vTauLoose         = new std::vector<Tau>();
-    vTauFakeable      = new std::vector<Tau>();
-    vTauMedium      = new std::vector<Tau>();
-    vJetLoose         = new std::vector<Jet>();
-    vTruth            = new std::vector<Truth>();
+    vEvent             = new std::vector<Event>();
+    vElectronLoose     = new std::vector<Electron>();
+    vElectronFakeable  = new std::vector<Electron>();
+    vElectronTight     = new std::vector<Electron>();
+    vMuonLoose         = new std::vector<Muon>();
+    vMuonFakeable      = new std::vector<Muon>();
+    vMuonTight         = new std::vector<Muon>();
+    vTauLoose          = new std::vector<Tau>();
+    vTauFakeable       = new std::vector<Tau>();
+    vTauMedium         = new std::vector<Tau>();
+    vJetLoose_original = new std::vector<Jet>();
+    vJetLoose_tmp      = new std::vector<Jet>();
+    vTruth             = new std::vector<Truth>();
 
 
     fChain->SetBranchAddress("Event", &vEvent);
@@ -182,7 +233,7 @@ void tHqMultileponAnalysis::InitTree()
     fChain->SetBranchAddress("TauLoose", &vTauLoose);
     fChain->SetBranchAddress("TauFakeable", &vTauFakeable);
     fChain->SetBranchAddress("TauMedium", &vTauMedium);
-    fChain->SetBranchAddress("JetLoose", &vJetLoose);
+    fChain->SetBranchAddress("JetLoose", &vJetLoose_original);
     fChain->SetBranchAddress("Truth", &vTruth);
     // fChain->SetBranchAddress("GenJet", &vGenJet);
 
@@ -194,58 +245,43 @@ void tHqMultileponAnalysis::InitTree()
  */
 void tHqMultileponAnalysis::InitFiles()
 {
+    cout<<endl<<"--- InitFiles()... "<<endl<<endl;
+
+
     //--- Load MVA weight files
     Load_MVA();
 
-    //--- Loading weight files and creating corresponding histograms
-
-/*
-    // b-tagging
-    std::string inputFileHF = "/opt/sbg/scratch1/cms/TTH/weight/csv_rwt_fit_hf_76x_2016_02_08.root"; //-- needs update ??
-    std::string inputFileLF = "/opt/sbg/scratch1/cms/TTH/weight/csv_rwt_fit_lf_76x_2016_02_08.root";
-    f_CSVwgt_HF = new TFile ((inputFileHF).c_str());
-    f_CSVwgt_LF = new TFile ((inputFileLF).c_str());
-    fillCSVhistos(f_CSVwgt_HF, f_CSVwgt_LF); //Fill histos with btagging weights
-
-    // new b-tagging (using BTagCalibrationXStandaloneWhatever)
-    // setup calibration + reader
-    // BTagCalibrationX *
-    calib = BTagCalibrationX("csvv2", "/opt/sbg/scratch1/cms/TTH/weight/CSVv2_Moriond17_B_H.csv");
-
-    // BTagCalibrationXReader *
-    reader = BTagCalibrationXReader(  BTagEntryX::OP_LOOSE,  // operating point
-                                                            "central",            // central sys type
-                                                            {"up", "down"});      // other sys types
-
-    reader.load(   calib,                // calibration instance
-                    BTagEntryX::FLAV_B,    // btag flavour
-                    "comb");               // measurement type
-
-    reader.load(    calib,                // calibration instance
-                    BTagEntryX::FLAV_C,    // btag flavour
-                    "comb");              // measurement type
-
-    reader.load(    calib,                // calibration instance
-                    BTagEntryX::FLAV_UDSG, // btag flavour
-                    "comb");              // measurement type
-
-
-    // BTag Efficiencies
-    TString inputFileBTagEff = "/opt/sbg/scratch1/cms/TTH/weight/output_tt_effBtag.root"; //HARD-CODED
-    f_BTag_eff = new TFile (inputFileBTagEff);
-    fill_eff_btagging_histos(f_BTag_eff);
-*/
-
-    // charge flip
-    // TString inputFileQF = "/home-pbs/ntonon/tHq/CMSSW_8_0_20/src/ttH/NtupleAnalyzer/test/FR_weights/QF_data_el.root"; //HARD-CODED
+    //Charge Flip Rate
     TString inputFileQF = "/home-pbs/ntonon/tHq/IPHCNtuple_2017/CMSSW_9_4_3/src/IPHCNtuple/NtupleAnalyzer/test/weights_2017/ElectronChargeMisIdRates_2017_2018Jun22.root"; //HARD-CODED
     f_QFwgt    = new TFile (inputFileQF);
     fillQFhistos(f_QFwgt);
 
-    // fake rate
+    //Fake Rate
     TString inputFileFR = "/home-pbs/ntonon/tHq/IPHCNtuple_2017/CMSSW_9_4_3/src/IPHCNtuple/NtupleAnalyzer/test/weights_2017/FR_data_ttH_mva.root"; //HARD-CODED
     f_FRwgt    = new TFile (inputFileFR);
     fillFRhistos(f_FRwgt);
+
+    //Synchro //By default, existing files are
+    TString outdir = "/home-pbs/ntonon/tHq/IPHCNtuple_2017/CMSSW_9_4_3/src/IPHCNtuple/NtupleAnalyzer/test/synchro/";
+    mkdir(outdir.Data(), 0777);
+
+    TString inputFileName_tmp = inputFileName;
+    int i = inputFileName_tmp.Index(".txt");
+    inputFileName_tmp.Remove(i);
+    i = inputFileName_tmp.Last('/');
+    if(i>0) {inputFileName_tmp.Remove(0, i+1);}
+    // cout<<"inputFileName = "<<inputFileName_tmp<<endl;
+
+    if(dump_synchro_info)
+    {
+        outfile_2lSS_SR.open( (outdir+inputFileName_tmp+"_2lSS_SR.txt").Data() );
+        outfile_3l_SR.open( (outdir+inputFileName_tmp+"_3l_SR.txt").Data() );
+        outfile_ttW_CR.open( (outdir+inputFileName_tmp+"_ttW_CR.txt").Data() );
+        outfile_ttZ_CR.open( (outdir+inputFileName_tmp+"_ttZ_CR.txt").Data() );
+        outfile_WZ_CR.open( (outdir+inputFileName_tmp+"_WZ_CR.txt").Data() );
+    }
+
+    return;
 }
 
 
@@ -259,45 +295,19 @@ void tHqMultileponAnalysis::InitCollections()
 	vLeptonFakeable.clear();
 	vLeptonTight.clear();
 
+    vJetLoose.clear();
+    vJetLoose_tHq.clear();
+    vJetLoose_ttH.clear();
+    vLightJets.clear();
+    vLightJets_tHq.clear();
+    vLightJets_ttH.clear();
 	vLooseBTagJets.clear();
-	vLightJets.clear();
-	vLightJets_FwdPtCut.clear();
+
+    LHEweights.clear();
+    LHEweights_Ids.clear();
 
 	return;
 }
-
-/**
- * Initialize the values of the ttH-predefined categories (computed at NTProd level)
- */
-void tHqMultileponAnalysis::InitPredefinedCategories()
-{
-    //ttH2017 categories (implemented at NTP level)
-    is_ttH_2lSS              = 0;
-    is_ttH_2lSS_SR           = 0;
-    is_ttH_2lSS_SR_Data      = 0;
-    is_ttH_2lSS_Fake         = 0;
-    is_ttH_2lSS_Flip         = 0;
-    is_ttH_2lSS_Flip_Data    = 0;
-    is_ttH_3l                = 0;
-    is_ttH_3l_SR             = 0;
-    is_ttH_3l_SR_Data        = 0;
-    is_ttH_3l_Fake           = 0;
-    is_ttH_ttWctrl           = 0;
-    is_ttH_ttWctrl_SR        = 0;
-    is_ttH_ttWctrl_SR_Data   = 0;
-    is_ttH_ttWctrl_Fake      = 0;
-    is_ttH_ttWctrl_Flip      = 0;
-    is_ttH_ttWctrl_Flip_Data = 0;
-    is_ttH_ttZctrl           = 0;
-    is_ttH_ttZctrl_SR        = 0;
-    is_ttH_ttZctrl_SR_Data   = 0;
-    is_ttH_ttZctrl_Fake      = 0;
-    is_ttH_WZctrl            = 0;
-    is_ttH_WZctrl_SR         = 0;
-    is_ttH_WZctrl_SR_Data    = 0;
-    is_ttH_WZctrl_Fake       = 0;
-}
-
 
 /**
  * Initialize the values of my custom categories
@@ -315,6 +325,7 @@ void tHqMultileponAnalysis::InitCustomCategories()
     is_tHq_3l_SR             = 0;
     is_tHq_3l_Training       = 0;
     is_tHq_3l_Fake           = 0;
+    is_tHq_3l_GammaConv      = 0;
     is_tHq_ttWctrl           = 0;
     is_tHq_ttWctrl_SR        = 0;
     is_tHq_ttWctrl_Fake      = 0;
@@ -323,9 +334,66 @@ void tHqMultileponAnalysis::InitCustomCategories()
     is_tHq_ttZctrl           = 0;
     is_tHq_ttZctrl_SR        = 0;
     is_tHq_ttZctrl_Fake      = 0;
+    is_tHq_ttZctrl_GammaConv = 0;
     is_tHq_WZctrl            = 0;
     is_tHq_WZctrl_SR         = 0;
     is_tHq_WZctrl_Fake       = 0;
+    is_tHq_WZctrl_GammaConv  = 0;
+    is_tHq_4l_SR             = 0;
+    is_tHq_ZZctrl_SR         = 0;
+
+    //ttH2017 categories
+    is_ttH_2lSS              = 0;
+    is_ttH_2lSS_Training     = 0;
+    is_ttH_2lSS_SR           = 0;
+    is_ttH_2lSS_Fake         = 0;
+    is_ttH_2lSS_Flip         = 0;
+    is_ttH_2lSS_GammaConv    = 0;
+    is_ttH_3l                = 0;
+    is_ttH_3l_Training       = 0;
+    is_ttH_3l_SR             = 0;
+    is_ttH_3l_Fake           = 0;
+    is_ttH_3l_GammaConv      = 0;
+    is_ttH_ttWctrl           = 0;
+    is_ttH_ttWctrl_SR        = 0;
+    is_ttH_ttWctrl_Fake      = 0;
+    is_ttH_ttWctrl_Flip      = 0;
+    is_ttH_ttWctrl_GammaConv = 0;
+    is_ttH_ttZctrl           = 0;
+    is_ttH_ttZctrl_SR        = 0;
+    is_ttH_ttZctrl_Fake      = 0;
+    is_ttH_ttZctrl_GammaConv = 0;
+    is_ttH_WZctrl            = 0;
+    is_ttH_WZctrl_SR         = 0;
+    is_ttH_WZctrl_Fake       = 0;
+    is_ttH_WZctrl_GammaConv  = 0;
+    is_ttH_4l_SR             = 0;
+    is_ttH_ZZctrl_SR         = 0;
+
+    is_ttH_2lSS_SR_fwd    = 0;
+    is_ttH_3l_SR_fwd      = 0;
+    is_tHq_2lSS_SR_fwd    = 0;
+    is_tHq_3l_SR_fwd      = 0;
+
+    is_ttH_2lSS_SR_btag      = 0;
+    is_ttH_3l_SR_btag        = 0;
+    is_tHq_2lSS_SR_btag      = 0;
+    is_tHq_3l_SR_btag        = 0;
+
+    is_ttH_2lSS_SR_njet = 0;
+    is_ttH_3l_SR_njet   = 0;
+    is_tHq_2lSS_SR_njet = 0;
+    is_tHq_3l_SR_njet   = 0;
+    is_ttH_ttWctrl_SR_njet = 0;
+
+    is_tHq_2lSS_SR_fwd2     = 0;
+    is_ttH_ttWctrl_SR_fwd2  = 0;
+
+    is_tHq_3l_SR_njet2 = 0;
+    is_ttH_3l_SR_njet2 = 0;
+
+    is_tHq_3l_SR_njet3 = 0;
+    is_ttH_3l_SR_njet3 = 0;
 
     return;
 }
@@ -396,51 +464,66 @@ void tHqMultileponAnalysis::InitTLorentzVectors()
  */
 void tHqMultileponAnalysis::InitVariables()
 {
-	weightfake = 0;
-	weightflip = 0;
-
 	// signal_3l_TT_MVA = -9; signal_3l_TTV_MVA = -9;
 	// signal_2lss_TT_MVA = -9; signal_2lss_TTV_MVA = -9;
 
 	channel = -1;
 
     //tHq2016 input vars
-    nJet25               = 0.;
-    nJetLoose            = 0.;
-    maxEtaJet25          = 0.;
-    lepCharge            = 0.;
-    nJetEta1             = 0.;
-    dEtaFwdJetBJet       = 0.;
-    dEtaFwdJet2BJet      = 0.;
-    dEtaFwdJetClosestLep = 0.;
-    dPhiHighestPtSSPair  = 0.;
-    minDRll              = 0.;
-    Lep3Pt               = 0.;
+    nJet25               = -9;
+    nJetLoose            = -9;
+    maxEtaJet25          = -9;
+    lepCharge            = -9;
+    nJetEta1             = -9;
+    dEtaFwdJetBJet       = -9;
+    dEtaFwdJet2BJet      = -9;
+    dEtaFwdJetClosestLep = -9;
+    dPhiHighestPtSSPair  = -9;
+    minDRll              = -9;
+    Lep3Pt               = -9;
 
     //ttH2017 input vars
-    lep1_conePt    = 0;
-    lep2_conePt    = 0;
-    mindr_lep1_jet = 0;
-    mindr_lep2_jet = 0;
-    mT_lep1        = 0;
-    mT_lep2        = 0;
-    max_lep_eta    = 0;
+    lep1_conePt    = -9;
+    lep2_conePt    = -9;
+    lep3_conePt    = -9;
+    mindr_lep1_jet = -9;
+    mindr_lep2_jet = -9;
+    mT_lep1        = -9;
+    mT_lep2        = -9;
+    max_lep_eta    = -9;
 
-    //New input vars, to be tested
-    minv_FwdJetBJet = 0;
-    etaFwdJet       = 0;
-    ptFwdJet        = 0;
-    LeadJetEta      = 0;
-    LeadJetPt       = 0;
-    dRjj            = 0;
-    deepCSV_max     = 0;
-    deepCSV_2nd     = 0;
-    Mjj_max         = 0;
-    dPhiLepBJet_max = 0;
-    dPhijj_max      = 0;
+    //More input vars, to be tested
+    minv_FwdJetBJet  = -9;
+    FwdJetEta        = -9;
+    FwdJetPt         = -9;
+    LeadJetEta       = -9;
+    LeadJetPt        = -9;
+    dRjj             = -9;
+    deepCSV_max      = -9;
+    deepCSV_2nd      = -9;
+    Mjj_max          = -9;
+    dPhiLepBJet_max  = -9;
+    dPhijj_max       = -9;
+    m3l              = -9;
+    dPhiLepLep_max   = -9;
+    top_mass         = -9;
+    mTW              = -9;
+    lW_asym          = -9;
+    dRBjetRecoilJet  = -9;
+    dRLepWRecoilJet  = -9;
+    RecoilJetPt      = -9;
+    RecoilJetEta     = -9;
+    LepWPt           = -9;
+    LepWEta          = -9;
+    top_Pt           = -9;
+    HjTag_max        = -9;
+    HjTag_mean       = -9;
+    mass_LepBJet_min = -9;
+    sum_jetPt        = -9;
 
     //Additional vars
-    lep1Pt = 0; lep2Pt = 0; lep3Pt = 0; hardestBjetPt = 0; hardestBjetEta = 0; fwdJetPt = 0;
+    hardestBjetPt = 0; hardestBjetEta = 0;
+    lep1Eta = 0; lep2Eta = 0; lep3Eta = 0; lep1Phi = 0; lep2Phi = 0; lep3Phi = 0;
 
 	return;
 }
@@ -487,589 +570,698 @@ void tHqMultileponAnalysis::Loop()
 {
     if (!fChain) return;
 
-    for(int i=0; i<15; i++)
-    {
-        v_cutflow[i] = 0;
-    }
+    // for(int i=0; i<15; i++)
+    // {
+    //     v_cutflow[i] = 0;
+    // }
 
     Long64_t nentries = fChain->GetEntries();
     int nentries_max = nentries;
     if ( _nmax != -1 && _nmax < nentries ) nentries_max = _nmax;
 
     cout<<endl<<FYEL("--------------------------------------------")<<endl;
-    cout<<BOLD(FYEL(""<< "Will process "<<nentries_max<<"/"<<nentries<<" events" <<""))<<endl;
-    cout<<FYEL("--------------------------------------------")<<endl<<endl;;
+    cout<<BOLD(FYEL("Will process "<<nentries_max<<"/"<<nentries<<" events"))<<endl;
+    cout<<BOLD(FYEL("\t * "<<v_systTree.size()<<" TTrees (default, JES, JER, ...)"))<<endl;
+    cout<<FYEL("--------------------------------------------")<<endl<<endl;
 
-    Long64_t nbytes = 0, nb = 0;
-    for (Long64_t jentry=0; jentry<nentries_max;jentry++)
+    for(int itree=0; itree<v_systTree.size(); itree++)
     {
-        // cout<<endl<<jentry<< " / "<<nentries_max<<endl;
+        cout<<endl<<FYEL("--------------------------------------------")<<endl;
+        cout<<BOLD(FYEL("== TTREE NAME : '"<<v_systTree[itree]<<"'"))<<endl;
+        cout<<FYEL("--------------------------------------------")<<endl<<endl;
 
-        Long64_t ientry = fChain->LoadTree(jentry);
-        if (ientry < 0) break;
+        initializeOutputTree(itree);
 
-        if(jentry%200000 == 0) std::cout << "--- "<<jentry<< " / "<<nentries_max<<endl;
-
-        //if(jentry > 100000) break;
-
-        nb = fChain->GetEntry(jentry);   nbytes += nb;
-
-        InitCollections(); //Re-init object collections for each event
-        InitPredefinedCategories(); //Re-init ttH categories
-        InitCustomCategories(); //Re-init custom categories
-
-        int nlep_tth = Read_Predefined_Categories(); //Read booleans for ttH2017 categories, implemented at NTP level
-
-        event_id = vEvent->at(0).id;
-        MET = vEvent->at(0).metpt;
-        // metLD = Compute_METLD(MET);
-        metLD = vEvent->at(0).metLD;
-        event_run = vEvent->at(0).run;
-        // cout<<"event id "<<event_id<<endl;
-
-        weights_pdf.clear();
-        ids_pdf.clear();
-
-        if(!_isdata )
+        Long64_t nbytes = 0, nb = 0;
+        for (Long64_t jentry=0; jentry<nentries_max;jentry++)
         {
-            weight = _lumi*_xsec/_nowe;
+            // cout<<endl<<jentry<< " / "<<nentries_max<<endl;
 
-            mc_weight = vEvent->at(0).mc_weight;
-            weight = weight * mc_weight;
-        }
-        else
-        {
-            weight    = 1.;
-            mc_weight = 1.;
-            weight_PV = 1.;
-			weightfake = 1.;
-			weightflip = 1.;
-        }
+            Long64_t ientry = fChain->LoadTree(jentry);
+            if (ientry < 0) break;
 
-        // for(int itruth=0; itruth<vTruth->size(); itruth++)
-        // {
-        //     if(abs(vTruth->at(0).mc_truth_id.at(itruth)) == 12) ) {cout<<vTruth->at(i).mc_truth_id<<" !!!"<<endl;
-        //     if(abs(vTruth->at(0).mc_truth_id.at(itruth)) == 14) ) {cout<<vTruth->at(i).mc_truth_id<<" !!!"<<endl;
-        //     if(abs(vTruth->at(0).mc_truth_id.at(itruth)) == 16) ) {cout<<vTruth->at(i).mc_truth_id<<" !!!"<<endl;
-        //     }
-        // }
+            if(jentry%200000 == 0) std::cout << "--- "<<jentry<< " / "<<nentries_max<<endl;
 
+            //if(jentry > 100000) break;
 
+            nb = fChain->GetEntry(jentry);   nbytes += nb;
 
+            InitCollections(); //Re-init object collections for each event
+            InitCustomCategories(); //Re-init custom categories
 
+            metpt = 0; metphi = 0; mHT = 0; metLD = 0;
 
-        //--------------------------------------------
-        // #    # #    #  ####  #    #  ####
-        // ##  ## #    # #    # ##   # #
-        // # ## # #    # #    # # #  #  ####
-        // #    # #    # #    # #  # #      #
-        // #    # #    # #    # #   ## #    #
-        // #    #  ####   ####  #    #  ####
-        //--------------------------------------------
+            event_id  = vEvent->at(0).id;
+            metpt       = vEvent->at(0).metpt;
+            metphi       = vEvent->at(0).metphi;
+            // metLD  = Compute_metLD_Alternative(metpt); //Helper func
+            metLD     = vEvent->at(0).metLD;
+            event_run = vEvent->at(0).run;
+            event_lumi = vEvent->at(0).lumi;
+            nPU       = vEvent->at(0).mc_pu_trueNumInt;
+            nPV       = vEvent->at(0).pv_n;
 
+            //Fill pileup/nPV histos, before correction
+            h_PU_noCorr->Fill(nPU, weight);
+            h_nPV_noCorr->Fill(nPV, weight);
 
-        //-- Can use here custom definition for FO/tight
-        // for(unsigned int imuon=0; imuon < vMuonLoose->size() ; imuon++)
-        // {
-        //     Lepton l; l.setLepton(&vMuonLoose->at(imuon),imuon,0,1);
-        //
-        //     vLeptonLoose.push_back(l);
-        //
-        //     if(vMuonLoose->at(imuon).isFakeableTTH)
-        //     {
-        //         vLeptonFakeable.push_back(l);
-        //     }
-        //
-        //     if(vMuonLoose->at(imuon).isTightTTH)
-        //     {
-        //         vLeptonTight.push_back(l);
-        //     }
-        // }
+            //LHE weights
+            weight_scale_muF0p5 = vEvent->at(0).weight_scale_muF0p5;
+            weight_scale_muF2 = vEvent->at(0).weight_scale_muF2;
+            weight_scale_muR0p5 = vEvent->at(0).weight_scale_muR0p5;
+            weight_scale_muR2 = vEvent->at(0).weight_scale_muR2;
+            weight_scale_muR2muF2 = vEvent->at(0).weight_scale_muR2muF2;
+            weight_scale_muR0p5muF0p5 = vEvent->at(0).weight_scale_muR0p5muF0p5;
 
-        //-- Or can directly use definitions from ttH2017 (coded in NtupleProducer)
-        for(unsigned int imuon=0; imuon < vMuonLoose->size() ; imuon++)
-        {
-            Lepton l; l.setLepton(&vMuonLoose->at(imuon),imuon,0,1);
-            vLeptonLoose.push_back(l);
-        }
-        for(unsigned int imuon=0; imuon < vMuonFakeable->size() ; imuon++)
-        {
-            Lepton l; l.setLepton(&vMuonFakeable->at(imuon),imuon,0,1);
-            vLeptonFakeable.push_back(l);
-        }
-        for(unsigned int imuon=0; imuon < vMuonTight->size() ; imuon++)
-        {
-            Lepton l; l.setLepton(&vMuonTight->at(imuon),imuon,0,1);
-            vLeptonTight.push_back(l);
-        }
-
-        //--------------------------------------------
-        // ###### #      ######  ####  ##### #####   ####  #    #  ####
-        // #      #      #      #    #   #   #    # #    # ##   # #
-        // #####  #      #####  #        #   #    # #    # # #  #  ####
-        // #      #      #      #        #   #####  #    # #  # #      #
-        // #      #      #      #    #   #   #   #  #    # #   ## #    #
-        // ###### ###### ######  ####    #   #    #  ####  #    #  ####
-        //--------------------------------------------
-
-        //-- Can use here custom definition for FO/tight
-        // for(unsigned int ielectron=0; ielectron < vElectronLoose->size() ; ielectron++)
-        // {
-        //     Lepton l; l.setLepton(&vElectronLoose->at(ielectron),ielectron,1,0);
-        //
-        //     vLeptonLoose.push_back(l);
-        //
-        //     if(vElectronLoose->at(ielectron).isFakeableTTH)
-        //     {
-        //         vLeptonFakeable.push_back(l);
-        //     }
-        //
-        //     if(vElectronLoose->at(ielectron).isTightTTH)
-        //     {
-        //         vLeptonTight.push_back(l);
-        //     }
-        // }
-
-        //-- Or can directly use definitions from ttH2017 (coded in NtupleProducer)
-        for(unsigned int ielectron=0; ielectron < vElectronLoose->size() ; ielectron++)
-        {
-            Lepton l; l.setLepton(&vElectronLoose->at(ielectron),ielectron,1,0);
-            vLeptonLoose.push_back(l);
-        }
-        for(unsigned int ielectron=0; ielectron < vElectronFakeable->size() ; ielectron++)
-        {
-            Lepton l; l.setLepton(&vElectronFakeable->at(ielectron),ielectron,1,0);
-            vLeptonFakeable.push_back(l);
-        }
-        for(unsigned int ielectron=0; ielectron < vElectronTight->size() ; ielectron++)
-        {
-            Lepton l; l.setLepton(&vElectronTight->at(ielectron),ielectron,1,0);
-            vLeptonTight.push_back(l);
-        }
-
-        //--------------------------------------------
-        // #####   ##   #    #  ####
-        //   #    #  #  #    # #
-        //   #   #    # #    #  ####
-        //   #   ###### #    #      #
-        //   #   #    # #    # #    #
-        //   #   #    #  ####   ####
-        //--------------------------------------------
-
-        //-- Can use here custom definition for FO/tight
-        // for(unsigned int itau=0; itau < vTauLoose->size() ; itau++)
-        // {
-        //     Lepton l; l.setLepton(&vTauLoose->at(itau),itau,0,0);
-        //
-        //     vLeptonLoose.push_back(l);
-        //
-        //     if(vTauLoose->at(itau).isFakeableTTH)
-        //     {
-        //         vTauFakeable->push_back(vTauLoose->at(itau));
-        //     }
-        //     if(vTauLoose->at(itau).isMediumTTH)
-        //     {
-        //         vTauMedium->push_back(vTauLoose->at(itau));
-        //     }
-        // }
-
-        //-- Or can directly use definitions from ttH2017 (coded in NtupleProducer)
-        for(unsigned int itau=0; itau < vTauLoose->size() ; itau++)
-        {
-            Lepton l; l.setLepton(&vTauLoose->at(itau),itau,0,0);
-            vLeptonLoose.push_back(l);
-        }
-        for(unsigned int itau=0; itau < vTauFakeable->size() ; itau++)
-        {
-            Lepton l; l.setLepton(&vTauFakeable->at(itau),itau,0,0);
-            vLeptonFakeable.push_back(l);
-        }
-
-
-
-
-        //--------------------------------------------
-        // #####             # ###### #####  ####
-        // #    #            # #        #   #
-        // #####  #####      # #####    #    ####
-        // #    #            # #        #        #
-        // #    #       #    # #        #   #    #
-        // #####         ####  ######   #    ####
-        //--------------------------------------------
-
-        nLooseBJets  = 0;
-        nMediumBJets = 0;
-        nLightJets = 0;
-        nLightJets_Fwd40 = 0;
-
-        is_hasJetTransitionRegion = 0;
-
-        //-- ttH btag definitions
-        // isLooseBTag  =  (deepCSVb+deepCSVbb > 0.1522);
-        // isMediumBTag =  (deepCSVb+deepCSVbb > 0.4941);
-        // isTightBTag = (deepCSVb+deepCSVbb > 0.8001);
-
-        //NB : btag def must be consistent w/ SelectBjets()
-        for(unsigned int ijet=0; ijet < vJetLoose->size() ; ijet++)
-        {
-            if(use_ttH_selections)
+            if(write_LHE_weights_allFiles)
             {
-                if(fabs(vJetLoose->at(ijet).eta) > 2.4) {continue;} // -- don't relax eta cut (ttH2017)
+                LHEweights = vEvent->at(0).pdf_weights;
+                LHEweights_Ids = vEvent->at(0).pdf_ids;
+                sumWeight_ctcv_couplings = -1;
+                if(_sampleName.Contains("THQ_ctcvcp") || _sampleName.Contains("THW_ctcvcp"))
+                {
+                    sumWeight_ctcv_couplings = Compute_SumWeights_ctcvCouplings(LHEweights, LHEweights_Ids);
+
+                    // cout<<"sumWeight_ctcv_couplings = "<<sumWeight_ctcv_couplings<<endl;
+                }
+                //-- Debug
+                // for(int ipdf=0; ipdf<LHEweights.size(); ipdf++)
+                // {
+                //     cout<<"* ipdf = "<<ipdf<<" : LHEweights = "<<LHEweights[ipdf]<<" / LHEweights_Ids = "<<LHEweights_Ids[ipdf]<<endl;
+                // }
+            }
+
+
+            if(!_isdata )
+            {
+                weight = _lumi*_xsec/_nowe;
+
+                mc_weight = vEvent->at(0).mc_weight;
+                weight = weight * mc_weight;
             }
             else
             {
-                if(fabs(vJetLoose->at(ijet).eta) > 4.7) {continue;} // -- relax eta cut (tHq2017)
-
-                if(fabs(vJetLoose->at(ijet).eta) > 2.7 && fabs(vJetLoose->at(ijet).eta) < 3.0) {is_hasJetTransitionRegion = 1;} //Noisy region, might want to veto these events
+                weight     = 1.;
+                mc_weight  = 1.;
+                lepton_SF  = 1.;
+                trigger_SF = 1.;
+                btag_SF    = 1.;
+                PU_SF      = 1.;
+                total_SF   = 1.;
             }
 
-            //--- B-tagged jets
-            if(vJetLoose->at(ijet).isLooseBTag)
-            {
-                vLooseBTagJets.push_back(vJetLoose->at(ijet)); nLooseBJets++;
+            weightflip = 1;
+            weightfake = 1;
 
-                if(vJetLoose->at(ijet).isMediumBTag) {nMediumBJets++;}
+
+
+            //--------------------------------------------
+            // #    # #    #  ####  #    #  ####
+            // ##  ## #    # #    # ##   # #
+            // # ## # #    # #    # # #  #  ####
+            // #    # #    # #    # #  # #      #
+            // #    # #    # #    # #   ## #    #
+            // #    #  ####   ####  #    #  ####
+            //--------------------------------------------
+
+            //-- Or can directly use definitions from ttH2017 (coded in NtupleProducer)
+            for(unsigned int imuon=0; imuon < vMuonLoose->size() ; imuon++)
+            {
+                Lepton l; l.setLepton(&vMuonLoose->at(imuon),imuon,0,1);
+                vLeptonLoose.push_back(l);
             }
-            else
+            for(unsigned int imuon=0; imuon < vMuonFakeable->size() ; imuon++)
             {
-                vLightJets.push_back(vJetLoose->at(ijet)); nLightJets++;
+                Lepton l; l.setLepton(&vMuonFakeable->at(imuon),imuon,0,1);
+                vLeptonFakeable.push_back(l);
+            }
+            for(unsigned int imuon=0; imuon < vMuonTight->size() ; imuon++)
+            {
+                Lepton l; l.setLepton(&vMuonTight->at(imuon),imuon,0,1);
+                vLeptonTight.push_back(l);
+            }
 
-                if(fabs(vJetLoose->at(ijet).eta ) < 2.4)
+            //--------------------------------------------
+            // ###### #      ######  ####  ##### #####   ####  #    #  ####
+            // #      #      #      #    #   #   #    # #    # ##   # #
+            // #####  #      #####  #        #   #    # #    # # #  #  ####
+            // #      #      #      #        #   #####  #    # #  # #      #
+            // #      #      #      #    #   #   #   #  #    # #   ## #    #
+            // ###### ###### ######  ####    #   #    #  ####  #    #  ####
+            //--------------------------------------------
+
+            //-- Or can directly use definitions from ttH2017 (coded in NtupleProducer)
+            for(unsigned int ielectron=0; ielectron < vElectronLoose->size() ; ielectron++)
+            {
+                Lepton l; l.setLepton(&vElectronLoose->at(ielectron),ielectron,1,0);
+                vLeptonLoose.push_back(l);
+            }
+            for(unsigned int ielectron=0; ielectron < vElectronFakeable->size() ; ielectron++)
+            {
+                Lepton l; l.setLepton(&vElectronFakeable->at(ielectron),ielectron,1,0);
+                vLeptonFakeable.push_back(l);
+            }
+            for(unsigned int ielectron=0; ielectron < vElectronTight->size() ; ielectron++)
+            {
+                Lepton l; l.setLepton(&vElectronTight->at(ielectron),ielectron,1,0);
+                vLeptonTight.push_back(l);
+            }
+
+            //--------------------------------------------
+            // #####   ##   #    #  ####
+            //   #    #  #  #    # #
+            //   #   #    # #    #  ####
+            //   #   ###### #    #      #
+            //   #   #    # #    # #    #
+            //   #   #    #  ####   ####
+            //--------------------------------------------
+
+
+
+            //-- Or can directly use definitions from ttH2017 (coded in NtupleProducer)
+            //NB : taus not included anywhere in my code !
+            for(unsigned int itau=0; itau < vTauLoose->size() ; itau++)
+            {
+                Lepton l; l.setLepton(&vTauLoose->at(itau),itau,0,0);
+            }
+            for(unsigned int itau=0; itau < vTauFakeable->size() ; itau++)
+            {
+                Lepton l; l.setLepton(&vTauFakeable->at(itau),itau,0,0);
+            }
+
+
+
+
+            //--------------------------------------------
+            //      # ###### #####  ####
+            //      # #        #   #
+            //      # #####    #    ####
+            //      # #        #        #
+            // #    # #        #   #    #
+            //  ####  ######   #    ####
+            //--------------------------------------------
+
+            nLooseBJets  = 0;
+            nMediumBJets = 0;
+            nLightJets_eta_Gt2 = 0; //-- try CR enriched in ttbar (tHq2016)
+            nLightJets_Fwd = 0;
+
+            is_hasJetNoisyHCAL     = 0;
+            is_hasManyJetNoisyHCAL = 0;
+            JetNoisyHCALPt         = 0;
+            JetNoisyHCALEta        = 0;
+
+            //-- ttH btag definitions
+            //NB : btag def must be consistent w/ SelectBjets()
+            // isLooseBTag  =  (deepCSVb+deepCSVbb > 0.1522);
+            // isMediumBTag =  (deepCSVb+deepCSVbb > 0.4941);
+            // isTightBTag = (deepCSVb+deepCSVbb > 0.8001);
+
+
+            //'vJetLoose_tmp' is a copy of 'vJetLoose_original', but here we can modify the pT of the jets (JES/JER variations)
+            vJetLoose_tmp->resize(0);
+            for(unsigned int ijet=0; ijet < vJetLoose_original->size() ; ijet++)
+            {
+                vJetLoose_tmp->push_back(vJetLoose_original->at(ijet));
+
+                if(v_systTree[itree] == "JES_up")
                 {
-                    vLightJets_FwdPtCut.push_back(vJetLoose->at(ijet)); nLightJets_Fwd40++;
+                    vJetLoose_tmp->at(ijet).pt = vJetLoose_original->at(ijet).pt_JES_up;
+                    vJetLoose_tmp->at(ijet).E = vJetLoose_original->at(ijet).E_JES_up;
                 }
-                else if(vJetLoose->at(ijet).pt > 40 && fabs(vJetLoose->at(ijet).eta ) > 2.4)
+                else if(v_systTree[itree] == "JES_down")
                 {
-                    vLightJets_FwdPtCut.push_back(vJetLoose->at(ijet)); nLightJets_Fwd40++;
+                    vJetLoose_tmp->at(ijet).pt = vJetLoose_original->at(ijet).pt_JES_down;
+                    vJetLoose_tmp->at(ijet).E = vJetLoose_original->at(ijet).E_JES_down;
+                }
+                else if(v_systTree[itree] == "JER_up")
+                {
+                    vJetLoose_tmp->at(ijet).pt = vJetLoose_original->at(ijet).pt_JER_up;
+                    vJetLoose_tmp->at(ijet).E = vJetLoose_original->at(ijet).E_JER_up;
+                }
+                else if(v_systTree[itree] == "JER_down")
+                {
+                    vJetLoose_tmp->at(ijet).pt = vJetLoose_original->at(ijet).pt_JER_down;
+                    vJetLoose_tmp->at(ijet).E = vJetLoose_original->at(ijet).E_JER_down;
+                }
+                else if(v_systTree[itree] != "") {cout<<BOLD(FRED("ERROR ! systName '"<<v_systTree[itree]<<"' not known ! Abort"))<<endl; return;}
+
+                if(itree>0 && vJetLoose_tmp->at(ijet).pt == 0)
+                {
+                    cout<<BOLD(FRED("ERROR ! JER or JES values not found in input TTree ! Abort"))<<endl; return;
                 }
             }
-        }
-
-        //--------------------------------------------
-        //  ####  #####  #####  ###### #####  # #    #  ####
-        // #    # #    # #    # #      #    # # ##   # #    #
-        // #    # #    # #    # #####  #    # # # #  # #
-        // #    # #####  #    # #      #####  # #  # # #  ###
-        // #    # #   #  #    # #      #   #  # #   ## #    #
-        //  ####  #    # #####  ###### #    # # #    #  ####
-        //--------------------------------------------
-
-        //Sort object vectors by Pt
-        //-- moved from 'SortingLeptonPt' to 'SortingLeptonConePt'
-        std::sort(vLeptonLoose.begin(), vLeptonLoose.end(), SortingLeptonConePt);
-        std::sort(vLeptonLoose.begin(), vLeptonLoose.end(), SortingLeptonConePt);
-        std::sort(vLeptonFakeable.begin(), vLeptonFakeable.end(), SortingLeptonConePt);
-        std::sort(vLeptonLoose.begin(), vLeptonLoose.end(), SortingLeptonConePt);
-        std::sort(vLeptonTight.begin(), vLeptonTight.end(), SortingLeptonConePt);
-
-        nTightLep = vLeptonTight.size();
-        nFakeableLep = vLeptonFakeable.size();
 
 
-
-        //--------------------------------------------
-        // ##### #####  #  ####   ####  ###### #####
-        //   #   #    # # #    # #    # #      #    #
-        //   #   #    # # #      #      #####  #    #
-        //   #   #####  # #  ### #  ### #      #####
-        //   #   #   #  # #    # #    # #      #   #
-        //   #   #    # #  ####   ####  ###### #    #
-        //--------------------------------------------
-
-
-        bool TRIGm   = vEvent->at(0).trig_m  ;
-        bool TRIGe   = vEvent->at(0).trig_e  ;
-        bool TRIGee  = vEvent->at(0).trig_ee ;
-        bool TRIGmm  = vEvent->at(0).trig_mm ;
-        bool TRIGem  = vEvent->at(0).trig_em ;
-        bool TRIGeee = vEvent->at(0).trig_eee;
-        bool TRIGmme = vEvent->at(0).trig_emm;
-        bool TRIGeem = vEvent->at(0).trig_eem;
-        bool TRIGmmm = vEvent->at(0).trig_mmm;
-
-        //Previous
-        // bool E = false, M = false, EE = false, MM = false, EM = false;
-        // if(TRIGme || TRIGeem || TRIGmme ) {EM = true;}
-        // if(TRIGmm || TRIGmmm)                       {MM = true;}
-        // if(TRIGee || TRIGeee)	                    {EE = true;}
-        // if(TRIGm)                                   {M  = true;}
-        // if(TRIGe)                                   {E  = true;}
-
-        //Updated
-        bool E = false, M = false, EE = false, MM = false, EM = false, MME = false, EEM = false, MMM = false, EEE = false;
-        // if(TRIGmmm)                                 {MMM = true;}
-        // if(TRIGeee)                                 {EEE = true;}
-        // if(TRIGmme)                                 {MME = true;}
-        // if(TRIGeem)                                 {EEM = true;}
-        // if(TRIGmm)                                  {MM = true;}
-        // if(TRIGee)          	                    {EE = true;}
-        // if(TRIGem)          	                    {EM = true;}
-        // if(TRIGm)                                   {M  = true;}
-        // if(TRIGe)                                   {E  = true;}
-
-        if(TRIGeee || TRIGee)               {EE = true;}
-        if(TRIGmmm || TRIGmm)               {MM = true;}
-        if(TRIGmme || TRIGeem || TRIGem)    {EM = true;}
-        if(TRIGm)                           {M = true;}
-        if(TRIGe)                           {E = true;}
-
-        bool emdataset = _sampleName.Contains("MuonE");
-        bool mmdataset = _sampleName.Contains("DoubleM");
-        bool eedataset = _sampleName.Contains("DoubleE");
-        bool mdataset  = _sampleName.Contains("SingleM");
-        bool edataset  = _sampleName.Contains("SingleE");
-
-        is_trigger     = false;
-        is_trigger_ttH = false;
-
-        //Hypothesis : events satisfying EE will end up in eedataset, etc.
-        if(_isdata) //For data
-        {
-            if      ( EE  &&                               (eedataset) ) {is_trigger = true;}
-            else if ( !EE && MM  &&                        (mmdataset) ) {is_trigger = true;}
-            else if ( !EE && !MM && EM  &&                 (emdataset) ) {is_trigger = true;}
-            else if ( !EE && !MM && !EM && E  &&           (edataset ) ) {is_trigger = true;}
-            else if ( !EE && !MM && !EM && !E && M &&      (mdataset ) ) {is_trigger = true;}
-        }
-        else //For MC
-        {
-            if(EM || MM || EE || M || E) {is_trigger = true;}
-        }
-
-
-        //Kirill's 2lss trigger logic
-        bool passTrigMC = (vEvent->at(0).trig_e || vEvent->at(0).trig_m || vEvent->at(0).trig_ee || vEvent->at(0).trig_mm || vEvent->at(0).trig_em);
-        bool passTrigData =
-        (edataset && vEvent->at(0).trig_e && !vEvent->at(0).trig_ee && !vEvent->at(0).trig_m && !vEvent->at(0).trig_mm && !vEvent->at(0).trig_em) ||
-        (eedataset && vEvent->at(0).trig_ee && !vEvent->at(0).trig_mm && !vEvent->at(0).trig_em) ||
-        (mdataset && vEvent->at(0).trig_m && !vEvent->at(0).trig_ee && !vEvent->at(0).trig_e && !vEvent->at(0).trig_mm && !vEvent->at(0).trig_em) ||
-        (mmdataset && vEvent->at(0).trig_mm && !vEvent->at(0).trig_ee && !vEvent->at(0).trig_em) ||
-        (emdataset && vEvent->at(0).trig_em && !vEvent->at(0).trig_ee && !vEvent->at(0).trig_mm);
-
-        is_trigger_ttH = (!_isdata && passTrigMC) || (_isdata && passTrigData);
-
-        //The event will be rejected in sel. func., but counted
-        if(!is_trigger)
-        {
-            weight = 0;
-            continue; //Skip data events failing trigger
-        }
-
-
-        // if(!is_trigger && !is_trigger_ttH)
-        // {
-        //     weight = 0;
-        //     continue; //Skip data events failing trigger
-        // }
-
-
-
-
-        //--------------------------------------------
-        // #    #   ##   #####  #   ##   #####  #      ######  ####
-        // #    #  #  #  #    # #  #  #  #    # #      #      #
-        // #    # #    # #    # # #    # #####  #      #####   ####
-        // #    # ###### #####  # ###### #    # #      #           #
-        //  #  #  #    # #   #  # #    # #    # #      #      #    #
-        //   ##   #    # #    # # #    # #####  ###### ######  ####
-        //--------------------------------------------
-
-        if(vLeptonLoose.size() < 2) {continue;} //Else, infinite loop when checking Zveto
-
-        // ##########
-        // # OSSF pair - Z veto #
-        // ##########
-        pass_Zveto = false;
-        pass_Zveto_ee = false;
-        pass_cleanup = false;
-
-        nSFOS = 0;
-        mllll = -1;
-        inv_mll = 0;
-
-        //-- Taken from Kirill (NTP code, Sync.cxx)
-        float mll_min = 10E+10;
-        float mll_z_min = 10E+10;
-        for(int il=0; il<vLeptonLoose.size(); il++)
-        {
-            TLorentzVector l1;
-            l1.SetPtEtaPhiE(vLeptonLoose.at(il).pt, vLeptonLoose.at(il).eta, vLeptonLoose.at(il).phi, vLeptonLoose.at(il).E);
-
-            for(int ill=il+1; ill<vLeptonLoose.size(); ill++)
+            for(unsigned int ijet=0; ijet < vJetLoose_tmp->size() ; ijet++)
             {
-                TLorentzVector l2;
-                l2.SetPtEtaPhiE(vLeptonLoose.at(ill).pt, vLeptonLoose.at(ill).eta, vLeptonLoose.at(ill).phi, vLeptonLoose.at(ill).E);
+                // cout<<"vJetLoose_tmp->at(ijet).pt "<<vJetLoose_tmp->at(ijet).pt<<endl;
 
-                float mll = (l1+l2).M();
-                float mll_z = fabs((l1+l2).M()-91.2);
+                //PT CUT
+                if(vJetLoose_tmp->at(ijet).pt < 25)  {continue;} //NEW ; in NTP we also keep jets having JESup > 25. But don't want to use that as "btag" or "fwd jet"...
+                if(fabs(vJetLoose_tmp->at(ijet).eta) > 5.0) {continue;}
 
-                bool SFOS = (vLeptonLoose.at(il).id == -vLeptonLoose.at(ill).id);
-
-                if(SFOS) {nSFOS++;}
-
-                if(mll < mll_min) {mll_min = mll;}
-                if(mll_z < mll_z_min && SFOS)
+                //Checks -- Noisy HCAL
+                if(fabs(vJetLoose_tmp->at(ijet).eta) > 2.7 && fabs(vJetLoose_tmp->at(ijet).eta) < 3.0) //Noisy HCAL region -- for xchecks, cuts, ...
                 {
-                    mll_z_min = mll_z;
-                    inv_mll = (l1+l2).M();
-                }
-
-                for(int illl=ill+1; illl<vLeptonLoose.size(); illl++)
-                {
-                    TLorentzVector l3;
-                    l3.SetPtEtaPhiE(vLeptonLoose.at(illl).pt, vLeptonLoose.at(illl).eta, vLeptonLoose.at(illl).phi, vLeptonLoose.at(illl).E);
-
-                    for(int illll=illl+1; illll<vLeptonLoose.size(); illll++)
+                    if(is_hasJetNoisyHCAL==1) {is_hasManyJetNoisyHCAL = 1;}
+                    else
                     {
-                        TLorentzVector l4;
-                        l4.SetPtEtaPhiE(vLeptonLoose.at(illll).pt, vLeptonLoose.at(illll).eta, vLeptonLoose.at(illll).phi, vLeptonLoose.at(illll).E);
+                        is_hasJetNoisyHCAL = 1;
+                        JetNoisyHCALPt = vJetLoose_tmp->at(ijet).pt;
+                        JetNoisyHCALEta = vJetLoose_tmp->at(ijet).eta;
+                    }
+                }
 
-                        bool SFOS34 = (vLeptonLoose.at(illl).id == -vLeptonLoose.at(illll).id);
+                //--- Store B-tagged jets //Same for both analyses
+                if(vJetLoose_tmp->at(ijet).isLooseBTag && fabs(vJetLoose_tmp->at(ijet).eta) < 2.4)
+                {
+                    vLooseBTagJets.push_back(vJetLoose_tmp->at(ijet)); nLooseBJets++;
 
-                        if(!SFOS34) {continue;}
+                    if(vJetLoose_tmp->at(ijet).isMediumBTag) {nMediumBJets++;}
 
-                        float mllll = (l1+l2+l3+l4).M();
+                    vJetLoose_tHq.push_back(vJetLoose_tmp->at(ijet));
+                    vJetLoose_ttH.push_back(vJetLoose_tmp->at(ijet));
+                }
+                else //Store light jets //Differences between analyses
+                {
+                    //Central jets, used in both analyses
+                    if(fabs(vJetLoose_tmp->at(ijet).eta) < 2.4)
+                    {
+                        vLightJets_tHq.push_back(vJetLoose_tmp->at(ijet));
+                        vLightJets_ttH.push_back(vJetLoose_tmp->at(ijet));
+
+                        vJetLoose_tHq.push_back(vJetLoose_tmp->at(ijet));
+                        vJetLoose_ttH.push_back(vJetLoose_tmp->at(ijet));
+                    }
+                    //Forward hard jets, used in tHq analysis
+                    // else if(vJetLoose_tmp->at(ijet).pt > 40 && fabs(vJetLoose_tmp->at(ijet).eta) > 2.4)
+                    else if(fabs(vJetLoose_tmp->at(ijet).eta) < 2.7 || fabs(vJetLoose_tmp->at(ijet).eta) > 3.0)
+                    {
+                        vLightJets_tHq.push_back(vJetLoose_tmp->at(ijet));
+                        vJetLoose_tHq.push_back(vJetLoose_tmp->at(ijet));
+                        nLightJets_Fwd++;
+                    }
+                    //Forward soft jets -- removed completely from tHq2016 analysis. Keep ones outside noisy region for now
+                    else //Problematic events : fwd jets with pT<40 -- only remove jets in transition region ? or all fwd jets with pt<40 ?
+                    {
+                        // if(fabs(vJetLoose_tmp->at(ijet).eta) > 2.7 && fabs(vJetLoose_tmp->at(ijet).eta) < 3.0) {continue;}
+                        if(vJetLoose_tmp->at(ijet).eta < 60) {continue;} //Remove noise jets with pt<60 for now, like tZq 2017
+
+                        vLightJets_tHq.push_back(vJetLoose_tmp->at(ijet));
+                        vJetLoose_tHq.push_back(vJetLoose_tmp->at(ijet));
+                        nLightJets_Fwd++;
+                    }
+
+                    if(fabs(vJetLoose_tmp->at(ijet).eta) > 2.0) {nLightJets_eta_Gt2++;}
+                }
+            } //jet loop
+
+            nJets_tHq = vJetLoose_tHq.size();
+            nLightJets_tHq = vLightJets_tHq.size();
+
+            nJets_ttH = vJetLoose_ttH.size();
+            nLightJets_ttH = vLightJets_ttH.size();
+
+            //-- Select jet vector to be used, depending on analysis (NB : changes input vars, etc.)
+            if(do_tHq_analysis) {vJetLoose = vJetLoose_tHq; vLightJets = vLightJets_tHq;}
+            else {vJetLoose = vJetLoose_ttH; vLightJets = vLightJets_ttH;}
+
+            nJets = vJetLoose.size();
+            nLightJets = vLightJets.size();
+
+
+            //--------------------------------------------
+            //  ####  #####  #####  ###### #####  # #    #  ####
+            // #    # #    # #    # #      #    # # ##   # #    #
+            // #    # #    # #    # #####  #    # # # #  # #
+            // #    # #####  #    # #      #####  # #  # # #  ###
+            // #    # #   #  #    # #      #   #  # #   ## #    #
+            //  ####  #    # #####  ###### #    # # #    #  ####
+            //--------------------------------------------
+
+            //Sort object vectors by ConePt
+            std::sort(vLeptonLoose.begin(), vLeptonLoose.end(), SortingLeptonConePt);
+            std::sort(vLeptonLoose.begin(), vLeptonLoose.end(), SortingLeptonConePt);
+            std::sort(vLeptonFakeable.begin(), vLeptonFakeable.end(), SortingLeptonConePt);
+            std::sort(vLeptonLoose.begin(), vLeptonLoose.end(), SortingLeptonConePt);
+            std::sort(vLeptonTight.begin(), vLeptonTight.end(), SortingLeptonConePt);
+
+            nTightLep = vLeptonTight.size();
+            nFakeableLep = vLeptonFakeable.size();
+
+
+
+            //--------------------------------------------
+            // ##### #####  #  ####   ####  ###### #####
+            //   #   #    # # #    # #    # #      #    #
+            //   #   #    # # #      #      #####  #    #
+            //   #   #####  # #  ### #  ### #      #####
+            //   #   #   #  # #    # #    # #      #   #
+            //   #   #    # #  ####   ####  ###### #    #
+            //--------------------------------------------
+
+            //Read trigger bits (15 trigger paths used in total, see NTP/src/EventExt.cxx)
+            bool TRIGm   = vEvent->at(0).trig_m  ;
+            bool TRIGe   = vEvent->at(0).trig_e  ;
+            bool TRIGee  = vEvent->at(0).trig_ee ;
+            bool TRIGmm  = vEvent->at(0).trig_mm ;
+            bool TRIGem  = vEvent->at(0).trig_em ;
+            bool TRIGeee = vEvent->at(0).trig_eee;
+            bool TRIGmme = vEvent->at(0).trig_emm;
+            bool TRIGeem = vEvent->at(0).trig_eem;
+            bool TRIGmmm = vEvent->at(0).trig_mmm;
+
+            //Updated
+            bool E = false, M = false, EE = false, MM = false, EM = false;
+            if(TRIGmmm || TRIGmm)               {MM = true;}
+            if(TRIGeee || TRIGee)               {EE = true;}
+            if(TRIGmme || TRIGeem || TRIGem)    {EM = true;}
+            if(TRIGm)                           {M = true;}
+            if(TRIGe)                           {E = true;}
+
+            bool mmdataset = _sampleName.Contains("DoubleM");
+            bool eedataset = _sampleName.Contains("DoubleE");
+            bool emdataset = _sampleName.Contains("MuonE");
+            bool mdataset  = _sampleName.Contains("SingleM");
+            bool edataset  = _sampleName.Contains("SingleE");
+
+            is_trigger_1lep = false;
+            is_trigger_2lep = false;
+            is_trigger_3lep = false;
+            is_trigger     = false;
+            is_trigger_2lss   = false;
+            is_trigger_3l     = false;
+
+            if(TRIGe || TRIGm) {is_trigger_1lep = true;}
+            if(TRIGee || TRIGmm || TRIGem) {is_trigger_2lep = true;}
+            if(TRIGeee || TRIGmme || TRIGeem || TRIGmmm) {is_trigger_3lep = true;}
+
+            //From ttH2017 -- https://github.com/peruzzim/cmgtools-lite/blob/94X_dev_ttH/TTHAnalysis/python/tools/functionsTTH.py#L414
+            //Require that events in 2lss categories pass 'is_trigger_2lss' (events in 3l cat. can pass any trigger)
+            //Used for event selection
+            is_trigger_2lss = (is_trigger_1lep || is_trigger_2lep);
+            is_trigger_3l = (is_trigger_2lss || is_trigger_3lep);
+
+            //Hypothesis : events satisfying EE will end up in eedataset, etc.
+            if(_isdata) //For data
+            {
+                if      ( MM  &&                               (mmdataset) ) {is_trigger = true;}
+                else if ( !MM && EE  &&                        (eedataset) ) {is_trigger = true;}
+                else if ( !MM && !EE && EM  &&                 (emdataset) ) {is_trigger = true;}
+                else if ( !MM && !EE && !EM && E  &&           (edataset ) ) {is_trigger = true;}
+                else if ( !MM && !EE && !EM && !E && M &&      (mdataset ) ) {is_trigger = true;}
+            }
+            else //For MC
+            {
+                if(EM || MM || EE || M || E) {is_trigger = true;}
+            }
+
+            if(!is_trigger)
+            {
+                weight = 0;
+                continue; //Skip data events failing trigger
+            }
+
+
+
+            //--------------------------------------------
+            // #    #   ##   #####  #   ##   #####  #      ######  ####
+            // #    #  #  #  #    # #  #  #  #    # #      #      #
+            // #    # #    # #    # # #    # #####  #      #####   ####
+            // #    # ###### #####  # ###### #    # #      #           #
+            //  #  #  #    # #   #  # #    # #    # #      #      #    #
+            //   ##   #    # #    # # #    # #####  ###### ######  ####
+            //--------------------------------------------
+
+            if(vLeptonLoose.size() < 2) {continue;} //Else, infinite loop when checking Zveto
+
+            // ##########
+            // # OSSF pair - Z veto #
+            // ##########
+            pass_Zveto = false;
+            pass_Zveto_ee = true;
+            pass_cleanup = false;
+
+            mllll = -1;
+            inv_mll = 0;
+
+            float mll_min = 10E+10;
+            float mll_z_min = 10E+10;
+            for(int il=0; il<vLeptonLoose.size(); il++)
+            {
+                TLorentzVector l1;
+                TLorentzVector l1_cleanup;
+                l1.SetPtEtaPhiE(vLeptonLoose.at(il).pt, vLeptonLoose.at(il).eta, vLeptonLoose.at(il).phi, vLeptonLoose.at(il).E);
+                l1_cleanup.SetPtEtaPhiE(vLeptonLoose.at(il).pt, vLeptonLoose.at(il).eta, vLeptonLoose.at(il).phi, vLeptonLoose.at(il).E); //Using real pT for dilep mass cleaning
+
+                for(int ill=il+1; ill<vLeptonLoose.size(); ill++)
+                {
+                    TLorentzVector l2;
+                    TLorentzVector l2_cleanup; //Using real pT for dilep mass cleaning
+                    l2.SetPtEtaPhiE(vLeptonLoose.at(ill).pt, vLeptonLoose.at(ill).eta, vLeptonLoose.at(ill).phi, vLeptonLoose.at(ill).E);
+                    l2_cleanup.SetPtEtaPhiE(vLeptonLoose.at(ill).pt, vLeptonLoose.at(ill).eta, vLeptonLoose.at(ill).phi, vLeptonLoose.at(ill).E);
+
+                    float mll_cleanup = (l1_cleanup+l2_cleanup).M();
+                    if(mll_cleanup < mll_min) {mll_min = mll_cleanup;}
+
+                    bool SFOS = (vLeptonLoose.at(il).id == -vLeptonLoose.at(ill).id);
+
+                    if(!SFOS) {continue;}
+
+                    float mll_z = fabs((l1+l2).M()-91.2);
+                    if(mll_z < mll_z_min && SFOS)
+                    {
+                        mll_z_min = mll_z;
+                        inv_mll = (l1+l2).M();
+                    }
+
+                    for(int illl=ill+1; illl<vLeptonLoose.size(); illl++)
+                    {
+                        TLorentzVector l3;
+                        l3.SetPtEtaPhiE(vLeptonLoose.at(illl).pt, vLeptonLoose.at(illl).eta, vLeptonLoose.at(illl).phi, vLeptonLoose.at(illl).E);
+
+                        for(int illll=illl+1; illll<vLeptonLoose.size(); illll++)
+                        {
+                            TLorentzVector l4;
+                            l4.SetPtEtaPhiE(vLeptonLoose.at(illll).pt, vLeptonLoose.at(illll).eta, vLeptonLoose.at(illll).phi, vLeptonLoose.at(illll).E);
+
+                            bool SFOS34 = (vLeptonLoose.at(illl).id == -vLeptonLoose.at(illll).id);
+                            if(!SFOS34) {continue;}
+
+                            float tmp = (l1+l2+l3+l4).M();
+
+                            if(tmp > 0 && tmp < mllll) {mllll = tmp;}
+                        }
                     }
                 }
             }
-        }
-        if(mll_min > 12) {pass_cleanup = true;}
-        if(mll_z_min > 10) {pass_Zveto = true;}
+            if(mll_min > 12) {pass_cleanup = true;}
+            if(mll_z_min > 10) {pass_Zveto = true;}
 
 
-        //--- Taken from Kirill (NTP code, Sync.cxx)
-        float mee_z_min = 10E+10;
-        for(int ie=0; ie<vElectronLoose->size(); ie++)
-        {
-            TLorentzVector e1;
-            e1.SetPtEtaPhiE(vElectronLoose->at(ie).pt, vElectronLoose->at(ie).eta, vElectronLoose->at(ie).phi, vElectronLoose->at(ie).E);
-
-            for(int iee=ie+1; iee<vElectronLoose->size(); iee++)
+            nSFOS = 0; //Among FO leptons
+            for(int il=0; il<vLeptonFakeable.size(); il++)
             {
+                for(int ill=il+1; ill<vLeptonFakeable.size(); ill++)
+                {
+                    bool SFOS = (vLeptonFakeable.at(il).id == -vLeptonFakeable.at(ill).id);
+                    if(SFOS) {nSFOS++;}
+                }
+            }
+
+
+            //--- Changed : will veto 2l events if two hardest FO are electrons within Z peak
+            if(vLeptonFakeable.size() >= 2 && abs(vLeptonFakeable[0].id) == abs(vLeptonFakeable[1].id) && abs(vLeptonFakeable[0].id) == 11)
+            {
+                TLorentzVector e1;
+                e1.SetPtEtaPhiE(vLeptonFakeable[0].pt, vLeptonFakeable[0].eta, vLeptonFakeable[0].phi, vLeptonFakeable[0].E);
                 TLorentzVector e2;
-                e2.SetPtEtaPhiE(vElectronLoose->at(iee).pt, vElectronLoose->at(iee).eta, vElectronLoose->at(iee).phi, vElectronLoose->at(iee).E);
-
-                float mee = fabs((e1+e2).M()-91.2);
-                if(mee < mee_z_min) {mee_z_min = mee;}
+                e2.SetPtEtaPhiE(vLeptonFakeable[1].pt, vLeptonFakeable[1].eta, vLeptonFakeable[1].phi, vLeptonFakeable[1].E);
+                if(fabs(91.2 - (e1+e2).M() ) < 10) {pass_Zveto_ee = false;}
             }
-        }
-        if(mee_z_min > 10) {pass_Zveto_ee = true;}
 
 
+            //--------------------------------------------
+            // #####  ###### #####  #    #  ####     #####  #####  # #    # #####  ####  #    # #####
+            // #    # #      #    # #    # #    #    #    # #    # # ##   #   #   #    # #    #   #
+            // #    # #####  #####  #    # #         #    # #    # # # #  #   #   #    # #    #   #
+            // #    # #      #    # #    # #  ###    #####  #####  # #  # #   #   #    # #    #   #
+            // #    # #      #    # #    # #    #    #      #   #  # #   ##   #   #    # #    #   #
+            // #####  ###### #####   ####   ####     #      #    # # #    #   #    ####   ####    #
+            //--------------------------------------------
 
-        //--------------------------------------------
-        // #####  ###### #####  #    #  ####     #####  #####  # #    # #####  ####  #    # #####
-        // #    # #      #    # #    # #    #    #    # #    # # ##   #   #   #    # #    #   #
-        // #    # #####  #####  #    # #         #    # #    # # # #  #   #   #    # #    #   #
-        // #    # #      #    # #    # #  ###    #####  #####  # #  # #   #   #    # #    #   #
-        // #    # #      #    # #    # #    #    #      #   #  # #   ##   #   #    # #    #   #
-        // #####  ###### #####   ####   ####     #      #    # # #    #   #    ####   ####    #
-        //--------------------------------------------
+            // bool debug_printout = false;
 
-        // bool debug_printout = false;
-        if(DEBUG)
-        {
-            cout<<endl<<endl<<BOLD(FBLU("------------ EVENT "<<event_id<<" -----------"))<<endl;
+            //-- events in CERN list but not mine
+            //2lSS SR
+            // if(event_id == 13583598 || event_id == 14142098 || event_id == 18797791 || event_id == 18166527 || event_id == 18169210 || event_id == 18170519 || event_id == 18836791 || event_id == 16730021 || event_id == 16798450 || event_id == 14862385 || event_id == 16796194 || event_id == 17844055 || event_id == 18840851)
+            //3l SR
+            // if(event_id == 18842219 || event_id == 15308223)
+            //3l SR (not passing CERN selection)
+            // if(event_id == 17845863 || event_id == 17842598 || event_id == 13586222 || event_id == 14135849 || event_id == 15812454 || event_id == 15812708 )
+            //ttW CR
+            // if(event_id == 13863835 || event_id == 14136979 || event_id == 14137326 || event_id == 14138027 || event_id == 15812852 || event_id == 18798023 || event_id == 18167978 || event_id == 18170802 || event_id == 18839825 || event_id == 16434668 || event_id == 16727216 || event_id == 16727549 || event_id == 16730669)
+            //ttZ CR
+            // if(event_id == xxx)
+            //WZ CR
+            // if(event_id == 16804872)
 
-            cout<<BOLD(FBLU("--- Loose Btag Jets : "))<<endl;
-            for(int ijet=0; ijet<vLooseBTagJets.size(); ijet++)
+
+            if(DEBUG)
             {
-                cout<<FBLU(""<<ijet<<" pT = "<<vLooseBTagJets.at(ijet).pt<<" / eta = "<<vLooseBTagJets.at(ijet).eta<<" / phi = "<<vLooseBTagJets.at(ijet).phi<<" / CSV = "<<vLooseBTagJets.at(ijet).DeepCSVbtag<<"")<<endl;
+                cout<<endl<<endl<<BOLD(FBLU("------------ EVENT "<<std::setprecision(15)<<event_id<<" (LS="<<event_lumi<<") -----------"))<<endl<<endl;
+
+                cout<<BOLD(FBLU("### Loose Btag Jets : "))<<endl;
+                for(int ijet=0; ijet<vLooseBTagJets.size(); ijet++)
+                {
+                    cout<<FBLU(""<<ijet<<" pT = "<<vLooseBTagJets.at(ijet).pt<<" / eta = "<<vLooseBTagJets.at(ijet).eta<<" / phi = "<<vLooseBTagJets.at(ijet).phi<<" / CSV = "<<vLooseBTagJets.at(ijet).DeepCSVbtag<<" / isMedium ? = "<<vLooseBTagJets.at(ijet).isMediumBTag<<"")<<endl;
+                }
+                cout<<endl;
+                cout<<BOLD(FCYN("### Light Jets : "))<<endl;
+                for(int ijet=0; ijet<vLightJets.size(); ijet++)
+                {
+                    cout<<FCYN("* "<<ijet<<" pT = "<<vLightJets.at(ijet).pt<<" / eta = "<<vLightJets.at(ijet).eta<<" / phi = "<<vLightJets.at(ijet).phi<<" / CSV = "<<vLightJets.at(ijet).DeepCSVbtag<<"")<<endl;
+                }
+                cout<<endl;
+                cout<<BOLD(FYEL("### Fakeable Leptons : "))<<endl<<endl;
+                for(int ilep=0; ilep<vLeptonFakeable.size(); ilep++)
+                {
+                    cout<<"-- vLeptonFakeable["<<ilep<<"].id = "<<vLeptonFakeable[ilep].id<<endl;
+
+
+                    TString type = "";
+                    if(vLeptonFakeable[ilep].id < 0) type = "anti";
+                    if( abs(vLeptonFakeable[ilep].id) == 11) type+= "Ele";
+                    else if( abs(vLeptonFakeable[ilep].id) == 13) type+= "Mu";
+
+                    cout<<FYEL(<<" "<<ilep<<" "<<type<<": FO ? "<<vLeptonFakeable[ilep].isFakeableTTH<<", Tight ? "<<vLeptonFakeable[ilep].isTightTTH<<" / conepT = "<<vLeptonFakeable.at(ilep).conept<<" / eta = "<<vLeptonFakeable.at(ilep).eta<<" / phi = "<<vLeptonFakeable.at(ilep).phi<<"")<<endl;
+                }
+
+                cout<<endl;
+                cout<<BOLD(FYEL("### Loose taus : "))<<endl<<endl;
+                for(int ilep=0; ilep<vTauLoose->size(); ilep++)
+                {
+                    cout<<"-- vTauLoose["<<ilep<<"].id = "<<vTauLoose->at(ilep).id<<endl;
+                }
+
+                cout<<BOLD(FBLU("------------------------------------"))<<endl<<endl;
             }
-            cout<<endl;
-            cout<<BOLD(FCYN("### Light Jets : "))<<endl;
-            for(int ijet=0; ijet<vLightJets.size(); ijet++)
+
+
+            //--------------------------------------------
+            //  ####  ###### #      ######  ####  ##### #  ####  #    #  ####
+            // #      #      #      #      #    #   #   # #    # ##   # #
+            //  ####  #####  #      #####  #        #   # #    # # #  #  ####
+            //      # #      #      #      #        #   # #    # #  # #      #
+            // #    # #      #      #      #    #   #   # #    # #   ## #    #
+            //  ####  ###### ###### ######  ####    #   #  ####  #    #  ####
+            //--------------------------------------------
+
+            //Regions
+            //NB : all regions not entirely orthogonal, since an event can be e.g. both 3l_SR_Fake and 2lSS_ttWctrl !
+
+            ThreeLeptonSelection_THQ3l(jentry);
+            TwoLeptonSelection_THQ2lSSl(jentry);
+            FourLeptonSelection_THQ4l(jentry);
+
+            if(Sample_isUsed_forTraining() ) //Looser training selection (training samples only)
             {
-                cout<<FCYN("* "<<ijet<<" pT = "<<vLightJets.at(ijet).pt<<" / eta = "<<vLightJets.at(ijet).eta<<" / phi = "<<vLightJets.at(ijet).phi<<" / CSV = "<<vLightJets.at(ijet).DeepCSVbtag<<"")<<endl;
+                ThreeLeptonSelection_THQ3l_TrainingSelection(jentry);
+                TwoLeptonSelection_THQ2lSS_TrainingSelection(jentry);
             }
-            cout<<endl;
-            cout<<BOLD(FYEL("### Fakeable Leptons : "))<<endl<<endl;
-            for(int ilep=0; ilep<vLeptonFakeable.size(); ilep++)
+
+            if(add_orthogocal_cat) {Define_New_Categorization();} //Fill additional categ. booleans, for overlap studies
+    //--------------------------------------------
+            //Debug NTP/NTA //See explanation in function //Can't be used for now, because in NTP code fwd jets are included (not here for ttH cat)
+            // InitPredefinedCategories();
+            // Read_Predefined_Categories();
+            // Check_Disagreement_Category_NTP_NTA_Codes();
+
+    //--------------------------------------------
+            //Check if event should be saved, and how many leptons to consider for computations
+            bool event_belongs_toAnalysis = false;
+
+            int save_event_nlep = Check_If_Save_Event(do_tHq_analysis);
+            if(save_event_nlep > 0) {event_belongs_toAnalysis = true;} //if part of considered analysis, will save full event
+            else {save_event_nlep = Check_If_Save_Event(!do_tHq_analysis);} //else, if at least part of other analysis, will account for overlap study only
+
+            //If event is (at least) to be included for overlap, must apply weights
+            if(save_event_nlep > 0)
             {
-                cout<<"-- vLeptonFakeable["<<ilep<<"].id = "<<vLeptonFakeable[ilep].id<<endl;
+                Apply_FakeRate_Weight();
 
+                if(save_event_nlep == 2) {Compute_Variables("2l"); Apply_ScaleFactors(2, itree);}
+                else if(save_event_nlep == 3 || save_event_nlep == 4) {Compute_Variables("3l"); Apply_ScaleFactors(3, itree);}
+                else {cout<<"ERROR !"<<endl; continue;}
 
-                TString type = "";
-                if(vLeptonFakeable[ilep].id < 0) type = "anti";
-                if( abs(vLeptonFakeable[ilep].id) == 11) type+= "Ele";
-                else if( abs(vLeptonFakeable[ilep].id) == 13) type+= "Mu";
+                //Account all events from both analyses for overlap study
+                Fill_Overlap_Histo();
 
-                cout<<FYEL(<<" "<<ilep<<" "<<type<<": FO ? "<<vLeptonFakeable[ilep].isFakeableTTH<<", Tight ? "<<vLeptonFakeable[ilep].isTightTTH<<" / pT = "<<vLeptonFakeable.at(ilep).pt<<" / eta = "<<vLeptonFakeable.at(ilep).eta<<" / phi = "<<vLeptonFakeable.at(ilep).phi<<"")<<endl;
+                //If part of considered analysis - or if making ntuples for overlap studies -, save full event
+                if(event_belongs_toAnalysis || make_ntuples_for_overlap_studies) {fillOutputTree(itree);}
             }
 
-            // cout<<endl;
-            // cout<<BOLD(FYEL("### ttH predefined categories : "))<<endl<<endl;
-            // cout<<"is_ttH_2lSS = "<<(bool) is_ttH_2lSS<<endl;
-            cout<<BOLD(FBLU("------------------------------------"))<<endl<<endl;
-        }
-
-
-        //--------------------------------------------
-        //  ####  ###### #      ######  ####  ##### #  ####  #    #  ####
-        // #      #      #      #      #    #   #   # #    # ##   # #
-        //  ####  #####  #      #####  #        #   # #    # # #  #  ####
-        //      # #      #      #      #        #   # #    # #  # #      #
-        // #    # #      #      #      #    #   #   # #    # #   ## #    #
-        //  ####  ###### ###### ######  ####    #   #  ####  #    #  ####
-        //--------------------------------------------
+            //Fill pileup/nPV histos, after correction
+            h_PU_withCorr->Fill(nPU, weight*PU_SF);
+            h_nPV_withCorr->Fill(nPV, weight*PU_SF);
 
 
 
-        //Regions
-        //NB : all regions not entirely orthogonal, since an event can be e.g. both 3l_SR_Fake and 2lSS_ttWctrl !
+            // --------------------------------------------
+            //  ####  #   # #    #  ####  #    # #####   ####
+            // #       # #  ##   # #    # #    # #    # #    #
+            //  ####    #   # #  # #      ###### #    # #    #
+            //      #   #   #  # # #      #    # #####  #    #
+            // #    #   #   #   ## #    # #    # #   #  #    #
+            //  ####    #   #    #  ####  #    # #    #  ####
+            //--------------------------------------------
 
-        bool is_3l_custom_cat = false; //Check if 1 of my custom categories is true
-        bool is_2l_custom_cat = false; //Check if 1 of my custom categories is true
+            //Dump event infos into synchro text file
+            if(dump_synchro_info && !do_tHq_analysis)
+            {
+                if(is_ttH_2lSS_SR) {Dump_EventInfo_Synchro(outfile_2lSS_SR);}
+                if(is_ttH_3l_SR) {Dump_EventInfo_Synchro(outfile_3l_SR);}
+                if(is_ttH_ttWctrl_SR) {Dump_EventInfo_Synchro(outfile_ttW_CR);}
+                if(is_ttH_ttZctrl_SR) {Dump_EventInfo_Synchro(outfile_ttZ_CR);}
+                if(is_ttH_WZctrl_SR) {Dump_EventInfo_Synchro(outfile_WZ_CR);}
+            }
+        } //end event loop
 
-//--------------------------------------------
-        if(ThreeLeptonSelection_THQ3l(jentry) ) {is_3l_custom_cat = true;}
-        if(TwoLeptonSelection_THQ2lSSl(jentry) ) {is_2l_custom_cat = true;}
 
-        if(Sample_isUsed_forTraining() ) //Looser training selection (training samples only)
-        {
-            if(ThreeLeptonSelection_THQ3l_TrainingSelection(jentry) ) {is_3l_custom_cat = true;}
-            if(TwoLeptonSelection_THQ2lSS_TrainingSelection(jentry) ) {is_2l_custom_cat = true;}
-        }
 
-//--------------------------------------------
 
-        //If event satisfies any 2l-cat, will be saved as such
-        //Creates a bias if also saved as a 3l-cat event (e.g. lepCharge will be wrong)... but need avoid double-count
-        if(is_2l_custom_cat)
-        {
-            Compute_Variables("2l");
-            Apply_ScaleFactors(2);
-            fillOutputTree();
-        }
-        else if(is_3l_custom_cat)
-        {
-            Compute_Variables("3l");
-            Apply_ScaleFactors(3);
-            fillOutputTree();
-        }
-        else if(nlep_tth != 0)
-        {
-            if(nlep_tth == 3) {Compute_Variables("3l"); Apply_ScaleFactors(3);}
-            else if(nlep_tth == 2) {Compute_Variables("2l"); Apply_ScaleFactors(2);}
-            fillOutputTree();
-        }
+    	// ofstream file_out("cutflow.txt");
+        // for(int i=0; i<v_cutflow.size(); i++)
+        // {
+    	// 	cout<<"v_cutflow "<<i<<" = "<<v_cutflow[i]<<endl;
+        // }
+
+        // cout<<"counter = "<<counter<<endl;
+
+        cout<<"--- Writing output TTree"<<endl;
+
+    	outputfile->cd();
+        // v_tOutput[itree]->Write();
+        v_tOutput[itree]->CloneTree()->Write();
+
+        // tOutput->Write();
+
+    } //itree loop
+
+    // if(!itree) //only store once
+    {
+        h_PU_noCorr->Write("h_PU_noCorr");
+        h_PU_withCorr->Write("h_PU_withCorr");
+        h_nPV_noCorr->Write("h_nPV_noCorr");
+        h_nPV_withCorr->Write("h_nPV_withCorr");
+        h_overlap_ttH_tHq_cat->Write("h_overlap_ttH_tHq_cat");
+        h_totalYield_ttH_cat->Write("h_totalYield_ttH_cat");
+        h_totalYield_tHq_cat->Write("h_totalYield_tHq_cat");
     }
 
-
-
-
-	// ofstream file_out("cutflow.txt");
-    // for(int i=0; i<v_cutflow.size(); i++)
-    // {
-	// 	file_out<<"v_cutflow "<<i<<" = "<<v_cutflow[i]<<endl;
-    // }
-
-
-	outputfile->cd();
-    tOutput->Write();
+    return;
 }
-
-
 
 
 
@@ -1123,45 +1315,40 @@ void tHqMultileponAnalysis::Loop()
 //--------------------------------------------
 
 /**
- * 3l event selection
+ * 3l event selection -- Common base selection
  */
 bool tHqMultileponAnalysis::ThreeLeptonSelection_THQ3l(int evt)
 {
 	if(DEBUG) {cout<<FYEL("-- ThreeLeptonSelection_THQ3l")<<endl;}
 
     InitVariables();
-	v_cutflow[0]++;
+	// v_cutflow[0]++;
 
     //If data doesn't pass trigger, weight=0
     if(weight==0) {return 0;}
 
 	//At least 3 FO leptons
     if(vLeptonFakeable.size() < 3) {return 0;}
-    v_cutflow[1]++;
+    // v_cutflow[1]++;
+    if(DEBUG) {cout<<"- Passed nLep cut"<<endl;}
 
     //pT cuts
     if(vLeptonFakeable.at(0).conept < 25 || vLeptonFakeable.at(1).conept < 15 || vLeptonFakeable.at(2).conept < 10) {return 0;}
-    v_cutflow[2]++;
+    // v_cutflow[2]++;
+    if(DEBUG) {cout<<"- Passed pT cut"<<endl;}
 
     //No pair of loose leptons with mll < 12
     if(!pass_cleanup) {return 0;}
-    v_cutflow[3]++;
-
-    //metLD cuts
-    if(vJetLoose->size() < 4)
-    {
-        // met LD : nJet25 >= 4 || met_pt*0.6 + mhtJet25*0.4 > 30 + 15*(mZ1 > 0) //from marco's plots...
-        if(nSFOS > 0 && metLD < 0.3) {return 0;}
-        else if(!nSFOS && metLD < 0.2) {return 0;}
-    }
-    v_cutflow[4]++;
+    // v_cutflow[3]++;
+    if(DEBUG) {cout<<"- Passed cleanup cut"<<endl;}
 
     if( fabs(vLeptonFakeable.at(0).charge + vLeptonFakeable.at(1).charge + vLeptonFakeable.at(2).charge) != 1) {return 0;}
-    v_cutflow[5]++;
+    // v_cutflow[4]++;
+    if(DEBUG) {cout<<"- Passed charge cut"<<endl;}
 
-    if(vJetLoose->size() < 2) {return 0;}
-
-    v_cutflow[6]++;
+    if(nJets_tHq < 2) {return 0;} //All cat. contain at least 2 jets (NB : tHq jets looser than ttH)
+    // v_cutflow[5]++;
+    if(DEBUG) {cout<<"- Passed first nJet cut"<<endl;}
 
 //--------------------------------------------
 
@@ -1173,46 +1360,87 @@ bool tHqMultileponAnalysis::ThreeLeptonSelection_THQ3l(int evt)
 
 
 /**
- * 3l categories definitions
+ * 3l categories definitions //Add here all requirements which are not shared by all categories
  */
 bool tHqMultileponAnalysis::ThreeLeptonSelection_THQ3l_Regions(int evt)
 {
-    bool pass_isTight = false;
-    bool pass_MCMatching = false;
-    bool pass_m4l = false;
+    bool pass_cat = false;
+
+    //Not shared among all categories
+    bool pass_isTight       = false;
+    bool pass_MCMatching    = false;
+    bool is_GammaConv       = false;
+    bool pass_m4l           = false;
     bool has_lessThan4Tight = false;
-    bool has_noIsoTau = false;
-    bool pass_nBJet_ttH = false;
-    bool pass_njet_tHq = false;
-    bool pass_tighter_ptCuts = false;
+    bool has_noIsoTau       = false;
+
     if(vLeptonFakeable.at(0).isTightTTH && vLeptonFakeable.at(1).isTightTTH && vLeptonFakeable.at(2).isTightTTH) {pass_isTight = true;}
     if(_isdata || (vLeptonFakeable.at(0).hasMCMatch && vLeptonFakeable.at(1).hasMCMatch && vLeptonFakeable.at(2).hasMCMatch) ) {pass_MCMatching = true;}
+    if(!_isdata && (vLeptonFakeable.at(0).hasPhotonMCMatch || vLeptonFakeable.at(1).hasPhotonMCMatch || vLeptonFakeable.at(2).hasPhotonMCMatch) ) {is_GammaConv = true;}
     if(mllll > 140 || mllll < 0) {pass_m4l = true;}
     if(vLeptonTight.size() < 4) {has_lessThan4Tight = true;}
-    if(vTauLoose->size() == 0) {has_noIsoTau = true;} //NB : tight or loose taus ?? //FIXME
+    if(vTauLoose->size() == 0) {has_noIsoTau = true;} //NB : tight or loose taus ?
     bool pass_basic_SR_cuts(pass_m4l && has_lessThan4Tight && has_noIsoTau);
-    if(nLooseBJets >= 2 || nMediumBJets >= 1) {pass_nBJet_ttH = true;} //at least 2 b-loose or 1 b-medium
-    if(nMediumBJets > 0 && nLightJets > 0) {pass_njet_tHq = true;} //at least 1 b-medium & 1 fwd (light) jet
-    if(vLeptonFakeable.at(0).conept > 25 && vLeptonFakeable.at(1).conept > 15 && vLeptonFakeable.at(2).conept > 15) {pass_tighter_ptCuts = true;}
 
-    //Determine category
-    if(use_ttH_selections && pass_Zveto && pass_tighter_ptCuts && pass_basic_SR_cuts && pass_nBJet_ttH) {is_tHq_3l = 1;} //ttH2017 selections
-    else if(!use_ttH_selections && pass_Zveto && pass_basic_SR_cuts && pass_njet_tHq) {is_tHq_3l = 1;}
-    if(is_tHq_3l && pass_isTight && pass_MCMatching) {is_tHq_3l_SR = 1;}
-    if(is_tHq_3l && !pass_isTight) {is_tHq_3l_Fake = 1; Apply_FakeRate_Weight("3l");}
+    //Depends on analysis type (jets)
+    bool pass_njet_tth = false;
+    bool pass_nJets_tHq  = false;
+    bool pass_metLD     = true;
 
-    if(!pass_Zveto && pass_basic_SR_cuts && pass_nBJet_ttH && nLooseBJets>=2 && nMediumBJets>=1) {is_tHq_ttZctrl = 1;}
-    if(is_tHq_ttZctrl && pass_isTight && pass_MCMatching) {is_tHq_ttZctrl_SR = 1;}
-    if(is_tHq_ttZctrl && !pass_isTight) {is_tHq_ttZctrl_Fake = 1; Apply_FakeRate_Weight("3l");}
+    if(nJets_ttH >= 2 && (nLooseBJets >= 2 || nMediumBJets >= 1) ) {pass_njet_tth = true;} //at least 2 b-loose or 1 b-medium
+    if(nMediumBJets > 0 && nLightJets_tHq > 0) {pass_nJets_tHq = true;} //at least 1 b-medium & 1 fwd (light) jet
 
-    if(!pass_Zveto && pass_tighter_ptCuts && pass_basic_SR_cuts && vJetLoose->size() >= 2 && !pass_nBJet_ttH) {is_tHq_WZctrl = 1;}
-    if(is_tHq_WZctrl && pass_isTight && pass_MCMatching) {is_tHq_WZctrl_SR = 1;} //removed basic cuts for now
-    if(is_tHq_WZctrl && !pass_isTight) {is_tHq_WZctrl_Fake = 1; Apply_FakeRate_Weight("3l");}
+    if(nJets_ttH < 4)
+    {
+        if(nSFOS > 0 && metLD < 45) {pass_metLD = false;}
+        else if(!nSFOS && metLD < 30) {pass_metLD = false;}
+    }
+
+    //Determine categories
+
+    //-- 3l SR (ttH)
+    if(pass_Zveto && pass_basic_SR_cuts && pass_metLD && pass_njet_tth)
+    {
+        is_ttH_3l = 1;
+        if(pass_MCMatching && pass_isTight) {is_ttH_3l_SR = 1; pass_cat = 1;}
+        else if(pass_MCMatching && !pass_isTight) {is_ttH_3l_Fake = 1; pass_cat = 1;}
+        else if(is_GammaConv && pass_isTight) {is_ttH_3l_GammaConv = 1; pass_cat = 1;}
+    }
+
+    //-- 3l SR (tHq)
+    if(pass_Zveto && pass_basic_SR_cuts && pass_nJets_tHq)
+    {
+        is_tHq_3l = 1;
+        if(pass_MCMatching && pass_isTight) {is_tHq_3l_SR = 1; pass_cat = 1;}
+        else if(pass_MCMatching && !pass_isTight) {is_tHq_3l_Fake = 1; pass_cat = 1;}
+        else if(is_GammaConv && pass_isTight) {is_tHq_3l_GammaConv = 1; pass_cat = 1;}
+    }
+
+    //ttZ CR (same for ttH/tHq)
+    if(!pass_Zveto && pass_metLD && pass_njet_tth && pass_basic_SR_cuts)
+    {
+        is_ttH_ttZctrl = 1;
+        if(pass_MCMatching && pass_isTight) {is_ttH_ttZctrl_SR = 1; pass_cat = 1;}
+        else if(pass_MCMatching && !pass_isTight) {is_ttH_ttZctrl_Fake = 1; pass_cat = 1;}
+        else if(is_GammaConv && pass_isTight) {is_ttH_ttZctrl_GammaConv = 1; pass_cat = 1;}
+
+        is_tHq_ttZctrl = is_ttH_ttZctrl; is_tHq_ttZctrl_SR = is_ttH_ttZctrl_SR; is_tHq_ttZctrl_Fake = is_ttH_ttZctrl_Fake; is_tHq_ttZctrl_GammaConv = is_ttH_ttZctrl_GammaConv;
+    }
+
+    //WZ CR (same for ttH/tHq)
+    if(!pass_Zveto && pass_basic_SR_cuts && pass_metLD && nJets_ttH >= 2 && !pass_njet_tth)
+    {
+        is_ttH_WZctrl = 1;
+        if(pass_MCMatching && pass_isTight) {is_ttH_WZctrl_SR = 1; pass_cat = 1;} //removed basic cuts for now
+        else if(pass_MCMatching && !pass_isTight) {is_ttH_WZctrl_Fake = 1; pass_cat = 1;}
+        else if(is_GammaConv && pass_isTight) {is_ttH_WZctrl_GammaConv = 1; pass_cat = 1;}
+
+        is_tHq_WZctrl = is_ttH_WZctrl; is_tHq_WZctrl_SR = is_ttH_WZctrl_SR; is_tHq_WZctrl_Fake = is_ttH_WZctrl_Fake; is_tHq_WZctrl_GammaConv = is_ttH_WZctrl_GammaConv;
+    }
 
 //--------------------------------------------
-    if(is_tHq_3l || is_tHq_ttZctrl || is_tHq_WZctrl) {return true;}
 
-    return false;
+    return pass_cat;
 }
 
 
@@ -1244,41 +1472,43 @@ bool tHqMultileponAnalysis::ThreeLeptonSelection_THQ3l_Regions(int evt)
  */
 bool tHqMultileponAnalysis::TwoLeptonSelection_THQ2lSSl(int evt)
 {
-	if(DEBUG) {cout<<FYEL("-- TwoLeptonSelection_THQ2lSSl")<<endl;}
+	if(DEBUG) {cout<<FYEL("-- TwoLeptonSelection_THQ2lSS")<<endl;}
 
     InitVariables();
 
-    //If data doesn't pass trigger, weight=0
-    if(weight==0) {return 0;}
+    //Must pass single or double lepton trigger
+    if(weight==0 || !is_trigger_2lss) {return 0;}
 
     //At least 2 leptons
     if(vLeptonFakeable.size() < 2) {return 0;}
     if(vLeptonTight.size() > 2) {return 0;}
+    if(DEBUG) {cout<<"- Passed nLep cut"<<endl;}
 
     //Dilepton channel  : leptons need to pass tightCharge cut (dPt/pT>0.2 for muons, tightCharge>1 for ele)
     if(!vLeptonFakeable.at(0).passTightCharge || !vLeptonFakeable.at(1).passTightCharge ) {return 0;}
+    if(DEBUG) {cout<<"- Passed TightQ cut"<<endl;}
 
     //pT cuts
     if(vLeptonFakeable.at(0).conept < 25 || vLeptonFakeable.at(1).conept < 15) {return 0;}
+    if(DEBUG) {cout<<"- Passed pT cut"<<endl;}
 
     //No pair of loose leptons with mll < 12
     if(!pass_cleanup) {return 0;}
+    if(DEBUG) {cout<<"- Passed cleanup cut"<<endl;}
 
     //No loose tau
-    if(vTauLoose->size() > 0) {return 0;} //FIXME or tau tight ??
+    if(vTauLoose->size() > 0) {return 0;}
+    if(DEBUG) {cout<<"- Passed tau cut"<<endl;}
 
     //No ee pair with mll-mZ < 10
     if(!pass_Zveto_ee) {return 0;}
+    if(DEBUG) {cout<<"- Passed Zee cut"<<endl;}
 
-    //metLD cuts
-    if(fabs(vLeptonFakeable.at(0).id) == 11 && fabs(vLeptonFakeable.at(1).id) == 11)
-    {
-        // metLDee : met_pt*0.6 + mhtJet25*0.4 > 30 //from marco's plots
-        if(metLD < 0.2) {return 0;}
-    }
+    if(fabs(vLeptonFakeable.at(0).id) == 11 && fabs(vLeptonFakeable.at(1).id) == 11 && metLD < 30) {return 0;}
+    if(DEBUG) {cout<<"- Passed SS cut"<<endl;}
 
-    if(vJetLoose->size() < 2) {return 0;}
-
+    if(nJets_tHq < 2) {return 0;} //All cat. contain at least 2 jets (NB : tHq jets looser than ttH)
+    if(DEBUG) {cout<<"- Passed first jet cut"<<endl;}
 //--------------------------------------------
 
     if(!TwoLeptonSelection_THQ2lSS_Regions(evt) ) {return 0;} //Check categories
@@ -1295,42 +1525,171 @@ bool tHqMultileponAnalysis::TwoLeptonSelection_THQ2lSSl(int evt)
  */
 bool tHqMultileponAnalysis::TwoLeptonSelection_THQ2lSS_Regions(int evt)
 {
-    bool pass_isTight = false;
+    bool pass_cat = false;
+
+    //Not shared among all categories
+    bool pass_isTight    = false;
     bool pass_MCMatching = false;
-    bool is_SS_pair = false;
-    bool contains_ele = false;
-    bool pass_nBJet_ttH = false;
-    bool pass_njet_tHq = false;
+    bool is_GammaConv    = false;
+    bool is_SS_pair      = false;
+    bool contains_ele    = false;
+
     if(vLeptonFakeable.at(0).isTightTTH && vLeptonFakeable.at(1).isTightTTH) {pass_isTight = true;}
-    if(_isdata || (vLeptonFakeable.at(0).hasMCMatch && vLeptonFakeable.at(1).hasMCMatch) ) {pass_MCMatching = true;}
+    if(_isdata || (vLeptonFakeable.at(0).hasChargeMCMatch && vLeptonFakeable.at(1).hasChargeMCMatch) ) {pass_MCMatching = true;} //In 2lSS, also require charge matching
+    if(!_isdata && (vLeptonFakeable.at(0).hasPhotonMCMatch || vLeptonFakeable.at(1).hasPhotonMCMatch) ) {is_GammaConv = true;}
     if(vLeptonFakeable.at(0).charge * vLeptonFakeable.at(1).charge > 0) {is_SS_pair = true;}
     if( fabs(vLeptonFakeable.at(0).id) == 11 || fabs(vLeptonFakeable.at(1).id) == 11 ) {contains_ele = true;}
-    if(vJetLoose->size() >= 3 && (nLooseBJets >= 2 || nMediumBJets >= 1) ) {pass_nBJet_ttH = true;}
-    if(vJetLoose->size() >= 2 && nMediumBJets > 0 && nLightJets > 0)  {pass_njet_tHq = true;}
 
+    //Depends on analysis type (jets)
+    bool pass_njet_tth = false;
+    bool pass_nJets_tHq = false;
+    bool pass_njet_ttbar = false; //Inspired from tHq2016 CR ; store it as "ttW CR"
 
-    //Determine category
-    if(use_ttH_selections && vJetLoose->size() >= 4 && pass_nBJet_ttH) {is_tHq_2lSS = 1;} //ttH2017 cuts
-    else if(!use_ttH_selections && pass_njet_tHq) {is_tHq_2lSS = 1;} //tHq2017 cuts
-    if(is_tHq_2lSS && is_SS_pair && pass_isTight && pass_MCMatching) {is_tHq_2lSS_SR = 1;}
-    if(is_tHq_2lSS && is_SS_pair && !pass_isTight) {is_tHq_2lSS_Fake = 1; Apply_FakeRate_Weight("2l");}
-    if(is_tHq_2lSS && !is_SS_pair && contains_ele && pass_isTight && pass_MCMatching) {is_tHq_2lSS_Flip = 1; Apply_FlipRate_Weight();}
-    if(is_tHq_2lSS && !is_tHq_2lSS_Fake && !is_tHq_2lSS_Flip && contains_ele && is_GammaConv_Event() ) {is_tHq_2lSS_GammaConv = 1;} //FIXME
-
-    if(pass_nBJet_ttH && vJetLoose->size() == 3) {is_tHq_ttWctrl = 1;}
-	if(is_tHq_ttWctrl && is_SS_pair && pass_isTight && pass_MCMatching) {is_tHq_ttWctrl_SR = 1;}
-    if(is_tHq_ttWctrl && is_SS_pair && !pass_isTight) {is_tHq_ttWctrl_Fake = 1; Apply_FakeRate_Weight("2l");}
-    if(is_tHq_ttWctrl && !is_SS_pair && contains_ele && pass_isTight && pass_MCMatching) {is_tHq_ttWctrl_Flip = 1; Apply_FlipRate_Weight();}
-    if(is_tHq_ttWctrl && !is_tHq_ttWctrl_Fake && !is_tHq_ttWctrl_Flip && contains_ele && is_GammaConv_Event() ) {is_tHq_ttWctrl_GammaConv = 1;} //FIXME
-
-//--------------------------------------------
-	if(is_tHq_2lSS || is_tHq_ttWctrl)
+    if(nJets_ttH >= 3 && (nLooseBJets >= 2 || nMediumBJets >= 1) ) {pass_njet_tth = true;}
+    if(nJets_tHq >= 2 && nMediumBJets > 0 && nLightJets_tHq > 0)
     {
-        return true;
+        pass_nJets_tHq = true;
+
+        if(nJets_tHq < 4 && !nLightJets_eta_Gt2)  {pass_njet_ttbar = true;}
     }
 
-    return false;
+    //Determine categories
+
+    //-- 2lSS SR (ttH)
+    if(nJets_ttH >= 4 && pass_njet_tth)
+    {
+        is_ttH_2lSS = 1;
+        if(pass_MCMatching && is_SS_pair && pass_isTight) {is_ttH_2lSS_SR = 1; pass_cat = 1;}
+        else if(pass_MCMatching && is_SS_pair && !pass_isTight) {is_ttH_2lSS_Fake = 1; pass_cat = 1;}
+        else if(pass_MCMatching && !is_SS_pair && contains_ele && pass_isTight) {is_ttH_2lSS_Flip = 1; pass_cat = 1; Apply_FlipRate_Weight();}
+        else if(is_GammaConv && is_SS_pair && pass_isTight) {is_ttH_2lSS_GammaConv = 1; pass_cat = 1;}
+    }
+    //-- 2lSS SR (tHq)
+    if(pass_nJets_tHq)
+    {
+        is_tHq_2lSS = 1;
+        if(pass_MCMatching && is_SS_pair && pass_isTight) {is_tHq_2lSS_SR = 1; pass_cat = 1;}
+        else if(pass_MCMatching && is_SS_pair && !pass_isTight) {is_tHq_2lSS_Fake = 1; pass_cat = 1;}
+        else if(pass_MCMatching && !is_SS_pair && contains_ele && pass_isTight) {is_tHq_2lSS_Flip = 1; pass_cat = 1; Apply_FlipRate_Weight();}
+        else if(is_GammaConv && is_SS_pair && pass_isTight) {is_tHq_2lSS_GammaConv = 1; pass_cat = 1;}
+    }
+
+    //-- ttW CR (ttH)
+    if(nJets_ttH == 3 && pass_njet_tth)
+    {
+        is_ttH_ttWctrl = 1;
+        if(pass_MCMatching && is_SS_pair && pass_isTight) {is_ttH_ttWctrl_SR = 1; pass_cat = 1;}
+        else if(pass_MCMatching && is_SS_pair && !pass_isTight) {is_ttH_ttWctrl_Fake = 1; pass_cat = 1;}
+        else if(pass_MCMatching && !is_SS_pair && contains_ele && pass_isTight) {is_ttH_ttWctrl_Flip = 1; pass_cat = 1; Apply_FlipRate_Weight();}
+        else if(is_GammaConv && is_SS_pair && pass_isTight) {is_ttH_ttWctrl_GammaConv = 1; pass_cat = 1;}
+    }
+
+    //ttW-ttbar CR (as in tHq2016 analysis)
+    if(pass_njet_ttbar)
+    {
+        is_tHq_ttWctrl = 1;
+        if(pass_MCMatching && is_SS_pair && pass_isTight) {is_tHq_ttWctrl_SR = 1; pass_cat = 1;}
+        else if(pass_MCMatching && is_SS_pair && !pass_isTight) {is_tHq_ttWctrl_Fake = 1; pass_cat = 1;}
+        else if(pass_MCMatching && !is_SS_pair && contains_ele && pass_isTight) {is_tHq_ttWctrl_Flip = 1; pass_cat = 1; Apply_FlipRate_Weight();}
+        else if(is_GammaConv && is_SS_pair && pass_isTight) {is_tHq_ttWctrl_GammaConv = 1; pass_cat = 1;}
+    }
+
+//--------------------------------------------
+	return pass_cat;
 }
+
+
+
+
+
+
+
+
+
+
+
+
+//--------------------------------------------
+ // #
+ // #    #        #
+ // #    #        #
+ // #    #        #
+ // #######       #
+ //      #        #
+ //      #        ######
+//--------------------------------------------
+
+/**
+ * 4l selection
+ */
+bool tHqMultileponAnalysis::FourLeptonSelection_THQ4l(int evt)
+{
+	if(DEBUG) {cout<<FYEL("-- FourLeptonSelection_THQ4l")<<endl;}
+
+    InitVariables();
+
+    //Must pass single/double/tri-lepton trigger
+    if(weight==0 || !is_trigger_3l) {return 0;}
+
+    //At least 4 FO leptons
+    if(vLeptonFakeable.size() < 4) {return 0;}
+    if(DEBUG) {cout<<"- Passed nLep cut"<<endl;}
+
+    //pT cuts
+    if(vLeptonFakeable.at(0).conept < 25 || vLeptonFakeable.at(1).conept < 15 || vLeptonFakeable.at(2).conept < 15 || vLeptonFakeable.at(3).conept < 10) {return 0;}
+    if(DEBUG) {cout<<"- Passed pT cut"<<endl;}
+
+    //No pair of loose leptons with mll < 12
+    if(!pass_cleanup) {return 0;}
+    if(DEBUG) {cout<<"- Passed cleanup cut"<<endl;}
+
+    if(nJets_ttH < 4 && ((nSFOS > 0 && metLD < 45) || (!nSFOS && metLD < 30)) ) {return 0;}
+    if(DEBUG) {cout<<"- Passed metLD cut"<<endl;}
+
+    if(vLeptonFakeable.at(0).charge + vLeptonFakeable.at(1).charge + vLeptonFakeable.at(2).charge + vLeptonFakeable.at(3).charge != 0) {return 0;}
+    if(DEBUG) {cout<<"- Passed charge cut"<<endl;}
+
+    if(mllll > 0 && mllll < 140) {return 0;}
+    if(DEBUG) {cout<<"- Passed mllll cut"<<endl;}
+
+    if(nJets_ttH < 2) {return 0;}
+    if(DEBUG) {cout<<"- Passed first jet cut"<<endl;}
+//--------------------------------------------
+
+    if(!FourLeptonSelection_THQ4l_Regions(evt) ) {return 0;} //Check categories
+
+    return 1;
+}
+
+
+
+
+
+/**
+ * 4l categories selection
+ */
+bool tHqMultileponAnalysis::FourLeptonSelection_THQ4l_Regions(int evt)
+{
+    bool pass_cat = false;
+
+    //Not shared among all categories
+    bool pass_isTight = false;
+    bool pass_MCMatching = false;
+    bool pass_njet = false;
+    if(vLeptonFakeable.at(0).isTightTTH && vLeptonFakeable.at(1).isTightTTH && vLeptonFakeable.at(2).isTightTTH && vLeptonFakeable.at(3).isTightTTH) {pass_isTight = true;}
+    if(_isdata || (vLeptonFakeable.at(0).hasMCMatch && vLeptonFakeable.at(1).hasMCMatch && vLeptonFakeable.at(2).hasMCMatch && vLeptonFakeable.at(3).hasMCMatch) ) {pass_MCMatching = true;} //In 2lSS, also require charge matching
+    if(nLooseBJets >= 2 || nMediumBJets >= 1) {pass_njet = true;}
+
+    if(pass_njet && pass_Zveto && pass_isTight && pass_MCMatching) {is_tHq_4l_SR = true; pass_cat = 1;}
+
+    if(!pass_njet && !pass_Zveto && pass_isTight && pass_MCMatching) {is_tHq_ZZctrl_SR = true; pass_cat = 1;}
+
+//--------------------------------------------
+
+    return pass_cat;
+}
+
+
 
 
 
@@ -1354,6 +1713,7 @@ bool tHqMultileponAnalysis::TwoLeptonSelection_THQ2lSS_Regions(int evt)
 
 /**
  * Selection function implementing the ttH2017 training selection, for 3l cat.
+ * From : https://github.com/peruzzim/cmgtools-lite/blob/94X_dev_ttH/TTHAnalysis/macros/finalMVA/trainKinMVA.py#L118
  */
 bool tHqMultileponAnalysis::ThreeLeptonSelection_THQ3l_TrainingSelection(int evt)
 {
@@ -1367,39 +1727,42 @@ bool tHqMultileponAnalysis::ThreeLeptonSelection_THQ3l_TrainingSelection(int evt
 	//At least 3 FO leptons
     if(vLeptonFakeable.size() < 3) {return 0;}
 
+    //MC matching
+    if(!_isdata && (!vLeptonFakeable.at(0).hasMCMatch || !vLeptonFakeable.at(1).hasMCMatch || !vLeptonFakeable.at(2).hasMCMatch) ) {return 0;}
+
     if(!pass_Zveto) {return 0;}
 
-    if(use_ttH_selections) //ttH training sel
-    {
-        if(vLeptonFakeable.at(0).conept < 25 || vLeptonFakeable.at(1).conept < 15 || vLeptonFakeable.at(2).conept < 15) {return 0;}
 
-        //metLD cuts //maybe a bit different !
-        // allcuts += "(nJet25_Recl >= 4 || (met_pt*0.00397 + mhtJet25_Recl*0.00265 - 0.184 > 0.0 + 0.1*(mZ1_Recl > 0)))"
-        if(vJetLoose->size() < 4)
+    //tHq training sel -- Try looser cuts
+    {
+        is_tHq_3l_Training = 1;
+
+        if(vLeptonFakeable.at(0).conept < 20 || vLeptonFakeable.at(1).conept < 10 || vLeptonFakeable.at(2).conept < 10) {is_tHq_3l_Training = 0;}
+        if(!nLooseBJets || !nLightJets_tHq) {is_tHq_3l_Training = 0;}
+    }
+
+    //ttH training sel
+    {
+        is_ttH_3l_Training = 1;
+
+        if(vLeptonFakeable.at(0).conept < 25 || vLeptonFakeable.at(1).conept < 15 || vLeptonFakeable.at(2).conept < 10) {is_ttH_3l_Training = 0;} //NB -- says different in training script & preApp talk !
+        if(nJets_ttH < 4)
         {
-            if(nSFOS > 0 && metLD < 0.3) {return 0;}
-            else if(!nSFOS && metLD < 0.2) {return 0;}
+            if(nSFOS > 0 && metLD < 45) {is_ttH_3l_Training = 0;}
+            else if(!nSFOS && metLD < 30) {is_ttH_3l_Training = 0;}
         }
 
-        if(nLooseBJets < 2) {return 0;}
+        if(nLooseBJets < 2) {is_ttH_3l_Training = 0;}
     }
-    else //Try even looser cuts for tHq
-    {
-        if(vLeptonFakeable.at(0).conept < 20 || vLeptonFakeable.at(1).conept < 10 || vLeptonFakeable.at(2).conept < 10) {return 0;}
-
-        if(!nLooseBJets || !nLightJets) {return 0;}
-    }
-
 
     //--------------------------------------------
-    is_tHq_3l_Training = 1;
-
     return 1;
 }
 
 
 /**
  *  * Selection function implementing the ttH2017 training selection, for 2lSS cat.
+ *  From : https://github.com/peruzzim/cmgtools-lite/blob/94X_dev_ttH/TTHAnalysis/macros/finalMVA/trainKinMVA.py#L118
  */
 bool tHqMultileponAnalysis::TwoLeptonSelection_THQ2lSS_TrainingSelection(int evt)
 {
@@ -1407,39 +1770,37 @@ bool tHqMultileponAnalysis::TwoLeptonSelection_THQ2lSS_TrainingSelection(int evt
 
     InitVariables();
 
-    //If data doesn't pass trigger, weight=0
-    if(weight==0) {return 0;}
+    //check relevant triggers
+    if(weight==0 || !is_trigger_2lss) {return 0;}
 
-    //At least 3 FO leptons
+    //At least 2 FO leptons
     if(vLeptonFakeable.size() < 2) {return 0;}
 
-    //At most 2 tight leptons
-    if(vLeptonTight.size() > 2) {return 0;}
+    //MC matching
+    if(!_isdata && (!vLeptonFakeable.at(0).hasMCMatch || !vLeptonFakeable.at(1).hasMCMatch) ) {return 0;}
 
+    //SS pair
     if(vLeptonFakeable.at(0).charge != vLeptonFakeable.at(1).charge) {return 0;}
 
-    //No ee pair with mll-mZ < 10
-    if(!pass_Zveto_ee) {return 0;}
+    //No ee pair with mll-mZ < 10 //CHANGED -- removed ?
+    // if(!pass_Zveto_ee) {return 0;}
 
-    if(use_ttH_selections) //ttH training sel
+    //tHq training sel -- Try looser cuts
     {
-        if(vLeptonFakeable.at(0).conept < 25 || vLeptonFakeable.at(1).conept < 15) {return 0;}
-
-        if(vJetLoose->size() < 4) {return 0;}
-
-        if(nLooseBJets < 2 && nMediumBJets == 0) {return 0;}
-    }
-    else //Try even looser cuts for tHq
-    {
-        if(vLeptonFakeable.at(0).conept < 20 || vLeptonFakeable.at(1).conept < 10) {return 0;}
-
-        if(!nLooseBJets || !nLightJets) {return 0;}
+        is_tHq_2lSS_Training = 1;
+        if(vLeptonFakeable.at(0).conept < 20 || vLeptonFakeable.at(1).conept < 10) {is_tHq_2lSS_Training = 0;}
+        if(!nLooseBJets || !nLightJets_tHq) {is_tHq_2lSS_Training = 0;}
     }
 
+    //ttH training sel
+    {
+        is_ttH_2lSS_Training = 1;
+        if(vLeptonFakeable.at(0).conept < 25 || vLeptonFakeable.at(1).conept < 15) {is_ttH_2lSS_Training = 0;}
+        if(nJets_ttH < 4) {is_ttH_2lSS_Training = 0;}
+        if(nLooseBJets < 2 && nMediumBJets == 0) {is_ttH_2lSS_Training = 0;}
+    }
 
     //--------------------------------------------
-    is_tHq_2lSS_Training = 1;
-
     return 1;
 }
 
@@ -1454,131 +1815,246 @@ bool tHqMultileponAnalysis::TwoLeptonSelection_THQ2lSS_TrainingSelection(int evt
 
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 //--------------------------------------------
-//  ######      ###    ##     ## ##     ##    ###        ######   #######  ##    ## ##     ##
-// ##    ##    ## ##   ###   ### ###   ###   ## ##      ##    ## ##     ## ###   ## ##     ##
-// ##         ##   ##  #### #### #### ####  ##   ##     ##       ##     ## ####  ## ##     ##
-// ##   #### ##     ## ## ### ## ## ### ## ##     ##    ##       ##     ## ## ## ## ##     ##
-// ##    ##  ######### ##     ## ##     ## #########    ##       ##     ## ##  ####  ##   ##
-// ##    ##  ##     ## ##     ## ##     ## ##     ##    ##    ## ##     ## ##   ###   ## ##   ###
-//  ######   ##     ## ##     ## ##     ## ##     ##     ######   #######  ##    ##    ###    ###
+//  ######   ######     ###    ##       ########    ########    ###     ######  ########  #######  ########   ######
+// ##    ## ##    ##   ## ##   ##       ##          ##         ## ##   ##    ##    ##    ##     ## ##     ## ##    ##
+// ##       ##        ##   ##  ##       ##          ##        ##   ##  ##          ##    ##     ## ##     ## ##
+//  ######  ##       ##     ## ##       ######      ######   ##     ## ##          ##    ##     ## ########   ######
+//       ## ##       ######### ##       ##          ##       ######### ##          ##    ##     ## ##   ##         ##
+// ##    ## ##    ## ##     ## ##       ##          ##       ##     ## ##    ##    ##    ##     ## ##    ##  ##    ##
+//  ######   ######  ##     ## ######## ########    ##       ##     ##  ######     ##     #######  ##     ##  ######
 //--------------------------------------------
 
-bool tHqMultileponAnalysis::is_GammaConv_Event()
+
+
+
+
+/**
+ * Set the value of "weightfake" variable. Weight read from ttH FR file
+ */
+void tHqMultileponAnalysis::Apply_FakeRate_Weight()
 {
-    if(_isdata) {return false;}
-    if(is_tHq_2lSS_Fake || is_tHq_2lSS_Flip) {return false;}
-    if(_isdata) {return false;}
-    if(vLeptonFakeable.size() < 2) {return false;}
+    weightfake = 1.;
 
-    if(abs(vLeptonFakeable[0].id) == 11 && is_Electron_Matched_To_Gamma(0) ) {return true;}
-    if(abs(vLeptonFakeable[1].id) == 11 && is_Electron_Matched_To_Gamma(1) ) {return true;}
+    int nlep = 0;
+    if(is_tHq_2lSS_Fake || is_tHq_ttWctrl_Fake || is_ttH_2lSS_Fake || is_ttH_ttWctrl_Fake) {nlep = 2;}
+    else if(is_tHq_3l_Fake || is_tHq_ttZctrl_Fake || is_tHq_WZctrl_Fake || is_ttH_3l_Fake || is_ttH_ttZctrl_Fake || is_ttH_WZctrl_Fake) {nlep = 3;}
+    if(!nlep) {return;}
 
-    return false;
-}
+    std::vector<double> leptonsPts;
+    std::vector<double> leptonsEtas;
+    std::vector<int>    leptonsIds;
 
-
-bool tHqMultileponAnalysis::is_Electron_Matched_To_Gamma(int lepRec_idx)
-{
-    if(_isdata) {return false;}
-    if( abs(vLeptonFakeable[lepRec_idx].id) != 11) {return -1;} //Check ele only
-
-    int genLep_idx = Ele_To_Lepton_Matching(lepRec_idx);
-    int genPho_idx = Ele_To_Gamma_Matching(lepRec_idx);
-
-    if(genLep_idx < 0 && genPho_idx > 0) {return true;}
-    else if(genLep_idx > 0 && genPho_idx > 0)
+    //Consider only 2 or 3 hardest FO leptons
+    for(int i=0; i<nlep; i++)
     {
-        double dlep = Get_Distance(vLeptonFakeable[lepRec_idx].pt, vLeptonFakeable[lepRec_idx].eta, vLeptonFakeable[lepRec_idx].phi, vTruth->at(0).gen_pt.at(genLep_idx), vTruth->at(0).gen_eta.at(genLep_idx), vTruth->at(0).gen_phi.at(genLep_idx) );
-        double dpho = Get_Distance(vLeptonFakeable[lepRec_idx].pt, vLeptonFakeable[lepRec_idx].eta, vLeptonFakeable[lepRec_idx].phi, vTruth->at(0).gen_pt.at(genPho_idx), vTruth->at(0).gen_eta.at(genPho_idx), vTruth->at(0).gen_phi.at(genPho_idx) );
-
-        if(dpho < dlep) {return true;}
-    }
-
-    return false;
-}
-
-
-
-int tHqMultileponAnalysis::Ele_To_Gamma_Matching(int lepRec_idx)
-{
-    if(_isdata) {return -1;}
-    if( abs(vLeptonFakeable[lepRec_idx].id) != 11) {return -1;} //Check ele only
-
-    double dR_min = 999;
-    int idx_bestMatch = -1;
-
-    //Loop on all truth objects
-    for(int itruth = 0; itruth < vTruth->at(0).gen_id.size(); itruth++)
-    {
-        if(abs(vTruth->at(0).gen_id.at(itruth)) != 22) {continue;} //Check only gen photons
-        if(vTruth->at(0).gen_status.at(itruth) != 1) {continue;} //Check that gen photon belongs to final state
-        if(vTruth->at(0).gen_pt.at(itruth) < 1) {continue;} //Check that gen photon has pT>1
-
-        if(vLeptonFakeable[lepRec_idx].conept < 0.3 * vTruth->at(0).gen_pt.at(itruth) || vLeptonFakeable[lepRec_idx].conept > 1.5 * vTruth->at(0).gen_pt.at(itruth) ) {continue;}
-
-        double dR = GetDeltaR(vLeptonFakeable[lepRec_idx].eta, vLeptonFakeable[lepRec_idx].phi, vTruth->at(0).gen_eta.at(itruth), vTruth->at(0).gen_phi.at(itruth) );
-
-        if(dR > 0.3) {continue;}
-
-        if(dR < dR_min)
+        if( !vLeptonFakeable.at(i).isTightTTH ) //For each lepton failing the tight requirements, multiply event by a weight
         {
-            dR_min = dR;
-            idx_bestMatch = itruth;
+            leptonsPts.push_back(vLeptonFakeable.at(i).conept);
+            leptonsEtas.push_back(vLeptonFakeable.at(i).eta);
+            leptonsIds.push_back(vLeptonFakeable.at(i).id);
         }
     }
 
-    return idx_bestMatch;
+    weightfake = get_FR_weight(leptonsPts, leptonsEtas, leptonsIds);
+
+    // cout<<"weightfake = "<<weightfake<<endl;
+
+    return;
 }
 
-int tHqMultileponAnalysis::Ele_To_Lepton_Matching(int lepRec_idx)
+/**
+ * Set the value of "weightflip" variable. Weight read from ttH FR file
+ */
+void tHqMultileponAnalysis::Apply_FlipRate_Weight()
 {
-    if(_isdata) {return -1;}
-    if( abs(vLeptonFakeable[lepRec_idx].id) != 11) {return -1;} //Check ele only
+    weightflip = 1;
 
-    double dR_min = 999;
-    int idx_bestMatch = -1;
+    weightflip = get_QF_weight(vLeptonFakeable.at(0).conept, fabs(vLeptonFakeable.at(0).eta), vLeptonFakeable.at(0).id, vLeptonFakeable.at(1).conept, fabs(vLeptonFakeable.at(1).eta), vLeptonFakeable.at(1).id);
 
-    //Loop on all truth objects
-    for(int itruth = 0; itruth < vTruth->at(0).gen_id.size(); itruth++)
+    // cout<<"weightflip = "<<weightflip<<endl;
+
+    return;
+}
+
+
+
+
+
+/**
+ * Apply scale factors (lepton, trigger, ...) to weight, using the ScaleFactors object
+ * @param nlep : read different files depending if 2lss or 3l
+ */
+void tHqMultileponAnalysis::Apply_ScaleFactors(int nlep, int itree)
+{
+    if(_isdata) {return;}
+
+    if(nlep != 2 && nlep != 3) {cout<<"Error : wrong nlep value !"<<endl; return;}
+
+    //Init SFs
+    lepton_SF  = 1;
+    trigger_SF = 1;
+    btag_SF    = 1;
+    PU_SF      = 1;
+    total_SF   = 1;
+
+    //Init systematics weights with event MC weight
+    TrigEff__plus  = weight; TrigEff__minus  = weight;
+    MuEff__plus    = weight; MuEff__minus    = weight;
+    EleEff__plus   = weight; EleEff__minus   = weight;
+    LFcont__plus   = weight; LFcont__minus   = weight;
+    HFstats1__plus = weight; HFstats1__minus = weight;
+    HFstats2__plus = weight; HFstats2__minus = weight;
+    CFerr1__plus   = weight; CFerr1__minus   = weight;
+    CFerr2__plus   = weight; CFerr2__minus   = weight;
+    HFcont__plus   = weight; HFcont__minus   = weight;
+    LFstats1__plus = weight; LFstats1__minus = weight;
+    LFstats2__plus = weight; LFstats2__minus = weight;
+    PU__plus       = weight; PU__minus       = weight;
+    Q2__plus       = weight; Q2__minus       = weight;
+    pdf__plus      = weight; pdf__minus      = weight;
+
+
+    //Lepton SF
+    //--------------------------------------------
+    for(int ilep=0; ilep<nlep; ilep++)
     {
-        if(abs(vTruth->at(0).gen_id.at(itruth)) != abs(vLeptonFakeable[lepRec_idx].id) ) {continue;} //Check gen leptons with same ID
+        lepton_SF*= sf->Get_Lepton_SF(nlep, vLeptonFakeable[ilep].id, vLeptonFakeable[ilep].conept, vLeptonFakeable[ilep].eta, 0);
 
-        double dR = GetDeltaR(vLeptonFakeable[lepRec_idx].eta, vLeptonFakeable[lepRec_idx].phi, vTruth->at(0).gen_eta.at(itruth), vTruth->at(0).gen_phi.at(itruth) );
-
-        if(dR > 0.3) {continue;}
-
-        if(dR < dR_min)
+        if(abs(vLeptonFakeable[ilep].id) == 11) //Ele
         {
-            dR_min = dR;
-            idx_bestMatch = itruth;
+            EleEff__plus*= sf->Get_Lepton_SF(nlep, vLeptonFakeable[ilep].id, vLeptonFakeable[ilep].conept, vLeptonFakeable[ilep].eta, +1);
+            EleEff__minus*= sf->Get_Lepton_SF(nlep, vLeptonFakeable[ilep].id, vLeptonFakeable[ilep].conept, vLeptonFakeable[ilep].eta, -1);
         }
-
-        // if(dR < 0.3) {return itruth;}
-        // else if(vLeptonFakeable[lepRec_idx].pt < 10 && abs(vLeptonFakeable[lepRec_idx].id) == 13 && vLeptonFakeable[lepRec_idx].id != vTruth->at(0).gen_id.at(itruth) ) {return -1;}
-        // else if(dR < 0.7) {return itruth;}
-        // else if(std::min(vLeptonFakeable[lepRec_idx].pt, vTruth->at(0).gen_pt.at(itruth)) / std::max(vLeptonFakeable[lepRec_idx].pt, vTruth->at(0).gen_pt.at(itruth)) < 0.3) {return -1;}
-        // else if(dR < 1.2) {return itruth;}
+        else if(abs(vLeptonFakeable[ilep].id) == 13) //Mu
+        {
+            MuEff__plus*= sf->Get_Lepton_SF(nlep, vLeptonFakeable[ilep].id, vLeptonFakeable[ilep].conept, vLeptonFakeable[ilep].eta, +1);
+            MuEff__minus*= sf->Get_Lepton_SF(nlep, vLeptonFakeable[ilep].id, vLeptonFakeable[ilep].conept, vLeptonFakeable[ilep].eta, -1);
+        }
     }
 
-    return idx_bestMatch;
+    // cout<<"lepton_SF = "<<lepton_SF<<endl;
+    // cout<<"Weight : "<<weight<<" --> "<<weight * lepton_SF<<endl;
+
+    // weight*= lepton_SF;
+    //--------------------------------------------
+
+
+    //Trigger SF
+    //--------------------------------------------
+    trigger_SF = sf->Get_Trigger_SF(nlep, vLeptonFakeable[0].id, vLeptonFakeable[0].conept, vLeptonFakeable[1].id, 0);
+
+    TrigEff__plus*= sf->Get_Trigger_SF(nlep, vLeptonFakeable[0].id, vLeptonFakeable[0].conept, vLeptonFakeable[1].id, +1);
+    TrigEff__minus*= sf->Get_Trigger_SF(nlep, vLeptonFakeable[0].id, vLeptonFakeable[0].conept, vLeptonFakeable[1].id, -1);
+
+    // cout<<"trigger_SF = "<<trigger_SF<<endl;
+    // cout<<"Weight : "<<weight<<" --> "<<weight * trigger_SF<<endl;
+
+    // weight*= trigger_SF;
+    //--------------------------------------------
+
+
+   //Btag SF
+   //--------------------------------------------
+   //Using the BTagShapeCalibration method : https://twiki.cern.ch/twiki/bin/view/CMS/BTagShapeCalibration
+   //NB : assign flat scale factor of 1 (no correction) to charm jets
+    for(int ijet=0; ijet<vJetLoose.size(); ijet++)
+    {
+        if(v_systTree[itree] == "JES_up")
+        {
+            btag_SF*= sf->Get_Btag_SF("up_jes", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+        }
+        else if(v_systTree[itree] == "JES_down")
+        {
+            btag_SF*= sf->Get_Btag_SF("down_jes", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+        }
+        else
+        {
+            btag_SF*= sf->Get_Btag_SF("central", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+        }
+
+        if(v_systTree[itree] == "") //Only compute syst weights for nominal TTree
+        {
+            LFcont__plus*= sf->Get_Btag_SF("up_lf", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+            HFstats1__plus*= sf->Get_Btag_SF("up_hfstats1", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+            HFstats2__plus*= sf->Get_Btag_SF("up_hfstats2", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+            CFerr1__plus*= sf->Get_Btag_SF("up_cferr1", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+            CFerr2__plus*= sf->Get_Btag_SF("up_cferr2", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+            HFcont__plus*= sf->Get_Btag_SF("up_hf", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+            LFstats1__plus*= sf->Get_Btag_SF("up_lfstats1", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+            LFstats2__plus*= sf->Get_Btag_SF("up_lfstats2", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+
+            LFcont__minus*= sf->Get_Btag_SF("down_lf", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+            HFstats1__minus*= sf->Get_Btag_SF("down_hfstats1", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+            HFstats2__minus*= sf->Get_Btag_SF("down_hfstats2", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+            CFerr1__minus*= sf->Get_Btag_SF("down_cferr1", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+            CFerr2__minus*= sf->Get_Btag_SF("down_cferr2", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+            HFcont__minus*= sf->Get_Btag_SF("down_hf", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+            LFstats1__minus*= sf->Get_Btag_SF("down_lfstats1", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+            LFstats2__minus*= sf->Get_Btag_SF("down_lfstats2", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+        }
+    }
+
+    // cout<<"btag_SF = "<<btag_SF<<endl;
+
+    // weight*= btag_SF;
+    //--------------------------------------------
+
+
+    //PU SF
+    //--------------------------------------------
+    //The 'ScaleFactors' class possesses an object of the 'Pileup' class, used to get PU SF
+    PU_SF = sf->Get_Pileup_SF(nPU, "nom");
+    PU__plus*= sf->Get_Pileup_SF(nPU, "up");
+    PU__minus*= sf->Get_Pileup_SF(nPU, "down");
+
+    // cout<<"nPU = "<<nPU<<" => PU_SF = "<<PU_SF<<endl;
+    // cout<<"PU_SF = "<<PU_SF<<" / PU__plus = "<<PU__plus<<" / PU__minus = "<<PU__minus<<endl;
+
+    // weight*= PU_SF;
+    //--------------------------------------------
+
+
+    if(make_ntuples_for_overlap_studies) {total_SF = lepton_SF * trigger_SF * btag_SF;} //don't apply for now //FIXME
+    else {total_SF = lepton_SF * trigger_SF * btag_SF * PU_SF;}
+
+    weight*= total_SF; //Note that the "default" weight now contains the SF corrections
+
+    //Need to also multiply syst weights with total SF, so they are consistent with nominal weight
+    //But e.g. need to divide trigger__plus by trigger_SF, since we want to multiply it with upper variation, not nominal
+    TrigEff__plus*= total_SF/trigger_SF; TrigEff__minus*= total_SF/trigger_SF;
+    EleEff__plus*= total_SF/lepton_SF; EleEff__minus*= total_SF/lepton_SF;
+    MuEff__plus*= total_SF/lepton_SF; MuEff__minus*= total_SF/lepton_SF;
+    PU__plus*= total_SF/PU_SF; PU__minus*= total_SF/PU_SF;
+    LFcont__plus*= total_SF/btag_SF; LFcont__minus*= total_SF/btag_SF;
+    HFstats1__plus*= total_SF/btag_SF; HFstats1__minus*= total_SF/btag_SF;
+    HFstats2__plus*= total_SF/btag_SF; HFstats2__minus*= total_SF/btag_SF;
+    CFerr1__plus*= total_SF/btag_SF; CFerr1__minus*= total_SF/btag_SF;
+    CFerr2__plus*= total_SF/btag_SF; CFerr2__minus*= total_SF/btag_SF;
+    HFcont__plus*= total_SF/btag_SF; HFcont__minus*= total_SF/btag_SF;
+    LFstats1__plus*= total_SF/btag_SF; LFstats1__minus*= total_SF/btag_SF;
+    LFstats2__plus*= total_SF/btag_SF; LFstats2__minus*= total_SF/btag_SF;
+    Q2__plus*= total_SF; Q2__minus*= total_SF;
+    pdf__plus*= total_SF; pdf__minus*= total_SF;
+
+    return;
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 
@@ -1613,19 +2089,6 @@ int tHqMultileponAnalysis::Ele_To_Lepton_Matching(int lepRec_idx)
 // ##        ##  ##       ##             ##       ##    ##    ##  ##       ##
 // ##       #### ######## ########       ##       ##    ##     ## ######## ########
 
-//   ##
-//   ##
-// ######
-//   ##
-//   ##
-
-// ##     ## ######## ##     ##    ##     ##    ###    ########   ######
-// ###   ### ##       ###   ###    ##     ##   ## ##   ##     ## ##    ##
-// #### #### ##       #### ####    ##     ##  ##   ##  ##     ## ##
-// ## ### ## ######   ## ### ##    ##     ## ##     ## ########   ######
-// ##     ## ##       ##     ##     ##   ##  ######### ##   ##         ##
-// ##     ## ##       ##     ##      ## ##   ##     ## ##    ##  ##    ##
-// ##     ## ######## ##     ##       ###    ##     ## ##     ##  ######
 //--------------------------------------------
 
 
@@ -1633,11 +2096,37 @@ int tHqMultileponAnalysis::Ele_To_Lepton_Matching(int lepRec_idx)
 
 
 /**
- * Fill output tree. Compute lot of variables, needed either for MVA analysis of for MEM computation
- */
-void tHqMultileponAnalysis::fillOutputTree()
+* Fill output tree. Compute lot of variables, needed either for MVA analysis of for MEM computation
+*/
+void tHqMultileponAnalysis::fillOutputTree(int itree)
 {
-	InitTLorentzVectors(); //Re-init the MEM inputs at each call of the function
+    InitTLorentzVectors(); //Re-init the MEM inputs at each call of the function
+
+    //--------------------------------------------
+    //      # ###### #####  ####
+    //      # #        #   #
+    //      # #####    #    ####
+    //      # #        #        #
+    // #    # #        #   #    #
+    //  ####  ######   #    ####
+    //--------------------------------------------
+
+    JetsPt = new vector<Float_t>;
+    JetsEta = new vector<Float_t>;
+    JetsPhi = new vector<Float_t>;
+    JetsE = new vector<Float_t>;
+    JetsCSV = new vector<Float_t>;
+
+    //NEW -- store full jets collection, so MEM code can they select them automatically
+    for(int ijet=0; ijet<nJets; ijet++)
+    {
+        JetsPt->push_back(vJetLoose.at(ijet).pt);
+        JetsEta->push_back(vJetLoose.at(ijet).eta);
+        JetsPhi->push_back(vJetLoose.at(ijet).phi);
+        JetsE->push_back(vJetLoose.at(ijet).E);
+        JetsCSV->push_back(vJetLoose.at(ijet).DeepCSVbtag);
+    }
+
 
     //--------------------------------------------
     // #####       # ###### #####  ####
@@ -1656,47 +2145,47 @@ void tHqMultileponAnalysis::fillOutputTree()
     SelectBjets(ib1, ib2, doSelectOnlyBjets);
     if (ib1!=-1)
     {
-        // Bjet1.SetPtEtaPhiE(vJetLoose->at(ib1).pt, vJetLoose->at(ib1).eta, vJetLoose->at(ib1).phi, vJetLoose->at(ib1).E);
-        // FillJetInfoOutputTree(&multilepton_Bjet1_Id, 5, &multilepton_Bjet1_P4, Bjet1, &multilepton_Bjet1_CSV, vJetLoose->at(ib1).CSVv2, &multilepton_Bjet1_JEC_Up, &multilepton_Bjet1_JEC_Down, vJetLoose->at(ib1).JES_uncert(), &multilepton_Bjet1_JER_Up, &multilepton_Bjet1_JER_Down, vJetLoose->at(ib1).pt_JER(), vJetLoose->at(ib1).pt_JER_up(), vJetLoose->at(ib1).pt_JER_down());
+        // Bjet1.SetPtEtaPhiE(vJetLoose.at(ib1).pt, vJetLoose.at(ib1).eta, vJetLoose.at(ib1).phi, vJetLoose.at(ib1).E);
+        // FillJetInfoOutputTree(&multilepton_Bjet1_Id, 5, &multilepton_Bjet1_P4, Bjet1, &multilepton_Bjet1_CSV, vJetLoose.at(ib1).CSVv2, &multilepton_Bjet1_JEC_Up, &multilepton_Bjet1_JEC_Down, vJetLoose.at(ib1).JES_uncert(), &multilepton_Bjet1_JER_Up, &multilepton_Bjet1_JER_Down, vJetLoose.at(ib1).pt_JER(), vJetLoose.at(ib1).pt_JER_up(), vJetLoose.at(ib1).pt_JER_down());
         multilepton_Bjet1_Id = 5;
-        multilepton_Bjet1_CSV = vJetLoose->at(ib1).DeepCSVbtag;
-        multilepton_Bjet1_P4.SetPtEtaPhiE(vJetLoose->at(ib1).pt, vJetLoose->at(ib1).eta, vJetLoose->at(ib1).phi, vJetLoose->at(ib1).E);
+        multilepton_Bjet1_CSV = vJetLoose.at(ib1).DeepCSVbtag;
+        multilepton_Bjet1_P4.SetPtEtaPhiE(vJetLoose.at(ib1).pt, vJetLoose.at(ib1).eta, vJetLoose.at(ib1).phi, vJetLoose.at(ib1).E);
 
     }
     if (ib2!=-1)
     {
-        // Bjet2.SetPtEtaPhiE(vJetLoose->at(ib2).pt, vJetLoose->at(ib2).eta, vJetLoose->at(ib2).phi, vJetLoose->at(ib2).E);
-        // FillJetInfoOutputTree(&multilepton_Bjet2_Id, 5, &multilepton_Bjet2_P4, Bjet2, &multilepton_Bjet2_CSV, vJetLoose->at(ib2).CSVv2, &multilepton_Bjet2_JEC_Up, &multilepton_Bjet2_JEC_Down, vJetLoose->at(ib2).JES_uncert(), &multilepton_Bjet2_JER_Up, &multilepton_Bjet2_JER_Down, vJetLoose->at(ib2).pt_JER(), vJetLoose->at(ib2).pt_JER_up(), vJetLoose->at(ib2).pt_JER_down());
+        // Bjet2.SetPtEtaPhiE(vJetLoose.at(ib2).pt, vJetLoose.at(ib2).eta, vJetLoose.at(ib2).phi, vJetLoose.at(ib2).E);
+        // FillJetInfoOutputTree(&multilepton_Bjet2_Id, 5, &multilepton_Bjet2_P4, Bjet2, &multilepton_Bjet2_CSV, vJetLoose.at(ib2).CSVv2, &multilepton_Bjet2_JEC_Up, &multilepton_Bjet2_JEC_Down, vJetLoose.at(ib2).JES_uncert(), &multilepton_Bjet2_JER_Up, &multilepton_Bjet2_JER_Down, vJetLoose.at(ib2).pt_JER(), vJetLoose.at(ib2).pt_JER_up(), vJetLoose.at(ib2).pt_JER_down());
         multilepton_Bjet2_Id = 5;
-        multilepton_Bjet2_CSV = vJetLoose->at(ib2).DeepCSVbtag;
-        multilepton_Bjet2_P4.SetPtEtaPhiE(vJetLoose->at(ib2).pt, vJetLoose->at(ib2).eta, vJetLoose->at(ib2).phi, vJetLoose->at(ib2).E);
+        multilepton_Bjet2_CSV = vJetLoose.at(ib2).DeepCSVbtag;
+        multilepton_Bjet2_P4.SetPtEtaPhiE(vJetLoose.at(ib2).pt, vJetLoose.at(ib2).eta, vJetLoose.at(ib2).phi, vJetLoose.at(ib2).E);
     }
 
 
     //Define jet category
-	//2lss
-    if (is_tHq_2lSS && ib1!=-1 && ib2!=-1 && vJetLoose->size()-2>=4) catJets = kCat_2lss_2b_4j;
-    else if (is_tHq_2lSS && ib1!=-1 && ib2==-1 && vJetLoose->size()-1>=4) catJets = kCat_2lss_1b_4j;
-    else if (is_tHq_2lSS && ib1!=-1 && ib2!=-1 && vJetLoose->size()-2==3) catJets = kCat_2lss_2b_3j;
-    else if (is_tHq_2lSS && ib1!=-1 && ib2==-1 && vJetLoose->size()-1==3) catJets = kCat_2lss_1b_3j;
-	else if (is_tHq_2lSS && ib1!=-1 && ib2!=-1 && vJetLoose->size()-2==2) catJets = kCat_2lss_2b_2j;
-    else if (is_tHq_2lSS && ib1!=-1 && ib2!=-1 && vJetLoose->size()-2==1) catJets = kCat_2lss_2b_1j;
-    else if (is_tHq_2lSS && ib1!=-1 && ib2==-1 && vJetLoose->size()-1==2) catJets = kCat_2lss_1b_2j;
-	else if (is_tHq_2lSS && ib1!=-1 && ib2==-1 && vJetLoose->size()-1==1) catJets = kCat_2lss_1b_1j;
+    //2lss
+    if (is_tHq_2lSS && ib1!=-1 && ib2!=-1 && vJetLoose.size()-2>=4) catJets = kCat_2lss_2b_4j;
+    else if (is_tHq_2lSS && ib1!=-1 && ib2==-1 && vJetLoose.size()-1>=4) catJets = kCat_2lss_1b_4j;
+    else if (is_tHq_2lSS && ib1!=-1 && ib2!=-1 && vJetLoose.size()-2==3) catJets = kCat_2lss_2b_3j;
+    else if (is_tHq_2lSS && ib1!=-1 && ib2==-1 && vJetLoose.size()-1==3) catJets = kCat_2lss_1b_3j;
+    else if (is_tHq_2lSS && ib1!=-1 && ib2!=-1 && vJetLoose.size()-2==2) catJets = kCat_2lss_2b_2j;
+    else if (is_tHq_2lSS && ib1!=-1 && ib2!=-1 && vJetLoose.size()-2==1) catJets = kCat_2lss_2b_1j;
+    else if (is_tHq_2lSS && ib1!=-1 && ib2==-1 && vJetLoose.size()-1==2) catJets = kCat_2lss_1b_2j;
+    else if (is_tHq_2lSS && ib1!=-1 && ib2==-1 && vJetLoose.size()-1==1) catJets = kCat_2lss_1b_1j;
     //4l
     // else if (is4l && ib1!=-1 && ib2!=-1) catJets = kCat_4l_2b;
     // else if (is4l && ib1!=-1 && ib2==-1) catJets = kCat_4l_1b;
     //3l
-    else if (is_tHq_3l && ib1!=-1 && ib2!=-1 && vJetLoose->size()-2>=2) catJets = kCat_3l_2b_2j;
-    else if (is_tHq_3l && ib1!=-1 && ib2==-1 && vJetLoose->size()-1>=2) catJets = kCat_3l_1b_2j;
-    else if (is_tHq_3l && ib1!=-1 && ib2!=-1 && vJetLoose->size()-2==1) catJets = kCat_3l_2b_1j;
-    else if (is_tHq_3l && ib1!=-1 && ib2==-1 && vJetLoose->size()-1==1) catJets = kCat_3l_1b_1j;
-	else if (is_tHq_3l && ib1!=-1 && ib2!=-1 && vJetLoose->size()-2==0) catJets = kCat_3l_2b_0j;
-	else if (is_tHq_3l && ib1!=-1 && ib2==-1 && vJetLoose->size()-1==0) catJets = kCat_3l_1b_0j;
-	else if (is_tHq_3l && ib1==-1 && ib2==-1 && vJetLoose->size()==1) catJets = kCat_3l_0b_1j;
-	else if (is_tHq_3l && ib1==-1 && ib2==-1 && vJetLoose->size()==0) catJets = kCat_3l_0b_0j;
+    else if (is_tHq_3l && ib1!=-1 && ib2!=-1 && vJetLoose.size()-2>=2) catJets = kCat_3l_2b_2j;
+    else if (is_tHq_3l && ib1!=-1 && ib2==-1 && vJetLoose.size()-1>=2) catJets = kCat_3l_1b_2j;
+    else if (is_tHq_3l && ib1!=-1 && ib2!=-1 && vJetLoose.size()-2==1) catJets = kCat_3l_2b_1j;
+    else if (is_tHq_3l && ib1!=-1 && ib2==-1 && vJetLoose.size()-1==1) catJets = kCat_3l_1b_1j;
+    else if (is_tHq_3l && ib1!=-1 && ib2!=-1 && vJetLoose.size()-2==0) catJets = kCat_3l_2b_0j;
+    else if (is_tHq_3l && ib1!=-1 && ib2==-1 && vJetLoose.size()-1==0) catJets = kCat_3l_1b_0j;
+    else if (is_tHq_3l && ib1==-1 && ib2==-1 && vJetLoose.size()==1) catJets = kCat_3l_0b_1j;
+    else if (is_tHq_3l && ib1==-1 && ib2==-1 && vJetLoose.size()==0) catJets = kCat_3l_0b_0j;
 
-	else catJets = -1;
+    else catJets = -1;
 
 
     //--------------------------------------------
@@ -1781,13 +2270,13 @@ void tHqMultileponAnalysis::fillOutputTree()
 
                 if(ib1!=-1)
                 {
-                    jet1_dr_gen = GetDeltaR(vTruth->at(0).mc_truth_eta.at(itruth),  vTruth->at(0).mc_truth_phi.at(itruth), vJetLoose->at(ib1).eta, vJetLoose->at(ib1).phi );
+                    jet1_dr_gen = GetDeltaR(vTruth->at(0).mc_truth_eta.at(itruth),  vTruth->at(0).mc_truth_phi.at(itruth), vJetLoose.at(ib1).eta, vJetLoose.at(ib1).phi );
                     if( jet1_dr_gen < jet1_dr_gen_min) {jet1_dr_gen_min = jet1_dr_gen;  jet1_matched = itruth;}
                 }
 
                 if(ib2!=-1)
                 {
-                    jet2_dr_gen = GetDeltaR(vTruth->at(0).mc_truth_eta.at(itruth),  vTruth->at(0).mc_truth_phi.at(itruth), vJetLoose->at(ib2).eta, vJetLoose->at(ib2).phi );
+                    jet2_dr_gen = GetDeltaR(vTruth->at(0).mc_truth_eta.at(itruth),  vTruth->at(0).mc_truth_phi.at(itruth), vJetLoose.at(ib2).eta, vJetLoose.at(ib2).phi );
                     if( jet2_dr_gen < jet2_dr_gen_min)
                     {   jet2_dr_gen_min = jet2_dr_gen;  jet2_matched = itruth;  }
                 }
@@ -1870,56 +2359,56 @@ void tHqMultileponAnalysis::fillOutputTree()
     // TLorentzVector Jet1, Jet2;
     if (ij1!=-1)
     {
-        // Jet1.SetPtEtaPhiE(vJetLoose->at(ij1).pt, vJetLoose->at(ij1).eta, vJetLoose->at(ij1).phi, vJetLoose->at(ij1).E);
-        // FillJetInfoOutputTree(&multilepton_JetHighestPt1_Id, 1, &multilepton_JetHighestPt1_P4, Jet1, &multilepton_JetHighestPt1_CSV, vJetLoose->at(ij1).CSVv2, &multilepton_JetHighestPt1_JEC_Up, &multilepton_JetHighestPt1_JEC_Down, vJetLoose->at(ij1).JES_uncert(), &multilepton_JetHighestPt1_JER_Up, &multilepton_JetHighestPt1_JER_Down, vJetLoose->at(ij1).pt_JER(), vJetLoose->at(ij1).pt_JER_up(), vJetLoose->at(ij1).pt_JER_down());
+        // Jet1.SetPtEtaPhiE(vJetLoose.at(ij1).pt, vJetLoose.at(ij1).eta, vJetLoose.at(ij1).phi, vJetLoose.at(ij1).E);
+        // FillJetInfoOutputTree(&multilepton_JetHighestPt1_Id, 1, &multilepton_JetHighestPt1_P4, Jet1, &multilepton_JetHighestPt1_CSV, vJetLoose.at(ij1).CSVv2, &multilepton_JetHighestPt1_JEC_Up, &multilepton_JetHighestPt1_JEC_Down, vJetLoose.at(ij1).JES_uncert(), &multilepton_JetHighestPt1_JER_Up, &multilepton_JetHighestPt1_JER_Down, vJetLoose.at(ij1).pt_JER(), vJetLoose.at(ij1).pt_JER_up(), vJetLoose.at(ij1).pt_JER_down());
         multilepton_JetHighestPt1_Id = 1;
-        multilepton_JetHighestPt1_CSV = vJetLoose->at(ij1).DeepCSVbtag;
-        multilepton_JetHighestPt1_P4.SetPtEtaPhiE(vJetLoose->at(ij1).pt, vJetLoose->at(ij1).eta, vJetLoose->at(ij1).phi, vJetLoose->at(ij1).E);
+        multilepton_JetHighestPt1_CSV = vJetLoose.at(ij1).DeepCSVbtag;
+        multilepton_JetHighestPt1_P4.SetPtEtaPhiE(vJetLoose.at(ij1).pt, vJetLoose.at(ij1).eta, vJetLoose.at(ij1).phi, vJetLoose.at(ij1).E);
     }
     if (ij2!=-1)
     {
-        // Jet2.SetPtEtaPhiE(vJetLoose->at(ij2).pt, vJetLoose->at(ij2).eta, vJetLoose->at(ij2).phi, vJetLoose->at(ij2).E);
-        // FillJetInfoOutputTree(&multilepton_JetHighestPt2_Id, 1, &multilepton_JetHighestPt2_P4, Jet2, &multilepton_JetHighestPt2_CSV, vJetLoose->at(ij2).CSVv2, &multilepton_JetHighestPt2_JEC_Up, &multilepton_JetHighestPt2_JEC_Down, vJetLoose->at(ij2).JES_uncert(), &multilepton_JetHighestPt2_JER_Up, &multilepton_JetHighestPt2_JER_Down, vJetLoose->at(ij2).pt_JER(), vJetLoose->at(ij2).pt_JER_up(), vJetLoose->at(ij2).pt_JER_down());
+        // Jet2.SetPtEtaPhiE(vJetLoose.at(ij2).pt, vJetLoose.at(ij2).eta, vJetLoose.at(ij2).phi, vJetLoose.at(ij2).E);
+        // FillJetInfoOutputTree(&multilepton_JetHighestPt2_Id, 1, &multilepton_JetHighestPt2_P4, Jet2, &multilepton_JetHighestPt2_CSV, vJetLoose.at(ij2).CSVv2, &multilepton_JetHighestPt2_JEC_Up, &multilepton_JetHighestPt2_JEC_Down, vJetLoose.at(ij2).JES_uncert(), &multilepton_JetHighestPt2_JER_Up, &multilepton_JetHighestPt2_JER_Down, vJetLoose.at(ij2).pt_JER(), vJetLoose.at(ij2).pt_JER_up(), vJetLoose.at(ij2).pt_JER_down());
         multilepton_JetHighestPt2_Id = 1;
-        multilepton_JetHighestPt2_CSV = vJetLoose->at(ij2).DeepCSVbtag;
-        multilepton_JetHighestPt2_P4.SetPtEtaPhiE(vJetLoose->at(ij2).pt, vJetLoose->at(ij2).eta, vJetLoose->at(ij2).phi, vJetLoose->at(ij2).E);
+        multilepton_JetHighestPt2_CSV = vJetLoose.at(ij2).DeepCSVbtag;
+        multilepton_JetHighestPt2_P4.SetPtEtaPhiE(vJetLoose.at(ij2).pt, vJetLoose.at(ij2).eta, vJetLoose.at(ij2).phi, vJetLoose.at(ij2).E);
     }
 
     if (ik1!=-1 && ik2!=-1){
-        // Jet1.SetPtEtaPhiE(vJetLoose->at(ik1).pt, vJetLoose->at(ik1).eta, vJetLoose->at(ik1).phi, vJetLoose->at(ik1).E);
-        // Jet2.SetPtEtaPhiE(vJetLoose->at(ik2).pt, vJetLoose->at(ik2).eta, vJetLoose->at(ik2).phi, vJetLoose->at(ik2).E);
-        // FillJetInfoOutputTree(&multilepton_JetClosestMw1_Id, 2, &multilepton_JetClosestMw1_P4, Jet1, &multilepton_JetClosestMw1_CSV, vJetLoose->at(ik1).CSVv2, &multilepton_JetClosestMw1_JEC_Up, &multilepton_JetClosestMw1_JEC_Down, vJetLoose->at(ik1).JES_uncert(), &multilepton_JetClosestMw1_JER_Up, &multilepton_JetClosestMw1_JER_Down, vJetLoose->at(ik1).pt_JER(), vJetLoose->at(ik1).pt_JER_up(), vJetLoose->at(ik1).pt_JER_down());
-        // FillJetInfoOutputTree(&multilepton_JetClosestMw2_Id, 2, &multilepton_JetClosestMw2_P4, Jet2, &multilepton_JetClosestMw2_CSV, vJetLoose->at(ik2).CSVv2, &multilepton_JetClosestMw2_JEC_Up, &multilepton_JetClosestMw2_JEC_Down, vJetLoose->at(ik2).JES_uncert(), &multilepton_JetClosestMw2_JER_Up, &multilepton_JetClosestMw2_JER_Down, vJetLoose->at(ik2).pt_JER(), vJetLoose->at(ik2).pt_JER_up(), vJetLoose->at(ik2).pt_JER_down());
+        // Jet1.SetPtEtaPhiE(vJetLoose.at(ik1).pt, vJetLoose.at(ik1).eta, vJetLoose.at(ik1).phi, vJetLoose.at(ik1).E);
+        // Jet2.SetPtEtaPhiE(vJetLoose.at(ik2).pt, vJetLoose.at(ik2).eta, vJetLoose.at(ik2).phi, vJetLoose.at(ik2).E);
+        // FillJetInfoOutputTree(&multilepton_JetClosestMw1_Id, 2, &multilepton_JetClosestMw1_P4, Jet1, &multilepton_JetClosestMw1_CSV, vJetLoose.at(ik1).CSVv2, &multilepton_JetClosestMw1_JEC_Up, &multilepton_JetClosestMw1_JEC_Down, vJetLoose.at(ik1).JES_uncert(), &multilepton_JetClosestMw1_JER_Up, &multilepton_JetClosestMw1_JER_Down, vJetLoose.at(ik1).pt_JER(), vJetLoose.at(ik1).pt_JER_up(), vJetLoose.at(ik1).pt_JER_down());
+        // FillJetInfoOutputTree(&multilepton_JetClosestMw2_Id, 2, &multilepton_JetClosestMw2_P4, Jet2, &multilepton_JetClosestMw2_CSV, vJetLoose.at(ik2).CSVv2, &multilepton_JetClosestMw2_JEC_Up, &multilepton_JetClosestMw2_JEC_Down, vJetLoose.at(ik2).JES_uncert(), &multilepton_JetClosestMw2_JER_Up, &multilepton_JetClosestMw2_JER_Down, vJetLoose.at(ik2).pt_JER(), vJetLoose.at(ik2).pt_JER_up(), vJetLoose.at(ik2).pt_JER_down());
         multilepton_JetClosestMw1_Id = 2;
         multilepton_JetClosestMw2_Id = 2;
-        multilepton_JetClosestMw1_CSV = vJetLoose->at(ik1).DeepCSVbtag;
-        multilepton_JetClosestMw2_CSV = vJetLoose->at(ik2).DeepCSVbtag;
-        multilepton_JetClosestMw1_P4.SetPtEtaPhiE(vJetLoose->at(ik1).pt, vJetLoose->at(ik1).eta, vJetLoose->at(ik1).phi, vJetLoose->at(ik1).E);
-        multilepton_JetClosestMw2_P4.SetPtEtaPhiE(vJetLoose->at(ik2).pt, vJetLoose->at(ik2).eta, vJetLoose->at(ik2).phi, vJetLoose->at(ik2).E);
+        multilepton_JetClosestMw1_CSV = vJetLoose.at(ik1).DeepCSVbtag;
+        multilepton_JetClosestMw2_CSV = vJetLoose.at(ik2).DeepCSVbtag;
+        multilepton_JetClosestMw1_P4.SetPtEtaPhiE(vJetLoose.at(ik1).pt, vJetLoose.at(ik1).eta, vJetLoose.at(ik1).phi, vJetLoose.at(ik1).E);
+        multilepton_JetClosestMw2_P4.SetPtEtaPhiE(vJetLoose.at(ik2).pt, vJetLoose.at(ik2).eta, vJetLoose.at(ik2).phi, vJetLoose.at(ik2).E);
     }
     if (il1!=-1 && il2!=-1){
-        // Jet1.SetPtEtaPhiE(vJetLoose->at(il1).pt, vJetLoose->at(il1).eta, vJetLoose->at(il1).phi, vJetLoose->at(il1).E);
-        // Jet2.SetPtEtaPhiE(vJetLoose->at(il2).pt, vJetLoose->at(il2).eta, vJetLoose->at(il2).phi, vJetLoose->at(il2).E);
-        // FillJetInfoOutputTree(&multilepton_JetLowestMjj1_Id, 3, &multilepton_JetLowestMjj1_P4, Jet1, &multilepton_JetLowestMjj1_CSV, vJetLoose->at(il1).CSVv2, &multilepton_JetLowestMjj1_JEC_Up, &multilepton_JetLowestMjj1_JEC_Down, vJetLoose->at(il1).JES_uncert(), &multilepton_JetLowestMjj1_JER_Up, &multilepton_JetLowestMjj1_JER_Down, vJetLoose->at(il1).pt_JER(), vJetLoose->at(il1).pt_JER_up(), vJetLoose->at(il1).pt_JER_down());
-        // FillJetInfoOutputTree(&multilepton_JetLowestMjj2_Id, 3, &multilepton_JetLowestMjj2_P4, Jet2, &multilepton_JetLowestMjj2_CSV, vJetLoose->at(il2).CSVv2, &multilepton_JetLowestMjj2_JEC_Up, &multilepton_JetLowestMjj2_JEC_Down, vJetLoose->at(il2).JES_uncert(), &multilepton_JetLowestMjj2_JER_Up, &multilepton_JetLowestMjj2_JER_Down, vJetLoose->at(il2).pt_JER(), vJetLoose->at(il2).pt_JER_up(), vJetLoose->at(il2).pt_JER_down());
+        // Jet1.SetPtEtaPhiE(vJetLoose.at(il1).pt, vJetLoose.at(il1).eta, vJetLoose.at(il1).phi, vJetLoose.at(il1).E);
+        // Jet2.SetPtEtaPhiE(vJetLoose.at(il2).pt, vJetLoose.at(il2).eta, vJetLoose.at(il2).phi, vJetLoose.at(il2).E);
+        // FillJetInfoOutputTree(&multilepton_JetLowestMjj1_Id, 3, &multilepton_JetLowestMjj1_P4, Jet1, &multilepton_JetLowestMjj1_CSV, vJetLoose.at(il1).CSVv2, &multilepton_JetLowestMjj1_JEC_Up, &multilepton_JetLowestMjj1_JEC_Down, vJetLoose.at(il1).JES_uncert(), &multilepton_JetLowestMjj1_JER_Up, &multilepton_JetLowestMjj1_JER_Down, vJetLoose.at(il1).pt_JER(), vJetLoose.at(il1).pt_JER_up(), vJetLoose.at(il1).pt_JER_down());
+        // FillJetInfoOutputTree(&multilepton_JetLowestMjj2_Id, 3, &multilepton_JetLowestMjj2_P4, Jet2, &multilepton_JetLowestMjj2_CSV, vJetLoose.at(il2).CSVv2, &multilepton_JetLowestMjj2_JEC_Up, &multilepton_JetLowestMjj2_JEC_Down, vJetLoose.at(il2).JES_uncert(), &multilepton_JetLowestMjj2_JER_Up, &multilepton_JetLowestMjj2_JER_Down, vJetLoose.at(il2).pt_JER(), vJetLoose.at(il2).pt_JER_up(), vJetLoose.at(il2).pt_JER_down());
         multilepton_JetLowestMjj1_Id = 3;
         multilepton_JetLowestMjj2_Id = 3;
-        multilepton_JetLowestMjj1_CSV = vJetLoose->at(il1).DeepCSVbtag;
-        multilepton_JetLowestMjj2_CSV = vJetLoose->at(il2).DeepCSVbtag;
-        multilepton_JetLowestMjj1_P4.SetPtEtaPhiE(vJetLoose->at(il1).pt, vJetLoose->at(il1).eta, vJetLoose->at(il1).phi, vJetLoose->at(il1).E);
-        multilepton_JetLowestMjj2_P4.SetPtEtaPhiE(vJetLoose->at(il2).pt, vJetLoose->at(il2).eta, vJetLoose->at(il2).phi, vJetLoose->at(il2).E);
+        multilepton_JetLowestMjj1_CSV = vJetLoose.at(il1).DeepCSVbtag;
+        multilepton_JetLowestMjj2_CSV = vJetLoose.at(il2).DeepCSVbtag;
+        multilepton_JetLowestMjj1_P4.SetPtEtaPhiE(vJetLoose.at(il1).pt, vJetLoose.at(il1).eta, vJetLoose.at(il1).phi, vJetLoose.at(il1).E);
+        multilepton_JetLowestMjj2_P4.SetPtEtaPhiE(vJetLoose.at(il2).pt, vJetLoose.at(il2).eta, vJetLoose.at(il2).phi, vJetLoose.at(il2).E);
     }
     if(ie1!=-1)
     {
         multilepton_JetHighestEta1_Id = 4;
-        multilepton_JetHighestEta1_CSV = vJetLoose->at(ie1).DeepCSVbtag;
-        multilepton_JetHighestEta1_P4.SetPtEtaPhiE(vJetLoose->at(ie1).pt, vJetLoose->at(ie1).eta, vJetLoose->at(ie1).phi, vJetLoose->at(ie1).E );
+        multilepton_JetHighestEta1_CSV = vJetLoose.at(ie1).DeepCSVbtag;
+        multilepton_JetHighestEta1_P4.SetPtEtaPhiE(vJetLoose.at(ie1).pt, vJetLoose.at(ie1).eta, vJetLoose.at(ie1).phi, vJetLoose.at(ie1).E );
     }
     if(ie2!=-1) //2jets
     {
         multilepton_JetHighestEta2_Id = 4;
-        multilepton_JetHighestEta2_CSV = vJetLoose->at(ie2).DeepCSVbtag;
-        multilepton_JetHighestEta2_P4.SetPtEtaPhiE(vJetLoose->at(ie2).pt, vJetLoose->at(ie2).eta, vJetLoose->at(ie2).phi, vJetLoose->at(ie2).E );
+        multilepton_JetHighestEta2_CSV = vJetLoose.at(ie2).DeepCSVbtag;
+        multilepton_JetHighestEta2_P4.SetPtEtaPhiE(vJetLoose.at(ie2).pt, vJetLoose.at(ie2).eta, vJetLoose.at(ie2).phi, vJetLoose.at(ie2).E );
     }
 
 
@@ -1928,42 +2417,42 @@ void tHqMultileponAnalysis::fillOutputTree()
     {
         if (im1!=-1)
         {
-            // Jet1.SetPtEtaPhiE(vJetLoose->at(im1).pt, vJetLoose->at(im1).eta, vJetLoose->at(im1).phi, vJetLoose->at(im1).E);
-            // FillJetInfoOutputTree(&multilepton_JetHighestPt1_2ndPair_Id, 1, &multilepton_JetHighestPt1_2ndPair_P4, Jet1, &multilepton_JetHighestPt1_2ndPair_CSV, vJetLoose->at(im1).CSVv2, &multilepton_JetHighestPt1_2ndPair_JEC_Up, &multilepton_JetHighestPt1_2ndPair_JEC_Down, vJetLoose->at(im1).JES_uncert(), &multilepton_JetHighestPt1_2ndPair_JER_Up, &multilepton_JetHighestPt1_2ndPair_JER_Down, vJetLoose->at(im1).pt_JER(), vJetLoose->at(im1).pt_JER_up(), vJetLoose->at(im1).pt_JER_down());
+            // Jet1.SetPtEtaPhiE(vJetLoose.at(im1).pt, vJetLoose.at(im1).eta, vJetLoose.at(im1).phi, vJetLoose.at(im1).E);
+            // FillJetInfoOutputTree(&multilepton_JetHighestPt1_2ndPair_Id, 1, &multilepton_JetHighestPt1_2ndPair_P4, Jet1, &multilepton_JetHighestPt1_2ndPair_CSV, vJetLoose.at(im1).CSVv2, &multilepton_JetHighestPt1_2ndPair_JEC_Up, &multilepton_JetHighestPt1_2ndPair_JEC_Down, vJetLoose.at(im1).JES_uncert(), &multilepton_JetHighestPt1_2ndPair_JER_Up, &multilepton_JetHighestPt1_2ndPair_JER_Down, vJetLoose.at(im1).pt_JER(), vJetLoose.at(im1).pt_JER_up(), vJetLoose.at(im1).pt_JER_down());
             multilepton_JetHighestPt1_2ndPair_Id = 1;
-            multilepton_JetHighestPt1_2ndPair_CSV = vJetLoose->at(im1).DeepCSVbtag;
-            multilepton_JetHighestPt1_2ndPair_P4.SetPtEtaPhiE(vJetLoose->at(im1).pt, vJetLoose->at(im1).eta, vJetLoose->at(im1).phi, vJetLoose->at(im1).E);
+            multilepton_JetHighestPt1_2ndPair_CSV = vJetLoose.at(im1).DeepCSVbtag;
+            multilepton_JetHighestPt1_2ndPair_P4.SetPtEtaPhiE(vJetLoose.at(im1).pt, vJetLoose.at(im1).eta, vJetLoose.at(im1).phi, vJetLoose.at(im1).E);
         }
         if(im2!=-1){
-            // Jet2.SetPtEtaPhiE(vJetLoose->at(im2).pt, vJetLoose->at(im2).eta, vJetLoose->at(im2).phi, vJetLoose->at(im2).E);
-            // FillJetInfoOutputTree(&multilepton_JetHighestPt2_2ndPair_Id, 1, &multilepton_JetHighestPt2_2ndPair_P4, Jet2, &multilepton_JetHighestPt2_2ndPair_CSV, vJetLoose->at(im2).CSVv2, &multilepton_JetHighestPt2_2ndPair_JEC_Up, &multilepton_JetHighestPt2_2ndPair_JEC_Down, vJetLoose->at(im2).JES_uncert(), &multilepton_JetHighestPt2_2ndPair_JER_Up, &multilepton_JetHighestPt2_2ndPair_JER_Down, vJetLoose->at(im2).pt_JER(), vJetLoose->at(im2).pt_JER_up(), vJetLoose->at(im2).pt_JER_down());
+            // Jet2.SetPtEtaPhiE(vJetLoose.at(im2).pt, vJetLoose.at(im2).eta, vJetLoose.at(im2).phi, vJetLoose.at(im2).E);
+            // FillJetInfoOutputTree(&multilepton_JetHighestPt2_2ndPair_Id, 1, &multilepton_JetHighestPt2_2ndPair_P4, Jet2, &multilepton_JetHighestPt2_2ndPair_CSV, vJetLoose.at(im2).CSVv2, &multilepton_JetHighestPt2_2ndPair_JEC_Up, &multilepton_JetHighestPt2_2ndPair_JEC_Down, vJetLoose.at(im2).JES_uncert(), &multilepton_JetHighestPt2_2ndPair_JER_Up, &multilepton_JetHighestPt2_2ndPair_JER_Down, vJetLoose.at(im2).pt_JER(), vJetLoose.at(im2).pt_JER_up(), vJetLoose.at(im2).pt_JER_down());
             multilepton_JetHighestPt2_2ndPair_Id = 1;
-            multilepton_JetHighestPt1_2ndPair_CSV = vJetLoose->at(im2).DeepCSVbtag;
-            multilepton_JetHighestPt2_2ndPair_P4.SetPtEtaPhiE(vJetLoose->at(im2).pt, vJetLoose->at(im2).eta, vJetLoose->at(im2).phi, vJetLoose->at(im2).E);
+            multilepton_JetHighestPt1_2ndPair_CSV = vJetLoose.at(im2).DeepCSVbtag;
+            multilepton_JetHighestPt2_2ndPair_P4.SetPtEtaPhiE(vJetLoose.at(im2).pt, vJetLoose.at(im2).eta, vJetLoose.at(im2).phi, vJetLoose.at(im2).E);
         }
         if (io1!=-1 && io2!=-1){
-            // Jet1.SetPtEtaPhiE(vJetLoose->at(ip1).pt, vJetLoose->at(ip1).eta, vJetLoose->at(ip1).phi, vJetLoose->at(ip1).E);
-            // Jet2.SetPtEtaPhiE(vJetLoose->at(io2).pt, vJetLoose->at(io2).eta, vJetLoose->at(io2).phi, vJetLoose->at(io2).E);
-            // FillJetInfoOutputTree(&multilepton_JetClosestMw1_2ndPair_Id, 2, &multilepton_JetClosestMw1_2ndPair_P4, Jet1, &multilepton_JetClosestMw1_2ndPair_CSV, vJetLoose->at(io1).CSVv2, &multilepton_JetClosestMw1_2ndPair_JEC_Up, &multilepton_JetClosestMw1_2ndPair_JEC_Down, vJetLoose->at(io1).JES_uncert(), &multilepton_JetClosestMw1_2ndPair_JER_Up, &multilepton_JetClosestMw1_2ndPair_JER_Down, vJetLoose->at(io1).pt_JER(), vJetLoose->at(io1).pt_JER_up(), vJetLoose->at(io1).pt_JER_down());
-            // FillJetInfoOutputTree(&multilepton_JetClosestMw2_2ndPair_Id, 2, &multilepton_JetClosestMw2_2ndPair_P4, Jet2, &multilepton_JetClosestMw2_2ndPair_CSV, vJetLoose->at(io2).CSVv2, &multilepton_JetClosestMw2_2ndPair_JEC_Up, &multilepton_JetClosestMw2_2ndPair_JEC_Down, vJetLoose->at(io2).JES_uncert(), &multilepton_JetClosestMw2_2ndPair_JER_Up, &multilepton_JetClosestMw2_2ndPair_JER_Down, vJetLoose->at(io2).pt_JER(), vJetLoose->at(io2).pt_JER_up(), vJetLoose->at(io2).pt_JER_down());
+            // Jet1.SetPtEtaPhiE(vJetLoose.at(ip1).pt, vJetLoose.at(ip1).eta, vJetLoose.at(ip1).phi, vJetLoose.at(ip1).E);
+            // Jet2.SetPtEtaPhiE(vJetLoose.at(io2).pt, vJetLoose.at(io2).eta, vJetLoose.at(io2).phi, vJetLoose.at(io2).E);
+            // FillJetInfoOutputTree(&multilepton_JetClosestMw1_2ndPair_Id, 2, &multilepton_JetClosestMw1_2ndPair_P4, Jet1, &multilepton_JetClosestMw1_2ndPair_CSV, vJetLoose.at(io1).CSVv2, &multilepton_JetClosestMw1_2ndPair_JEC_Up, &multilepton_JetClosestMw1_2ndPair_JEC_Down, vJetLoose.at(io1).JES_uncert(), &multilepton_JetClosestMw1_2ndPair_JER_Up, &multilepton_JetClosestMw1_2ndPair_JER_Down, vJetLoose.at(io1).pt_JER(), vJetLoose.at(io1).pt_JER_up(), vJetLoose.at(io1).pt_JER_down());
+            // FillJetInfoOutputTree(&multilepton_JetClosestMw2_2ndPair_Id, 2, &multilepton_JetClosestMw2_2ndPair_P4, Jet2, &multilepton_JetClosestMw2_2ndPair_CSV, vJetLoose.at(io2).CSVv2, &multilepton_JetClosestMw2_2ndPair_JEC_Up, &multilepton_JetClosestMw2_2ndPair_JEC_Down, vJetLoose.at(io2).JES_uncert(), &multilepton_JetClosestMw2_2ndPair_JER_Up, &multilepton_JetClosestMw2_2ndPair_JER_Down, vJetLoose.at(io2).pt_JER(), vJetLoose.at(io2).pt_JER_up(), vJetLoose.at(io2).pt_JER_down());
             multilepton_JetClosestMw1_2ndPair_Id = 2;
             multilepton_JetClosestMw2_2ndPair_Id = 2;
-            multilepton_JetClosestMw1_2ndPair_CSV = vJetLoose->at(io1).DeepCSVbtag;
-            multilepton_JetClosestMw2_2ndPair_CSV = vJetLoose->at(io2).DeepCSVbtag;
-            multilepton_JetClosestMw1_2ndPair_P4.SetPtEtaPhiE(vJetLoose->at(io1).pt, vJetLoose->at(io1).eta, vJetLoose->at(io1).phi, vJetLoose->at(io1).E);
-            multilepton_JetClosestMw2_2ndPair_P4.SetPtEtaPhiE(vJetLoose->at(io2).pt, vJetLoose->at(io2).eta, vJetLoose->at(io2).phi, vJetLoose->at(io2).E);
+            multilepton_JetClosestMw1_2ndPair_CSV = vJetLoose.at(io1).DeepCSVbtag;
+            multilepton_JetClosestMw2_2ndPair_CSV = vJetLoose.at(io2).DeepCSVbtag;
+            multilepton_JetClosestMw1_2ndPair_P4.SetPtEtaPhiE(vJetLoose.at(io1).pt, vJetLoose.at(io1).eta, vJetLoose.at(io1).phi, vJetLoose.at(io1).E);
+            multilepton_JetClosestMw2_2ndPair_P4.SetPtEtaPhiE(vJetLoose.at(io2).pt, vJetLoose.at(io2).eta, vJetLoose.at(io2).phi, vJetLoose.at(io2).E);
         }
         if (ip1!=-1 && ip2!=-1){
-            // Jet1.SetPtEtaPhiE(vJetLoose->at(ip1).pt, vJetLoose->at(ip1).eta, vJetLoose->at(ip1).phi, vJetLoose->at(ip1).E);
-            // Jet2.SetPtEtaPhiE(vJetLoose->at(ip2).pt, vJetLoose->at(ip2).eta, vJetLoose->at(ip2).phi, vJetLoose->at(ip2).E);
-            // FillJetInfoOutputTree(&multilepton_JetLowestMjj1_2ndPair_Id, 3, &multilepton_JetLowestMjj1_2ndPair_P4, Jet1, &multilepton_JetLowestMjj1_2ndPair_CSV, vJetLoose->at(ip1).CSVv2, &multilepton_JetLowestMjj1_2ndPair_JEC_Up, &multilepton_JetLowestMjj1_2ndPair_JEC_Down, vJetLoose->at(ip1).JES_uncert(), &multilepton_JetLowestMjj1_2ndPair_JER_Up, &multilepton_JetLowestMjj1_2ndPair_JER_Down, vJetLoose->at(ip1).pt_JER(), vJetLoose->at(ip1).pt_JER_up(), vJetLoose->at(ip1).pt_JER_down());
-            // FillJetInfoOutputTree(&multilepton_JetLowestMjj2_2ndPair_Id, 3, &multilepton_JetLowestMjj2_2ndPair_P4, Jet2, &multilepton_JetLowestMjj2_2ndPair_CSV, vJetLoose->at(ip2).CSVv2, &multilepton_JetLowestMjj2_2ndPair_JEC_Up, &multilepton_JetLowestMjj2_2ndPair_JEC_Down, vJetLoose->at(ip2).JES_uncert(), &multilepton_JetLowestMjj2_2ndPair_JER_Up, &multilepton_JetLowestMjj2_2ndPair_JER_Down, vJetLoose->at(ip2).pt_JER(), vJetLoose->at(ip2).pt_JER_up(), vJetLoose->at(ip2).pt_JER_down());
+            // Jet1.SetPtEtaPhiE(vJetLoose.at(ip1).pt, vJetLoose.at(ip1).eta, vJetLoose.at(ip1).phi, vJetLoose.at(ip1).E);
+            // Jet2.SetPtEtaPhiE(vJetLoose.at(ip2).pt, vJetLoose.at(ip2).eta, vJetLoose.at(ip2).phi, vJetLoose.at(ip2).E);
+            // FillJetInfoOutputTree(&multilepton_JetLowestMjj1_2ndPair_Id, 3, &multilepton_JetLowestMjj1_2ndPair_P4, Jet1, &multilepton_JetLowestMjj1_2ndPair_CSV, vJetLoose.at(ip1).CSVv2, &multilepton_JetLowestMjj1_2ndPair_JEC_Up, &multilepton_JetLowestMjj1_2ndPair_JEC_Down, vJetLoose.at(ip1).JES_uncert(), &multilepton_JetLowestMjj1_2ndPair_JER_Up, &multilepton_JetLowestMjj1_2ndPair_JER_Down, vJetLoose.at(ip1).pt_JER(), vJetLoose.at(ip1).pt_JER_up(), vJetLoose.at(ip1).pt_JER_down());
+            // FillJetInfoOutputTree(&multilepton_JetLowestMjj2_2ndPair_Id, 3, &multilepton_JetLowestMjj2_2ndPair_P4, Jet2, &multilepton_JetLowestMjj2_2ndPair_CSV, vJetLoose.at(ip2).CSVv2, &multilepton_JetLowestMjj2_2ndPair_JEC_Up, &multilepton_JetLowestMjj2_2ndPair_JEC_Down, vJetLoose.at(ip2).JES_uncert(), &multilepton_JetLowestMjj2_2ndPair_JER_Up, &multilepton_JetLowestMjj2_2ndPair_JER_Down, vJetLoose.at(ip2).pt_JER(), vJetLoose.at(ip2).pt_JER_up(), vJetLoose.at(ip2).pt_JER_down());
             multilepton_JetLowestMjj1_2ndPair_Id = 3;
             multilepton_JetLowestMjj2_2ndPair_Id = 3;
-            multilepton_JetLowestMjj1_2ndPair_CSV = vJetLoose->at(ip1).DeepCSVbtag;
-            multilepton_JetLowestMjj2_2ndPair_CSV = vJetLoose->at(ip2).DeepCSVbtag;
-            multilepton_JetLowestMjj1_2ndPair_P4.SetPtEtaPhiE(vJetLoose->at(ip1).pt, vJetLoose->at(ip1).eta, vJetLoose->at(ip1).phi, vJetLoose->at(ip1).E);
-            multilepton_JetLowestMjj2_2ndPair_P4.SetPtEtaPhiE(vJetLoose->at(ip2).pt, vJetLoose->at(ip2).eta, vJetLoose->at(ip2).phi, vJetLoose->at(ip2).E);
+            multilepton_JetLowestMjj1_2ndPair_CSV = vJetLoose.at(ip1).DeepCSVbtag;
+            multilepton_JetLowestMjj2_2ndPair_CSV = vJetLoose.at(ip2).DeepCSVbtag;
+            multilepton_JetLowestMjj1_2ndPair_P4.SetPtEtaPhiE(vJetLoose.at(ip1).pt, vJetLoose.at(ip1).eta, vJetLoose.at(ip1).phi, vJetLoose.at(ip1).E);
+            multilepton_JetLowestMjj2_2ndPair_P4.SetPtEtaPhiE(vJetLoose.at(ip2).pt, vJetLoose.at(ip2).eta, vJetLoose.at(ip2).phi, vJetLoose.at(ip2).E);
         }
     }
 
@@ -2024,7 +2513,7 @@ void tHqMultileponAnalysis::fillOutputTree()
     multilepton_mETcov01 = vEvent->at(0).metcov01;
     multilepton_mETcov10 = vEvent->at(0).metcov10;
     multilepton_mETcov11 = vEvent->at(0).metcov11;
-    multilepton_mHT = vEvent->at(0).metsumet; //FIXME -- correct ?
+    multilepton_sumET = vEvent->at(0).metsumet;
 
     mc_ttZhypAllowed = 0;
     if (multilepton_Lepton1_Id!=-999 && multilepton_Lepton2_Id!=-999 && multilepton_Lepton3_Id!=-999)
@@ -2037,7 +2526,13 @@ void tHqMultileponAnalysis::fillOutputTree()
                 || (multilepton_Lepton2_Id==-multilepton_Lepton3_Id)) {mc_ttZhypAllowed = 1;}
     }
 
-    tOutput->Fill();
+    v_tOutput[itree]->Fill();
+
+    delete JetsPt;
+    delete JetsEta;
+    delete JetsPhi;
+    delete JetsE;
+    delete JetsCSV;
 
     return;
 }
@@ -2116,7 +2611,7 @@ void tHqMultileponAnalysis::Compute_Variables(TString region)
 
 
     int ijet_forward=-1, ijet_hardest_btag=-1, ijet_2nd_hardest_btag=-1;
-    double tmp = -999;
+    double tmp = -999, tmp2=-999;
 
     //--- Find "forward jet"
     for(int ijet=0; ijet<vLightJets.size(); ijet++)
@@ -2170,13 +2665,13 @@ void tHqMultileponAnalysis::Compute_Variables(TString region)
 
 	//--- Var1 : nof jets with pT>25 and |eta|<2.4
     nJet25 = 0;
-    for(int ijet=0; ijet<vJetLoose->size(); ijet++)
+    for(int ijet=0; ijet<vJetLoose.size(); ijet++)
     {
-        if(vJetLoose->at(ijet).pt > 25 && fabs(vJetLoose->at(ijet).eta) < 2.4) {nJet25++;}
+        if(vJetLoose.at(ijet).pt > 25 && fabs(vJetLoose.at(ijet).eta) < 2.4) {nJet25++;}
     }
 
-    //NB : nJet25 != vJetLoose->size(), because vJetLoose accounts for JES variations (pT could be slightly < 25 !)
-    nJetLoose = vJetLoose->size();
+    //NB : nJet25 != vJetLoose.size(), because vJetLoose accounts for JES variations (pT could be slightly < 25 !)
+    nJetLoose = vJetLoose.size();
 
 
     //--- Var2: max eta of any 'non-CSV-loose' jet
@@ -2188,6 +2683,7 @@ void tHqMultileponAnalysis::Compute_Variables(TString region)
     maxEtaJet25 = tmp;
 
 	//--- Var3 : sum of leptons charges
+    lepCharge = 0;
     for(int ilep=0; ilep<nleptons; ilep++)
     {
         lepCharge+= vLeptonFakeable.at(ilep).charge;
@@ -2220,18 +2716,24 @@ void tHqMultileponAnalysis::Compute_Variables(TString region)
     }
 
     //--- Var8 : dPhi of highest pT SS lepton pair
-    dPhiHighestPtSSPair = -999; tmp = -999;
+    dPhiHighestPtSSPair = -999; tmp = -999; tmp2=-999;
     TLorentzVector lepi, lepj;
     for(int i=0; i<vLeptonFakeable.size()-1; i++)
     {
-        lepi.SetPtEtaPhiE(vLeptonFakeable.at(i).pt, vLeptonFakeable.at(i).eta, vLeptonFakeable.at(i).phi, vLeptonFakeable.at(i).E );
+        lepi.SetPtEtaPhiE(vLeptonFakeable.at(i).conept, vLeptonFakeable.at(i).eta, vLeptonFakeable.at(i).phi, vLeptonFakeable.at(i).E );
         for(int j=i+1; j<vLeptonFakeable.size(); j++)
         {
-            lepj.SetPtEtaPhiE(vLeptonFakeable.at(j).pt, vLeptonFakeable.at(j).eta, vLeptonFakeable.at(j).phi, vLeptonFakeable.at(j).E );
+            lepj.SetPtEtaPhiE(vLeptonFakeable.at(j).conept, vLeptonFakeable.at(j).eta, vLeptonFakeable.at(j).phi, vLeptonFakeable.at(j).E );
+
             if(vLeptonFakeable.at(i).charge==vLeptonFakeable.at(j).charge && (lepi+lepj).Pt() > tmp)
             {
                 tmp = (lepi+lepj).Pt();
                 dPhiHighestPtSSPair = fabs(Phi_MPi_Pi(vLeptonFakeable.at(i).phi - vLeptonFakeable.at(j).phi ) );
+            }
+
+            if(fabs(Phi_MPi_Pi(vLeptonFakeable.at(i).phi - vLeptonFakeable.at(j).phi)) > tmp2)
+            {
+                dPhiLepLep_max = fabs(Phi_MPi_Pi(vLeptonFakeable.at(i).phi - vLeptonFakeable.at(j).phi));
             }
         }
     }
@@ -2242,31 +2744,30 @@ void tHqMultileponAnalysis::Compute_Variables(TString region)
     lepj = TLorentzVector();
     for(int i=0; i<vLeptonFakeable.size()-1; i++)
     {
-        lepi.SetPtEtaPhiE(vLeptonFakeable.at(i).pt, vLeptonFakeable.at(i).eta, vLeptonFakeable.at(i).phi, vLeptonFakeable.at(i).E );
+        lepi.SetPtEtaPhiE(vLeptonFakeable.at(i).conept, vLeptonFakeable.at(i).eta, vLeptonFakeable.at(i).phi, vLeptonFakeable.at(i).E );
         for(int j=i+1; j<vLeptonFakeable.size(); j++)
         {
-            lepj.SetPtEtaPhiE(vLeptonFakeable.at(j).pt, vLeptonFakeable.at(j).eta, vLeptonFakeable.at(j).phi, vLeptonFakeable.at(j).E );
+            lepj.SetPtEtaPhiE(vLeptonFakeable.at(j).conept, vLeptonFakeable.at(j).eta, vLeptonFakeable.at(j).phi, vLeptonFakeable.at(j).E );
             if(lepi.DeltaR(lepj) < minDRll)
             {
-
                 minDRll = lepi.DeltaR(lepj);
             }
         }
     }
 
     //--- Var10 : pT of 3rd hardest lepton
-    if(region == "3l") {Lep3Pt = vLeptonFakeable.at(2).pt;}
-    else {Lep3Pt = vLeptonFakeable.at(1).pt;}
+    if(region == "3l") {Lep3Pt = vLeptonFakeable.at(2).conept;}
+    else {Lep3Pt = vLeptonFakeable.at(1).conept;}
 
     //--- Fill additionnal variables, used for control only
-    lep1Pt = vLeptonFakeable.at(0).pt; lep2Pt = vLeptonFakeable.at(1).pt; lep3Pt = vLeptonFakeable.at(1).pt;
-    if(region == "3l") {lep3Pt = vLeptonFakeable.at(2).pt;}
+    lep1Eta = vLeptonFakeable.at(0).eta; lep2Eta = vLeptonFakeable.at(1).eta; lep3Eta = vLeptonFakeable.at(1).eta;
+    lep1Phi = vLeptonFakeable.at(0).phi; lep2Phi = vLeptonFakeable.at(1).phi; lep3Phi = vLeptonFakeable.at(1).phi;
+    if(region == "3l") {lep3Eta = vLeptonFakeable.at(2).eta; lep3Phi = vLeptonFakeable.at(2).phi;}
     if(ijet_hardest_btag >= 0)
     {
         hardestBjetPt = vLooseBTagJets.at(ijet_hardest_btag).pt;
         hardestBjetEta = vLooseBTagJets.at(ijet_hardest_btag).eta;
     }
-    if(ijet_forward >= 0) {fwdJetPt = vLightJets.at(ijet_forward).pt;}
 
 
     //--------------------------------------------
@@ -2280,24 +2781,25 @@ void tHqMultileponAnalysis::Compute_Variables(TString region)
     //--------------------------------------------
 
     lep1_conePt = vLeptonFakeable.at(0).conept;
-    if(nleptons == 3) {lep2_conePt = vLeptonFakeable.at(2).conept;} //'Trailing' lepton
-    else {lep2_conePt = vLeptonFakeable.at(1).conept;}
+    lep2_conePt = vLeptonFakeable.at(1).conept;
+    if(nleptons == 3) {lep3_conePt = vLeptonFakeable.at(2).conept;} //'Trailing' lepton
+    else {lep3_conePt = lep2_conePt;}
 
     mindr_lep1_jet = 999;
     mindr_lep2_jet = 999;
-    for(int i=0; i<vJetLoose->size(); i++)
+    for(int i=0; i<vJetLoose.size(); i++)
     {
-        float dr1 = GetDeltaR(vLeptonFakeable.at(0).eta,vLeptonFakeable.at(0).phi,vJetLoose->at(i).eta,vJetLoose->at(i).phi);
+        float dr1 = GetDeltaR(vLeptonFakeable.at(0).eta,vLeptonFakeable.at(0).phi,vJetLoose.at(i).eta,vJetLoose.at(i).phi);
         if(dr1 < mindr_lep1_jet) {mindr_lep1_jet = dr1;}
 
-        float dr2 = GetDeltaR(vLeptonFakeable.at(1).eta,vLeptonFakeable.at(1).phi,vJetLoose->at(i).eta,vJetLoose->at(i).phi);
+        float dr2 = GetDeltaR(vLeptonFakeable.at(1).eta,vLeptonFakeable.at(1).phi,vJetLoose.at(i).eta,vJetLoose.at(i).phi);
         if(dr2 < mindr_lep2_jet) {mindr_lep2_jet = dr2;}
     }
 
     // mT_lep1 = comp_MT_met_lep(lep_tmp, vEvent->at(0).metpt, vEvent->at(0).metphi);
-    mT_lep1 = sqrt( 2*vLeptonFakeable.at(0).conept * MET * (1 - cos(vLeptonFakeable.at(0).phi - vEvent->at(0).metphi) ) );
+    mT_lep1 = sqrt( 2*vLeptonFakeable.at(0).conept * metpt * (1 - cos(vLeptonFakeable.at(0).phi - vEvent->at(0).metphi) ) );
     // mT_lep2 = comp_MT_met_lep(lep_tmp, vEvent->at(0).metpt, vEvent->at(0).metphi);
-    mT_lep2 = sqrt( 2*vLeptonFakeable.at(1).conept * MET * (1 - cos(vLeptonFakeable.at(1).phi - vEvent->at(0).metphi) ) );
+    mT_lep2 = sqrt( 2*vLeptonFakeable.at(1).conept * metpt * (1 - cos(vLeptonFakeable.at(1).phi - vEvent->at(0).metphi) ) );
 
     max_lep_eta = std::max( fabs(vLeptonFakeable.at(0).eta), fabs(vLeptonFakeable.at(1).eta) );
     if(is_tHq_3l) {max_lep_eta = std::max(std::max(fabs(vLeptonFakeable.at(0).eta), fabs(vLeptonFakeable.at(1).eta)), fabs(vLeptonFakeable.at(2).eta));}
@@ -2315,20 +2817,23 @@ void tHqMultileponAnalysis::Compute_Variables(TString region)
     minv_FwdJetBJet = 0;
     if(ijet_forward >= 0 && ijet_hardest_btag >= 0) {minv_FwdJetBJet = (fwdJet + BJet).M();}
 
-    etaFwdJet = -10;
-    if(ijet_forward >= 0) {etaFwdJet = fwdJet.Eta();}
+    FwdJetEta = -10;
+    if(ijet_forward >= 0) {FwdJetEta = fwdJet.Eta();}
 
-    ptFwdJet = 0;
-    if(ijet_forward >= 0) {ptFwdJet = fwdJet.Pt();}
+    FwdJetPt = 0;
+    if(ijet_forward >= 0) {FwdJetPt = fwdJet.Pt();}
 
     LeadJetEta = -999;
     LeadJetPt = 0;
-    for(int j=0; j<vJetLoose->size(); j++)
+    sum_jetPt = 0;
+    for(int j=0; j<vJetLoose.size(); j++)
     {
-        if(vJetLoose->at(j).pt > LeadJetPt)
+        sum_jetPt+= vJetLoose.at(j).conept;
+
+        if(vJetLoose.at(j).conept > LeadJetPt)
         {
-            LeadJetPt = vJetLoose->at(j).pt;
-            LeadJetEta = vJetLoose->at(j).eta;
+            LeadJetPt = vJetLoose.at(j).conept;
+            LeadJetEta = vJetLoose.at(j).eta;
         }
     }
 
@@ -2336,25 +2841,25 @@ void tHqMultileponAnalysis::Compute_Variables(TString region)
     Mjj_max = 0;
     dPhijj_max = -999;
     TLorentzVector jet_tmp;
-    for(int i=0; i<vJetLoose->size(); i++)
+    for(int i=0; i<vJetLoose.size(); i++)
     {
-        jet_tmp.SetPtEtaPhiE(vJetLoose->at(i).pt, vJetLoose->at(i).eta, vJetLoose->at(i).phi, vJetLoose->at(i).E );
-        for(int j=i+1; j<vJetLoose->size(); j++)
+        jet_tmp.SetPtEtaPhiE(vJetLoose.at(i).conept, vJetLoose.at(i).eta, vJetLoose.at(i).phi, vJetLoose.at(i).E );
+        for(int j=i+1; j<vJetLoose.size(); j++)
         {
             TLorentzVector jet_tmp_2;
-            jet_tmp_2.SetPtEtaPhiE(vJetLoose->at(j).pt, vJetLoose->at(j).eta, vJetLoose->at(j).phi, vJetLoose->at(j).E );
+            jet_tmp_2.SetPtEtaPhiE(vJetLoose.at(j).conept, vJetLoose.at(j).eta, vJetLoose.at(j).phi, vJetLoose.at(j).E );
 
-            if( GetDeltaR(vJetLoose->at(i).eta, vJetLoose->at(i).phi, vJetLoose->at(j).eta, vJetLoose->at(j).phi) > dRjj)
+            if( GetDeltaR(vJetLoose.at(i).eta, vJetLoose.at(i).phi, vJetLoose.at(j).eta, vJetLoose.at(j).phi) > dRjj)
             {
-                dRjj = GetDeltaR(vJetLoose->at(i).eta, vJetLoose->at(i).phi, vJetLoose->at(j).eta, vJetLoose->at(j).phi);
+                dRjj = GetDeltaR(vJetLoose.at(i).eta, vJetLoose.at(i).phi, vJetLoose.at(j).eta, vJetLoose.at(j).phi);
             }
             if( (jet_tmp + jet_tmp_2).M() >  Mjj_max)
             {
                 Mjj_max = (jet_tmp + jet_tmp_2).M();
             }
-            if(Phi_MPi_Pi(vJetLoose->at(i).phi - vJetLoose->at(j).phi ) > dPhijj_max)
+            if(Phi_MPi_Pi(vJetLoose.at(i).phi - vJetLoose.at(j).phi ) > dPhijj_max)
             {
-                dPhijj_max = Phi_MPi_Pi(vJetLoose->at(i).phi - vJetLoose->at(j).phi );
+                dPhijj_max = Phi_MPi_Pi(vJetLoose.at(i).phi - vJetLoose.at(j).phi );
             }
         }
     }
@@ -2367,17 +2872,81 @@ void tHqMultileponAnalysis::Compute_Variables(TString region)
         else if(vLooseBTagJets.at(i).DeepCSVbtag > deepCSV_2nd) {deepCSV_2nd = vLooseBTagJets.at(i).DeepCSVbtag;}
     }
 
-    dPhiLepBJet_max = -999;
+    dPhiLepBJet_max = 0;
     if(ijet_hardest_btag >= 0)
     {
         for(int i=0; i<nleptons; i++)
         {
-            if(Phi_MPi_Pi(vLooseBTagJets.at(ijet_hardest_btag).phi - vLeptonFakeable.at(i).phi ) > dPhiLepBJet_max)
+            if( fabs(Phi_MPi_Pi(vLooseBTagJets.at(ijet_hardest_btag).phi - vLeptonFakeable.at(i).phi)) > dPhiLepBJet_max)
             {
-                dPhiLepBJet_max = Phi_MPi_Pi(vLooseBTagJets.at(ijet_hardest_btag).phi - vLeptonFakeable.at(i).phi );
+                dPhiLepBJet_max = fabs(Phi_MPi_Pi(vLooseBTagJets.at(ijet_hardest_btag).phi - vLeptonFakeable.at(i).phi) );
             }
         }
     }
+
+    m3l = 0;
+    TLorentzVector lep1, lep2, lep3;
+    lep1.SetPtEtaPhiE(vLeptonFakeable.at(0).conept, vLeptonFakeable.at(0).eta, vLeptonFakeable.at(0).phi, vLeptonFakeable.at(0).E );
+    lep2.SetPtEtaPhiE(vLeptonFakeable.at(1).conept, vLeptonFakeable.at(1).eta, vLeptonFakeable.at(1).phi, vLeptonFakeable.at(1).E );
+    if(region==3l)
+    {
+        lep3.SetPtEtaPhiE(vLeptonFakeable.at(2).conept, vLeptonFakeable.at(2).eta, vLeptonFakeable.at(2).phi, vLeptonFakeable.at(2).E );
+        m3l = (lep1+lep2+lep3).M();
+    }
+    else {m3l = (lep1+lep2).M();}
+
+    mHT = Compute_mHT();
+
+    Compute_Top_W_variables(); //TESTING -- Fill high-level reco variables
+
+    //--------------------------------------------
+    // #    #      #    #####   ##    ####   ####  ###### #####
+    // #    #      #      #    #  #  #    # #    # #      #    #
+    // ######      #      #   #    # #      #      #####  #    #
+    // #    #      #      #   ###### #  ### #  ### #      #####
+    // #    # #    #      #   #    # #    # #    # #      #   #
+    // #    #  ####       #   #    #  ####   ####  ###### #    #
+    //--------------------------------------------
+
+    //Input variables needed for Hj tagger
+    Jet25_lepdrmin;
+    Jet25_lepdrmax;
+    Jet25_qg;
+    Jet25_bDiscriminator;
+    Jet25_pt;
+
+    tmp = -999; tmp2 = 999;
+
+    for(int ijet=0; ijet<vJetLoose.size(); ijet++)
+    {
+        for(int ilep=0; ilep<vLeptonFakeable.size(); ilep++)
+        {
+            float dr_lep_jet = fabs(GetDeltaR(vJetLoose.at(ijet).eta, vJetLoose.at(ijet).phi, vLeptonFakeable.at(ilep).eta, vLeptonFakeable.at(ilep).phi));
+            if(dr_lep_jet > tmp) {tmp = dr_lep_jet;}
+            if(dr_lep_jet < tmp2) {tmp2 = dr_lep_jet;}
+        }
+
+        Jet25_qg = vJetLoose.at(ijet).qgtag;  Jet25_qg = (Jet25_qg<0) ? 0 : Jet25_qg;
+        Jet25_lepdrmin = tmp2;
+        Jet25_lepdrmax = tmp;
+        Jet25_bDiscriminator = vJetLoose.at(ijet).DeepCSVbtag; Jet25_bDiscriminator = (Jet25_bDiscriminator<0) ? 0 : Jet25_bDiscriminator;
+        Jet25_pt = vJetLoose.at(ijet).conept;
+
+        double HjTag_jet = mva_HjTagger->EvaluateMVA("BDTG method");
+
+        if(ijet==0) {HjTag_max = HjTag_jet; HjTag_mean = HjTag_jet;}
+        else
+        {
+            HjTag_mean+= HjTag_jet;
+
+            if(HjTag_jet > HjTag_max) {HjTag_max = HjTag_jet;}
+        }
+
+        // cout<<"HjTag_jet = "<<HjTag_jet<<endl;
+    }
+    HjTag_mean/= vJetLoose.size();
+
+
 
     //--------------------------------------------
     // #####  #####  # #    # #####  ####  #    # #####
@@ -2411,7 +2980,7 @@ void tHqMultileponAnalysis::Compute_Variables(TString region)
         cout<<FYEL("--- Selected Leptons : ")<<endl;
         for(int ilep=0; ilep<vLeptonFakeable.size(); ilep++)
         {
-            cout<<ilep<<" pT = "<<vLeptonFakeable.at(ilep).pt<<" / eta = "<<vLeptonFakeable.at(ilep).eta<<" / phi = "<<vLeptonFakeable.at(ilep).phi<<" : Charge = "<<vLeptonFakeable.at(ilep).charge<<endl;
+            cout<<ilep<<" pT = "<<vLeptonFakeable.at(ilep).conept<<" / eta = "<<vLeptonFakeable.at(ilep).eta<<" / phi = "<<vLeptonFakeable.at(ilep).phi<<" : Charge = "<<vLeptonFakeable.at(ilep).charge<<endl;
         }
 
         cout<<FYEL("--- Input variables : ")<<endl;
@@ -2434,8 +3003,8 @@ void tHqMultileponAnalysis::Compute_Variables(TString region)
     //--- COMPUTE BDT OUTPUT from weight files -- tHq2016 weights
     // if(region == "3l")
     // {
-        // signal_3l_TT_MVA   = mva_3l_tt->EvaluateMVA(""BDT"G method");
-        // signal_3l_TTV_MVA   = mva_3l_ttV->EvaluateMVA("BDTG method");
+        // signal_3l_TT_MVA   = mva_3l_tt->EvaluateMVA("BDTG method");
+        // signal_3l_TTV_MVA   = mva_3l_ttV->EvaluateMVA("BDTG method");//--------------------------------------------
     // }
     // else
     // {
@@ -2480,324 +3049,468 @@ void tHqMultileponAnalysis::Compute_Variables(TString region)
 
 /**
  * Create all output branches
+ * systname : can be "" (default TTree), "JER_up", etc.
  */
-void tHqMultileponAnalysis::initializeOutputTree()
+void tHqMultileponAnalysis::initializeOutputTree(int itree)
 {
     outputfile->cd();
-    tOutput = new TTree("Tree", "Tree");
+
+    // tOutput = new TTree("Tree", "Tree");
 
 	//-- Event main infos
-	tOutput->Branch("channel",&channel,"channel/F");
-    tOutput->Branch("weight",&weight,"weight/F");
-	tOutput->Branch("weightfake",&weightfake,"weightfake/F");
-	tOutput->Branch("weightflip",&weightflip,"weightflip/F");
-    tOutput->Branch("event_id",&event_id,"event_id/F");
-    tOutput->Branch("event_run",&event_run,"event_run/F");
-	tOutput->Branch("mc_weight",&mc_weight,"mc_weight/F");
-    tOutput->Branch("is_trigger",&is_trigger,"is_trigger/O");
-    tOutput->Branch("is_trigger_ttH",&is_trigger_ttH,"is_trigger_ttH/O");
-    tOutput->Branch("is_hasJetTransitionRegion",&is_hasJetTransitionRegion,"is_hasJetTransitionRegion/O");
+	v_tOutput[itree]->Branch("channel",&channel,"channel/F");
+    v_tOutput[itree]->Branch("weight",&weight,"weight/F");
+	v_tOutput[itree]->Branch("weightfake",&weightfake,"weightfake/F");
+    v_tOutput[itree]->Branch("weightflip",&weightflip,"weightflip/F");
+    v_tOutput[itree]->Branch("event_id",&event_id,"event_id/I");
+    v_tOutput[itree]->Branch("is_trigger_1lep",&is_trigger_1lep,"is_trigger_1lep/O");
+    v_tOutput[itree]->Branch("is_trigger_2lep",&is_trigger_2lep,"is_trigger_2lep/O");
+    v_tOutput[itree]->Branch("is_trigger_3lep",&is_trigger_3lep,"is_trigger_3lep/O");
+    v_tOutput[itree]->Branch("is_trigger_2lss",&is_trigger_2lss,"is_trigger_2lss/O"); //not defined globally
+    v_tOutput[itree]->Branch("is_trigger_3l",&is_trigger_3l,"is_trigger_3l/O");
+    // v_tOutput[itree]->Branch("event_run",&event_run,"event_run/F");
+    // v_tOutput[itree]->Branch("mc_weight",&mc_weight,"mc_weight/F");
+
+    v_tOutput[itree]->Branch("total_SF",&total_SF,"total_SF/F");
+    v_tOutput[itree]->Branch("lepton_SF",&lepton_SF,"lepton_SF/F");
+    v_tOutput[itree]->Branch("trigger_SF",&trigger_SF,"trigger_SF/F");
+    v_tOutput[itree]->Branch("btag_SF",&btag_SF,"btag_SF/F");
+    v_tOutput[itree]->Branch("PU_SF",&PU_SF,"PU_SF/F");
+    v_tOutput[itree]->Branch("nPU",&nPU,"nPU/I");
+
+    if(write_LHE_weights_allFiles)
+    {
+        v_tOutput[itree]->Branch("LHEweights", &LHEweights); //LHE weights
+        v_tOutput[itree]->Branch("LHEweights_Ids", &LHEweights_Ids); //LHE weights Ids
+        v_tOutput[itree]->Branch("sumWeight_ctcv_couplings",&sumWeight_ctcv_couplings,"sumWeight_ctcv_couplings/F");
+    }
 
 
 	//--- Categories & MVA
 
     //tHq 2017 categories (implemented in NTA)
-    tOutput->Branch("is_tHq_2lSS",&is_tHq_2lSS,"is_tHq_2lSS/B");
-	tOutput->Branch("is_tHq_2lSS_SR",&is_tHq_2lSS_SR,"is_tHq_2lSS_SR/B");
-	tOutput->Branch("is_tHq_2lSS_Training",&is_tHq_2lSS_Training,"is_tHq_2lSS_Training/B");
-    tOutput->Branch("is_tHq_2lSS_Fake",&is_tHq_2lSS_Fake,"is_tHq_2lSS_Fake/B");
-    tOutput->Branch("is_tHq_2lSS_Flip",&is_tHq_2lSS_Flip,"is_tHq_2lSS_Flip/B");
-    tOutput->Branch("is_tHq_2lSS_GammaConv",&is_tHq_2lSS_GammaConv,"is_tHq_2lSS_GammaConv/B");
-    tOutput->Branch("is_tHq_3l",&is_tHq_3l,"is_tHq_3l/B");
-	tOutput->Branch("is_tHq_3l_SR",&is_tHq_3l_SR,"is_tHq_3l_SR/B");
-	tOutput->Branch("is_tHq_3l_Training",&is_tHq_3l_Training,"is_tHq_3l_Training/B");
-    tOutput->Branch("is_tHq_3l_Fake",&is_tHq_3l_Fake,"is_tHq_3l_Fake/B");
-    tOutput->Branch("is_tHq_ttWctrl",&is_tHq_ttWctrl,"is_tHq_ttWctrl/B");
-    tOutput->Branch("is_tHq_ttWctrl_SR",&is_tHq_ttWctrl_SR,"is_tHq_ttWctrl_SR/B");
-	tOutput->Branch("is_tHq_ttWctrl_Fake",&is_tHq_ttWctrl_Fake,"is_tHq_ttWctrl_Fake/B");
-    tOutput->Branch("is_tHq_ttWctrl_Flip",&is_tHq_ttWctrl_Flip,"is_tHq_ttWctrl_Flip/B");
-    tOutput->Branch("is_tHq_ttWctrl_GammaConv",&is_tHq_ttWctrl_GammaConv,"is_tHq_ttWctrl_GammaConv/B");
-    tOutput->Branch("is_tHq_ttZctrl",&is_tHq_ttZctrl,"is_tHq_ttZctrl/B");
-    tOutput->Branch("is_tHq_ttZctrl_SR",&is_tHq_ttZctrl_SR,"is_tHq_ttZctrl_SR/B");
-    tOutput->Branch("is_tHq_ttZctrl_Fake",&is_tHq_ttZctrl_Fake,"is_tHq_ttZctrl_Fake/B");
-    tOutput->Branch("is_tHq_WZctrl",&is_tHq_WZctrl,"is_tHq_WZctrl/B");
-    tOutput->Branch("is_tHq_WZctrl_SR",&is_tHq_WZctrl_SR,"is_tHq_WZctrl_SR/B");
-    tOutput->Branch("is_tHq_WZctrl_Fake",&is_tHq_WZctrl_Fake,"is_tHq_WZctrl_Fake/B");
+    v_tOutput[itree]->Branch("is_tHq_2lSS",&is_tHq_2lSS,"is_tHq_2lSS/B");
+	v_tOutput[itree]->Branch("is_tHq_2lSS_SR",&is_tHq_2lSS_SR,"is_tHq_2lSS_SR/B");
+	v_tOutput[itree]->Branch("is_tHq_2lSS_Training",&is_tHq_2lSS_Training,"is_tHq_2lSS_Training/B");
+    v_tOutput[itree]->Branch("is_tHq_2lSS_Fake",&is_tHq_2lSS_Fake,"is_tHq_2lSS_Fake/B");
+    v_tOutput[itree]->Branch("is_tHq_2lSS_Flip",&is_tHq_2lSS_Flip,"is_tHq_2lSS_Flip/B");
+    v_tOutput[itree]->Branch("is_tHq_2lSS_GammaConv",&is_tHq_2lSS_GammaConv,"is_tHq_2lSS_GammaConv/B");
+    v_tOutput[itree]->Branch("is_tHq_3l",&is_tHq_3l,"is_tHq_3l/B");
+	v_tOutput[itree]->Branch("is_tHq_3l_SR",&is_tHq_3l_SR,"is_tHq_3l_SR/B");
+	v_tOutput[itree]->Branch("is_tHq_3l_Training",&is_tHq_3l_Training,"is_tHq_3l_Training/B");
+    v_tOutput[itree]->Branch("is_tHq_3l_Fake",&is_tHq_3l_Fake,"is_tHq_3l_Fake/B");
+    v_tOutput[itree]->Branch("is_tHq_3l_GammaConv",&is_tHq_3l_GammaConv,"is_tHq_3l_GammaConv/B");
+    v_tOutput[itree]->Branch("is_tHq_ttWctrl",&is_tHq_ttWctrl,"is_tHq_ttWctrl/B");
+    v_tOutput[itree]->Branch("is_tHq_ttWctrl_SR",&is_tHq_ttWctrl_SR,"is_tHq_ttWctrl_SR/B");
+	v_tOutput[itree]->Branch("is_tHq_ttWctrl_Fake",&is_tHq_ttWctrl_Fake,"is_tHq_ttWctrl_Fake/B");
+    v_tOutput[itree]->Branch("is_tHq_ttWctrl_Flip",&is_tHq_ttWctrl_Flip,"is_tHq_ttWctrl_Flip/B");
+    v_tOutput[itree]->Branch("is_tHq_ttWctrl_GammaConv",&is_tHq_ttWctrl_GammaConv,"is_tHq_ttWctrl_GammaConv/B");
+    v_tOutput[itree]->Branch("is_tHq_ttZctrl",&is_tHq_ttZctrl,"is_tHq_ttZctrl/B");
+    v_tOutput[itree]->Branch("is_tHq_ttZctrl_SR",&is_tHq_ttZctrl_SR,"is_tHq_ttZctrl_SR/B");
+    v_tOutput[itree]->Branch("is_tHq_ttZctrl_Fake",&is_tHq_ttZctrl_Fake,"is_tHq_ttZctrl_Fake/B");
+    v_tOutput[itree]->Branch("is_tHq_ttZctrl_GammaConv",&is_tHq_ttZctrl_GammaConv,"is_tHq_ttZctrl_GammaConv/B");
+    v_tOutput[itree]->Branch("is_tHq_WZctrl",&is_tHq_WZctrl,"is_tHq_WZctrl/B");
+    v_tOutput[itree]->Branch("is_tHq_WZctrl_SR",&is_tHq_WZctrl_SR,"is_tHq_WZctrl_SR/B");
+    v_tOutput[itree]->Branch("is_tHq_WZctrl_Fake",&is_tHq_WZctrl_Fake,"is_tHq_WZctrl_Fake/B");
+    v_tOutput[itree]->Branch("is_tHq_WZctrl_GammaConv",&is_tHq_WZctrl_GammaConv,"is_tHq_WZctrl_GammaConv/B");
+    v_tOutput[itree]->Branch("is_tHq_4l_SR",&is_tHq_4l_SR,"is_tHq_4l_SR/B");
+    v_tOutput[itree]->Branch("is_tHq_ZZctrl_SR",&is_tHq_ZZctrl_SR,"is_tHq_ZZctrl_SR/B");
 
     //ttH2017 predefined categories (implemented in NTP)
-    tOutput->Branch("is_ttH_2lSS",&is_ttH_2lSS,"is_ttH_2lSS/B");
-    tOutput->Branch("is_ttH_2lSS_SR",&is_ttH_2lSS_SR,"is_ttH_2lSS_SR/B");
-    tOutput->Branch("is_ttH_2lSS_SR_Data",&is_ttH_2lSS_SR_Data,"is_ttH_2lSS_SR_Data/B");
-    tOutput->Branch("is_ttH_2lSS_Fake",&is_ttH_2lSS_Fake,"is_ttH_2lSS_Fake/B");
-    tOutput->Branch("is_ttH_2lSS_Flip",&is_ttH_2lSS_Flip,"is_ttH_2lSS_Flip/B");
-    tOutput->Branch("is_ttH_2lSS_Flip_Data",&is_ttH_2lSS_Flip_Data,"is_ttH_2lSS_Flip_Data/B");
-    tOutput->Branch("is_ttH_3l",&is_ttH_3l,"is_ttH_3l/B");
-    tOutput->Branch("is_ttH_3l_SR",&is_ttH_3l_SR,"is_ttH_3l_SR/B");
-    tOutput->Branch("is_ttH_3l_SR_Data",&is_ttH_3l_SR_Data,"is_ttH_3l_SR_Data/B");
-    tOutput->Branch("is_ttH_3l_Fake",&is_ttH_3l_Fake,"is_ttH_3l_Fake/B");
-    tOutput->Branch("is_ttH_ttWctrl",&is_ttH_ttWctrl,"is_ttH_ttWctrl/B");
-    tOutput->Branch("is_ttH_ttWctrl_SR",&is_ttH_ttWctrl_SR,"is_ttH_ttWctrl_SR/B");
-    tOutput->Branch("is_ttH_ttWctrl_SR_Data",&is_ttH_ttWctrl_SR_Data,"is_ttH_ttWctrl_SR_Data/B");
-    tOutput->Branch("is_ttH_ttWctrl_Fake",&is_ttH_ttWctrl_Fake,"is_ttH_ttWctrl_Fake/B");
-    tOutput->Branch("is_ttH_ttWctrl_Flip",&is_ttH_ttWctrl_Flip,"is_ttH_ttWctrl_Flip/B");
-    tOutput->Branch("is_ttH_ttWctrl_Flip_Data",&is_ttH_ttWctrl_Flip_Data,"is_ttH_ttWctrl_Flip_Data/B");
-    tOutput->Branch("is_ttH_ttZctrl",&is_ttH_ttZctrl,"is_ttH_ttZctrl/B");
-    tOutput->Branch("is_ttH_ttZctrl_SR",&is_ttH_ttZctrl_SR,"is_ttH_ttZctrl_SR/B");
-    tOutput->Branch("is_ttH_ttZctrl_SR_Data",&is_ttH_ttZctrl_SR_Data,"is_ttH_ttZctrl_SR_Data/B");
-    tOutput->Branch("is_ttH_ttZctrl_Fake",&is_ttH_ttZctrl_Fake,"is_ttH_ttZctrl_Fake/B");
-    tOutput->Branch("is_ttH_WZctrl",&is_ttH_WZctrl,"is_ttH_WZctrl/B");
-    tOutput->Branch("is_ttH_WZctrl_SR",&is_ttH_WZctrl_SR,"is_ttH_WZctrl_SR/B");
-    tOutput->Branch("is_ttH_WZctrl_SR_Data",&is_ttH_WZctrl_SR_Data,"is_ttH_WZctrl_SR_Data/B");
-    tOutput->Branch("is_ttH_WZctrl_Fake",&is_ttH_WZctrl_Fake,"is_ttH_WZctrl_Fake/B");
-
-	// tOutput->Branch("signal_3l_TT_MVA",&signal_3l_TT_MVA,"signal_3l_TT_MVA/F");
-	// tOutput->Branch("signal_3l_TTV_MVA",&signal_3l_TTV_MVA,"signal_3l_TTV_MVA/F");
-    // tOutput->Branch("signal_2lss_TT_MVA",&signal_2lss_TT_MVA,"signal_2lss_TT_MVA/F");
-    // tOutput->Branch("signal_2lss_TTV_MVA",&signal_2lss_TTV_MVA,"signal_2lss_TTV_MVA/F");
+    v_tOutput[itree]->Branch("is_ttH_2lSS",&is_ttH_2lSS,"is_ttH_2lSS/B");
+    v_tOutput[itree]->Branch("is_ttH_2lSS_Training",&is_ttH_2lSS_Training,"is_ttH_2lSS_Training/B");
+    v_tOutput[itree]->Branch("is_ttH_2lSS_SR",&is_ttH_2lSS_SR,"is_ttH_2lSS_SR/B");
+    v_tOutput[itree]->Branch("is_ttH_2lSS_Fake",&is_ttH_2lSS_Fake,"is_ttH_2lSS_Fake/B");
+    v_tOutput[itree]->Branch("is_ttH_2lSS_Flip",&is_ttH_2lSS_Flip,"is_ttH_2lSS_Flip/B");
+    v_tOutput[itree]->Branch("is_ttH_2lSS_GammaConv",&is_ttH_2lSS_GammaConv,"is_ttH_2lSS_GammaConv/B");
+    v_tOutput[itree]->Branch("is_ttH_3l",&is_ttH_3l,"is_ttH_3l/B");
+    v_tOutput[itree]->Branch("is_ttH_3l_Training",&is_ttH_3l_Training,"is_ttH_3l_Training/B");
+    v_tOutput[itree]->Branch("is_ttH_3l_SR",&is_ttH_3l_SR,"is_ttH_3l_SR/B");
+    v_tOutput[itree]->Branch("is_ttH_3l_Fake",&is_ttH_3l_Fake,"is_ttH_3l_Fake/B");
+    v_tOutput[itree]->Branch("is_ttH_3l_GammaConv",&is_ttH_3l_GammaConv,"is_ttH_3l_GammaConv/B");
+    v_tOutput[itree]->Branch("is_ttH_ttWctrl",&is_ttH_ttWctrl,"is_ttH_ttWctrl/B");
+    v_tOutput[itree]->Branch("is_ttH_ttWctrl_SR",&is_ttH_ttWctrl_SR,"is_ttH_ttWctrl_SR/B");
+    v_tOutput[itree]->Branch("is_ttH_ttWctrl_Fake",&is_ttH_ttWctrl_Fake,"is_ttH_ttWctrl_Fake/B");
+    v_tOutput[itree]->Branch("is_ttH_ttWctrl_Flip",&is_ttH_ttWctrl_Flip,"is_ttH_ttWctrl_Flip/B");
+    v_tOutput[itree]->Branch("is_ttH_ttWctrl_GammaConv",&is_ttH_ttWctrl_GammaConv,"is_ttH_ttWctrl_GammaConv/B");
+    v_tOutput[itree]->Branch("is_ttH_ttZctrl",&is_ttH_ttZctrl,"is_ttH_ttZctrl/B");
+    v_tOutput[itree]->Branch("is_ttH_ttZctrl_SR",&is_ttH_ttZctrl_SR,"is_ttH_ttZctrl_SR/B");
+    v_tOutput[itree]->Branch("is_ttH_ttZctrl_Fake",&is_ttH_ttZctrl_Fake,"is_ttH_ttZctrl_Fake/B");
+    v_tOutput[itree]->Branch("is_ttH_ttZctrl_GammaConv",&is_ttH_ttZctrl_GammaConv,"is_ttH_ttZctrl_GammaConv/B");
+    v_tOutput[itree]->Branch("is_ttH_WZctrl",&is_ttH_WZctrl,"is_ttH_WZctrl/B");
+    v_tOutput[itree]->Branch("is_ttH_WZctrl_SR",&is_ttH_WZctrl_SR,"is_ttH_WZctrl_SR/B");
+    v_tOutput[itree]->Branch("is_ttH_WZctrl_Fake",&is_ttH_WZctrl_Fake,"is_ttH_WZctrl_Fake/B");
+    v_tOutput[itree]->Branch("is_ttH_WZctrl_GammaConv",&is_ttH_WZctrl_GammaConv,"is_ttH_WZctrl_GammaConv/B");
+    v_tOutput[itree]->Branch("is_ttH_4l_SR",&is_ttH_4l_SR,"is_ttH_4l_SR/B");
+    v_tOutput[itree]->Branch("is_ttH_ZZctrl_SR",&is_ttH_ZZctrl_SR,"is_ttH_ZZctrl_SR/B");
 
 
-    //-- Input variables from tHq2016 analysis
-    tOutput->Branch("nJet25",&nJet25,"nJet25/F");
-    tOutput->Branch("nJetLoose",&nJetLoose,"nJetLoose/F");
-    tOutput->Branch("maxEtaJet25",&maxEtaJet25,"maxEtaJet25/F");
-    tOutput->Branch("lepCharge",&lepCharge,"lepCharge/F");
-    tOutput->Branch("nJetEta1",&nJetEta1,"nJetEta1/F");
-    tOutput->Branch("dEtaFwdJetBJet",&dEtaFwdJetBJet,"dEtaFwdJetBJet/F");
-    tOutput->Branch("dEtaFwdJet2BJet",&dEtaFwdJet2BJet,"dEtaFwdJet2BJet/F");
-    tOutput->Branch("dEtaFwdJetClosestLep",&dEtaFwdJetClosestLep,"dEtaFwdJetClosestLep/F");
-    tOutput->Branch("dPhiHighestPtSSPair",&dPhiHighestPtSSPair,"dPhiHighestPtSSPair/F");
-    tOutput->Branch("minDRll",&minDRll,"minDRll/F");
-    tOutput->Branch("Lep3Pt",&Lep3Pt,"Lep3Pt/F");
 
-    //-- Input variables from ttH2017 analysis
-    tOutput->Branch("lep1_conePt",&lep1_conePt,"lep1_conePt/F");
-    tOutput->Branch("lep2_conePt",&lep2_conePt,"lep2_conePt/F");
-    tOutput->Branch("mindr_lep1_jet",&mindr_lep1_jet,"mindr_lep1_jet/F");
-    tOutput->Branch("mindr_lep2_jet",&mindr_lep2_jet,"mindr_lep2_jet/F");
-    tOutput->Branch("mT_lep1",&mT_lep1,"mT_lep1/F");
-    tOutput->Branch("mT_lep2",&mT_lep2,"mT_lep2/F");
-    tOutput->Branch("max_lep_eta",&max_lep_eta,"max_lep_eta/F");
+    if(add_orthogocal_cat)
+    {
+        v_tOutput[itree]->Branch("is_ttH_2lSS_SR_fwd",&is_ttH_2lSS_SR_fwd,"is_ttH_2lSS_SR_fwd/B");
+        v_tOutput[itree]->Branch("is_ttH_3l_SR_fwd",&is_ttH_3l_SR_fwd,"is_ttH_3l_SR_fwd/B");
+        v_tOutput[itree]->Branch("is_tHq_2lSS_SR_fwd",&is_tHq_2lSS_SR_fwd,"is_tHq_2lSS_SR_fwd/B");
+        v_tOutput[itree]->Branch("is_tHq_3l_SR_fwd",&is_tHq_3l_SR_fwd,"is_tHq_3l_SR_fwd/B");
 
-    //-- new variables
-    tOutput->Branch("minv_FwdJetBJet",&minv_FwdJetBJet,"minv_FwdJetBJet/F");
-    tOutput->Branch("etaFwdJet",&etaFwdJet,"etaFwdJet/F");
-    tOutput->Branch("ptFwdJet",&ptFwdJet,"ptFwdJet/F");
-    tOutput->Branch("LeadJetEta",&LeadJetEta,"LeadJetEta/F");
-    tOutput->Branch("LeadJetPt",&LeadJetPt,"LeadJetPt/F");
-    tOutput->Branch("dRjj",&dRjj,"dRjj/F");
-    tOutput->Branch("deepCSV_max",&deepCSV_max,"deepCSV_max/F");
-    tOutput->Branch("deepCSV_2nd",&deepCSV_2nd,"deepCSV_2nd/F");
-    tOutput->Branch("Mjj_max",&Mjj_max,"Mjj_max/F");
-    tOutput->Branch("dPhiLepBJet_max",&dPhiLepBJet_max,"dPhiLepBJet_max/F");
-    tOutput->Branch("dPhijj_max",&dPhijj_max,"dPhijj_max/F");
+        v_tOutput[itree]->Branch("is_ttH_2lSS_SR_btag",&is_ttH_2lSS_SR_btag,"is_ttH_2lSS_SR_btag/B");
+        v_tOutput[itree]->Branch("is_ttH_3l_SR_btag",&is_ttH_3l_SR_btag,"is_ttH_3l_SR_btag/B");
+        v_tOutput[itree]->Branch("is_tHq_2lSS_SR_btag",&is_tHq_2lSS_SR_btag,"is_tHq_2lSS_SR_btag/B");
+        v_tOutput[itree]->Branch("is_tHq_3l_SR_btag",&is_tHq_3l_SR_btag,"is_tHq_3l_SR_btag/B");
+
+        v_tOutput[itree]->Branch("is_ttH_2lSS_SR_njet",&is_ttH_2lSS_SR_njet,"is_ttH_2lSS_SR_njet/B");
+        v_tOutput[itree]->Branch("is_ttH_3l_SR_njet",&is_ttH_3l_SR_njet,"is_ttH_3l_SR_njet/B");
+        v_tOutput[itree]->Branch("is_tHq_2lSS_SR_njet",&is_tHq_2lSS_SR_njet,"is_tHq_2lSS_SR_njet/B");
+        v_tOutput[itree]->Branch("is_tHq_3l_SR_njet",&is_tHq_3l_SR_njet,"is_tHq_3l_SR_njet/B");
+        v_tOutput[itree]->Branch("is_ttH_ttWctrl_SR_njet",&is_ttH_ttWctrl_SR_njet,"is_ttH_ttWctrl_SR_njet/B");
+
+        v_tOutput[itree]->Branch("is_tHq_2lSS_SR_fwd2",&is_tHq_2lSS_SR_fwd2,"is_tHq_2lSS_SR_fwd2/B");
+        v_tOutput[itree]->Branch("is_ttH_ttWctrl_SR_fwd2",&is_ttH_ttWctrl_SR_fwd2,"is_ttH_ttWctrl_SR_fwd2/B");
+
+        v_tOutput[itree]->Branch("is_tHq_3l_SR_njet2",&is_tHq_3l_SR_njet2,"is_tHq_3l_SR_njet2/B");
+        v_tOutput[itree]->Branch("is_ttH_3l_SR_njet2",&is_ttH_3l_SR_njet2,"is_ttH_3l_SR_njet2/B");
+
+        v_tOutput[itree]->Branch("is_tHq_3l_SR_njet3",&is_tHq_3l_SR_njet3,"is_tHq_3l_SR_njet3/B");
+        v_tOutput[itree]->Branch("is_ttH_3l_SR_njet3",&is_ttH_3l_SR_njet3,"is_ttH_3l_SR_njet3/B");
+    }
 
 
-	//-- More control vars
-    tOutput->Branch("inv_mll",&inv_mll,"inv_mll/F");
-    tOutput->Branch("hardestBjetPt",&hardestBjetPt,"hardestBjetPt/F");
-    tOutput->Branch("hardestBjetEta",&hardestBjetEta,"hardestBjetEta/F");
-    tOutput->Branch("fwdJetPt",&fwdJetPt,"fwdJetPt/F");
-    tOutput->Branch("lep1Pt",&lep1Pt,"lep1Pt/F");
-    tOutput->Branch("lep2Pt",&lep2Pt,"lep2Pt/F");
-    tOutput->Branch("lep3Pt",&lep3Pt,"lep3Pt/F");
-    tOutput->Branch("MET",&MET,"MET/F");
 
 	//-- Nof objects variables
-	tOutput->Branch("nLooseBJets",&nLooseBJets,"nLooseBJets/F");
-	tOutput->Branch("nMediumBJets",&nMediumBJets,"nMediumBJets/F");
-	tOutput->Branch("nTightLep",&nTightLep,"nTightLep/F");
-	tOutput->Branch("nFakeableLep",&nFakeableLep,"nFakeableLep/F");
-    tOutput->Branch("nLightJets",&nLightJets,"nLightJets/F");
-	tOutput->Branch("nLightJets_Fwd40",&nLightJets_Fwd40,"nLightJets_Fwd40/F");
+	v_tOutput[itree]->Branch("nLooseBJets",&nLooseBJets,"nLooseBJets/F");
+	v_tOutput[itree]->Branch("nMediumBJets",&nMediumBJets,"nMediumBJets/F");
+	v_tOutput[itree]->Branch("nTightLep",&nTightLep,"nTightLep/F");
+	v_tOutput[itree]->Branch("nFakeableLep",&nFakeableLep,"nFakeableLep/F");
+
+    v_tOutput[itree]->Branch("nJets",&nJets,"nJets/I");
+    v_tOutput[itree]->Branch("nLightJets",&nLightJets,"nLightJets/F");
+    v_tOutput[itree]->Branch("nLightJets_Fwd",&nLightJets_Fwd,"nLightJets_Fwd/F");
+
+    v_tOutput[itree]->Branch("is_hasJetNoisyHCAL",&is_hasJetNoisyHCAL,"is_hasJetNoisyHCAL/O");
+    v_tOutput[itree]->Branch("is_hasManyJetNoisyHCAL",&is_hasManyJetNoisyHCAL,"is_hasManyJetNoisyHCAL/O");
+    v_tOutput[itree]->Branch("JetNoisyHCALPt",&JetNoisyHCALPt,"JetNoisyHCALPt/F");
+    v_tOutput[itree]->Branch("JetNoisyHCALEta",&JetNoisyHCALEta,"JetNoisyHCALEta/F");
+
+
+	// v_tOutput[itree]->Branch("signal_3l_TT_MVA",&signal_3l_TT_MVA,"signal_3l_TT_MVA/F");
+	// v_tOutput[itree]->Branch("signal_3l_TTV_MVA",&signal_3l_TTV_MVA,"signal_3l_TTV_MVA/F");
+    // v_tOutput[itree]->Branch("signal_2lss_TT_MVA",&signal_2lss_TT_MVA,"signal_2lss_TT_MVA/F");
+    // v_tOutput[itree]->Branch("signal_2lss_TTV_MVA",&signal_2lss_TTV_MVA,"signal_2lss_TTV_MVA/F");
+
+    if(do_tHq_analysis)
+    {
+        v_tOutput[itree]->Branch("nJets_ttH",&nJets_ttH,"nJets_ttH/I");
+        v_tOutput[itree]->Branch("nLightJets_ttH",&nLightJets_ttH,"nLightJets_ttH/F");
+    }
+    else
+    {
+        v_tOutput[itree]->Branch("nJets_tHq",&nJets_tHq,"nJets_tHq/I");
+        v_tOutput[itree]->Branch("nLightJets_tHq",&nLightJets_tHq,"nLightJets_tHq/F");
+    }
+
+    if(!make_ntuples_for_overlap_studies)
+    {
+        //-- Input variables from tHq2016 analysis
+        v_tOutput[itree]->Branch("nJet25",&nJet25,"nJet25/F");
+        v_tOutput[itree]->Branch("nJetLoose",&nJetLoose,"nJetLoose/F");
+        v_tOutput[itree]->Branch("maxEtaJet25",&maxEtaJet25,"maxEtaJet25/F");
+        v_tOutput[itree]->Branch("lepCharge",&lepCharge,"lepCharge/F");
+        v_tOutput[itree]->Branch("nJetEta1",&nJetEta1,"nJetEta1/F");
+        v_tOutput[itree]->Branch("dEtaFwdJetBJet",&dEtaFwdJetBJet,"dEtaFwdJetBJet/F");
+        v_tOutput[itree]->Branch("dEtaFwdJet2BJet",&dEtaFwdJet2BJet,"dEtaFwdJet2BJet/F");
+        v_tOutput[itree]->Branch("dEtaFwdJetClosestLep",&dEtaFwdJetClosestLep,"dEtaFwdJetClosestLep/F");
+        v_tOutput[itree]->Branch("dPhiHighestPtSSPair",&dPhiHighestPtSSPair,"dPhiHighestPtSSPair/F");
+        v_tOutput[itree]->Branch("minDRll",&minDRll,"minDRll/F");
+        v_tOutput[itree]->Branch("Lep3Pt",&Lep3Pt,"Lep3Pt/F");
+
+        //-- Input variables from ttH2017 analysis
+        v_tOutput[itree]->Branch("lep1_conePt",&lep1_conePt,"lep1_conePt/F");
+        v_tOutput[itree]->Branch("lep2_conePt",&lep2_conePt,"lep2_conePt/F");
+        v_tOutput[itree]->Branch("lep3_conePt",&lep3_conePt,"lep3_conePt/F");
+        v_tOutput[itree]->Branch("mindr_lep1_jet",&mindr_lep1_jet,"mindr_lep1_jet/F");
+        v_tOutput[itree]->Branch("mindr_lep2_jet",&mindr_lep2_jet,"mindr_lep2_jet/F");
+        v_tOutput[itree]->Branch("mT_lep1",&mT_lep1,"mT_lep1/F");
+        v_tOutput[itree]->Branch("mT_lep2",&mT_lep2,"mT_lep2/F");
+        v_tOutput[itree]->Branch("max_lep_eta",&max_lep_eta,"max_lep_eta/F");
+
+        //-- new variables
+        v_tOutput[itree]->Branch("minv_FwdJetBJet",&minv_FwdJetBJet,"minv_FwdJetBJet/F");
+        v_tOutput[itree]->Branch("FwdJetEta",&FwdJetEta,"FwdJetEta/F");
+        v_tOutput[itree]->Branch("FwdJetPt",&FwdJetPt,"FwdJetPt/F");
+        v_tOutput[itree]->Branch("LeadJetEta",&LeadJetEta,"LeadJetEta/F");
+        v_tOutput[itree]->Branch("LeadJetPt",&LeadJetPt,"LeadJetPt/F");
+        v_tOutput[itree]->Branch("dRjj",&dRjj,"dRjj/F");
+        v_tOutput[itree]->Branch("deepCSV_max",&deepCSV_max,"deepCSV_max/F");
+        v_tOutput[itree]->Branch("deepCSV_2nd",&deepCSV_2nd,"deepCSV_2nd/F");
+        v_tOutput[itree]->Branch("Mjj_max",&Mjj_max,"Mjj_max/F");
+        v_tOutput[itree]->Branch("dPhiLepBJet_max",&dPhiLepBJet_max,"dPhiLepBJet_max/F");
+        v_tOutput[itree]->Branch("dPhijj_max",&dPhijj_max,"dPhijj_max/F");
+        v_tOutput[itree]->Branch("m3l",&m3l,"m3l/F");
+        v_tOutput[itree]->Branch("dPhiLepLep_max",&dPhiLepLep_max,"dPhiLepLep_max/F");
+
+        v_tOutput[itree]->Branch("top_mass",&top_mass,"top_mass/F");
+        v_tOutput[itree]->Branch("mTW",&mTW,"mTW/F");
+        v_tOutput[itree]->Branch("lW_asym",&lW_asym,"lW_asym/F");
+        v_tOutput[itree]->Branch("dRBjetRecoilJet",&dRBjetRecoilJet,"dRBjetRecoilJet/F");
+        v_tOutput[itree]->Branch("dRLepWRecoilJet",&dRLepWRecoilJet,"dRLepWRecoilJet/F");
+        v_tOutput[itree]->Branch("RecoilJetPt",&RecoilJetPt,"RecoilJetPt/F");
+        v_tOutput[itree]->Branch("RecoilJetEta",&RecoilJetEta,"RecoilJetEta/F");
+        v_tOutput[itree]->Branch("LepWPt",&LepWPt,"LepWPt/F");
+        v_tOutput[itree]->Branch("LepWEta",&LepWEta,"LepWEta/F");
+        v_tOutput[itree]->Branch("top_Pt",&top_Pt,"top_Pt/F");
+        v_tOutput[itree]->Branch("mass_LepBJet_min",&mass_LepBJet_min,"mass_LepBJet_min/F");
+        v_tOutput[itree]->Branch("sum_jetPt",&sum_jetPt,"sum_jetPt/F");
+
+        //not used for now (would need to rerun NTP with qgjet info, ...)
+        v_tOutput[itree]->Branch("HjTag_max",&HjTag_max,"HjTag_max/F");
+        v_tOutput[itree]->Branch("HjTag_mean",&HjTag_mean,"HjTag_mean/F");
+
+    	//-- More control vars
+        v_tOutput[itree]->Branch("inv_mll",&inv_mll,"inv_mll/F");
+        v_tOutput[itree]->Branch("hardestBjetPt",&hardestBjetPt,"hardestBjetPt/F");
+        v_tOutput[itree]->Branch("hardestBjetEta",&hardestBjetEta,"hardestBjetEta/F");
+        v_tOutput[itree]->Branch("lep1Eta",&lep1Eta,"lep1Eta/F");
+        v_tOutput[itree]->Branch("lep2Eta",&lep2Eta,"lep2Eta/F");
+        v_tOutput[itree]->Branch("lep3Eta",&lep3Eta,"lep3Eta/F");
+        v_tOutput[itree]->Branch("lep1Phi",&lep1Phi,"lep1Phi/F");
+        v_tOutput[itree]->Branch("lep2Phi",&lep2Phi,"lep2Phi/F");
+        v_tOutput[itree]->Branch("lep3Phi",&lep3Phi,"lep3Phi/F");
+        v_tOutput[itree]->Branch("metpt",&metpt,"metpt/F");
+        v_tOutput[itree]->Branch("metphi",&metphi,"metphi/F");
+        v_tOutput[itree]->Branch("metLD",&metLD,"metLD/F");
+        v_tOutput[itree]->Branch("mHT",&mHT,"mHT/F");
+
+        if(v_systTree[itree] == "") //Save for default TTree only
+        {
+            //Systematics weights
+            v_tOutput[itree]->Branch("TrigEff__plus",&TrigEff__plus,"TrigEff__plus/F");
+            v_tOutput[itree]->Branch("TrigEff__minus",&TrigEff__minus,"TrigEff__minus/F");
+            v_tOutput[itree]->Branch("MuEff__plus",&MuEff__plus,"MuEff__plus/F");
+            v_tOutput[itree]->Branch("MuEff__minus",&MuEff__minus,"MuEff__minus/F");
+            v_tOutput[itree]->Branch("EleEff__plus",&EleEff__plus,"EleEff__plus/F");
+            v_tOutput[itree]->Branch("EleEff__minus",&EleEff__minus,"EleEff__minus/F");
+            v_tOutput[itree]->Branch("LFcont__plus",&LFcont__plus,"LFcont__plus/F");
+            v_tOutput[itree]->Branch("LFcont__minus",&LFcont__minus,"LFcont__minus/F");
+            v_tOutput[itree]->Branch("HFstats1__plus",&HFstats1__plus,"HFstats1__plus/F");
+            v_tOutput[itree]->Branch("HFstats1__minus",&HFstats1__minus,"HFstats1__minus/F");
+            v_tOutput[itree]->Branch("HFstats2__plus",&HFstats2__plus,"HFstats2__plus/F");
+            v_tOutput[itree]->Branch("HFstats2__minus",&HFstats2__minus,"HFstats2__minus/F");
+            v_tOutput[itree]->Branch("CFerr1__plus",&CFerr1__plus,"CFerr1__plus/F");
+            v_tOutput[itree]->Branch("CFerr1__minus",&CFerr1__minus,"CFerr1__minus/F");
+            v_tOutput[itree]->Branch("CFerr2__plus",&CFerr2__plus,"CFerr2__plus/F");
+            v_tOutput[itree]->Branch("CFerr2__minus",&CFerr2__minus,"CFerr2__minus/F");
+            v_tOutput[itree]->Branch("HFcont__plus",&HFcont__plus,"HFcont__plus/F");
+            v_tOutput[itree]->Branch("HFcont__minus",&HFcont__minus,"HFcont__minus/F");
+            v_tOutput[itree]->Branch("LFstats1__plus",&LFstats1__plus,"LFstats1__plus/F");
+            v_tOutput[itree]->Branch("LFstats1__minus",&LFstats1__minus,"LFstats1__minus/F");
+            v_tOutput[itree]->Branch("LFstats2__plus",&LFstats2__plus,"LFstats2__plus/F");
+            v_tOutput[itree]->Branch("LFstats2__minus",&LFstats2__minus,"LFstats2__minus/F");
+            v_tOutput[itree]->Branch("PU__plus",&PU__plus,"PU__plus/F");
+            v_tOutput[itree]->Branch("PU__minus",&PU__minus,"PU__minus/F");
+            v_tOutput[itree]->Branch("Q2__plus",&Q2__plus,"Q2__plus/F");
+            v_tOutput[itree]->Branch("Q2__minus",&Q2__minus,"Q2__minus/F");
+            v_tOutput[itree]->Branch("pdf__plus",&pdf__plus,"pdf__plus/F");
+            v_tOutput[itree]->Branch("pdf__minus",&pdf__minus,"pdf__minus/F");
+        } //don't save if JES/JER ttree
+    } //don't save if ntuple is for overlap studies only
 
 
 	//-- Other, MEM necessary vars, ...
-    tOutput->Branch("PV_weight",&weight_PV,"PV_weight/F");
-    tOutput->Branch("mc_ttZhypAllowed",&mc_ttZhypAllowed,"mc_ttZhypAllowed/B");
+    if(write_branches_forMEM)
+    {
+        //-- NEW : added vector of LooseJets, so that Jets are auto selected within MEM code
+        // v_tOutput[itree]->Branch("nJets", &nJets, "nJets/I");
+        v_tOutput[itree]->Branch("JetsPt", &JetsPt);
+        v_tOutput[itree]->Branch("JetsEta", &JetsEta);
+        v_tOutput[itree]->Branch("JetsPhi", &JetsPhi);
+        v_tOutput[itree]->Branch("JetsE", &JetsE);
+        v_tOutput[itree]->Branch("JetsCSV", &JetsCSV);
 
-    tOutput->Branch("catJets",&catJets,"catJets/I");
+        v_tOutput[itree]->Branch("mc_ttZhypAllowed",&mc_ttZhypAllowed,"mc_ttZhypAllowed/B");
+        v_tOutput[itree]->Branch("catJets",&catJets,"catJets/I");
 
-    tOutput->Branch("multilepton_Lepton1_Id",               &multilepton_Lepton1_Id,                "multilepton_Lepton1_Id/I");
-    tOutput->Branch("multilepton_Lepton1_P4",               "TLorentzVector",                       &multilepton_Lepton1_P4);
-    tOutput->Branch("multilepton_Lepton1_DeltaR_Matched",   &multilepton_Lepton1_DeltaR_Matched,    "multilepton_Lepton1_DeltaR_Matched/F");
-    tOutput->Branch("multilepton_Lepton1_Label_Matched",    &multilepton_Lepton1_Label_Matched,     "multilepton_Lepton1_Label_Matched/I");
-    tOutput->Branch("multilepton_Lepton1_Id_Matched",       &multilepton_Lepton1_Id_Matched,        "multilepton_Lepton1_Id_Matched/I");
-    tOutput->Branch("multilepton_Lepton1_P4_Matched",       "TLorentzVector",                       &multilepton_Lepton1_P4_Matched);
-    tOutput->Branch("multilepton_Lepton2_Id",               &multilepton_Lepton2_Id,                "multilepton_Lepton2_Id/I");
-    tOutput->Branch("multilepton_Lepton2_P4",               "TLorentzVector",                       &multilepton_Lepton2_P4);
-    tOutput->Branch("multilepton_Lepton2_DeltaR_Matched",   &multilepton_Lepton2_DeltaR_Matched,    "multilepton_Lepton2_DeltaR_Matched/F");
-    tOutput->Branch("multilepton_Lepton2_Label_Matched",    &multilepton_Lepton2_Label_Matched,     "multilepton_Lepton2_Label_Matched/I");
-    tOutput->Branch("multilepton_Lepton2_Id_Matched",       &multilepton_Lepton2_Id_Matched,        "multilepton_Lepton2_Id_Matched/I");
-    tOutput->Branch("multilepton_Lepton2_P4_Matched",       "TLorentzVector",                       &multilepton_Lepton2_P4_Matched);
-    tOutput->Branch("multilepton_Lepton3_Id",               &multilepton_Lepton3_Id,                "multilepton_Lepton3_Id/I");
-    tOutput->Branch("multilepton_Lepton3_P4",               "TLorentzVector",                       &multilepton_Lepton3_P4);
-    tOutput->Branch("multilepton_Lepton3_DeltaR_Matched",   &multilepton_Lepton3_DeltaR_Matched,    "multilepton_Lepton3_DeltaR_Matched/F");
-    tOutput->Branch("multilepton_Lepton3_Label_Matched",    &multilepton_Lepton3_Label_Matched,     "multilepton_Lepton3_Label_Matched/I");
-    tOutput->Branch("multilepton_Lepton3_Id_Matched",       &multilepton_Lepton3_Id_Matched,        "multilepton_Lepton3_Id_Matched/I");
-    tOutput->Branch("multilepton_Lepton3_P4_Matched",       "TLorentzVector",                       &multilepton_Lepton3_P4_Matched);
-    tOutput->Branch("multilepton_Lepton4_Id",               &multilepton_Lepton4_Id,                "multilepton_Lepton4_Id/I");
-    tOutput->Branch("multilepton_Lepton4_P4",               "TLorentzVector",                       &multilepton_Lepton4_P4);
-    tOutput->Branch("multilepton_Lepton4_DeltaR_Matched",   &multilepton_Lepton4_DeltaR_Matched,    "multilepton_Lepton4_DeltaR_Matched/F");
-    tOutput->Branch("multilepton_Lepton4_Label_Matched",    &multilepton_Lepton4_Label_Matched,     "multilepton_Lepton4_Label_Matched/I");
-    tOutput->Branch("multilepton_Lepton4_Id_Matched",       &multilepton_Lepton4_Id_Matched,        "multilepton_Lepton4_Id_Matched/I");
-    tOutput->Branch("multilepton_Lepton4_P4_Matched",       "TLorentzVector",                       &multilepton_Lepton4_P4_Matched);
+        v_tOutput[itree]->Branch("multilepton_Lepton1_Id",               &multilepton_Lepton1_Id,                "multilepton_Lepton1_Id/I");
+        v_tOutput[itree]->Branch("multilepton_Lepton1_P4",               "TLorentzVector",                       &multilepton_Lepton1_P4);
+        v_tOutput[itree]->Branch("multilepton_Lepton1_DeltaR_Matched",   &multilepton_Lepton1_DeltaR_Matched,    "multilepton_Lepton1_DeltaR_Matched/F");
+        v_tOutput[itree]->Branch("multilepton_Lepton1_Label_Matched",    &multilepton_Lepton1_Label_Matched,     "multilepton_Lepton1_Label_Matched/I");
+        v_tOutput[itree]->Branch("multilepton_Lepton1_Id_Matched",       &multilepton_Lepton1_Id_Matched,        "multilepton_Lepton1_Id_Matched/I");
+        v_tOutput[itree]->Branch("multilepton_Lepton1_P4_Matched",       "TLorentzVector",                       &multilepton_Lepton1_P4_Matched);
+        v_tOutput[itree]->Branch("multilepton_Lepton2_Id",               &multilepton_Lepton2_Id,                "multilepton_Lepton2_Id/I");
+        v_tOutput[itree]->Branch("multilepton_Lepton2_P4",               "TLorentzVector",                       &multilepton_Lepton2_P4);
+        v_tOutput[itree]->Branch("multilepton_Lepton2_DeltaR_Matched",   &multilepton_Lepton2_DeltaR_Matched,    "multilepton_Lepton2_DeltaR_Matched/F");
+        v_tOutput[itree]->Branch("multilepton_Lepton2_Label_Matched",    &multilepton_Lepton2_Label_Matched,     "multilepton_Lepton2_Label_Matched/I");
+        v_tOutput[itree]->Branch("multilepton_Lepton2_Id_Matched",       &multilepton_Lepton2_Id_Matched,        "multilepton_Lepton2_Id_Matched/I");
+        v_tOutput[itree]->Branch("multilepton_Lepton2_P4_Matched",       "TLorentzVector",                       &multilepton_Lepton2_P4_Matched);
+        v_tOutput[itree]->Branch("multilepton_Lepton3_Id",               &multilepton_Lepton3_Id,                "multilepton_Lepton3_Id/I");
+        v_tOutput[itree]->Branch("multilepton_Lepton3_P4",               "TLorentzVector",                       &multilepton_Lepton3_P4);
+        v_tOutput[itree]->Branch("multilepton_Lepton3_DeltaR_Matched",   &multilepton_Lepton3_DeltaR_Matched,    "multilepton_Lepton3_DeltaR_Matched/F");
+        v_tOutput[itree]->Branch("multilepton_Lepton3_Label_Matched",    &multilepton_Lepton3_Label_Matched,     "multilepton_Lepton3_Label_Matched/I");
+        v_tOutput[itree]->Branch("multilepton_Lepton3_Id_Matched",       &multilepton_Lepton3_Id_Matched,        "multilepton_Lepton3_Id_Matched/I");
+        v_tOutput[itree]->Branch("multilepton_Lepton3_P4_Matched",       "TLorentzVector",                       &multilepton_Lepton3_P4_Matched);
+        v_tOutput[itree]->Branch("multilepton_Lepton4_Id",               &multilepton_Lepton4_Id,                "multilepton_Lepton4_Id/I");
+        v_tOutput[itree]->Branch("multilepton_Lepton4_P4",               "TLorentzVector",                       &multilepton_Lepton4_P4);
+        v_tOutput[itree]->Branch("multilepton_Lepton4_DeltaR_Matched",   &multilepton_Lepton4_DeltaR_Matched,    "multilepton_Lepton4_DeltaR_Matched/F");
+        v_tOutput[itree]->Branch("multilepton_Lepton4_Label_Matched",    &multilepton_Lepton4_Label_Matched,     "multilepton_Lepton4_Label_Matched/I");
+        v_tOutput[itree]->Branch("multilepton_Lepton4_Id_Matched",       &multilepton_Lepton4_Id_Matched,        "multilepton_Lepton4_Id_Matched/I");
+        v_tOutput[itree]->Branch("multilepton_Lepton4_P4_Matched",       "TLorentzVector",                       &multilepton_Lepton4_P4_Matched);
 
-    tOutput->Branch("multilepton_Bjet1_Id",                 &multilepton_Bjet1_Id,                  "multilepton_Bjet1_Id/I");
-    tOutput->Branch("multilepton_Bjet1_P4",                 "TLorentzVector",                       &multilepton_Bjet1_P4);
-    tOutput->Branch("multilepton_Bjet1_CSV",                &multilepton_Bjet1_CSV,                 "multilepton_Bjet1_CSV/F");
-    tOutput->Branch("multilepton_Bjet1_JEC_Up",             &multilepton_Bjet1_JEC_Up,              "multilepton_Bjet1_JEC_Up/F");
-    tOutput->Branch("multilepton_Bjet1_JEC_Down",           &multilepton_Bjet1_JEC_Down,            "multilepton_Bjet1_JEC_Down/F");
-    tOutput->Branch("multilepton_Bjet1_JER_Up",             &multilepton_Bjet1_JER_Up,              "multilepton_Bjet1_JER_Up/F");
-    tOutput->Branch("multilepton_Bjet1_JER_Down",           &multilepton_Bjet1_JER_Down,            "multilepton_Bjet1_JER_Down/F");
-    tOutput->Branch("multilepton_Bjet1_DeltaR_Matched",     &multilepton_Bjet1_DeltaR_Matched,      "multilepton_Bjet1_DeltaR_Matched/F");
-    tOutput->Branch("multilepton_Bjet1_Label_Matched",      &multilepton_Bjet1_Label_Matched,       "multilepton_Bjet1_Label_Matched/I");
-    tOutput->Branch("multilepton_Bjet1_Id_Matched",         &multilepton_Bjet1_Id_Matched,          "multilepton_Bjet1_Id_Matched/I");
-    tOutput->Branch("multilepton_Bjet1_P4_Matched",         "TLorentzVector",                       &multilepton_Bjet1_P4_Matched);
+        v_tOutput[itree]->Branch("multilepton_Bjet1_Id",                 &multilepton_Bjet1_Id,                  "multilepton_Bjet1_Id/I");
+        v_tOutput[itree]->Branch("multilepton_Bjet1_P4",                 "TLorentzVector",                       &multilepton_Bjet1_P4);
+        v_tOutput[itree]->Branch("multilepton_Bjet1_CSV",                &multilepton_Bjet1_CSV,                 "multilepton_Bjet1_CSV/F");
+        v_tOutput[itree]->Branch("multilepton_Bjet1_JEC_Up",             &multilepton_Bjet1_JEC_Up,              "multilepton_Bjet1_JEC_Up/F");
+        v_tOutput[itree]->Branch("multilepton_Bjet1_JEC_Down",           &multilepton_Bjet1_JEC_Down,            "multilepton_Bjet1_JEC_Down/F");
+        v_tOutput[itree]->Branch("multilepton_Bjet1_JER_Up",             &multilepton_Bjet1_JER_Up,              "multilepton_Bjet1_JER_Up/F");
+        v_tOutput[itree]->Branch("multilepton_Bjet1_JER_Down",           &multilepton_Bjet1_JER_Down,            "multilepton_Bjet1_JER_Down/F");
+        v_tOutput[itree]->Branch("multilepton_Bjet1_DeltaR_Matched",     &multilepton_Bjet1_DeltaR_Matched,      "multilepton_Bjet1_DeltaR_Matched/F");
+        v_tOutput[itree]->Branch("multilepton_Bjet1_Label_Matched",      &multilepton_Bjet1_Label_Matched,       "multilepton_Bjet1_Label_Matched/I");
+        v_tOutput[itree]->Branch("multilepton_Bjet1_Id_Matched",         &multilepton_Bjet1_Id_Matched,          "multilepton_Bjet1_Id_Matched/I");
+        v_tOutput[itree]->Branch("multilepton_Bjet1_P4_Matched",         "TLorentzVector",                       &multilepton_Bjet1_P4_Matched);
 
-    tOutput->Branch("multilepton_Bjet2_Id",                 &multilepton_Bjet2_Id,                  "multilepton_Bjet2_Id/I");
-    tOutput->Branch("multilepton_Bjet2_P4",                 "TLorentzVector",                       &multilepton_Bjet2_P4);
-    tOutput->Branch("multilepton_Bjet2_CSV",                &multilepton_Bjet2_CSV,                 "multilepton_Bjet2_CSV/F");
-    tOutput->Branch("multilepton_Bjet2_JEC_Up",             &multilepton_Bjet2_JEC_Up,              "multilepton_Bjet2_JEC_Up/F");
-    tOutput->Branch("multilepton_Bjet2_JEC_Down",           &multilepton_Bjet2_JEC_Down,            "multilepton_Bjet2_JEC_Down/F");
-    tOutput->Branch("multilepton_Bjet2_JER_Up",             &multilepton_Bjet2_JER_Up,              "multilepton_Bjet2_JER_Up/F");
-    tOutput->Branch("multilepton_Bjet2_JER_Down",           &multilepton_Bjet2_JER_Down,            "multilepton_Bjet2_JER_Down/F");
-    tOutput->Branch("multilepton_Bjet2_DeltaR_Matched",     &multilepton_Bjet2_DeltaR_Matched,      "multilepton_Bjet2_DeltaR_Matched/F");
-    tOutput->Branch("multilepton_Bjet2_Label_Matched",      &multilepton_Bjet2_Label_Matched,       "multilepton_Bjet2_Label_Matched/I");
-    tOutput->Branch("multilepton_Bjet2_Id_Matched",         &multilepton_Bjet2_Id_Matched,          "multilepton_Bjet2_Id_Matched/I");
-    tOutput->Branch("multilepton_Bjet2_P4_Matched",         "TLorentzVector",                       &multilepton_Bjet2_P4_Matched);
+        v_tOutput[itree]->Branch("multilepton_Bjet2_Id",                 &multilepton_Bjet2_Id,                  "multilepton_Bjet2_Id/I");
+        v_tOutput[itree]->Branch("multilepton_Bjet2_P4",                 "TLorentzVector",                       &multilepton_Bjet2_P4);
+        v_tOutput[itree]->Branch("multilepton_Bjet2_CSV",                &multilepton_Bjet2_CSV,                 "multilepton_Bjet2_CSV/F");
+        v_tOutput[itree]->Branch("multilepton_Bjet2_JEC_Up",             &multilepton_Bjet2_JEC_Up,              "multilepton_Bjet2_JEC_Up/F");
+        v_tOutput[itree]->Branch("multilepton_Bjet2_JEC_Down",           &multilepton_Bjet2_JEC_Down,            "multilepton_Bjet2_JEC_Down/F");
+        v_tOutput[itree]->Branch("multilepton_Bjet2_JER_Up",             &multilepton_Bjet2_JER_Up,              "multilepton_Bjet2_JER_Up/F");
+        v_tOutput[itree]->Branch("multilepton_Bjet2_JER_Down",           &multilepton_Bjet2_JER_Down,            "multilepton_Bjet2_JER_Down/F");
+        v_tOutput[itree]->Branch("multilepton_Bjet2_DeltaR_Matched",     &multilepton_Bjet2_DeltaR_Matched,      "multilepton_Bjet2_DeltaR_Matched/F");
+        v_tOutput[itree]->Branch("multilepton_Bjet2_Label_Matched",      &multilepton_Bjet2_Label_Matched,       "multilepton_Bjet2_Label_Matched/I");
+        v_tOutput[itree]->Branch("multilepton_Bjet2_Id_Matched",         &multilepton_Bjet2_Id_Matched,          "multilepton_Bjet2_Id_Matched/I");
+        v_tOutput[itree]->Branch("multilepton_Bjet2_P4_Matched",         "TLorentzVector",                       &multilepton_Bjet2_P4_Matched);
 
-    tOutput->Branch("multilepton_JetHighestPt1_Id",&multilepton_JetHighestPt1_Id,"multilepton_JetHighestPt1_Id/I");
-    tOutput->Branch("multilepton_JetHighestPt1_P4","TLorentzVector",&multilepton_JetHighestPt1_P4);
-    tOutput->Branch("multilepton_JetHighestPt1_CSV",&multilepton_JetHighestPt1_CSV,"multilepton_JetHighestPt1_CSV/F");
-    tOutput->Branch("multilepton_JetHighestPt1_JEC_Up",&multilepton_JetHighestPt1_JEC_Up,"multilepton_JetHighestPt1_JEC_Up/F");
-    tOutput->Branch("multilepton_JetHighestPt1_JEC_Down",&multilepton_JetHighestPt1_JEC_Down,"multilepton_JetHighestPt1_JEC_Down/F");
-    tOutput->Branch("multilepton_JetHighestPt1_JER_Up",&multilepton_JetHighestPt1_JER_Up,"multilepton_JetHighestPt1_JER_Up/F");
-    tOutput->Branch("multilepton_JetHighestPt1_JER_Down",&multilepton_JetHighestPt1_JER_Down,"multilepton_JetHighestPt1_JER_Down/F");
+        v_tOutput[itree]->Branch("multilepton_JetHighestPt1_Id",&multilepton_JetHighestPt1_Id,"multilepton_JetHighestPt1_Id/I");
+        v_tOutput[itree]->Branch("multilepton_JetHighestPt1_P4","TLorentzVector",&multilepton_JetHighestPt1_P4);
+        v_tOutput[itree]->Branch("multilepton_JetHighestPt1_CSV",&multilepton_JetHighestPt1_CSV,"multilepton_JetHighestPt1_CSV/F");
+        v_tOutput[itree]->Branch("multilepton_JetHighestPt1_JEC_Up",&multilepton_JetHighestPt1_JEC_Up,"multilepton_JetHighestPt1_JEC_Up/F");
+        v_tOutput[itree]->Branch("multilepton_JetHighestPt1_JEC_Down",&multilepton_JetHighestPt1_JEC_Down,"multilepton_JetHighestPt1_JEC_Down/F");
+        v_tOutput[itree]->Branch("multilepton_JetHighestPt1_JER_Up",&multilepton_JetHighestPt1_JER_Up,"multilepton_JetHighestPt1_JER_Up/F");
+        v_tOutput[itree]->Branch("multilepton_JetHighestPt1_JER_Down",&multilepton_JetHighestPt1_JER_Down,"multilepton_JetHighestPt1_JER_Down/F");
 
-    tOutput->Branch("multilepton_JetHighestPt2_Id",&multilepton_JetHighestPt2_Id,"multilepton_JetHighestPt2_Id/I");
-    tOutput->Branch("multilepton_JetHighestPt2_P4","TLorentzVector",&multilepton_JetHighestPt2_P4);
-    tOutput->Branch("multilepton_JetHighestPt2_CSV",&multilepton_JetHighestPt2_CSV,"multilepton_JetHighestPt2_CSV/F");
-    tOutput->Branch("multilepton_JetHighestPt2_JEC_Up",&multilepton_JetHighestPt2_JEC_Up,"multilepton_JetHighestPt2_JEC_Up/F");
-    tOutput->Branch("multilepton_JetHighestPt2_JEC_Down",&multilepton_JetHighestPt2_JEC_Down,"multilepton_JetHighestPt2_JEC_Down/F");
-    tOutput->Branch("multilepton_JetHighestPt2_JER_Up",&multilepton_JetHighestPt2_JER_Up,"multilepton_JetHighestPt2_JER_Up/F");
-    tOutput->Branch("multilepton_JetHighestPt2_JER_Down",&multilepton_JetHighestPt2_JER_Down,"multilepton_JetHighestPt2_JER_Down/F");
+        v_tOutput[itree]->Branch("multilepton_JetHighestPt2_Id",&multilepton_JetHighestPt2_Id,"multilepton_JetHighestPt2_Id/I");
+        v_tOutput[itree]->Branch("multilepton_JetHighestPt2_P4","TLorentzVector",&multilepton_JetHighestPt2_P4);
+        v_tOutput[itree]->Branch("multilepton_JetHighestPt2_CSV",&multilepton_JetHighestPt2_CSV,"multilepton_JetHighestPt2_CSV/F");
+        v_tOutput[itree]->Branch("multilepton_JetHighestPt2_JEC_Up",&multilepton_JetHighestPt2_JEC_Up,"multilepton_JetHighestPt2_JEC_Up/F");
+        v_tOutput[itree]->Branch("multilepton_JetHighestPt2_JEC_Down",&multilepton_JetHighestPt2_JEC_Down,"multilepton_JetHighestPt2_JEC_Down/F");
+        v_tOutput[itree]->Branch("multilepton_JetHighestPt2_JER_Up",&multilepton_JetHighestPt2_JER_Up,"multilepton_JetHighestPt2_JER_Up/F");
+        v_tOutput[itree]->Branch("multilepton_JetHighestPt2_JER_Down",&multilepton_JetHighestPt2_JER_Down,"multilepton_JetHighestPt2_JER_Down/F");
 
-    tOutput->Branch("multilepton_JetClosestMw1_Id",&multilepton_JetClosestMw1_Id,"multilepton_JetClosestMw1_Id/I");
-    tOutput->Branch("multilepton_JetClosestMw1_P4","TLorentzVector",&multilepton_JetClosestMw1_P4);
-    tOutput->Branch("multilepton_JetClosestMw1_CSV",&multilepton_JetClosestMw1_CSV,"multilepton_JetClosestMw1_CSV/F");
-    tOutput->Branch("multilepton_JetClosestMw1_JEC_Up",&multilepton_JetClosestMw1_JEC_Up,"multilepton_JetClosestMw1_JEC_Up/F");
-    tOutput->Branch("multilepton_JetClosestMw1_JEC_Down",&multilepton_JetClosestMw1_JEC_Down,"multilepton_JetClosestMw1_JEC_Down/F");
-    tOutput->Branch("multilepton_JetClosestMw1_JER_Up",&multilepton_JetClosestMw1_JER_Up,"multilepton_JetClosestMw1_JER_Up/F");
-    tOutput->Branch("multilepton_JetClosestMw1_JER_Down",&multilepton_JetClosestMw1_JER_Down,"multilepton_JetClosestMw1_JER_Down/F");
+        v_tOutput[itree]->Branch("multilepton_JetClosestMw1_Id",&multilepton_JetClosestMw1_Id,"multilepton_JetClosestMw1_Id/I");
+        v_tOutput[itree]->Branch("multilepton_JetClosestMw1_P4","TLorentzVector",&multilepton_JetClosestMw1_P4);
+        v_tOutput[itree]->Branch("multilepton_JetClosestMw1_CSV",&multilepton_JetClosestMw1_CSV,"multilepton_JetClosestMw1_CSV/F");
+        v_tOutput[itree]->Branch("multilepton_JetClosestMw1_JEC_Up",&multilepton_JetClosestMw1_JEC_Up,"multilepton_JetClosestMw1_JEC_Up/F");
+        v_tOutput[itree]->Branch("multilepton_JetClosestMw1_JEC_Down",&multilepton_JetClosestMw1_JEC_Down,"multilepton_JetClosestMw1_JEC_Down/F");
+        v_tOutput[itree]->Branch("multilepton_JetClosestMw1_JER_Up",&multilepton_JetClosestMw1_JER_Up,"multilepton_JetClosestMw1_JER_Up/F");
+        v_tOutput[itree]->Branch("multilepton_JetClosestMw1_JER_Down",&multilepton_JetClosestMw1_JER_Down,"multilepton_JetClosestMw1_JER_Down/F");
 
-    tOutput->Branch("multilepton_JetClosestMw2_Id",&multilepton_JetClosestMw2_Id,"multilepton_JetClosestMw2_Id/I");
-    tOutput->Branch("multilepton_JetClosestMw2_P4","TLorentzVector",&multilepton_JetClosestMw2_P4);
-    tOutput->Branch("multilepton_JetClosestMw2_CSV",&multilepton_JetClosestMw2_CSV,"multilepton_JetClosestMw2_CSV/F");
-    tOutput->Branch("multilepton_JetClosestMw2_JEC_Up",&multilepton_JetClosestMw2_JEC_Up,"multilepton_JetClosestMw2_JEC_Up/F");
-    tOutput->Branch("multilepton_JetClosestMw2_JEC_Down",&multilepton_JetClosestMw2_JEC_Down,"multilepton_JetClosestMw2_JEC_Down/F");
-    tOutput->Branch("multilepton_JetClosestMw2_JER_Up",&multilepton_JetClosestMw2_JER_Up,"multilepton_JetClosestMw2_JER_Up/F");
-    tOutput->Branch("multilepton_JetClosestMw2_JER_Down",&multilepton_JetClosestMw2_JER_Down,"multilepton_JetClosestMw2_JER_Down/F");
+        v_tOutput[itree]->Branch("multilepton_JetClosestMw2_Id",&multilepton_JetClosestMw2_Id,"multilepton_JetClosestMw2_Id/I");
+        v_tOutput[itree]->Branch("multilepton_JetClosestMw2_P4","TLorentzVector",&multilepton_JetClosestMw2_P4);
+        v_tOutput[itree]->Branch("multilepton_JetClosestMw2_CSV",&multilepton_JetClosestMw2_CSV,"multilepton_JetClosestMw2_CSV/F");
+        v_tOutput[itree]->Branch("multilepton_JetClosestMw2_JEC_Up",&multilepton_JetClosestMw2_JEC_Up,"multilepton_JetClosestMw2_JEC_Up/F");
+        v_tOutput[itree]->Branch("multilepton_JetClosestMw2_JEC_Down",&multilepton_JetClosestMw2_JEC_Down,"multilepton_JetClosestMw2_JEC_Down/F");
+        v_tOutput[itree]->Branch("multilepton_JetClosestMw2_JER_Up",&multilepton_JetClosestMw2_JER_Up,"multilepton_JetClosestMw2_JER_Up/F");
+        v_tOutput[itree]->Branch("multilepton_JetClosestMw2_JER_Down",&multilepton_JetClosestMw2_JER_Down,"multilepton_JetClosestMw2_JER_Down/F");
 
-    tOutput->Branch("multilepton_JetLowestMjj1_Id",&multilepton_JetLowestMjj1_Id,"multilepton_JetLowestMjj1_Id/I");
-    tOutput->Branch("multilepton_JetLowestMjj1_P4","TLorentzVector",&multilepton_JetLowestMjj1_P4);
-    tOutput->Branch("multilepton_JetLowestMjj1_CSV",&multilepton_JetLowestMjj1_CSV,"multilepton_JetLowestMjj1_CSV/F");
-    tOutput->Branch("multilepton_JetLowestMjj1_JEC_Up",&multilepton_JetLowestMjj1_JEC_Up,"multilepton_JetLowestMjj1_JEC_Up/F");
-    tOutput->Branch("multilepton_JetLowestMjj1_JEC_Down",&multilepton_JetLowestMjj1_JEC_Down,"multilepton_JetLowestMjj1_JEC_Down/F");
-    tOutput->Branch("multilepton_JetLowestMjj1_JER_Up",&multilepton_JetLowestMjj1_JER_Up,"multilepton_JetLowestMjj1_JER_Up/F");
-    tOutput->Branch("multilepton_JetLowestMjj1_JER_Down",&multilepton_JetLowestMjj1_JER_Down,"multilepton_JetLowestMjj1_JER_Down/F");
+        v_tOutput[itree]->Branch("multilepton_JetLowestMjj1_Id",&multilepton_JetLowestMjj1_Id,"multilepton_JetLowestMjj1_Id/I");
+        v_tOutput[itree]->Branch("multilepton_JetLowestMjj1_P4","TLorentzVector",&multilepton_JetLowestMjj1_P4);
+        v_tOutput[itree]->Branch("multilepton_JetLowestMjj1_CSV",&multilepton_JetLowestMjj1_CSV,"multilepton_JetLowestMjj1_CSV/F");
+        v_tOutput[itree]->Branch("multilepton_JetLowestMjj1_JEC_Up",&multilepton_JetLowestMjj1_JEC_Up,"multilepton_JetLowestMjj1_JEC_Up/F");
+        v_tOutput[itree]->Branch("multilepton_JetLowestMjj1_JEC_Down",&multilepton_JetLowestMjj1_JEC_Down,"multilepton_JetLowestMjj1_JEC_Down/F");
+        v_tOutput[itree]->Branch("multilepton_JetLowestMjj1_JER_Up",&multilepton_JetLowestMjj1_JER_Up,"multilepton_JetLowestMjj1_JER_Up/F");
+        v_tOutput[itree]->Branch("multilepton_JetLowestMjj1_JER_Down",&multilepton_JetLowestMjj1_JER_Down,"multilepton_JetLowestMjj1_JER_Down/F");
 
-    tOutput->Branch("multilepton_JetLowestMjj2_Id",&multilepton_JetLowestMjj2_Id,"multilepton_JetLowestMjj2_Id/I");
-    tOutput->Branch("multilepton_JetLowestMjj2_P4","TLorentzVector",&multilepton_JetLowestMjj2_P4);
-    tOutput->Branch("multilepton_JetLowestMjj2_CSV",&multilepton_JetLowestMjj2_CSV,"multilepton_JetLowestMjj2_CSV/F");
-    tOutput->Branch("multilepton_JetLowestMjj2_JEC_Up",&multilepton_JetLowestMjj2_JEC_Up,"multilepton_JetLowestMjj2_JEC_Up/F");
-    tOutput->Branch("multilepton_JetLowestMjj2_JEC_Down",&multilepton_JetLowestMjj2_JEC_Down,"multilepton_JetLowestMjj2_JEC_Down/F");
-    tOutput->Branch("multilepton_JetLowestMjj2_JER_Up",&multilepton_JetLowestMjj2_JER_Up,"multilepton_JetLowestMjj2_JER_Up/F");
-    tOutput->Branch("multilepton_JetLowestMjj2_JER_Down",&multilepton_JetLowestMjj2_JER_Down,"multilepton_JetLowestMjj2_JER_Down/F");
+        v_tOutput[itree]->Branch("multilepton_JetLowestMjj2_Id",&multilepton_JetLowestMjj2_Id,"multilepton_JetLowestMjj2_Id/I");
+        v_tOutput[itree]->Branch("multilepton_JetLowestMjj2_P4","TLorentzVector",&multilepton_JetLowestMjj2_P4);
+        v_tOutput[itree]->Branch("multilepton_JetLowestMjj2_CSV",&multilepton_JetLowestMjj2_CSV,"multilepton_JetLowestMjj2_CSV/F");
+        v_tOutput[itree]->Branch("multilepton_JetLowestMjj2_JEC_Up",&multilepton_JetLowestMjj2_JEC_Up,"multilepton_JetLowestMjj2_JEC_Up/F");
+        v_tOutput[itree]->Branch("multilepton_JetLowestMjj2_JEC_Down",&multilepton_JetLowestMjj2_JEC_Down,"multilepton_JetLowestMjj2_JEC_Down/F");
+        v_tOutput[itree]->Branch("multilepton_JetLowestMjj2_JER_Up",&multilepton_JetLowestMjj2_JER_Up,"multilepton_JetLowestMjj2_JER_Up/F");
+        v_tOutput[itree]->Branch("multilepton_JetLowestMjj2_JER_Down",&multilepton_JetLowestMjj2_JER_Down,"multilepton_JetLowestMjj2_JER_Down/F");
 
-    tOutput->Branch("multilepton_JetHighestEta1_Id",&multilepton_JetHighestEta1_Id,"multilepton_JetHighestEta1_Id/I");
-    tOutput->Branch("multilepton_JetHighestEta1_P4","TLorentzVector",&multilepton_JetHighestEta1_P4);
-    tOutput->Branch("multilepton_JetHighestEta1_CSV",&multilepton_JetHighestEta1_CSV,"multilepton_JetHighestEta1_CSV/F");
-    tOutput->Branch("multilepton_JetHighestEta2_Id",&multilepton_JetHighestEta2_Id,"multilepton_JetHighestEta2_Id/I");
-    tOutput->Branch("multilepton_JetHighestEta2_P4","TLorentzVector",&multilepton_JetHighestEta2_P4);
-    tOutput->Branch("multilepton_JetHighestEta2_CSV",&multilepton_JetHighestEta2_CSV,"multilepton_JetHighestEta2_CSV/F");
-    tOutput->Branch("multilepton_JetHighestEta1_JEC_Up",&multilepton_JetHighestEta1_JEC_Up,"multilepton_JetHighestEta1_JEC_Up/F");
-    tOutput->Branch("multilepton_JetHighestEta1_JEC_Down",&multilepton_JetHighestEta1_JEC_Down,"multilepton_JetHighestEta1_JEC_Down/F");
-    tOutput->Branch("multilepton_JetHighestEta1_JER_Up",&multilepton_JetHighestEta1_JER_Up,"multilepton_JetHighestEta1_JER_Up/F");
-    tOutput->Branch("multilepton_JetHighestEta1_JER_Down",&multilepton_JetHighestEta1_JER_Down,"multilepton_JetHighestEta1_JER_Down/F");
-    tOutput->Branch("multilepton_JetHighestEta2_JEC_Up",&multilepton_JetHighestEta2_JEC_Up,"multilepton_JetHighestEta2_JEC_Up/F");
-    tOutput->Branch("multilepton_JetHighestEta2_JEC_Down",&multilepton_JetHighestEta2_JEC_Down,"multilepton_JetHighestEta2_JEC_Down/F");
-    tOutput->Branch("multilepton_JetHighestEta2_JER_Up",&multilepton_JetHighestEta2_JER_Up,"multilepton_JetHighestEta2_JER_Up/F");
-    tOutput->Branch("multilepton_JetHighestEta2_JER_Down",&multilepton_JetHighestEta2_JER_Down,"multilepton_JetHighestEta2_JER_Down/F");
+        v_tOutput[itree]->Branch("multilepton_JetHighestEta1_Id",&multilepton_JetHighestEta1_Id,"multilepton_JetHighestEta1_Id/I");
+        v_tOutput[itree]->Branch("multilepton_JetHighestEta1_P4","TLorentzVector",&multilepton_JetHighestEta1_P4);
+        v_tOutput[itree]->Branch("multilepton_JetHighestEta1_CSV",&multilepton_JetHighestEta1_CSV,"multilepton_JetHighestEta1_CSV/F");
+        v_tOutput[itree]->Branch("multilepton_JetHighestEta2_Id",&multilepton_JetHighestEta2_Id,"multilepton_JetHighestEta2_Id/I");
+        v_tOutput[itree]->Branch("multilepton_JetHighestEta2_P4","TLorentzVector",&multilepton_JetHighestEta2_P4);
+        v_tOutput[itree]->Branch("multilepton_JetHighestEta2_CSV",&multilepton_JetHighestEta2_CSV,"multilepton_JetHighestEta2_CSV/F");
+        v_tOutput[itree]->Branch("multilepton_JetHighestEta1_JEC_Up",&multilepton_JetHighestEta1_JEC_Up,"multilepton_JetHighestEta1_JEC_Up/F");
+        v_tOutput[itree]->Branch("multilepton_JetHighestEta1_JEC_Down",&multilepton_JetHighestEta1_JEC_Down,"multilepton_JetHighestEta1_JEC_Down/F");
+        v_tOutput[itree]->Branch("multilepton_JetHighestEta1_JER_Up",&multilepton_JetHighestEta1_JER_Up,"multilepton_JetHighestEta1_JER_Up/F");
+        v_tOutput[itree]->Branch("multilepton_JetHighestEta1_JER_Down",&multilepton_JetHighestEta1_JER_Down,"multilepton_JetHighestEta1_JER_Down/F");
+        v_tOutput[itree]->Branch("multilepton_JetHighestEta2_JEC_Up",&multilepton_JetHighestEta2_JEC_Up,"multilepton_JetHighestEta2_JEC_Up/F");
+        v_tOutput[itree]->Branch("multilepton_JetHighestEta2_JEC_Down",&multilepton_JetHighestEta2_JEC_Down,"multilepton_JetHighestEta2_JEC_Down/F");
+        v_tOutput[itree]->Branch("multilepton_JetHighestEta2_JER_Up",&multilepton_JetHighestEta2_JER_Up,"multilepton_JetHighestEta2_JER_Up/F");
+        v_tOutput[itree]->Branch("multilepton_JetHighestEta2_JER_Down",&multilepton_JetHighestEta2_JER_Down,"multilepton_JetHighestEta2_JER_Down/F");
 
-    tOutput->Branch("multilepton_JetHighestPt1_2ndPair_Id",&multilepton_JetHighestPt1_2ndPair_Id,"multilepton_JetHighestPt1_2ndPair_Id/I");
-    tOutput->Branch("multilepton_JetHighestPt1_2ndPair_P4","TLorentzVector",&multilepton_JetHighestPt1_2ndPair_P4);
-    tOutput->Branch("multilepton_JetHighestPt1_2ndPair_CSV",&multilepton_JetHighestPt1_2ndPair_CSV,"multilepton_JetHighestPt1_2ndPair_CSV/F");
-    tOutput->Branch("multilepton_JetHighestPt1_2ndPair_JEC_Up",&multilepton_JetHighestPt1_2ndPair_JEC_Up,"multilepton_JetHighestPt1_2ndPair_JEC_Up/F");
-    tOutput->Branch("multilepton_JetHighestPt1_2ndPair_JEC_Down",&multilepton_JetHighestPt1_2ndPair_JEC_Down,"multilepton_JetHighestPt1_2ndPair_JEC_Down/F");
-    tOutput->Branch("multilepton_JetHighestPt1_2ndPair_JER_Up",&multilepton_JetHighestPt1_2ndPair_JER_Up,"multilepton_JetHighestPt1_2ndPair_JER_Up/F");
-    tOutput->Branch("multilepton_JetHighestPt1_2ndPair_JER_Down",&multilepton_JetHighestPt1_2ndPair_JER_Down,"multilepton_JetHighestPt1_2ndPair_JER_Down/F");
+        v_tOutput[itree]->Branch("multilepton_JetHighestPt1_2ndPair_Id",&multilepton_JetHighestPt1_2ndPair_Id,"multilepton_JetHighestPt1_2ndPair_Id/I");
+        v_tOutput[itree]->Branch("multilepton_JetHighestPt1_2ndPair_P4","TLorentzVector",&multilepton_JetHighestPt1_2ndPair_P4);
+        v_tOutput[itree]->Branch("multilepton_JetHighestPt1_2ndPair_CSV",&multilepton_JetHighestPt1_2ndPair_CSV,"multilepton_JetHighestPt1_2ndPair_CSV/F");
+        v_tOutput[itree]->Branch("multilepton_JetHighestPt1_2ndPair_JEC_Up",&multilepton_JetHighestPt1_2ndPair_JEC_Up,"multilepton_JetHighestPt1_2ndPair_JEC_Up/F");
+        v_tOutput[itree]->Branch("multilepton_JetHighestPt1_2ndPair_JEC_Down",&multilepton_JetHighestPt1_2ndPair_JEC_Down,"multilepton_JetHighestPt1_2ndPair_JEC_Down/F");
+        v_tOutput[itree]->Branch("multilepton_JetHighestPt1_2ndPair_JER_Up",&multilepton_JetHighestPt1_2ndPair_JER_Up,"multilepton_JetHighestPt1_2ndPair_JER_Up/F");
+        v_tOutput[itree]->Branch("multilepton_JetHighestPt1_2ndPair_JER_Down",&multilepton_JetHighestPt1_2ndPair_JER_Down,"multilepton_JetHighestPt1_2ndPair_JER_Down/F");
 
-    tOutput->Branch("multilepton_JetHighestPt2_2ndPair_Id",&multilepton_JetHighestPt2_2ndPair_Id,"multilepton_JetHighestPt2_2ndPair_Id/I");
-    tOutput->Branch("multilepton_JetHighestPt2_2ndPair_P4","TLorentzVector",&multilepton_JetHighestPt2_2ndPair_P4);
-    tOutput->Branch("multilepton_JetHighestPt2_2ndPair_CSV",&multilepton_JetHighestPt2_2ndPair_CSV,"multilepton_JetHighestPt2_2ndPair_CSV/F");
-    tOutput->Branch("multilepton_JetHighestPt2_2ndPair_JEC_Up",&multilepton_JetHighestPt2_2ndPair_JEC_Up,"multilepton_JetHighestPt2_2ndPair_JEC_Up/F");
-    tOutput->Branch("multilepton_JetHighestPt2_2ndPair_JEC_Down",&multilepton_JetHighestPt2_2ndPair_JEC_Down,"multilepton_JetHighestPt2_2ndPair_JEC_Down/F");
-    tOutput->Branch("multilepton_JetHighestPt2_2ndPair_JER_Up",&multilepton_JetHighestPt2_2ndPair_JER_Up,"multilepton_JetHighestPt2_2ndPair_JER_Up/F");
-    tOutput->Branch("multilepton_JetHighestPt2_2ndPair_JER_Down",&multilepton_JetHighestPt2_2ndPair_JER_Down,"multilepton_JetHighestPt2_2ndPair_JER_Down/F");
+        v_tOutput[itree]->Branch("multilepton_JetHighestPt2_2ndPair_Id",&multilepton_JetHighestPt2_2ndPair_Id,"multilepton_JetHighestPt2_2ndPair_Id/I");
+        v_tOutput[itree]->Branch("multilepton_JetHighestPt2_2ndPair_P4","TLorentzVector",&multilepton_JetHighestPt2_2ndPair_P4);
+        v_tOutput[itree]->Branch("multilepton_JetHighestPt2_2ndPair_CSV",&multilepton_JetHighestPt2_2ndPair_CSV,"multilepton_JetHighestPt2_2ndPair_CSV/F");
+        v_tOutput[itree]->Branch("multilepton_JetHighestPt2_2ndPair_JEC_Up",&multilepton_JetHighestPt2_2ndPair_JEC_Up,"multilepton_JetHighestPt2_2ndPair_JEC_Up/F");
+        v_tOutput[itree]->Branch("multilepton_JetHighestPt2_2ndPair_JEC_Down",&multilepton_JetHighestPt2_2ndPair_JEC_Down,"multilepton_JetHighestPt2_2ndPair_JEC_Down/F");
+        v_tOutput[itree]->Branch("multilepton_JetHighestPt2_2ndPair_JER_Up",&multilepton_JetHighestPt2_2ndPair_JER_Up,"multilepton_JetHighestPt2_2ndPair_JER_Up/F");
+        v_tOutput[itree]->Branch("multilepton_JetHighestPt2_2ndPair_JER_Down",&multilepton_JetHighestPt2_2ndPair_JER_Down,"multilepton_JetHighestPt2_2ndPair_JER_Down/F");
 
-    tOutput->Branch("multilepton_JetClosestMw1_2ndPair_Id",&multilepton_JetClosestMw1_2ndPair_Id,"multilepton_JetClosestMw1_2ndPair_Id/I");
-    tOutput->Branch("multilepton_JetClosestMw1_2ndPair_P4","TLorentzVector",&multilepton_JetClosestMw1_2ndPair_P4);
-    tOutput->Branch("multilepton_JetClosestMw1_2ndPair_CSV",&multilepton_JetClosestMw1_2ndPair_CSV,"multilepton_JetClosestMw1_2ndPair_CSV/F");
-    tOutput->Branch("multilepton_JetClosestMw1_2ndPair_JEC_Up",&multilepton_JetClosestMw1_2ndPair_JEC_Up,"multilepton_JetClosestMw1_2ndPair_JEC_Up/F");
-    tOutput->Branch("multilepton_JetClosestMw1_2ndPair_JEC_Down",&multilepton_JetClosestMw1_2ndPair_JEC_Down,"multilepton_JetClosestMw1_2ndPair_JEC_Down/F");
-    tOutput->Branch("multilepton_JetClosestMw1_2ndPair_JER_Up",&multilepton_JetClosestMw1_2ndPair_JER_Up,"multilepton_JetClosestMw1_2ndPair_JER_Up/F");
-    tOutput->Branch("multilepton_JetClosestMw1_2ndPair_JER_Down",&multilepton_JetClosestMw1_2ndPair_JER_Down,"multilepton_JetClosestMw1_2ndPair_JER_Down/F");
+        v_tOutput[itree]->Branch("multilepton_JetClosestMw1_2ndPair_Id",&multilepton_JetClosestMw1_2ndPair_Id,"multilepton_JetClosestMw1_2ndPair_Id/I");
+        v_tOutput[itree]->Branch("multilepton_JetClosestMw1_2ndPair_P4","TLorentzVector",&multilepton_JetClosestMw1_2ndPair_P4);
+        v_tOutput[itree]->Branch("multilepton_JetClosestMw1_2ndPair_CSV",&multilepton_JetClosestMw1_2ndPair_CSV,"multilepton_JetClosestMw1_2ndPair_CSV/F");
+        v_tOutput[itree]->Branch("multilepton_JetClosestMw1_2ndPair_JEC_Up",&multilepton_JetClosestMw1_2ndPair_JEC_Up,"multilepton_JetClosestMw1_2ndPair_JEC_Up/F");
+        v_tOutput[itree]->Branch("multilepton_JetClosestMw1_2ndPair_JEC_Down",&multilepton_JetClosestMw1_2ndPair_JEC_Down,"multilepton_JetClosestMw1_2ndPair_JEC_Down/F");
+        v_tOutput[itree]->Branch("multilepton_JetClosestMw1_2ndPair_JER_Up",&multilepton_JetClosestMw1_2ndPair_JER_Up,"multilepton_JetClosestMw1_2ndPair_JER_Up/F");
+        v_tOutput[itree]->Branch("multilepton_JetClosestMw1_2ndPair_JER_Down",&multilepton_JetClosestMw1_2ndPair_JER_Down,"multilepton_JetClosestMw1_2ndPair_JER_Down/F");
 
-    tOutput->Branch("multilepton_JetClosestMw2_2ndPair_Id",&multilepton_JetClosestMw2_2ndPair_Id,"multilepton_JetClosestMw2_2ndPair_Id/I");
-    tOutput->Branch("multilepton_JetClosestMw2_2ndPair_P4","TLorentzVector",&multilepton_JetClosestMw2_2ndPair_P4);
-    tOutput->Branch("multilepton_JetClosestMw2_2ndPair_CSV",&multilepton_JetClosestMw2_2ndPair_CSV,"multilepton_JetClosestMw2_2ndPair_CSV/F");
-    tOutput->Branch("multilepton_JetClosestMw2_2ndPair_JEC_Up",&multilepton_JetClosestMw2_2ndPair_JEC_Up,"multilepton_JetClosestMw2_2ndPair_JEC_Up/F");
-    tOutput->Branch("multilepton_JetClosestMw2_2ndPair_JEC_Down",&multilepton_JetClosestMw2_2ndPair_JEC_Down,"multilepton_JetClosestMw2_2ndPair_JEC_Down/F");
-    tOutput->Branch("multilepton_JetClosestMw2_2ndPair_JER_Up",&multilepton_JetClosestMw2_2ndPair_JER_Up,"multilepton_JetClosestMw2_2ndPair_JER_Up/F");
-    tOutput->Branch("multilepton_JetClosestMw2_2ndPair_JER_Down",&multilepton_JetClosestMw2_2ndPair_JER_Down,"multilepton_JetClosestMw2_2ndPair_JER_Down/F");
+        v_tOutput[itree]->Branch("multilepton_JetClosestMw2_2ndPair_Id",&multilepton_JetClosestMw2_2ndPair_Id,"multilepton_JetClosestMw2_2ndPair_Id/I");
+        v_tOutput[itree]->Branch("multilepton_JetClosestMw2_2ndPair_P4","TLorentzVector",&multilepton_JetClosestMw2_2ndPair_P4);
+        v_tOutput[itree]->Branch("multilepton_JetClosestMw2_2ndPair_CSV",&multilepton_JetClosestMw2_2ndPair_CSV,"multilepton_JetClosestMw2_2ndPair_CSV/F");
+        v_tOutput[itree]->Branch("multilepton_JetClosestMw2_2ndPair_JEC_Up",&multilepton_JetClosestMw2_2ndPair_JEC_Up,"multilepton_JetClosestMw2_2ndPair_JEC_Up/F");
+        v_tOutput[itree]->Branch("multilepton_JetClosestMw2_2ndPair_JEC_Down",&multilepton_JetClosestMw2_2ndPair_JEC_Down,"multilepton_JetClosestMw2_2ndPair_JEC_Down/F");
+        v_tOutput[itree]->Branch("multilepton_JetClosestMw2_2ndPair_JER_Up",&multilepton_JetClosestMw2_2ndPair_JER_Up,"multilepton_JetClosestMw2_2ndPair_JER_Up/F");
+        v_tOutput[itree]->Branch("multilepton_JetClosestMw2_2ndPair_JER_Down",&multilepton_JetClosestMw2_2ndPair_JER_Down,"multilepton_JetClosestMw2_2ndPair_JER_Down/F");
 
-    tOutput->Branch("multilepton_JetLowestMjj1_2ndPair_Id",&multilepton_JetLowestMjj1_2ndPair_Id,"multilepton_JetLowestMjj1_2ndPair_Id/I");
-    tOutput->Branch("multilepton_JetLowestMjj1_2ndPair_P4","TLorentzVector",&multilepton_JetLowestMjj1_2ndPair_P4);
-    tOutput->Branch("multilepton_JetLowestMjj1_2ndPair_CSV",&multilepton_JetLowestMjj1_2ndPair_CSV,"multilepton_JetLowestMjj1_2ndPair_CSV/F");
-    tOutput->Branch("multilepton_JetLowestMjj1_2ndPair_JEC_Up",&multilepton_JetLowestMjj1_2ndPair_JEC_Up,"multilepton_JetLowestMjj1_2ndPair_JEC_Up/F");
-    tOutput->Branch("multilepton_JetLowestMjj1_2ndPair_JEC_Down",&multilepton_JetLowestMjj1_2ndPair_JEC_Down,"multilepton_JetLowestMjj1_2ndPair_JEC_Down/F");
-    tOutput->Branch("multilepton_JetLowestMjj1_2ndPair_JER_Up",&multilepton_JetLowestMjj1_2ndPair_JER_Up,"multilepton_JetLowestMjj1_2ndPair_JER_Up/F");
-    tOutput->Branch("multilepton_JetLowestMjj1_2ndPair_JER_Down",&multilepton_JetLowestMjj1_2ndPair_JER_Down,"multilepton_JetLowestMjj1_2ndPair_JER_Down/F");
+        v_tOutput[itree]->Branch("multilepton_JetLowestMjj1_2ndPair_Id",&multilepton_JetLowestMjj1_2ndPair_Id,"multilepton_JetLowestMjj1_2ndPair_Id/I");
+        v_tOutput[itree]->Branch("multilepton_JetLowestMjj1_2ndPair_P4","TLorentzVector",&multilepton_JetLowestMjj1_2ndPair_P4);
+        v_tOutput[itree]->Branch("multilepton_JetLowestMjj1_2ndPair_CSV",&multilepton_JetLowestMjj1_2ndPair_CSV,"multilepton_JetLowestMjj1_2ndPair_CSV/F");
+        v_tOutput[itree]->Branch("multilepton_JetLowestMjj1_2ndPair_JEC_Up",&multilepton_JetLowestMjj1_2ndPair_JEC_Up,"multilepton_JetLowestMjj1_2ndPair_JEC_Up/F");
+        v_tOutput[itree]->Branch("multilepton_JetLowestMjj1_2ndPair_JEC_Down",&multilepton_JetLowestMjj1_2ndPair_JEC_Down,"multilepton_JetLowestMjj1_2ndPair_JEC_Down/F");
+        v_tOutput[itree]->Branch("multilepton_JetLowestMjj1_2ndPair_JER_Up",&multilepton_JetLowestMjj1_2ndPair_JER_Up,"multilepton_JetLowestMjj1_2ndPair_JER_Up/F");
+        v_tOutput[itree]->Branch("multilepton_JetLowestMjj1_2ndPair_JER_Down",&multilepton_JetLowestMjj1_2ndPair_JER_Down,"multilepton_JetLowestMjj1_2ndPair_JER_Down/F");
 
-    tOutput->Branch("multilepton_JetLowestMjj2_2ndPair_Id",&multilepton_JetLowestMjj2_2ndPair_Id,"multilepton_JetLowestMjj2_2ndPair_Id/I");
-    tOutput->Branch("multilepton_JetLowestMjj2_2ndPair_P4","TLorentzVector",&multilepton_JetLowestMjj2_2ndPair_P4);
-    tOutput->Branch("multilepton_JetLowestMjj2_2ndPair_CSV",&multilepton_JetLowestMjj2_2ndPair_CSV,"multilepton_JetLowestMjj2_2ndPair_CSV/F");
-    tOutput->Branch("multilepton_JetLowestMjj2_2ndPair_JEC_Up",&multilepton_JetLowestMjj2_2ndPair_JEC_Up,"multilepton_JetLowestMjj2_2ndPair_JEC_Up/F");
-    tOutput->Branch("multilepton_JetLowestMjj2_2ndPair_JEC_Down",&multilepton_JetLowestMjj2_2ndPair_JEC_Down,"multilepton_JetLowestMjj2_2ndPair_JEC_Down/F");
-    tOutput->Branch("multilepton_JetLowestMjj2_2ndPair_JER_Up",&multilepton_JetLowestMjj2_2ndPair_JER_Up,"multilepton_JetLowestMjj2_2ndPair_JER_Up/F");
-    tOutput->Branch("multilepton_JetLowestMjj2_2ndPair_JER_Down",&multilepton_JetLowestMjj2_2ndPair_JER_Down,"multilepton_JetLowestMjj2_2ndPair_JER_Down/F");
+        v_tOutput[itree]->Branch("multilepton_JetLowestMjj2_2ndPair_Id",&multilepton_JetLowestMjj2_2ndPair_Id,"multilepton_JetLowestMjj2_2ndPair_Id/I");
+        v_tOutput[itree]->Branch("multilepton_JetLowestMjj2_2ndPair_P4","TLorentzVector",&multilepton_JetLowestMjj2_2ndPair_P4);
+        v_tOutput[itree]->Branch("multilepton_JetLowestMjj2_2ndPair_CSV",&multilepton_JetLowestMjj2_2ndPair_CSV,"multilepton_JetLowestMjj2_2ndPair_CSV/F");
+        v_tOutput[itree]->Branch("multilepton_JetLowestMjj2_2ndPair_JEC_Up",&multilepton_JetLowestMjj2_2ndPair_JEC_Up,"multilepton_JetLowestMjj2_2ndPair_JEC_Up/F");
+        v_tOutput[itree]->Branch("multilepton_JetLowestMjj2_2ndPair_JEC_Down",&multilepton_JetLowestMjj2_2ndPair_JEC_Down,"multilepton_JetLowestMjj2_2ndPair_JEC_Down/F");
+        v_tOutput[itree]->Branch("multilepton_JetLowestMjj2_2ndPair_JER_Up",&multilepton_JetLowestMjj2_2ndPair_JER_Up,"multilepton_JetLowestMjj2_2ndPair_JER_Up/F");
+        v_tOutput[itree]->Branch("multilepton_JetLowestMjj2_2ndPair_JER_Down",&multilepton_JetLowestMjj2_2ndPair_JER_Down,"multilepton_JetLowestMjj2_2ndPair_JER_Down/F");
 
-    // Test adding truth information
+        // Test adding truth information
 
-    tOutput->Branch("multilepton_h0_Id",                    &multilepton_h0_Id,                 "multilepton_h0_Id/I");
-    tOutput->Branch("multilepton_h0_P4",                    "TLorentzVector",                   &multilepton_h0_P4);
-    tOutput->Branch("multilepton_h0_Label",                    &multilepton_h0_Label,                 "multilepton_h0_Label/I");
-    tOutput->Branch("multilepton_t1_Id",                    &multilepton_t1_Id,                 "multilepton_t1_Id/I");
-    tOutput->Branch("multilepton_t1_P4",                    "TLorentzVector",                   &multilepton_t1_P4);
-    tOutput->Branch("multilepton_t1_Label",                    &multilepton_t1_Label,                 "multilepton_h0_Label/I");
-    tOutput->Branch("multilepton_t2_Id",                    &multilepton_t2_Id,                 "multilepton_t2_Id/I");
-    tOutput->Branch("multilepton_t2_P4",                    "TLorentzVector",                   &multilepton_t2_P4);
-    tOutput->Branch("multilepton_t2_Label",                    &multilepton_t2_Label,                 "multilepton_h0_Label/I");
+        v_tOutput[itree]->Branch("multilepton_h0_Id",                    &multilepton_h0_Id,                 "multilepton_h0_Id/I");
+        v_tOutput[itree]->Branch("multilepton_h0_P4",                    "TLorentzVector",                   &multilepton_h0_P4);
+        v_tOutput[itree]->Branch("multilepton_h0_Label",                    &multilepton_h0_Label,                 "multilepton_h0_Label/I");
+        v_tOutput[itree]->Branch("multilepton_t1_Id",                    &multilepton_t1_Id,                 "multilepton_t1_Id/I");
+        v_tOutput[itree]->Branch("multilepton_t1_P4",                    "TLorentzVector",                   &multilepton_t1_P4);
+        v_tOutput[itree]->Branch("multilepton_t1_Label",                    &multilepton_t1_Label,                 "multilepton_h0_Label/I");
+        v_tOutput[itree]->Branch("multilepton_t2_Id",                    &multilepton_t2_Id,                 "multilepton_t2_Id/I");
+        v_tOutput[itree]->Branch("multilepton_t2_P4",                    "TLorentzVector",                   &multilepton_t2_P4);
+        v_tOutput[itree]->Branch("multilepton_t2_Label",                    &multilepton_t2_Label,                 "multilepton_h0_Label/I");
 
-    // End test adding truth information
+        // End test adding truth information
 
-    tOutput->Branch("multilepton_mET","TLorentzVector",&multilepton_mET);
-    tOutput->Branch("multilepton_mETcov00",&multilepton_mETcov00,"multilepton_mETcov00/D");
-    tOutput->Branch("multilepton_mETcov01",&multilepton_mETcov01,"multilepton_mETcov01/D");
-    tOutput->Branch("multilepton_mETcov10",&multilepton_mETcov10,"multilepton_mETcov10/D");
-    tOutput->Branch("multilepton_mETcov11",&multilepton_mETcov11,"multilepton_mETcov11/D");
-    tOutput->Branch("multilepton_mHT",&multilepton_mHT,"multilepton_mHT/F");
-    tOutput->Branch("multilepton_Ptot","TLorentzVector",&multilepton_Ptot);
+        v_tOutput[itree]->Branch("multilepton_mET","TLorentzVector",&multilepton_mET);
+        v_tOutput[itree]->Branch("multilepton_mETcov00",&multilepton_mETcov00,"multilepton_mETcov00/D");
+        v_tOutput[itree]->Branch("multilepton_mETcov01",&multilepton_mETcov01,"multilepton_mETcov01/D");
+        v_tOutput[itree]->Branch("multilepton_mETcov10",&multilepton_mETcov10,"multilepton_mETcov10/D");
+        v_tOutput[itree]->Branch("multilepton_mETcov11",&multilepton_mETcov11,"multilepton_mETcov11/D");
+        v_tOutput[itree]->Branch("multilepton_sumET",&multilepton_sumET,"multilepton_sumET/F");
+        v_tOutput[itree]->Branch("multilepton_Ptot","TLorentzVector",&multilepton_Ptot);
+    }
 
     return;
 }
@@ -2892,21 +3605,21 @@ void tHqMultileponAnalysis::SelectBjets(int &ibsel1, int &ibsel2, bool doSelectO
     // double CSV_threshold = 0.5426; //Loose WP -- old // Now using (DeepCSVbtag = deepCSVb+deepCSVbb)
 
     Float_t btag_max=-9999, btag_max2=-9999;
-    for (int ib=0; ib<vJetLoose->size(); ib++)
+    for (int ib=0; ib<vJetLoose.size(); ib++)
 
     {
-        if(doSelectOnlyBjets && !vJetLoose->at(ib).isLooseBTag) {continue;}
+        if(doSelectOnlyBjets && !vJetLoose.at(ib).isLooseBTag) {continue;}
 
-        if(vJetLoose->at(ib).DeepCSVbtag>btag_max)
+        if(vJetLoose.at(ib).DeepCSVbtag>btag_max)
         {
           btag_max2 = btag_max;
           ib2 = ib1;
-          btag_max = vJetLoose->at(ib).DeepCSVbtag;
+          btag_max = vJetLoose.at(ib).DeepCSVbtag;
           ib1 = ib;
         }
-        else if (vJetLoose->at(ib).DeepCSVbtag<btag_max && vJetLoose->at(ib).DeepCSVbtag>btag_max2)
+        else if (vJetLoose.at(ib).DeepCSVbtag<btag_max && vJetLoose.at(ib).DeepCSVbtag>btag_max2)
         {
-          btag_max2 = vJetLoose->at(ib).DeepCSVbtag;
+          btag_max2 = vJetLoose.at(ib).DeepCSVbtag;
           ib2 = ib;
         }
     }
@@ -2940,42 +3653,42 @@ void tHqMultileponAnalysis::SelectOtherJets(const int ib1, const int ib2, int &i
     float diffmass_min = 10000, mass_min = 10000;
     float eta_max=0, eta_max2=0;
 
-    for(int ij=0; ij<vJetLoose->size(); ij++)
+    for(int ij=0; ij<vJetLoose.size(); ij++)
     {
         if (ij==ib1 || ij==ib2) {continue;} //Don't take bjets into account
 
-        if(vJetLoose->at(ij).pt > pt_max ) //Highest pT
+        if(vJetLoose.at(ij).pt > pt_max ) //Highest pT
         {
             pt_max2 = pt_max;
             ij2 = ij1;
-            pt_max = vJetLoose->at(ij).pt;
+            pt_max = vJetLoose.at(ij).pt;
             ij1 = ij;
         }
-        else if(vJetLoose->at(ij).pt > pt_max2) //2nd Highest pT
+        else if(vJetLoose.at(ij).pt > pt_max2) //2nd Highest pT
         {
-            pt_max2 = vJetLoose->at(ij).pt;
+            pt_max2 = vJetLoose.at(ij).pt;
             ij2 = ij;
         }
 
-        if(fabs(vJetLoose->at(ij).eta) > eta_max ) //Highest eta
+        if(fabs(vJetLoose.at(ij).eta) > eta_max ) //Highest eta
         {
             eta_max2 = eta_max;
             ie2 = ie1;
-            eta_max = fabs(vJetLoose->at(ij).eta);
+            eta_max = fabs(vJetLoose.at(ij).eta);
             ie1 = ij;
         }
-        else if(fabs(vJetLoose->at(ij).eta ) > eta_max2) //2nd Highest eta
+        else if(fabs(vJetLoose.at(ij).eta ) > eta_max2) //2nd Highest eta
         {
-            eta_max2 = fabs(vJetLoose->at(ij).eta);
+            eta_max2 = fabs(vJetLoose.at(ij).eta);
             ie2 = ij;
         }
 
-        for(int ik=ij+1; ik<vJetLoose->size(); ik++) //Dijet w/ lowest (m - mW)
+        for(int ik=ij+1; ik<vJetLoose.size(); ik++) //Dijet w/ lowest (m - mW)
         {
             if (ik==ib1 || ik==ib2) {continue;} //Don't take bjets into account
 
-            Pjet1.SetPtEtaPhiE(vJetLoose->at(ij).pt, vJetLoose->at(ij).eta, vJetLoose->at(ij).phi, vJetLoose->at(ij).E);
-            Pjet2.SetPtEtaPhiE(vJetLoose->at(ik).pt, vJetLoose->at(ik).eta, vJetLoose->at(ik).phi, vJetLoose->at(ik).E);
+            Pjet1.SetPtEtaPhiE(vJetLoose.at(ij).pt, vJetLoose.at(ij).eta, vJetLoose.at(ij).phi, vJetLoose.at(ij).E);
+            Pjet2.SetPtEtaPhiE(vJetLoose.at(ik).pt, vJetLoose.at(ik).eta, vJetLoose.at(ik).phi, vJetLoose.at(ik).E);
 
             if(TMath::Abs((Pjet1+Pjet2).M()-80.419)<diffmass_min) //Lowest (m-mW) difference
             {
@@ -2996,29 +3709,29 @@ void tHqMultileponAnalysis::SelectOtherJets(const int ib1, const int ib2, int &i
     //Choose 2 more jets (1rst pair is closest to mW) -- needed for 2l (more jets)
     pt_max=0; pt_max2=0;
     diffmass_min = 10000; mass_min = 10000;
-    for(int ij=0; ij<vJetLoose->size(); ij++)
+    for(int ij=0; ij<vJetLoose.size(); ij++)
     {
         if (ij==ib1 || ij==ib2 || ij==ik1 || ij==ik2) {continue;} //Don't take bjets and 1rst mW pair into account
 
-        if(vJetLoose->at(ij).pt > pt_max ) //Highest pT
+        if(vJetLoose.at(ij).pt > pt_max ) //Highest pT
         {
             pt_max2 = pt_max;
             im2 = im1;
-            pt_max = vJetLoose->at(ij).pt;
+            pt_max = vJetLoose.at(ij).pt;
             im1 = ij;
         }
-        else if(vJetLoose->at(ij).pt > pt_max2) //2nd Highest pT
+        else if(vJetLoose.at(ij).pt > pt_max2) //2nd Highest pT
         {
-            pt_max2 = vJetLoose->at(ij).pt;
+            pt_max2 = vJetLoose.at(ij).pt;
             im2 = ij;
         }
 
-        for(int ik=ij+1; ik<vJetLoose->size(); ik++) //Dijet w/ lowest (m - mW)
+        for(int ik=ij+1; ik<vJetLoose.size(); ik++) //Dijet w/ lowest (m - mW)
         {
             if (ik==ib1 || ik==ib2 || ik==ik1 || ik==ik2) {continue;} //Don't take bjets and 1rst pair into account
 
-            Pjet1.SetPtEtaPhiE(vJetLoose->at(ij).pt, vJetLoose->at(ij).eta, vJetLoose->at(ij).phi, vJetLoose->at(ij).E);
-            Pjet2.SetPtEtaPhiE(vJetLoose->at(ik).pt, vJetLoose->at(ik).eta, vJetLoose->at(ik).phi, vJetLoose->at(ik).E);
+            Pjet1.SetPtEtaPhiE(vJetLoose.at(ij).pt, vJetLoose.at(ij).eta, vJetLoose.at(ij).phi, vJetLoose.at(ij).E);
+            Pjet2.SetPtEtaPhiE(vJetLoose.at(ik).pt, vJetLoose.at(ik).eta, vJetLoose.at(ik).phi, vJetLoose.at(ik).E);
 
             if(TMath::Abs((Pjet1+Pjet2).M()-80.419)<diffmass_min) //Lowest (m-mW) difference
             {
@@ -3090,15 +3803,18 @@ double tHqMultileponAnalysis::comp_MT_met_lep(TLorentzVector leptonP4, double me
     return mT;
 }
 
-//Compute met_LD variable, as it's done in Sync.cxx (should include it in NTP code)
-double tHqMultileponAnalysis::Compute_METLD(double MET)
+/**
+ * mHT: vector sum of fakeable leptons, taus and selected jets
+ * Worse resolution but more robust against pile-up
+ */
+double tHqMultileponAnalysis::Compute_mHT()
 {
     TLorentzVector jet;
     float jet_px = 0;
     float jet_py = 0;
-    for(int ij=0;ij<vJetLoose->size();ij++)
+    for(int ij=0;ij<vJetLoose.size();ij++)
     {
-        jet.SetPtEtaPhiE(vJetLoose->at(ij).pt, vJetLoose->at(ij).eta, vJetLoose->at(ij).phi, vJetLoose->at(ij).E);
+        jet.SetPtEtaPhiE(vJetLoose.at(ij).pt, vJetLoose.at(ij).eta, vJetLoose.at(ij).phi, vJetLoose.at(ij).E);
         jet_px += jet.Px();
         jet_py += jet.Py();
     }
@@ -3115,107 +3831,200 @@ double tHqMultileponAnalysis::Compute_METLD(double MET)
         jet_py += jet.Py();
     }
 
-    double MHT = sqrt( (jet_px*jet_px) + (jet_py*jet_py) );
-    return MET*0.00397 + MHT*0.00265;
+    return sqrt( (jet_px*jet_px) + (jet_py*jet_py) );
 }
 
 
-/**
- * Read the ttH2017 predefined categories values (implemented at NTP level)
- */
-int tHqMultileponAnalysis::Read_Predefined_Categories()
-{
-    int nlep_tth = 0;
 
-    //Can't convert directly boolean into Char_t
-    //NB : using Char_t because booleans should not be used in vectors (later)
-    if(vEvent->at(0).is_2lSS) {is_ttH_2lSS                           = 1;}
-    if(vEvent->at(0).is_2lSS_SR) {is_ttH_2lSS_SR                     = 1;}
-    if(vEvent->at(0).is_2lSS_SR_Data) {is_ttH_2lSS_SR_Data           = 1;}
-    if(vEvent->at(0).is_2lSS_Fake) {is_ttH_2lSS_Fake                 = 1;}
-    if(vEvent->at(0).is_2lSS_Flip) {is_ttH_2lSS_Flip                 = 1;}
-    if(vEvent->at(0).is_2lSS_Flip_Data) {is_ttH_2lSS_Flip_Data       = 1;}
-    if(vEvent->at(0).is_3l) {is_ttH_3l                               = 1;}
-    if(vEvent->at(0).is_3l_SR) {is_ttH_3l_SR                         = 1;}
-    if(vEvent->at(0).is_3l_SR_Data) {is_ttH_3l_SR_Data               = 1;}
-    if(vEvent->at(0).is_3l_Fake) {is_ttH_3l_Fake                     = 1;}
-    if(vEvent->at(0).is_ttWctrl) {is_ttH_ttWctrl                     = 1;}
-    if(vEvent->at(0).is_ttWctrl_SR) {is_ttH_ttWctrl_SR               = 1;}
-    if(vEvent->at(0).is_ttWctrl_SR_Data) {is_ttH_ttWctrl_SR_Data     = 1;}
-    if(vEvent->at(0).is_ttWctrl_Fake) {is_ttH_ttWctrl_Fake           = 1;}
-    if(vEvent->at(0).is_ttWctrl_Flip) {is_ttH_ttWctrl_Flip           = 1;}
-    if(vEvent->at(0).is_ttWctrl_Flip_Data) {is_ttH_ttWctrl_Flip_Data = 1;}
-    if(vEvent->at(0).is_ttZctrl) {is_ttH_ttZctrl                     = 1;}
-    if(vEvent->at(0).is_ttZctrl_SR) {is_ttH_ttZctrl_SR               = 1;}
-    if(vEvent->at(0).is_ttZctrl_SR_Data) {is_ttH_ttZctrl_SR_Data     = 1;}
-    if(vEvent->at(0).is_ttZctrl_Fake) {is_ttH_ttZctrl_Fake           = 1;}
-    if(vEvent->at(0).is_WZctrl) {is_ttH_WZctrl                       = 1;}
-    if(vEvent->at(0).is_WZctrl_SR) {is_ttH_WZctrl_SR                 = 1;}
-    if(vEvent->at(0).is_WZctrl_SR_Data) {is_ttH_WZctrl_SR_Data       = 1;}
-    if(vEvent->at(0).is_WZctrl_Fake) {is_ttH_WZctrl_Fake             = 1;}
-
-    //Determine if event is to be saved as a 2lep or 3lep category (needed for variable computation)
-    if(is_ttH_2lSS || is_ttH_2lSS_Fake || is_ttH_2lSS_Flip || (is_ttH_2lSS_Flip_Data && _isdata) || is_ttH_ttWctrl || is_ttH_ttWctrl_Fake || is_ttH_ttWctrl_Flip || (is_ttH_ttWctrl_Flip_Data && _isdata) )
-    {
-        nlep_tth = 2;
-    }
-    else if(is_ttH_3l || is_ttH_3l_Fake || is_ttH_ttZctrl || is_ttH_ttZctrl_Fake) //WZ CR not implemented
-    {
-        nlep_tth = 3;
-    }
-
-    return nlep_tth;
-}
 
 
 /**
- * Set the value of "weightfake" variable. Weight read from ttH FR file
- * -- nLep_cat : "3l" or "2l" event
+ * Try to compute some high-level reco variables related to W boson or top
+ * //-- could elaborate algorithm by adding result from Hj tagger ?
  */
-void tHqMultileponAnalysis::Apply_FakeRate_Weight(TString nLep_cat)
+void tHqMultileponAnalysis::Compute_Top_W_variables()
 {
-    // if(!_isdata) {return;}
+    double mW = 80.4;
+    double mTop = 173;
 
-    std::vector<double> leptonsPts;
-    std::vector<double> leptonsEtas;
-    std::vector<int>    leptonsIds;
+    int i_lep_fromTopW=-1;
+    int i_bJet_fromTop=-1;
+    int i_jet_recoiling=-1;
 
-    int nlep = 2;
-    if(nLep_cat == "3l") {nlep = 3;}
-    else if(nLep_cat != "2l") {cout<<"Wrong FakeRate category !"<<endl; return;}
+    TLorentzVector lep_fromTopW; int charge_lepFromTopW;
+    TLorentzVector Bjet_fromTop;
+    TLorentzVector RecoilJet;
+    TLorentzVector Neutrino;
 
-    //Consider only 2 or 3 hardest FO leptons
-    for(int i=0; i<nlep; i++)
+    double tmp = 999; double mass_LepBJet_min_tmp = 999;
+    for(int ilep=0; ilep<vLeptonFakeable.size(); ilep++)
     {
-        if( !vLeptonFakeable.at(i).isTightTTH ) //For each lepton failing the tight requirements, multiply event by a weight
+        // cout<<endl<<"ilep = "<<ilep<<endl;
+
+        TLorentzVector lep_tmp;
+        lep_tmp.SetPtEtaPhiE(vLeptonFakeable.at(ilep).conept, vLeptonFakeable.at(ilep).eta, vLeptonFakeable.at(ilep).phi, vLeptonFakeable.at(ilep).E );
+
+        double neutrino_Px, neutrino_Py, neutrino_Pz, neutrino_E, k, a, b, c;
+        neutrino_Px = metpt*sin(metphi);
+        neutrino_Py = metpt*cos(metphi);
+        a = lep_tmp.Pt()*lep_tmp.Pt();
+
+        vector<double> solutions_poly(2);
+        double metpt_tmp = metpt;
+        bool found_solution = false;
+        while(!found_solution)
         {
-            leptonsPts.push_back(vLeptonFakeable.at(i).pt);
-            leptonsEtas.push_back(vLeptonFakeable.at(i).eta);
-            leptonsIds.push_back(vLeptonFakeable.at(i).id);
+            k = (mW*mW/2) + lep_tmp.Pt() * metpt_tmp;
+            b = -2 * lep_tmp.Pz() * k;
+            c = metpt_tmp*metpt_tmp * fabs(lep_tmp.E()*lep_tmp.E()) - k*k;
+
+            found_solution = Get_Polynom2_Root(a,b,c, solutions_poly);
+
+            if(!found_solution) // -- how to deal w/ imaginary sols ?
+            {
+                // cout<<"//--------------------------------------------"<<endl;
+                // cout<<"vLeptonFakeable.at(ilep).conept = "<<vLeptonFakeable.at(ilep).conept<<endl;
+                // cout<<"vLeptonFakeable.at(ilep).pt = "<<vLeptonFakeable.at(ilep).pt<<endl;
+
+                // metpt_tmp-= 5;
+                // cout<<"No solution found for neutrino reco ! Try : MET - 5GEV = "<<metpt_tmp<<endl;
+            }
         }
+
+        int n_sol = 1;
+        if(solutions_poly[1] != 0) {n_sol = 2;}
+        for(int isol=0; isol<n_sol; isol++)
+        {
+            neutrino_Pz = fabs(solutions_poly[isol]);
+            // cout<<"neutrino_Pz = "<<neutrino_Pz<<endl;
+
+            neutrino_E = sqrt(neutrino_Px*neutrino_Px+neutrino_Py*neutrino_Py+neutrino_Pz*neutrino_Pz);
+
+            TLorentzVector neutrino;
+            neutrino.SetPxPyPzE(neutrino_Px, neutrino_Py, neutrino_Pz, neutrino_E);
+
+            for(int ijet=0; ijet<vJetLoose.size(); ijet++)
+            {
+                // cout<<endl<<"ijet = "<<ijet<<endl;
+
+                TLorentzVector Bjet_tmp;
+
+                // if(vLooseBTagJets.at(ijet).DeepCSVbtag > deepCSV_max) {i_bJet_fromTop = ijet;}
+                if(!vJetLoose.at(ijet).isMediumBTag) {continue;} //Only consider b-tagged jets
+
+                Bjet_tmp.SetPtEtaPhiE(vJetLoose.at(ijet).pt, vJetLoose.at(ijet).eta, vJetLoose.at(ijet).phi, vJetLoose.at(ijet).E);
+
+                double mtop_tmp = (lep_tmp+neutrino+Bjet_tmp).M();
+                // cout<<"mtop_tmp = "<<mtop_tmp<<endl;
+
+                if(fabs(mtop_tmp - mTop) < tmp) //If config is closest to mtop, store values/indices
+                {
+                    tmp = fabs(mtop_tmp - mTop);
+                    top_mass = mtop_tmp;
+                    top_Pt = mtop_tmp;
+                    i_lep_fromTopW = ilep; charge_lepFromTopW = vLeptonFakeable.at(ilep).charge;
+                    i_bJet_fromTop = ijet;
+
+                    Neutrino.SetPxPyPzE(neutrino_Px, neutrino_Py, neutrino_Pz, neutrino_E);
+                }
+
+                //Also compute minimal inv mass of (lep+bjet) system
+                mass_LepBJet_min_tmp = (lep_tmp + Bjet_tmp).M();
+                if(mass_LepBJet_min_tmp < mass_LepBJet_min)
+                {
+                    mass_LepBJet_min = mass_LepBJet_min_tmp;
+                }
+            } //loop on bjets
+        } //loop on neutrino solutions
+    } //loop on leptons
+
+    tmp = -999;
+    for(int ijet=0; ijet<vJetLoose.size(); ijet++)
+    {
+        if(ijet == i_bJet_fromTop) {continue;}
+
+        if(vJetLoose.at(ijet).pt > tmp) {i_jet_recoiling = ijet;}
     }
 
-    weightfake = get_FR_weight(leptonsPts, leptonsEtas, leptonsIds);
+    if(i_lep_fromTopW < 0 || i_bJet_fromTop < 0 || i_jet_recoiling < 0) {return;}
+    lep_fromTopW.SetPtEtaPhiE(vLeptonFakeable.at(i_lep_fromTopW).conept, vLeptonFakeable.at(i_lep_fromTopW).eta, vLeptonFakeable.at(i_lep_fromTopW).phi, vLeptonFakeable.at(i_lep_fromTopW).E );
+    Bjet_fromTop.SetPtEtaPhiE(vJetLoose.at(i_bJet_fromTop).pt, vJetLoose.at(i_bJet_fromTop).eta, vJetLoose.at(i_bJet_fromTop).phi, vJetLoose.at(i_bJet_fromTop).E);
+    RecoilJet.SetPtEtaPhiE(vJetLoose.at(i_jet_recoiling).pt, vJetLoose.at(i_jet_recoiling).eta, vJetLoose.at(i_jet_recoiling).phi, vJetLoose.at(i_jet_recoiling).E);
 
-    // cout<<"weightfake = "<<weightfake<<endl;
+    mTW = sqrt(2*lep_fromTopW.Pt()*metpt*(1-cos(Phi_MPi_Pi(lep_fromTopW.Phi()-metphi)) ) );
+    // cout<<"mTW = "<<mTW<<endl;
+
+    lW_asym = charge_lepFromTopW * fabs(lep_fromTopW.Eta() );
+
+    dRBjetRecoilJet = GetDeltaR(Bjet_fromTop.Eta(), Bjet_fromTop.Phi(), RecoilJet.Eta(), RecoilJet.Phi());
+    dRLepWRecoilJet = GetDeltaR(lep_fromTopW.Eta(), lep_fromTopW.Phi(), RecoilJet.Eta(), RecoilJet.Phi());
+
+    RecoilJetPt = RecoilJet.Pt();
+    RecoilJetEta = RecoilJet.Eta();
+    LepWPt = lep_fromTopW.Pt();
+    LepWEta = lep_fromTopW.Eta();
 
     return;
 }
+
+
+
+
 
 /**
- * Set the value of "weightflip" variable. Weight read from ttH FR file
- * -- nLep_cat : "3l" or "2l" event
+ * Return smaller root of order 2 polynom, when solution exists
+ * //NB - "In case of an imaginary solution, the p Tmiss value is varied until one real solutionis found." ==> correct ??
  */
-void tHqMultileponAnalysis::Apply_FlipRate_Weight()
+bool tHqMultileponAnalysis::Get_Polynom2_Root(double a, double b, double c, vector<double>& result)
 {
-    // if(!_isdata) {return;}
+    result.resize(2);
+    result[0] = 0;
+    result[1] = 0;
 
-    weightflip = get_QF_weight(vLeptonFakeable.at(0).pt, fabs(vLeptonFakeable.at(0).eta), vLeptonFakeable.at(0).id, vLeptonFakeable.at(1).pt, fabs(vLeptonFakeable.at(1).eta), vLeptonFakeable.at(1).id);
+    double delta = b*b - 4*a*c;
 
-    // cout<<"weightflip = "<<weightflip<<endl;
+    if(delta > 0)
+    {
+        double res1 = (-b - sqrt(delta)) / (2*a);
+        double res2 = (-b + sqrt(delta)) / (2*a);
 
-    return;
+        result[0] = res1;
+        result[1] = res2;
+
+        // return (fabs(res1)<fabs(res2)) ? res1 : res2;
+        return true;
+    }
+    else if(delta == 0) {result[0] = -b / (2*a); return true;} //1 solution
+    else if(delta < 0) //Imaginary solutions //NB : how to deal with it ?
+    {
+        //For now, drop the imaginary part (see https://indico.cern.ch/event/181837/contributions/1449128/attachments/245620/343594/Reconstruction_of_the_Single_Top_v2.pdf)
+        // return false;
+
+        result[0] = fabs(-b / 2*a);
+
+        return true;
+    }
+
+    return false;
 }
+
+
+/**
+ * Combine metpt and mHT into a metpt linear discriminator “metLD”
+ * metpt and mHT are less correlated in events due to instrumental missing energy compared to the real one
+ * From PreApp slides : metLD = 0.6 * metpt+ 0.4 * mHT
+ * HERE : using alternative metLD def, used by ttH2017 for training ?? to be checked, don't use now
+ */
+double tHqMultileponAnalysis::Compute_metLD_Alternative(double metpt)
+{
+    double mHT = Compute_mHT();
+
+    return metpt*0.00397 + mHT*0.00265; //Alternative def, used for training sel ?
+    // return metpt*0.6 + mHT*0.4;
+}
+
+
+
 
 
 
@@ -3230,7 +4039,615 @@ double tHqMultileponAnalysis::Get_Distance(double rec_pt, double rec_eta, double
 
 
 
+void tHqMultileponAnalysis::Dump_EventInfo_Synchro(std::ofstream& outfile)
+{
+    // cout<<setprecision(15)<<event_run<<":"<<event_lumi<<":"<<event_id<<endl;
+    outfile<<setprecision(15)<<event_run<<":"<<event_lumi<<":"<<event_id<<endl;
+}
 
+
+
+
+
+/**
+ * Read the ttH2017 predefined categories values (implemented at NTP level), and fill the "tHq" cat. with their values
+ * This way we can compare the "ttH" cat. values between NTP/NTA codes
+ */
+void tHqMultileponAnalysis::Read_Predefined_Categories()
+{
+    //Can't convert directly boolean into Char_t
+    //NB : using Char_t because booleans should not be used in vectors (later)
+    if(vEvent->at(0).is_2lSS) {is_tHq_2lSS                           = 1;}
+    if(vEvent->at(0).is_2lSS_Training) {is_tHq_2lSS_Training         = 1;}
+    if(vEvent->at(0).is_2lSS_SR) {is_tHq_2lSS_SR                     = 1;}
+    if(vEvent->at(0).is_2lSS_Fake) {is_tHq_2lSS_Fake                 = 1;}
+    if(vEvent->at(0).is_2lSS_Flip) {is_tHq_2lSS_Flip                 = 1;}
+    if(vEvent->at(0).is_3l) {is_tHq_3l                               = 1;}
+    if(vEvent->at(0).is_3l_Training) {is_tHq_3l_Training             = 1;}
+    if(vEvent->at(0).is_3l_SR) {is_tHq_3l_SR                         = 1;}
+    if(vEvent->at(0).is_3l_Fake) {is_tHq_3l_Fake                     = 1;}
+    if(vEvent->at(0).is_ttWctrl) {is_tHq_ttWctrl                     = 1;}
+    if(vEvent->at(0).is_ttWctrl_SR) {is_tHq_ttWctrl_SR               = 1;}
+    if(vEvent->at(0).is_ttWctrl_Fake) {is_tHq_ttWctrl_Fake           = 1;}
+    if(vEvent->at(0).is_ttWctrl_Flip) {is_tHq_ttWctrl_Flip           = 1;}
+    if(vEvent->at(0).is_ttZctrl) {is_tHq_ttZctrl                     = 1;}
+    if(vEvent->at(0).is_ttZctrl_SR) {is_tHq_ttZctrl_SR               = 1;}
+    if(vEvent->at(0).is_ttZctrl_Fake) {is_tHq_ttZctrl_Fake           = 1;}
+    if(vEvent->at(0).is_WZctrl) {is_tHq_WZctrl                       = 1;}
+    if(vEvent->at(0).is_WZctrl_SR) {is_tHq_WZctrl_SR                 = 1;}
+    if(vEvent->at(0).is_WZctrl_Fake) {is_tHq_WZctrl_Fake             = 1;}
+    if(vEvent->at(0).is_4l_SR) {is_tHq_4l_SR                         = 1;}
+    if(vEvent->at(0).is_ZZctrl_SR) {is_tHq_ZZctrl_SR                 = 1;}
+
+    return;
+}
+
+
+
+
+
+/**
+ * The default "procedure" is to fill both the "tHq" cat. and "ttH" cat in this NTAnalysis code
+ * However the "ttH" cat. are also filled at the NTProducer level (for sync, skim, etc)
+ * This debugging function reads the "ttH" cat. from NTP files and fills the "tHq" booleans with their values
+ * This allows to then compare the "ttH" cat. values from NTP and NTA codes
+ */
+void tHqMultileponAnalysis::InitPredefinedCategories()
+{
+    is_tHq_2lSS              = 0;
+    is_tHq_2lSS_Training     = 0;
+    is_tHq_2lSS_SR           = 0;
+    is_tHq_2lSS_Fake         = 0;
+    is_tHq_2lSS_Flip         = 0;
+    is_tHq_3l                = 0;
+    is_tHq_3l_Training       = 0;
+    is_tHq_3l_SR             = 0;
+    is_tHq_3l_Fake           = 0;
+    is_tHq_ttWctrl           = 0;
+    is_tHq_ttWctrl_SR        = 0;
+    is_tHq_ttWctrl_Fake      = 0;
+    is_tHq_ttWctrl_Flip      = 0;
+    is_tHq_ttZctrl           = 0;
+    is_tHq_ttZctrl_SR        = 0;
+    is_tHq_ttZctrl_Fake      = 0;
+    is_tHq_WZctrl            = 0;
+    is_tHq_WZctrl_SR         = 0;
+    is_tHq_WZctrl_Fake       = 0;
+    is_tHq_4l_SR             = 0;
+    is_tHq_ZZctrl_SR         = 0;
+
+    return;
+}
+
+
+/**
+ * Find the indices of the first and last ctcv couplings
+ * Use them to compute the sum of all ctcv couplings (for later renorm.)
+ */
+float tHqMultileponAnalysis::Compute_SumWeights_ctcvCouplings(vector<float> v_weights, vector<std::string> v_ids)
+{
+    float sum_weights = 0;
+
+    TString first_coupling = "rwgt_1";
+    int nmin = -1, nmax = -1;
+
+    //Find indices of first/last ctcv couplings
+    for(int i=0; i<v_ids.size(); i++)
+    {
+        if(v_ids[i] == first_coupling) {nmin = i;}
+    }
+    nmax = nmin + 50; //This corresponds to the first cp phase index
+
+    if(nmin == -1 || v_ids[nmax] != "rwgt_51") {cout<<BOLD(FRED("Warning : first or last ctcv coupling not found ! Sum of ctcv weights set to -1 !"))<<endl; return -1;}
+
+    for(int i=nmin; i<nmax; i++)
+    {
+        sum_weights+= v_weights[i];
+    }
+
+    return sum_weights;
+}
+
+
+
+
+/**
+ * Check if event should be saved or not, depending on the type of anlysis we're doing
+ * If yes, returns the number of leptons to consider to compute the variables (as some 2l/3l categ may not be perfectly orthogonal, need to choose)
+ */
+int tHqMultileponAnalysis::Check_If_Save_Event(bool do_tHq_analysis)
+{
+    int nlep = 0;
+
+    if(do_tHq_analysis)
+    {
+        if(is_tHq_2lSS_SR
+        || is_tHq_2lSS_Training
+        || is_tHq_2lSS_Fake
+        || is_tHq_2lSS_Flip
+        || is_tHq_2lSS_GammaConv
+        || is_tHq_ttWctrl_SR
+        || is_tHq_ttWctrl_Fake
+        || is_tHq_ttWctrl_Flip
+        || is_tHq_ttWctrl_GammaConv) {nlep = 2;}
+        else if(is_tHq_3l_SR
+        || is_tHq_3l_Training
+        || is_tHq_3l_Fake
+        || is_tHq_3l_GammaConv
+        || is_tHq_ttZctrl_SR
+        || is_tHq_ttZctrl_Fake
+        || is_tHq_ttZctrl_GammaConv
+        || is_tHq_WZctrl_SR
+        || is_tHq_WZctrl_Fake
+        || is_tHq_WZctrl_GammaConv) {nlep = 3;}
+        else if(is_tHq_4l_SR
+        || is_tHq_ZZctrl_SR) {nlep = 4;}
+    }
+    else
+    {
+        if(is_ttH_2lSS_SR
+        || is_ttH_2lSS_Training
+        || is_ttH_2lSS_Fake
+        || is_ttH_2lSS_Flip
+        || is_ttH_2lSS_GammaConv
+        || is_ttH_ttWctrl_SR
+        || is_ttH_ttWctrl_Fake
+        || is_ttH_ttWctrl_Flip
+        || is_ttH_ttWctrl_GammaConv) {nlep = 2;}
+        else if(is_ttH_3l_SR
+        || is_ttH_3l_Training
+        || is_ttH_3l_Fake
+        || is_ttH_3l_GammaConv
+        || is_ttH_ttZctrl_SR
+        || is_ttH_ttZctrl_Fake
+        || is_ttH_WZctrl_SR
+        || is_ttH_WZctrl_Fake
+        || is_ttH_WZctrl_GammaConv) {nlep = 3;}
+        else if(is_ttH_4l_SR
+        || is_ttH_ZZctrl_SR) {nlep = 4;}
+    }
+
+    if(make_ntuples_for_overlap_studies) //also check ortho categories (events should normally also belong to another categ, but...)
+    {
+        if(is_ttH_2lSS_SR_fwd
+        || is_tHq_2lSS_SR_fwd
+
+        || is_ttH_2lSS_SR_btag
+        || is_tHq_2lSS_SR_btag
+
+        || is_tHq_2lSS_SR_njet
+        || is_tHq_2lSS_SR_njet
+        || is_ttH_ttWctrl_SR_njet
+
+        || is_tHq_2lSS_SR_fwd2
+        || is_ttH_ttWctrl_SR_fwd2
+
+        ) {nlep = 2;}
+
+        else if(is_ttH_3l_SR_fwd
+        || is_tHq_3l_SR_fwd
+
+        || is_ttH_3l_SR_btag
+        || is_tHq_3l_SR_btag
+
+        || is_ttH_3l_SR_njet
+        || is_tHq_3l_SR_njet
+
+        || is_tHq_3l_SR_njet2
+        || is_ttH_3l_SR_njet2
+
+        || is_tHq_3l_SR_njet3
+        || is_ttH_3l_SR_njet3
+
+        ) {nlep = 3;}
+    }
+
+    return nlep;
+}
+
+
+/**
+ * Fill overlap plot with event weight, depending on which tHq & ttH categories are activated
+ */
+void tHqMultileponAnalysis::Fill_Overlap_Histo()
+{
+    vector<Char_t> v_tHq_cat(0);
+    // v_tHq_cat.push_back(is_tHq_2lSS);
+    v_tHq_cat.push_back(is_tHq_2lSS_SR);
+    // v_tHq_cat.push_back(is_tHq_2lSS_Training);
+    // v_tHq_cat.push_back(is_tHq_2lSS_Fake);
+    // v_tHq_cat.push_back(is_tHq_2lSS_Flip);
+    // v_tHq_cat.push_back(is_tHq_2lSS_GammaConv);
+    // v_tHq_cat.push_back(is_tHq_ttWctrl);
+    v_tHq_cat.push_back(is_tHq_ttWctrl_SR);
+    // v_tHq_cat.push_back(is_tHq_ttWctrl_Fake);
+    // v_tHq_cat.push_back(is_tHq_ttWctrl_Flip);
+    // v_tHq_cat.push_back(is_tHq_ttWctrl_GammaConv);
+    // v_tHq_cat.push_back(is_ttH_3l);
+    v_tHq_cat.push_back(is_tHq_3l_SR);
+    // v_tHq_cat.push_back(is_tHq_3l_Training);
+    // v_tHq_cat.push_back(is_tHq_3l_Fake);
+    // v_tHq_cat.push_back(is_tHq_ttZctrl);
+    v_tHq_cat.push_back(is_tHq_ttZctrl_SR);
+    // v_tHq_cat.push_back(is_tHq_ttZctrl_Fake);
+    // v_tHq_cat.push_back(is_tHq_WZctrl);
+    v_tHq_cat.push_back(is_tHq_WZctrl_SR);
+    // v_tHq_cat.push_back(is_tHq_WZctrl_Fake);
+
+    vector<Char_t> v_ttH_cat(0);
+    // v_ttH_cat.push_back(is_ttH_2lSS);
+    v_ttH_cat.push_back(is_ttH_2lSS_SR);
+    // v_ttH_cat.push_back(is_ttH_2lSS_Training);
+    // v_ttH_cat.push_back(is_ttH_2lSS_Fake);
+    // v_ttH_cat.push_back(is_ttH_2lSS_Flip);
+    // v_ttH_cat.push_back(is_ttH_ttWctrl);
+    v_ttH_cat.push_back(is_ttH_ttWctrl_SR);
+    // v_ttH_cat.push_back(is_ttH_ttWctrl_Fake);
+    // v_ttH_cat.push_back(is_ttH_ttWctrl_Flip);
+    // v_ttH_cat.push_back(is_ttH_ttWctrl_GammaConv);
+    // v_ttH_cat.push_back(is_ttH_3l);
+    v_ttH_cat.push_back(is_ttH_3l_SR);
+    // v_ttH_cat.push_back(is_ttH_3l_Training);
+    // v_ttH_cat.push_back(is_ttH_3l_Fake);
+    // v_ttH_cat.push_back(is_ttH_ttZctrl);
+    v_ttH_cat.push_back(is_ttH_ttZctrl_SR);
+    // v_ttH_cat.push_back(is_ttH_ttZctrl_Fake);
+    // v_ttH_cat.push_back(is_ttH_WZctrl);
+    v_ttH_cat.push_back(is_ttH_WZctrl_SR);
+    // v_ttH_cat.push_back(is_ttH_WZctrl_Fake);
+
+    //Store total yield of events entering each tHq cat
+    for(int icat=0; icat<v_tHq_cat.size(); icat++)
+    {
+        if(v_tHq_cat[icat] == 1) //Add event yield to total
+        {
+            float tmp = h_totalYield_tHq_cat->GetBinContent(icat+1);
+            h_totalYield_tHq_cat->SetBinContent(icat+1, tmp+weight);
+        }
+    }
+
+    //Store total yield of events entering each ttH cat
+    for(int icat=0; icat<v_ttH_cat.size(); icat++)
+    {
+        if(v_ttH_cat[icat] == 1) //Add event yield to total
+        {
+            float tmp = h_totalYield_ttH_cat->GetBinContent(icat+1);
+            h_totalYield_ttH_cat->SetBinContent(icat+1, tmp+weight);
+        }
+    }
+
+    //Save total yield of events overlapping between tHq/ttH categories
+    for(int i=0; i<v_tHq_cat.size(); i++)
+    {
+        if(v_tHq_cat[i] == 1)
+        {
+            for(int j=0; j<v_ttH_cat.size(); j++)
+            {
+                if(v_ttH_cat[j] == 1) //Add event yield to total
+                {
+                    float tmp = h_overlap_ttH_tHq_cat->GetBinContent(i+1, j+1);
+                    h_overlap_ttH_tHq_cat->SetBinContent(i+1, j+1, tmp+weight);
+                }
+            }
+        }
+    }
+
+    return;
+}
+
+
+
+/**
+ * Check if a "tHq" cat. is different than its "ttH" counterpart (defined at NTP code level)
+ * If there is a difference, it means one code needs debugging (NTA or NTP)
+ * /!\ NB : this is not useful (as is) because in NTP code the jet collection always includes forward jet, not this code...!
+ */
+void tHqMultileponAnalysis::Check_Disagreement_Category_NTP_NTA_Codes()
+{
+    TString catname = ""; Char_t NTA_cat_value = 0;
+
+    if(is_tHq_2lSS_SR != is_ttH_2lSS_SR) {catname =  "is_tHq_2lSS_SR"; NTA_cat_value = is_tHq_2lSS_SR;}
+    if(is_tHq_2lSS_Fake != is_ttH_2lSS_Fake) {catname =  "is_tHq_2lSS_Fake"; NTA_cat_value = is_tHq_2lSS_Fake;}
+    if(is_tHq_2lSS_Flip != is_ttH_2lSS_Flip) {catname =  "is_tHq_2lSS_Flip"; NTA_cat_value = is_tHq_2lSS_Flip;}
+    if(is_tHq_3l_SR != is_ttH_3l_SR) {catname =  "is_tHq_3l_SR"; NTA_cat_value = is_tHq_3l_SR;}
+    if(is_tHq_3l_Fake != is_ttH_3l_Fake) {catname =  "is_tHq_3l_Fake"; NTA_cat_value = is_tHq_3l_Fake;}
+    if(is_tHq_ttWctrl_SR != is_ttH_ttWctrl_SR) {catname =  "is_tHq_ttWctrl_SR"; NTA_cat_value = is_tHq_ttWctrl_SR;}
+    if(is_tHq_ttWctrl_Fake != is_ttH_ttWctrl_Fake) {catname =  "is_tHq_ttWctrl_Fake"; NTA_cat_value = is_tHq_ttWctrl_Fake;}
+    if(is_tHq_ttWctrl_Flip != is_ttH_ttWctrl_Flip) {catname =  "is_tHq_ttWctrl_Flip"; NTA_cat_value = is_tHq_ttWctrl_Flip;}
+    if(is_tHq_ttZctrl_SR != is_ttH_ttZctrl_SR) {catname =  "is_tHq_ttZctrl_SR"; NTA_cat_value = is_tHq_ttZctrl_SR;}
+    if(is_tHq_ttZctrl_Fake != is_ttH_ttZctrl_Fake) {catname =  "is_tHq_ttZctrl_Fake"; NTA_cat_value = is_tHq_ttZctrl_Fake;}
+    if(is_tHq_WZctrl_SR != is_ttH_WZctrl_SR) {catname =  "is_tHq_WZctrl_SR"; NTA_cat_value = is_tHq_WZctrl_SR;}
+    if(is_tHq_WZctrl_Fake != is_ttH_WZctrl_Fake) {catname =  "is_tHq_WZctrl_Fake"; NTA_cat_value = is_tHq_WZctrl_Fake;}
+    if(is_tHq_4l_SR != is_ttH_4l_SR) {catname =  "is_tHq_4l_SR"; NTA_cat_value = is_tHq_4l_SR;}
+    if(is_tHq_ZZctrl_SR != is_ttH_ZZctrl_SR) {catname =  "is_tHq_ZZctrl_SR"; NTA_cat_value = is_tHq_ZZctrl_SR;}
+
+    if(catname != "")
+    {
+        cout<<"//--------------------------------------------"<<endl;
+        cout<<"Event ID : "<<setprecision(15)<<event_id<<endl;
+        cout<<"* ==> Cat. "<<catname<<" is defined differently in NTP & NTA code. CHECK !"<<endl;
+        cout<<"(the categ. filled by Sync.cxx code has value "<<(bool) NTA_cat_value<<")"<<endl;
+
+        cout<<"nJets = "<<nJets<<endl;
+        cout<<"nLightJets = "<<nLightJets<<endl;
+        cout<<"nLooseBJets = "<<nLooseBJets<<endl;
+        cout<<"nMediumBJets = "<<nMediumBJets<<endl;
+        cout<<"nFakeableLep = "<<nFakeableLep<<endl;
+    }
+
+    return;
+}
+
+/**
+ * Check if event enters 1 of the new categories -- preliminary studies
+ * Logic FOR 3l CHANNEL : to enter a "new categ", event must 1) enter the old categ, and 2) either a) satisfy the additional requirement or b) not enter the category of the other analysis
+ * 2l channel : more complicated, there is also overlap with ttW CR. Try 2 approaches (deal or do not deal with this overlap)
+ */
+void tHqMultileponAnalysis::Define_New_Categorization()
+{
+//--------------------------------------------
+//--------------------------------------------
+//DEFAULT -- STILL OVERLAP BETWEEN THQ 2LSS SR AND TTW CR
+    if(is_ttH_3l_SR) //ttH 3l SR
+    {
+        if(!is_tHq_3l_SR)
+        {
+            is_ttH_3l_SR_btag = 1;
+            is_ttH_3l_SR_fwd = 1;
+        }
+        else
+        {
+            if(nLooseBJets != 1 || nMediumBJets != 1) {is_ttH_3l_SR_btag = 1;}
+            if(nLightJets_Fwd == 0) {is_ttH_3l_SR_fwd = 1;}
+        }
+    }
+
+    if(is_tHq_3l_SR) //tHq 3l SR
+    {
+        if(!is_ttH_3l_SR)
+        {
+            is_tHq_3l_SR_btag = 1;
+            is_tHq_3l_SR_fwd = 1;
+        }
+        else
+        {
+            if(nLooseBJets == 1 && nMediumBJets == 1) {is_tHq_3l_SR_btag = 1;}
+            if(nLightJets_Fwd > 0) {is_tHq_3l_SR_fwd = 1;}
+        }
+    }
+
+    if(is_ttH_2lSS_SR) //ttH 2lSS SR
+    {
+        if(!is_tHq_2lSS_SR)
+        {
+            is_ttH_2lSS_SR_btag = 1;
+            is_ttH_2lSS_SR_fwd = 1;
+        }
+        else
+        {
+            if(nLooseBJets != 1 || nMediumBJets != 1) {is_ttH_2lSS_SR_btag = 1;}
+            if(nLightJets_Fwd == 0) {is_ttH_2lSS_SR_fwd = 1;}
+        }
+    }
+
+    if(is_tHq_2lSS_SR) //tHq 2lSS SR
+    {
+        if(!is_ttH_2lSS_SR)
+        {
+            is_tHq_2lSS_SR_btag = 1;
+            is_tHq_2lSS_SR_fwd = 1;
+        }
+        else
+        {
+            if(nLooseBJets == 1 && nMediumBJets == 1) {is_tHq_2lSS_SR_btag = 1;}
+            if(nLightJets_Fwd > 0) {is_tHq_2lSS_SR_fwd = 1;}
+        }
+
+        //Additional requirement to make tHq 2lSS SR ortho with ttW CR
+        is_tHq_2lSS_SR_fwd2 = is_tHq_2lSS_SR_fwd;
+        if(is_ttH_ttWctrl_SR && nLightJets_Fwd == 0) {is_tHq_2lSS_SR_fwd2 = 0;}
+    }
+
+    if(is_ttH_ttWctrl_SR)
+    {
+        if(!is_tHq_2lSS_SR) {is_ttH_ttWctrl_SR_fwd2 = 1;}
+        else if(nLightJets_Fwd == 0) {is_ttH_ttWctrl_SR_fwd2 = 1;}
+    }
+
+
+//--------------------------------------------
+//--------------------------------------------
+//Also remove overlap with ttW CR
+
+//--- 2l
+
+    //Orthogonalize SRs  -> all overlap events go to ttH (most tHq signal is not in overlap anyway)
+    //Orthogonalize ttW CR -> use nFwdJet
+    if(is_ttH_2lSS_SR)
+    {
+        if(!is_tHq_2lSS_SR) {is_ttH_2lSS_SR_njet = 1;}
+        else if(nJets_tHq >= 4) {is_ttH_2lSS_SR_njet = 1;} //needed for 3l SR, not 2lSS
+    }
+
+    if(is_tHq_2lSS_SR)
+    {
+        if(!is_ttH_2lSS_SR && !is_ttH_ttWctrl_SR) {is_tHq_2lSS_SR_njet = 1;}
+        else if(is_ttH_2lSS_SR && nJets_tHq < 4) {is_tHq_2lSS_SR_njet = 1;}
+        else if(is_ttH_ttWctrl_SR && nLightJets_Fwd > 0) {is_tHq_2lSS_SR_njet = 1;}
+    }
+
+    if(is_ttH_ttWctrl_SR)
+    {
+        if(!is_tHq_2lSS_SR) {is_ttH_ttWctrl_SR_njet = 1;}
+        else if(nLightJets_Fwd == 0) {is_ttH_ttWctrl_SR_njet = 1;}
+    }
+
+    //--- 3l
+    if(is_ttH_3l_SR)
+    {
+        is_ttH_3l_SR_njet2 = 1; //All overlap goes to ttH
+
+        if(!is_tHq_3l_SR || nJets_tHq >= 4) {is_ttH_3l_SR_njet = 1;}
+        if(!is_tHq_3l_SR || nJets_tHq >= 3) {is_ttH_3l_SR_njet3 = 1;}
+    }
+
+    if(is_tHq_3l_SR)
+    {
+        if(!is_ttH_3l_SR_njet2) {is_tHq_3l_SR_njet2 = 1;} //All overlap goes to ttH
+
+        if(!is_ttH_3l_SR || nJets_tHq < 4) {is_tHq_3l_SR_njet = 1;}
+        if(!is_ttH_3l_SR || nJets_tHq < 3) {is_tHq_3l_SR_njet3 = 1;}
+    }
+
+    return;
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//--------------------------------------------
+//  #######  ########   ######   #######  ##       ######## ######## ########
+// ##     ## ##     ## ##    ## ##     ## ##       ##          ##    ##
+// ##     ## ##     ## ##       ##     ## ##       ##          ##    ##
+// ##     ## ########   ######  ##     ## ##       ######      ##    ######
+// ##     ## ##     ##       ## ##     ## ##       ##          ##    ##
+// ##     ## ##     ## ##    ## ##     ## ##       ##          ##    ##
+//  #######  ########   ######   #######  ######## ########    ##    ########
+//--------------------------------------------
+
+/*
+bool tHqMultileponAnalysis::is_GammaConv_Event(int nlep)
+{
+    if(_isdata) {return false;}
+
+    if(abs(vLeptonFakeable[0].id) == 11 && vLeptonFakeable[0].hasPhotonMCMatch) {return true;}
+    if(abs(vLeptonFakeable[1].id) == 11 && vLeptonFakeable[1].hasPhotonMCMatch) {return true;}
+
+    if(nlep==3)
+    {
+        if(abs(vLeptonFakeable[2].id) == 11 && vLeptonFakeable[2].hasPhotonMCMatch) {return true;}
+    }
+
+    return false;
+}
+
+
+bool tHqMultileponAnalysis::is_Electron_Matched_To_Gamma(int lepRec_idx)
+{
+    if(_isdata) {return false;}
+    if( abs(vLeptonFakeable[lepRec_idx].id) != 11) {return -1;} //Check ele only
+
+    int genLep_idx = Ele_To_Lepton_Matching(lepRec_idx);
+    int genPho_idx = Ele_To_Gamma_Matching(lepRec_idx);
+
+    if(genLep_idx < 0 && genPho_idx > 0) {return true;}
+    else if(genLep_idx > 0 && genPho_idx > 0)
+    {
+        double dlep = Get_Distance(vLeptonFakeable[lepRec_idx].conept, vLeptonFakeable[lepRec_idx].eta, vLeptonFakeable[lepRec_idx].phi, vTruth->at(0).gen_pt.at(genLep_idx), vTruth->at(0).gen_eta.at(genLep_idx), vTruth->at(0).gen_phi.at(genLep_idx) );
+        double dpho = Get_Distance(vLeptonFakeable[lepRec_idx].conept, vLeptonFakeable[lepRec_idx].eta, vLeptonFakeable[lepRec_idx].phi, vTruth->at(0).gen_pt.at(genPho_idx), vTruth->at(0).gen_eta.at(genPho_idx), vTruth->at(0).gen_phi.at(genPho_idx) );
+
+        if(dpho < dlep) {return true;}
+    }
+
+    return false;
+}
+
+
+
+int tHqMultileponAnalysis::Ele_To_Gamma_Matching(int lepRec_idx)
+{
+    if(_isdata) {return -1;}
+    if( abs(vLeptonFakeable[lepRec_idx].id) != 11) {return -1;} //Check ele only
+
+    double dR_min = 999;
+    int idx_bestMatch = -1;
+
+    //Loop on all truth objects
+    for(int itruth = 0; itruth < vTruth->at(0).gen_id.size(); itruth++)
+    {
+        if(abs(vTruth->at(0).gen_id.at(itruth)) != 22) {continue;} //Check only gen photons
+        if(vTruth->at(0).gen_status.at(itruth) != 1) {continue;} //Check that gen photon belongs to final state
+        if(vTruth->at(0).gen_pt.at(itruth) < 1) {continue;} //Check that gen photon has pT>1
+
+        if(vLeptonFakeable[lepRec_idx].conept < 0.3 * vTruth->at(0).gen_pt.at(itruth) || vLeptonFakeable[lepRec_idx].conept > 1.5 * vTruth->at(0).gen_pt.at(itruth) ) {continue;}
+
+        double dR = GetDeltaR(vLeptonFakeable[lepRec_idx].eta, vLeptonFakeable[lepRec_idx].phi, vTruth->at(0).gen_eta.at(itruth), vTruth->at(0).gen_phi.at(itruth) );
+
+        if(dR > 0.3) {continue;}
+
+        if(dR < dR_min)
+        {
+            dR_min = dR;
+            idx_bestMatch = itruth;
+        }
+    }
+
+    return idx_bestMatch;
+}
+
+int tHqMultileponAnalysis::Ele_To_Lepton_Matching(int lepRec_idx)
+{
+    if(_isdata) {return -1;}
+    if( abs(vLeptonFakeable[lepRec_idx].id) != 11) {return -1;} //Check ele only
+
+    double dR_min = 999;
+    int idx_bestMatch = -1;
+
+    //Loop on all truth objects
+    for(int itruth = 0; itruth < vTruth->at(0).gen_id.size(); itruth++)
+    {
+        if(abs(vTruth->at(0).gen_id.at(itruth)) != abs(vLeptonFakeable[lepRec_idx].id) ) {continue;} //Check gen leptons with same ID
+
+        double dR = GetDeltaR(vLeptonFakeable[lepRec_idx].eta, vLeptonFakeable[lepRec_idx].phi, vTruth->at(0).gen_eta.at(itruth), vTruth->at(0).gen_phi.at(itruth) );
+
+        if(dR > 0.3) {continue;}
+
+        if(dR < dR_min)
+        {
+            dR_min = dR;
+            idx_bestMatch = itruth;
+        }
+
+        // if(dR < 0.3) {return itruth;}
+        // else if(vLeptonFakeable[lepRec_idx].conept < 10 && abs(vLeptonFakeable[lepRec_idx].id) == 13 && vLeptonFakeable[lepRec_idx].id != vTruth->at(0).gen_id.at(itruth) ) {return -1;}
+        // else if(dR < 0.7) {return itruth;}
+        // else if(std::min(vLeptonFakeable[lepRec_idx].conept, vTruth->at(0).gen_pt.at(itruth)) / std::max(vLeptonFakeable[lepRec_idx].conept, vTruth->at(0).gen_pt.at(itruth)) < 0.3) {return -1;}
+        // else if(dR < 1.2) {return itruth;}
+    }
+
+    return idx_bestMatch;
+}
+*/
 
 
 
@@ -3263,42 +4680,3 @@ double tHqMultileponAnalysis::Get_Distance(double rec_pt, double rec_eta, double
 //    ##    ##       ##    ##    ##     ##  ##   ### ##    ##
 //    ##    ########  ######     ##    #### ##    ##  ######
 //--------------------------------------------
-
-/**
- * Apply scale factors (lepton, trigger, ...) to weight, using the ScaleFactors object
- * @param nlep : read different files depending if 2lss or 3l
- */
-void tHqMultileponAnalysis::Apply_ScaleFactors(int nlep)
-{
-    if(nlep != 2 && nlep != 3) {cout<<"Error : wrong nlep value !"<<endl; return;}
-
-    //Lepton SF
-    //--------------------------------------------
-    float lepton_SF = 1;
-
-    lepton_SF*= sf->Get_Lepton_SF(nlep, vLeptonFakeable[0].id, vLeptonFakeable[0].pt, vLeptonFakeable[0].eta);
-    lepton_SF*= sf->Get_Lepton_SF(nlep, vLeptonFakeable[1].id, vLeptonFakeable[1].pt, vLeptonFakeable[1].eta);
-
-    if(nlep == 3) {lepton_SF*= sf->Get_Lepton_SF(nlep, vLeptonFakeable[2].id, vLeptonFakeable[2].pt, vLeptonFakeable[2].eta);}
-
-    // cout<<"lepton_SF = "<<lepton_SF<<endl;
-    // cout<<"Weight : "<<weight<<" --> "<<weight * lepton_SF<<endl;
-
-    // weight*= lepton_SF;
-    //--------------------------------------------
-
-
-    //Trigger SF
-    //--------------------------------------------
-    float trigger_SF = sf->Get_Trigger_SF(nlep, vLeptonFakeable[0].id, vLeptonFakeable[0].pt, vLeptonFakeable[1].id, vLeptonFakeable[1].pt);
-
-    // cout<<"trigger_SF = "<<trigger_SF<<endl;
-    // cout<<"Weight : "<<weight<<" --> "<<weight * trigger_SF<<endl;
-
-    // weight*= trigger_SF;
-    //--------------------------------------------
-
-
-
-    return;
-}

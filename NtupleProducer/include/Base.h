@@ -39,6 +39,8 @@ class Base : public Helper
    bool  isMediumTTH;
    bool  isTightTTH;
    bool  hasMCMatch;
+   bool  hasChargeMCMatch;
+   bool  hasPhotonMCMatch; //for ele only
    int   charge;
    bool  tightCharge;
    float lepMVA;

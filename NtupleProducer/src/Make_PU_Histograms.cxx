@@ -78,23 +78,27 @@ double Convert_TString_To_Number(TString ts)
 
 void Make_PU_Histograms(vector<TString> v_process)
 {
+	cout<<"== WILL CREATE PILEUP PROFILES FOR ALL SAMPLES IN VECTOR =="<<endl<<endl;
+
+	bool read_pileup_histograms_from_flatTrees = true; //true <-> read PU info from histogram ; //else produce histo from TTree (read all entries)
+
     TString list_dir = "/home-pbs/ntonon/tHq/IPHCNtuple_2017/CMSSW_9_4_3/src/IPHCNtuple/NtupleProducer/test/lists/";
 	TString output_dir = "/home-pbs/ntonon/tHq/IPHCNtuple_2017/CMSSW_9_4_3/src/IPHCNtuple/NtupleAnalyzer/test/weights_2017/PU_SF/profiles_MC/";
 
     for(int iproc=0; iproc<v_process.size(); iproc++)
     {
-        int nFiles_notFound = 0;
+		cout<<endl<<"-- Sample : "<<v_process[iproc]<<endl;
 
-		TString output_name = output_dir+v_process[iproc]+".root";
-		TFile* f_output = new TFile(output_name, "RECREATE");
+		TH1F* h_PU = 0;
+		if(!read_pileup_histograms_from_flatTrees) {h_PU = new TH1F("", "", 100, 0, 100);}
 
-		TH1F* h_PU = new TH1F("", "", 100, 0, 100);
-
-	    for(int ifile=0; ifile<1000; ifile++)
+		int nFiles_notFound = 0;
+		int ifile = 0;
+		while(nFiles_notFound < 5) //Stop if not finding 5 consecutive files (must have reached the end)
         {
             TString filename = list_dir + v_process[iproc] + "_ID" + Convert_Number_To_TString(ifile) + ".txt";
-            if(!Check_File_Existence(filename) ) {cout<<"File "<<filename<<"not found !"<<endl; nFiles_notFound++;}
-            if(nFiles_notFound >= 5) {break;} //means that we reached the final file already
+			ifile++;
+            if(!Check_File_Existence(filename) ) {cout<<"File "<<filename<<" not found !"<<endl; nFiles_notFound++; continue;}
 
 			ifstream file_in(filename.Data() );
 
@@ -105,39 +109,58 @@ void Make_PU_Histograms(vector<TString> v_process)
 				cout<<endl<<"- Opening file "<<ts<<"..."<<endl;
 
 				TFile* f = TFile::Open(ts);
-
 				if(!f) {continue;}
 
-				TTree* t = (TTree*) f->Get("FlatTree/tree");
+                cout<<"-> Opened"<<endl<<endl;
 
-				Int_t nPU;
-				Float_t mc_weight;
-				t->SetBranchAddress("mc_pu_trueNumInt", &nPU);
-				t->SetBranchAddress("mc_weight", &mc_weight);
-				int nentries = t->GetEntries();
-
-				for(int ientry=0; ientry<nentries; ientry++)
+				//--- OBSOLETE : DIRECTLY READ THE PILEUP VARIABLE IN TTree
+				if(!read_pileup_histograms_from_flatTrees)
 				{
-					// if(ientry>10000) {break;}
 
-					if(ientry%20000==0) {cout<<"Event : "<<ientry<<" / "<<nentries<<endl;}
+					TTree* t = (TTree*) f->Get("FlatTree/tree");
+					Int_t nPU;
+					Float_t mc_weight;
+					t->SetBranchAddress("mc_pu_trueNumInt", &nPU);
+					t->SetBranchAddress("mc_weight", &mc_weight);
+					int nentries = t->GetEntries();
+					for(int ientry=0; ientry<nentries; ientry++)
+					{
+						// if(ientry>10000) {break;}
 
-					t->GetEntry(ientry);
+						if(ientry%20000==0) {cout<<"Event : "<<ientry<<" / "<<nentries<<endl;}
 
-					h_PU->Fill(nPU, mc_weight);
+						t->GetEntry(ientry);
+
+						h_PU->Fill(nPU, mc_weight);
+					}
+					delete t; t = NULL;
 				}
 
-				delete t; t = NULL;
+				//--- NOW : store nPU histo at FlatTree level, so can just merge histos from all files
+				if(read_pileup_histograms_from_flatTrees)
+				{
+                    TH1F* h_tmp = (TH1F*) f->Get("FlatTree/hpileup")->Clone();
+					h_tmp->SetDirectory(0); //So that hist is not associated to file (& deleted when we close it)
+
+                    if(!h_PU) {h_PU = (TH1F*) h_tmp;}
+					else {h_PU->Add(h_tmp);}
+				}
+
 				f->Close();
 			}
-
         }
 
-		f_output->cd();
-		h_PU->Write("Pileup_MC");
+		TString output_name = output_dir+v_process[iproc]+".root";
+		TFile* f_output = 0;
+		if(h_PU && h_PU->GetEntries() > 0)
+		{
+			f_output = new TFile(output_name, "RECREATE");
+			f_output->cd();
+			h_PU->Write("Pileup_MC");
+			f_output->Close();
+		}
 
-		delete h_PU; h_PU = NULL;
-		f_output->Close();
+		if(!read_pileup_histograms_from_flatTrees) {delete h_PU; h_PU = NULL;}
 
 		cout<<"---> Saved file "<<output_name<<endl;
     }
@@ -167,41 +190,72 @@ int main(int argc, char *argv[])
 	// if(argc != 2) {cout<<"Wrong arg ! Abort"<<endl; return 1;}
 	// v_process.push_back(argv[1]);
 
+//--------------------------------------------
     vector<TString> v_process;
 
-	// v_process.push_back("THQ_4f_Hincl_13TeV_madgraph_pythia8"); //
-	// v_process.push_back("THW_5f_Hincl_13TeV_madgraph_pythia8"); //
-	// v_process.push_back("ttHJetToNonbb_M125_TuneCP5_13TeV_amcatnloFXFX_madspin_pythia8"); //
-	// v_process.push_back("tZq_ll_4f_ckm_NLO_TuneCP5_PSweights_13TeV-amcatnlo-pythia8"); //
-	// v_process.push_back("TTZToLL_M-1to10_TuneCP5_13TeV-amcatnlo-pythia8"); //
-	// v_process.push_back("TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8"); //
-	// v_process.push_back("TTWJetsToLNu_TuneCP5_PSweights_13TeV-amcatnloFXFX-madspin-pythia8"); //
-	// v_process.push_back("ZZZ_TuneCP5_13TeV-amcatnlo-pythia8"); //
-	// v_process.push_back("WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8"); //
-	// v_process.push_back("ZZTo4L_13TeV_powheg_pythia8_ext");
-	// v_process.push_back("ZZTo2L2Nu_13TeV_powheg_pythia8"); //
-	// v_process.push_back("WZZ_TuneCP5_13TeV-amcatnlo-pythia8"); //
-	// v_process.push_back("WWZ_4F_TuneCP5_13TeV-amcatnlo-pythia8"); //
-	// v_process.push_back("WWW_4F_TuneCP5_13TeV-amcatnlo-pythia8"); //
-	// v_process.push_back("WWTo2L2Nu_NNPDF31_TuneCP5_13TeV-powheg-pythia8");//
-	// v_process.push_back("WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8");
-	// v_process.push_back("WGToLNuG_TuneCP5_13TeV-madgraphMLM-pythia8"); //
-	// v_process.push_back("TTWW_TuneCP5_13TeV-madgraph-pythia8"); //
-	// v_process.push_back("TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8");
-	// v_process.push_back("TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8");
-	// v_process.push_back("TTTT_TuneCP5_13TeV-amcatnlo-pythia8"); //
-	// v_process.push_back("TTJets_SingleLeptFromTbar_TuneCP5_13TeV-madgraphMLM-pythia8"); //
-	 v_process.push_back("TTJets_SingleLeptFromT_TuneCP5_13TeV-madgraphMLM-pythia8");
-	// v_process.push_back("TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8"); //
-	// v_process.push_back("TTGJets_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8"); //
-	// v_process.push_back("TGJets_leptonDecays_TuneCP5_PSweights_13TeV-amcatnlo-pythia8"); //
-	// v_process.push_back("ST_tWll_5f_LO_TuneCP5_PSweights_13TeV-madgraph-pythia8"); //
-	// v_process.push_back("ST_tW_top_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8"); //
-	// v_process.push_back("ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8"); //
-	// v_process.push_back("ST_t-channel_top_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8"); //
-	// v_process.push_back("ST_s-channel_4f_leptonDecays_TuneCP5_PSweights_13TeV-amcatnlo-pythia8"); //
+	// v_process.push_back("THQ_4f_Hincl_13TeV_madgraph_pythia8");
+    // v_process.push_back("THQ_ctcvcp_4f_Hincl_13TeV_madgraph_pythia8");
+    // v_process.push_back("THW_5f_Hincl_13TeV_madgraph_pythia8");
+    // v_process.push_back("THW_ctcvcp_5f_Hincl_13TeV_madgraph_pythia8");
+    // v_process.push_back("ttHJetToNonbb_M125_TuneCP5_13TeV_amcatnloFXFX_madspin_pythia8");
+    // v_process.push_back("ttHToNonbb_M125_TuneCP5_13TeV-powheg-pythia8");
+    // v_process.push_back("ttH_M125_TuneCP5_13TeV-powheg-pythia8");
+    // v_process.push_back("ST_FCNC-TH_Tleptonic_HToWWZZtautau_eta_hct-MadGraph5-pythia8");
+    // v_process.push_back("ST_FCNC-TH_Tleptonic_HToWWZZtautau_eta_hut-MadGraph5-pythia8");
+    // v_process.push_back("TT_FCNC-TtoHJ_aTleptonic_HToWWZZtautau_eta_hct-MadGraph5-pythia8");
+    // v_process.push_back("TT_FCNC-TtoHJ_aTleptonic_HToWWZZtautau_eta_hut-MadGraph5-pythia8");
+    // v_process.push_back("TT_FCNC-aTtoHJ_Tleptonic_HToWWZZtautau_eta_hct-MadGraph5-pythia8");
+    // v_process.push_back("TT_FCNC-aTtoHJ_Tleptonic_HToWWZZtautau_eta_hut-MadGraph5-pythia8");
+    // v_process.push_back("TTWJetsToLNu_TuneCP5_PSweights_13TeV-amcatnloFXFX-madspin-pythia8");
+    // v_process.push_back("ttWJets_TuneCP5_13TeV_madgraphMLM_pythia8");
+    // v_process.push_back("TTZToLL_M-1to10_TuneCP5_13TeV-amcatnlo-pythia8");
+    // v_process.push_back("TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8");
+    // v_process.push_back("ttZJets_TuneCP5_13TeV_madgraphMLM_pythia8");
+    // v_process.push_back("WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8");
+	// v_process.push_back("tZq_ll_4f_ckm_NLO_TuneCP5_PSweights_13TeV-amcatnlo-pythia8");
+    // v_process.push_back("ZZTo2L2Nu_13TeV_powheg_pythia8");
+    // v_process.push_back("ZZTo4L_13TeV_powheg_pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v2_MINIAODSIM");
+    // v_process.push_back("ZZTo4L_13TeV_powheg_pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM");
+    // v_process.push_back("TGJets_leptonDecays_TuneCP5_PSweights_13TeV-amcatnlo-pythia8");
+	// v_process.push_back("TTGJets_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8");
+    // v_process.push_back("WZZ_TuneCP5_13TeV-amcatnlo-pythia8");
+    // v_process.push_back("ZZZ_TuneCP5_13TeV-amcatnlo-pythia8");
+    // v_process.push_back("WWW_4F_TuneCP5_13TeV-amcatnlo-pythia8");
+	// v_process.push_back("WWZ_4F_TuneCP5_13TeV-amcatnlo-pythia8");
+    // v_process.push_back("TTTT_TuneCP5_13TeV-amcatnlo-pythia8");
+    // v_process.push_back("TTWW_TuneCP5_13TeV-madgraph-pythia8");
+    // v_process.push_back("TTWH_TuneCP5_13TeV-madgraph-pythia8");
+    // v_process.push_back("TTTW_TuneCP5_13TeV-madgraph-pythia8");
+    // v_process.push_back("GluGluHToZZTo4L_M125_13TeV_powheg2_JHUGenV7011_pythia8");
+    // v_process.push_back("WpWpJJ_EWK-QCD_TuneCP5_13TeV-madgraph-pythia8");
+    // v_process.push_back("WW_DoubleScattering_13TeV-pythia8_TuneCP5");
+    // v_process.push_back("WZG_TuneCP5_13TeV-amcatnlo-pythia8");
+    v_process.push_back("W3JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8");
+    v_process.push_back("W4JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8");
+    v_process.push_back("ST_tWll_5f_LO_TuneCP5_PSweights_13TeV-madgraph-pythia8_Fall17");
+    v_process.push_back("VHToNonbb_M125_13TeV_amcatnloFXFX_madspin_pythia8_Fall17");
+    v_process.push_back("DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8");
+    v_process.push_back("DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_RECOSIMstep_94X_mc2017_realistic_v10_v1_MINIAODSIM");
+    v_process.push_back("DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_RECOSIMstep_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM");
+    v_process.push_back("DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v1_MINIAODSIM");
+    v_process.push_back("DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM");
+    v_process.push_back("TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8");
+    v_process.push_back("TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8");
+    v_process.push_back("TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8");
+    v_process.push_back("TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8");
+    v_process.push_back("TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8");
+    v_process.push_back("TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8");
+    v_process.push_back("TTJets_SingleLeptFromT_TuneCP5_13TeV-madgraphMLM-pythia8");
+    v_process.push_back("TTJets_SingleLeptFromTbar_TuneCP5_13TeV-madgraphMLM-pythia8");
+	v_process.push_back("WGToLNuG_TuneCP5_13TeV-madgraphMLM-pythia8");
 
+	// v_process.push_back("");
+//--------------------------------------------
+
+
+//--------------------------------------------
     Make_PU_Histograms(v_process);
+//--------------------------------------------
 
 	return 0;
 }

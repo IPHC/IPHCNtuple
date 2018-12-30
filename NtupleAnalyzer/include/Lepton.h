@@ -38,6 +38,8 @@ class Lepton
 
         int             charge;
 	bool		hasMCMatch;
+	bool		hasChargeMCMatch;
+	bool		hasPhotonMCMatch;
 	
 
         template <class T> void setLepton(T *lep, int idx, bool isE, bool isMu)
@@ -70,6 +72,8 @@ class Lepton
 	    id = lep->id;
 	    
 	    hasMCMatch = lep->hasMCMatch;
+	    hasChargeMCMatch = lep->hasChargeMCMatch;
+	    if(isE) {hasPhotonMCMatch = lep->hasPhotonMCMatch;} //For ele only
         }
 	
 };

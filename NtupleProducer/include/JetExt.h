@@ -15,7 +15,7 @@ class JetExt : public Jet
    void  sel(int sync);
    void  read(bool isdata);
    void  init();
-   void  setJESUncertainty(float unc);
+   void  setJESUncertainty(bool isdata, float unc);
    //void  JECUncertainty(); //obsolete JER
    void apply_JER_smearing(bool, float, float, float, float);
 

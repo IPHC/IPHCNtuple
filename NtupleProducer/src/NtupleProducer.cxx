@@ -1,6 +1,5 @@
 #include "../include/NtupleProducer.h"
 
-#include "Riostream.h"
 #include "TSystem.h"
 
 #include <stdio.h>
@@ -96,11 +95,9 @@ int main(int argc, char *argv[])
    GenJetExt genjet;
    TriggerObjExt trigObj;
 
-   evdebug = new std::vector<int>();
-   evdebug->push_back(13859320);
-   evdebug->push_back(15302566);
-   evdebug->push_back(16730669);
-   evdebug->push_back(16732188);
+   evdebug = new std::vector<int>(); //Will printout debug info for these events only
+   //evdebug->push_back(18166894); 
+
 
    int nlep = 0;
    int njet = 0;
@@ -114,21 +111,21 @@ int main(int argc, char *argv[])
    JetCorrectionUncertainty* jesTotal = 0;
    std::string jecFilesPath = cmssw+"/src/IPHCNtuple/NtupleProducer/data/jecFiles/";
    std::string jecMC = jecFilesPath+"Fall17_17Nov2017_V6_MC_UncertaintySources_AK4PFchs.txt";
-   std::string jecData = jecFilesPath+"Fall17_17Nov2017F_V6_DATA_UncertaintySources_AK4PFchs.txt";
+   std::string jecData = jecFilesPath+"Fall17_17Nov2017F_V6_DATA_UncertaintySources_AK4PFchs.txt"; //can use any run ? same files ?
    if(!isdata) {jesTotal = new JetCorrectionUncertainty(*(new JetCorrectorParameters(jecMC.c_str(), "Total")));}
    else {jesTotal = new JetCorrectionUncertainty(*(new JetCorrectorParameters(jecData.c_str(), "Total")));}
 
    //-- JER //not used yet in ttH analysis
-   // JME::JetResolution* JER_resolution = 0;
-   // JME::JetResolutionScaleFactor* JER_scalefactor = 0;
-   // std::string jerFilesPath = cmssw+"/src/IPHCNtuple/NtupleProducer/data/jerFiles/";
-   // std::string resolution_file = jerFilesPath+"Fall17_V2_MC_PtResolution_AK4PFchs.txt";
-   // std::string jer_sf_file = jerFilesPath+"Fall17_V2_MC_SF_AK4PFchs.txt";
-   // if(!isdata)
-   // {
-   //    JER_resolution = new JME::JetResolution(resolution_file);
-   //    JER_scalefactor = new JME::JetResolutionScaleFactor(jer_sf_file);
-   // }
+   JME::JetResolution* JER_resolution = 0;
+   JME::JetResolutionScaleFactor* JER_scalefactor = 0;
+   std::string jerFilesPath = cmssw+"/src/IPHCNtuple/NtupleProducer/data/jerFiles/";
+   std::string resolution_file = jerFilesPath+"Fall17_V3_MC_PtResolution_AK4PFchs.txt";
+   std::string jer_sf_file = jerFilesPath+"Fall17_V3_MC_SF_AK4PFchs.txt";
+   if(!isdata)
+   {
+      JER_resolution = new JME::JetResolution(resolution_file);
+      JER_scalefactor = new JME::JetResolutionScaleFactor(jer_sf_file);
+   }
 
    for(Long64_t i=0;i<nentries;i++)
      {
@@ -143,7 +140,7 @@ int main(int argc, char *argv[])
         ev.init();
         ev.read(isdata);
 
-	//Only keep events to debug
+	//Only keep events to debug -- disactivate if not debugging specific events
 	/*
 	bool is_debug_event = false;
 	for(int k = 0; k < evdebug->size(); k++)
@@ -151,7 +148,7 @@ int main(int argc, char *argv[])
 		if(ev.id == evdebug->at(k)) {is_debug_event = true;}
 	}
 	if(!is_debug_event && evdebug->size() > 0) {continue;} //only debug
-	else {cout<<setprecision(12)<<"== Run/Lumi/Event "<<ev.run<<" / "<<ev.lumi<<" / "<<ev.id<<" =="<<endl;}
+	else {cout<<endl<<endl<<endl<<endl<<setprecision(12)<<"== Run/Lumi/Event "<<ev.run<<" / "<<ev.lumi<<" / "<<ev.id<<" =="<<endl;}
 	*/
 
         int n_mu_evt = 0, n_mu_fakeable_evt = 0;
@@ -248,30 +245,32 @@ int main(int argc, char *argv[])
 	     jet.read(isdata);
 
          //JER
-         // if(!isdata)
-         // {
-         //    JME::JetParameters param_JER;
-         //    param_JER.setJetPt(jet.pt);
-         //    param_JER.setJetEta(jet.eta);
-         //    param_JER.setRho(ev.rho);
-         //
-         //    // JME::JetParameters parameters_JER_res;
-         //    // parameters_JER_res.setJetPt(jet.pt);
-         //    // parameters_JER_res.setJetEta(jet.eta);
-         //    float JER_res = JER_resolution->getResolution(param_JER);
-         //
-         //    // JME::JetParameters parameters_JER_sf = {{JME::Binning::JetEta, jet.eta}, {JME::Binning::Rho, nt->NtEvent->at(0).rho()}};
-         //    float JER_sf = JER_scalefactor->getScaleFactor(param_JER);
-         //    float JER_sf_up = JER_scalefactor->getScaleFactor(param_JER, Variation::UP);
-         //    float JER_sf_down = JER_scalefactor->getScaleFactor(param_JER, Variation::DOWN);
-         //
-         //    // jet.apply_JER_smearing(isdata, JER_res, JER_sf, JER_sf_up, JER_sf_down);
-         // }
+         if(!isdata)
+         {
+            JME::JetParameters param_JER;
+            param_JER.setJetPt(jet.pt);
+            param_JER.setJetEta(jet.eta);
+            param_JER.setRho(ev.rho);
 
-         //JES
+            float JER_res = JER_resolution->getResolution(param_JER);
+            float JER_sf = JER_scalefactor->getScaleFactor(param_JER);
+            float JER_sf_up = JER_scalefactor->getScaleFactor(param_JER, Variation::UP);
+            float JER_sf_down = JER_scalefactor->getScaleFactor(param_JER, Variation::DOWN);
+
+            if(sync == 0) //Don't apply JER for sync
+            {
+               jet.apply_JER_smearing(isdata, JER_res, JER_sf, JER_sf_up, JER_sf_down); //Fill pt_jer_up & pt_jer_down
+            }
+         }
+
+         //JES -- NB : also stored in FlatTrees ("jet_Unc"). But must be computed after JER correction anyway... ?
 	     jesTotal->setJetPt(ntP->jet_pt->at(idx));
 	     jesTotal->setJetEta(ntP->jet_eta->at(idx));
-	     jet.setJESUncertainty(jesTotal->getUncertainty(true));
+
+        if(sync == 0) //Don't apply JER for sync
+        {
+           jet.setJESUncertainty(isdata, jesTotal->getUncertainty(true)); //Fill pt_jes_up & pt_jes_down
+        }
 
 	     jet.sel(sync);
 
@@ -304,7 +303,7 @@ int main(int argc, char *argv[])
 	     truth.readMultiLepton();
 
 	     nt->NtTruthExt->push_back(truth);
-	  }	  
+	  }
 
 	if( n_el_evt > 0 ) n_presel_el++;
 	if( n_mu_evt > 0 ) n_presel_mu++;

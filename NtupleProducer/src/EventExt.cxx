@@ -50,7 +50,6 @@ void EventExt::read(bool isdata)
         mc_pu_trueNumInt    = ntP->mc_pu_trueNumInt;
 
         pdf_weights = *ntP->mc_pdfweights;   
-
         pdf_ids = *ntP->mc_pdfweightIds;    
      }
 
@@ -222,4 +221,6 @@ void EventExt::init()
    is_WZctrl_SR_Data     = 0;
    is_WZctrl_SR          = 0;
    is_WZctrl_Fake        = 0;
+   is_ZZctrl_SR_Data     = 0;
+   is_ZZctrl_SR          = 0;
 }

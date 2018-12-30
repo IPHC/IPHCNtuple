@@ -31,7 +31,8 @@ void MuonExt::read(bool isdata)
    isPFMuon                       = ntP->mu_isPFMuon->at(idx);
 
    dxy                            = ntP->mu_innerTrack_PV_dxy->at(idx);
-   dz                             = ntP->mu_innerTrack_PV_dz->at(idx);
+   dz                             = ntP->mu_bestTrack_PV_dz->at(idx); //changed
+   //dz                             = ntP->mu_innerTrack_PV_dz->at(idx); //switched to bestTrack, as in nanoAOD
    iso                            = ntP->mu_miniIsoTTH->at(idx);
    sip3d                          = ntP->mu_ip3d->at(idx) / ntP->mu_ip3dErr->at(idx);
    bestTrack_pt                   = ntP->mu_bestTrack_pt->at(idx);
@@ -58,6 +59,7 @@ void MuonExt::read(bool isdata)
    if( !isdata )
    {
       hasMCMatch = ntP->mu_hasMCMatch->at(idx);
+      hasChargeMCMatch = ntP->mu_hasChargeMCMatch->at(idx);
       gen_pt = ntP->mu_gen_pt->at(idx);
       gen_eta = ntP->mu_gen_eta->at(idx);
       gen_phi = ntP->mu_gen_phi->at(idx);
@@ -69,8 +71,7 @@ void MuonExt::read(bool isdata)
       gen_dr = ntP->mu_gen_dr->at(idx);
    }
    
-   //FIXME -- testing
-   //PFRelIso04 = ntP->mu_PFRelIso04->at(idx);
+   PFRelIso04 = ntP->mu_PFRelIso04->at(idx);
 }
 
 void MuonExt::init()
@@ -126,6 +127,8 @@ void MuonExt::init()
    lepMVA_jetNDauChargedMVASel = -100.;   
 
    hasMCMatch = false;
+   hasChargeMCMatch = false;
+   hasPhotonMCMatch = false;
    gen_pt = -100;
    gen_eta = -100;
    gen_phi = -100;
@@ -189,12 +192,14 @@ void MuonExt::sel()
 	if( evId == evdebug->at(d) )
 	  {
 	     std::cout << "------------------------------" << std::endl;
-	     std::cout << "Event #" << evId << std::endl;
-	     std::cout << "  muon #" << ID << std::endl;
+	     std::cout << "Event #" << std::setprecision(12) << evId << std::endl;
+	     std::cout << "  muon #" << ID << std::endl << std::endl;
 	     std::cout << "  conept = " << conept << std::endl;
 	     std::cout << "  pt = " << pt << std::endl;
 	     std::cout << "  eta = " << eta << std::endl;
 	     std::cout << "  phi = " << phi << std::endl;
+	     std::cout << "  E = " << E << std::endl << std::endl;
+	     std::cout << "  charge = " << charge << std::endl << std::endl;
 	     std::cout << "  dxy = " << dxy << std::endl;
 	     std::cout << "  dz = " << dz << std::endl;
 	     std::cout << "  iso = " << iso << std::endl;
@@ -206,11 +211,14 @@ void MuonExt::sel()
 	     std::cout << "  iso = " << iso << iso <<std::endl;
 	     std::cout << "  PFRelIso04 = " << PFRelIso04 << std::endl;
 	     std::cout << "  isLoose = " << isLoose << std::endl;
-	     std::cout << "  isLooseTTH = " << isLooseTTH << std::endl;
+	     std::cout << "  isLooseTTH = " << isLooseTTH << std::endl << std::endl;
 	     std::cout << "  pass_fakeable_lepMVA = " << pass_fakeable_lepMVA << std::endl;
 	     std::cout << "  pass_conept = " << pass_conept << std::endl;
-	     std::cout << "  = isFakeableTTH = " << isFakeableTTH << std::endl;
-	  }		  
+	     std::cout << "  = isFakeableTTH = " << isFakeableTTH << std::endl << std::endl;
+	     std::cout << "  pass_lepMVA = " << pass_lepMVA << std::endl;
+	     std::cout << "  isMedium = " << isMedium << std::endl;
+	     std::cout << "  isTightTTH = " << isTightTTH << std::endl;
+ }		  
      }		  
 }
 

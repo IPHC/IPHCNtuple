@@ -97,6 +97,7 @@ class Sync
    int mu2_ismvasel;
    
    float ele1_pt;
+   float ele1_ptUnc;
    float ele1_conept;
    float ele1_eta;
    float ele1_phi;
@@ -128,6 +129,7 @@ class Sync
    int ele1_ismvasel;
 
    float ele2_pt;
+   float ele2_ptUnc;
    float ele2_conept;
    float ele2_eta;
    float ele2_phi;
@@ -245,6 +247,7 @@ class Sync
    float MHT;
    float metLD;
    int isGenMatched;
+   int isGenChargeMatched;
    
    float lep1_conePt;
    float lep2_conePt;
@@ -342,6 +345,7 @@ class Sync
    TTree*  m_tree_ttZctrl_Fake;
    TTree*  m_tree_WZctrl_SR;
    TTree*  m_tree_WZctrl_Fake;
+   TTree*  m_tree_ZZctrl_SR;
    
    TH2F*  m_hist_overlap;
    

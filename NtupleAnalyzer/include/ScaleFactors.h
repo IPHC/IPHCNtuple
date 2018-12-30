@@ -1,6 +1,5 @@
-#ifndef tHq_analysis_h
-#define tHq_analysis_h
-
+#ifndef ScaleFactor_h
+#define ScaleFactor_h
 
 #include <TString.h>
 #include <TH1F.h>
@@ -13,6 +12,10 @@
 #include <TObject.h>
 #include <iostream>
 #include <fstream>
+#include <vector>
+
+#include "BTagCalibrationXStandalone.h"
+#include "Pileup.h"
 
 #include <sys/stat.h> //for mkdir, stat
 
@@ -20,19 +23,23 @@ class ScaleFactors
 {
 	public :
 
-    ScaleFactors(); //Constructor
+    ScaleFactors(TString, bool); //Constructor
     ~ScaleFactors(); //Destructor
 
 //-- Methods
-    float Get_SF_RecoToLoose_Ele(float, float);
-    float Get_SF_RecoToLoose_Mu(float, float);
+    float Get_SF_RecoToLoose_Ele(float, float, float=0);
+    float Get_SF_RecoToLoose_Mu(float, float, float=0);
     float Get_SF_LooseToTight_Leptons(int, int, float, float);
-    float Get_Lepton_SF(int, int, float, float);
-    float Get_Trigger_SF(int, int, float, int, float);
+    float Get_Lepton_SF(int, int, float, float, float=0);
+    float Get_Trigger_SF(int, int, float, int, float=0);
+    float Get_Btag_SF(TString, int, float, float, float);
+    float Get_Pileup_SF(int, TString="nom");
+
 
 //-- Members
-    TString path_dir;
+    TString path_dir; //Prefix of dir. containing efficiency files
 
+    //Files for lepton SF
     TFile* file_Eff_Reco_Ele_ptLt20;
     TFile* file_Eff_Reco_Ele_ptGt20;
     TFile* file_Eff_LooseID_Ele;
@@ -46,6 +53,7 @@ class ScaleFactors
     TFile* file_Eff_LooseToTight_Ele_3l;
     TFile* file_Eff_LooseToTight_Mu_3l;
 
+    //Objects for lepton SF
     TH2D* hEff_Reco_Ele_ptLt20;
     TH2D* hEff_Reco_Ele_ptGt20;
     TH2D* hEff_LooseID_Ele;
@@ -58,6 +66,15 @@ class ScaleFactors
     TH2F* hEff_LooseToTight_Mu_2lss;
     TH2F* hEff_LooseToTight_Ele_3l;
     TH2F* hEff_LooseToTight_Mu_3l;
+
+    //Btagging SF
+    BTagCalibrationX calib; //Store scale factor data
+    std::vector<BTagCalibrationXReader> v_btag_reader; //To read & evaluate scale factors
+    std::vector<TString> v_sysType; //List of systematics
+    std::vector<BTagEntryX::JetFlavor> v_jetFlavor; //List of possible flavors (b, c, l)
+
+    //Pileup -- class object
+    Pileup my_pileup;
 };
 
 #endif
