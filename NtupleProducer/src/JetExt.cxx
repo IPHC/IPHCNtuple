@@ -47,8 +47,6 @@ void JetExt::read(bool isdata)
         jet_genParton_id     = ntP->jet_genParton_id ->at(idx);
         jet_genParton_E      = ntP->jet_genParton_E->at(idx);
      }
-
-   // JECUncertainty();
 }
 
 void JetExt::init()
@@ -88,6 +86,10 @@ void JetExt::init()
    jet_genParton_id     = -100.;
    jet_genJet_E         = -100.;
    jet_genParton_E      = -100.;
+   
+   JER_corr = 1;
+   JER_corr_up = 1;
+   JER_corr_down = 1;
 
    pt_JES_up           = 0.;
    pt_JES_down         = 0.;
@@ -110,10 +112,12 @@ void JetExt::sel(int sync)
    {
 	 pass_pt = pass_pt || (pt_JES_up > 25.);
 	 pass_eta = (fabs(eta) < 5.0); //tHq2017 //Default cut now (always store tHq events)
+	 //pass_eta = (fabs(eta) < 2.4); //ttH cut
    }
    else //For synchro with ttH, never care about fwd jets
    {
-   	pass_eta = (fabs(eta) < 2.4); //ttH2017
+	pass_pt = (pt > 25.);
+   	pass_eta = (fabs(eta) < 2.4); //ttH cut
    }
 
    bool pass_tightJetID = (tightJetID);
@@ -221,6 +225,8 @@ void JetExt::sel(int sync)
 	     std::cout << "  isLooseTTH = " << isLooseTTH << std::endl;
 	     std::cout << "  pass_pt = " << pass_pt << std::endl;
 	     std::cout << "  pass_eta = " << pass_eta << std::endl;
+	     std::cout << "  isLooseBTag = " << isLooseBTag << std::endl;
+	     std::cout << "  isMediumBTag = " << isMediumBTag << std::endl;
 	     std::cout << "  tightJetID = " << tightJetID << std::endl;
 	     std::cout << "  (( jet_neutralEmEnergyFraction = " <<
 	     ntP->jet_neutralEmEnergyFraction->at(idx) << std::endl;
@@ -257,9 +263,9 @@ void JetExt::apply_JER_smearing(bool isdata, float JER_res, float JER_sf, float 
         }
     }
 
-    float JER_corr      = 1.;
-    float JER_corr_up   = 1.;
-    float JER_corr_down = 1.;
+    JER_corr      = 1.;
+    JER_corr_up   = 1.;
+    JER_corr_down = 1.;
 
     if(idx_matched_genjet >= 0) //if jet matched
     {
@@ -277,12 +283,12 @@ void JetExt::apply_JER_smearing(bool isdata, float JER_res, float JER_sf, float 
         TRandom3 rnd;
         float smear = rnd.Gaus(0., JER_res);
 
-        float JER_corr = 1 + smear * sqrt(std::max((float) 0., JER_sf*JER_sf - 1) );
-        float JER_corr_up = 1 + smear * sqrt(std::max((float) 0., JER_sf_up*JER_sf_up - 1) );
-        float JER_corr_down = 1 + smear * sqrt(std::max((float) 0., JER_sf_down*JER_sf_down - 1) );
+        JER_corr = 1 + smear * sqrt(std::max((float) 0., JER_sf*JER_sf - 1) );
+        JER_corr_up = 1 + smear * sqrt(std::max((float) 0., JER_sf_up*JER_sf_up - 1) );
+        JER_corr_down = 1 + smear * sqrt(std::max((float) 0., JER_sf_down*JER_sf_down - 1) );
     }
 
-    if(JER_corr<0) {JER_corr = 1;;}
+    if(JER_corr<0) {JER_corr = 1.;}
     if(JER_corr_up<0) {JER_corr_up = 1.;}
     if(JER_corr_down<0) {JER_corr_down = 1.;}
 
@@ -311,47 +317,3 @@ void JetExt::setJESUncertainty(bool isdata, float unc)
 
     return;
 }
-
-
-//Obsolete !
-/*
-void JetExt::JECUncertainty()
-{
-   // JER taken from https://twiki.cern.ch/twiki/bin/view/CMS/JetResolution
-   //
-   double cJER[5];
-   double cJER_down[5];
-   double cJER_up[5];
-
-   cJER[0] = 1.052; // 0.0-0.5
-   cJER[1] = 1.057; // 0.5-1.1
-   cJER[2] = 1.096; // 1.1-1.7
-   cJER[3] = 1.134; // 1.7-2.3
-   cJER[4] = 1.288; // 2.3-5.0
-
-   cJER_down[0] = 0.990;
-   cJER_down[1] = 1.001;
-   cJER_down[2] = 1.032;
-   cJER_down[3] = 1.042;
-   cJER_down[4] = 1.089;
-
-   cJER_up[0] = 1.115;
-   cJER_up[1] = 1.114;
-   cJER_up[2] = 1.161;
-   cJER_up[3] = 1.228;
-   cJER_up[4] = 1.488;
-
-   int etaIdx = -1;
-   if( fabs(eta) >= 0.  && fabs(eta) < 0.5 ) etaIdx = 0;
-   if( fabs(eta) >= 0.5 && fabs(eta) < 1.1 ) etaIdx = 1;
-   if( fabs(eta) >= 1.1 && fabs(eta) < 1.7 ) etaIdx = 2;
-   if( fabs(eta) >= 1.7 && fabs(eta) < 2.3 ) etaIdx = 3;
-   if( fabs(eta) >= 2.3 && fabs(eta) < 5.0 ) etaIdx = 4;
-
-   double pt_uncorr = (pt - jet_genJet_pt) / cJER[etaIdx] + jet_genJet_pt;
-
-   pt_JER	= jet_genJet_pt + cJER[etaIdx]*(pt_uncorr-jet_genJet_pt);
-   pt_JER_down = jet_genJet_pt + cJER_down[etaIdx]*(pt_uncorr-jet_genJet_pt);
-   pt_JER_up   = jet_genJet_pt + cJER_up[etaIdx]*(pt_uncorr-jet_genJet_pt);
-}
-*/

@@ -54,10 +54,13 @@ class Tree {
    Float_t         pv_z;
    Float_t         pv_zError;
    
+   Float_t         weight_originalXWGTUP;
    Float_t         weight_scale_muF0p5;
    Float_t         weight_scale_muF2;
    Float_t         weight_scale_muR0p5;
    Float_t         weight_scale_muR2;
+   Float_t         weight_scale_muR2muF2;
+   Float_t         weight_scale_muR0p5muF0p5;
    Int_t           mc_id;
    Int_t           mc_f1;
    Int_t           mc_f2;
@@ -384,6 +387,7 @@ class Tree {
    std::vector<int> *gen_status;
    std::vector<int> *gen_index;
    std::vector<int> *gen_mother_index;
+   std::vector<std::vector<int>> *gen_daughter_index;
 
    Float_t gen_PVz;
    
@@ -879,10 +883,13 @@ class Tree {
    TBranch        *b_pv_z;   //!
    TBranch        *b_pv_zError;   //!
    
+   TBranch        *b_weight_originalXWGTUP;
    TBranch        *b_weight_scale_muF0p5;
    TBranch        *b_weight_scale_muF2;
    TBranch        *b_weight_scale_muR0p5;
    TBranch        *b_weight_scale_muR2;
+   TBranch        *b_weight_scale_muR2muF2;
+   TBranch        *b_weight_scale_muR0p5muF0p5;
    TBranch        *b_mc_weight;   //!
    TBranch        *b_mc_id;   //!
    TBranch        *b_mc_f1;   //!
@@ -1210,6 +1217,7 @@ class Tree {
    TBranch        *b_gen_status;
    TBranch        *b_gen_index;
    TBranch        *b_gen_mother_index;
+   TBranch        *b_gen_daughter_index;
    
    TBranch        *b_gen_PVz;
    

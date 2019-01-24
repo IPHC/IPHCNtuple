@@ -7,6 +7,27 @@ Ntuple::Ntuple(std::string name)
 
 Ntuple::~Ntuple()
 {   
+   //TH1Fs storing sum of weights before preselection for scales
+   /*
+   h_sumWeights_nominal->Write("h_sumWeights_nominal");
+   h_sumWeightsScale_originalXWGTUP->Write("h_sumWeightsScale_originalXWGTUP");
+   h_sumWeightsScale_muF0p5->Write("h_sumWeightsScale_muF0p5");
+   h_sumWeightsScale_muF2->Write("h_sumWeightsScale_muF2");
+   h_sumWeightsScale_muR0p5->Write("h_sumWeightsScale_muR0p5");
+   h_sumWeightsScale_muR2->Write("h_sumWeightsScale_muR2");
+   h_sumWeightsScale_muR2muF2->Write("h_sumWeightsScale_muR2muF2");
+   h_sumWeightsScale_muR0p5muF0p5->Write("h_sumWeightsScale_muR0p5muF0p5");
+
+   delete h_sumWeights_nominal;
+   delete h_sumWeightsScale_originalXWGTUP;
+   delete h_sumWeightsScale_muF0p5;
+   delete h_sumWeightsScale_muF2;
+   delete h_sumWeightsScale_muR0p5;
+   delete h_sumWeightsScale_muR2;
+   delete h_sumWeightsScale_muR2muF2;
+   delete h_sumWeightsScale_muR0p5muF0p5;
+   */
+
    m_file->Write();
    m_file->Close();
 }
@@ -15,6 +36,20 @@ void Ntuple::Init()
 {
    m_file = new TFile(fname_out.c_str(),"RECREATE");
    m_tree = new TTree("Nt","Ntuple");
+   
+   //TH1Fs storing sum of weights before preselection for scales  
+   /*
+   h_sumWeights_nominal = new TH1F("", "", 5, -2, 2);
+   h_sumWeightsScale_originalXWGTUP = new TH1F("", "", 5, -2, 2);
+   h_sumWeightsScale_muF0p5 = new TH1F("", "", 5, -2, 2);
+   h_sumWeightsScale_muF2 = new TH1F("", "", 5, -2, 2);
+   h_sumWeightsScale_muR0p5 = new TH1F("", "", 5, -2, 2);
+   h_sumWeightsScale_muR2 = new TH1F("", "", 5, -2, 2);
+   h_sumWeightsScale_muR2muF2 = new TH1F("", "", 5, -2, 2);
+   h_sumWeightsScale_muR0p5muF0p5 = new TH1F("", "", 5, -2, 2);
+   */
+   
+   return;
 }
 
 void Ntuple::setBranchAddress()
@@ -105,6 +140,22 @@ void Ntuple::fill()
 {
    convert();
 }
+
+/*
+void Ntuple::fill_histograms(EventExt ev)
+{
+  h_sumWeights_nominal->Fill(ev.mc_weight, 1);
+  h_sumWeightsScale_originalXWGTUP->Fill(ev.mc_weight, ev.weight_originalXWGTUP);
+  h_sumWeightsScale_muF0p5->Fill(ev.mc_weight ,ev.weight_scale_muF0p5);
+  h_sumWeightsScale_muF2->Fill(ev.mc_weight, ev.weight_scale_muF2);
+  h_sumWeightsScale_muR0p5->Fill(ev.mc_weight, ev.weight_scale_muR0p5);
+  h_sumWeightsScale_muR2->Fill(ev.mc_weight, ev.weight_scale_muR2);
+  h_sumWeightsScale_muR2muF2->Fill(ev.mc_weight, ev.weight_scale_muR2muF2);
+  h_sumWeightsScale_muR0p5muF0p5->Fill(ev.mc_weight, ev.weight_scale_muR0p5muF0p5);
+  
+  return;
+}
+*/
 
 void Ntuple::write()
 {

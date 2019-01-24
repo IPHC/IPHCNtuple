@@ -1418,11 +1418,20 @@ void TruthExt::readMultiLepton()
        (*multiLepton).Ptot = Ptot;
        (*multiLepton).mET = PtotNeut;
     */
+    
+    int higgs_decay = Determine_Higgs_Decay();
+    if(higgs_decay == 1) {higgs_decay_ww = true;}
+    else if(higgs_decay == 2) {higgs_decay_zz = true;}
+    else if(higgs_decay == 3) {higgs_decay_tt = true;}
 }
 
 void TruthExt::init()
 {
    gen_PVz = -100.;
+   
+   higgs_decay_ww = false;
+   higgs_decay_zz = false;
+   higgs_decay_tt = false;
    
    metGen_px = -100.;
    metGen_py = -100.;
@@ -1506,3 +1515,59 @@ void TruthExt::init()
    coupWeight.clear();
 }
 
+
+int TruthExt::Determine_Higgs_Decay()
+{
+    //cout<<"ntP->gen_n = "<<ntP->gen_n<<endl;
+    
+    for(int itruth=0; itruth<ntP->gen_n; itruth++)
+    {
+        //cout<<"id "<<ntP->gen_id->at(itruth)<<endl;
+
+        if(abs(ntP->gen_id->at(itruth)) == 25) //Higgs found
+        {
+	    //Must make sure that the daughter of the Higgs is not again a Higgs
+	    int index_decaying_higgs = itruth;
+	    int n_tries = 0;
+	    while(ntP->gen_daughter_index->at(index_decaying_higgs).size()==1 && ntP->gen_id->at(ntP->gen_daughter_index->at(index_decaying_higgs).at(0))==25 && n_tries < 20)
+	    {
+	    	index_decaying_higgs = ntP->gen_daughter_index->at(index_decaying_higgs).at(0);
+		n_tries++; //few events stuck in this loop to find the proper "decaying" higgs ?
+	    }
+	
+	    //Check IDs of decay products
+	    //cout<<"ntP->gen_daughter_index size "<<ntP->gen_daughter_index->at(index_decaying_higgs).size()<<endl;
+	    //for(int i = 0; i<ntP->gen_daughter_index->at(index_decaying_higgs).size(); i++)
+	    {
+            	int idaughter = ntP->gen_daughter_index->at(index_decaying_higgs).at(0);
+	    
+	    	//cout<<"idaughter 0 = "<<idaughter<<endl;
+		//cout<<"id idaughter 0 = "<<ntP->gen_id->at(idaughter)<<endl;
+	    
+            	// for(int idaughter=0; idaughter<ntP->gen_daughter_index.size(); idaughter++)
+            	if(abs(ntP->gen_id->at(idaughter)) == 24)
+            	{
+                	//cout<<"W decay !"<<endl;
+                	return 1;
+            	}
+            	else if(abs(ntP->gen_id->at(idaughter)) == 23)
+            	{
+                	//cout<<"Z decay !"<<endl;
+                	return 2;
+            	}
+            	else if(abs(ntP->gen_id->at(idaughter)) == 15)
+            	{
+             	   //cout<<"Tau decay !"<<endl;
+             	   return 3;
+           	}
+           	else 
+		{
+			//cout<<"Decay not found : id="<<ntP->gen_id->at(idaughter)<<endl;
+			return 0;
+		}
+	    }
+        }
+    }
+
+    return 0;
+}

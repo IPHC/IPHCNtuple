@@ -40,10 +40,13 @@ void EventExt::read(bool isdata)
    
    if( !isdata )
      {
+        weight_originalXWGTUP = ntP->weight_originalXWGTUP;
         weight_scale_muF0p5 = ntP->weight_scale_muF0p5;
         weight_scale_muF2   = ntP->weight_scale_muF2;
         weight_scale_muR0p5 = ntP->weight_scale_muR0p5;
         weight_scale_muR2   = ntP->weight_scale_muR2;
+        weight_scale_muR2muF2   = ntP->weight_scale_muR2muF2;
+        weight_scale_muR0p5muF0p5   = ntP->weight_scale_muR0p5muF0p5;
 
         mc_weight           = ntP->mc_weight;
         mc_ptHat            = ntP->mc_ptHat;
@@ -145,10 +148,13 @@ void EventExt::init()
    metNoHF_phi           = -1000;
    metNoHF_sumet         = -1000; 
    
+   weight_originalXWGTUP   = -1000;
    weight_scale_muF0p5   = -1000;
    weight_scale_muF2     = -1000;
    weight_scale_muR0p5   = -1000;
    weight_scale_muR2     = -1000;
+   weight_scale_muR2muF2     = -1000;
+   weight_scale_muR0p5muF0p5     = -1000;
    
    mc_weight             = -1000;
    mc_ptHat              = -1000;

@@ -408,6 +408,7 @@ void Tree::Init(TChain *ch)
    gen_status = 0;
    gen_index = 0;
    gen_mother_index = 0;
+   gen_daughter_index = 0;
    gen_PVz = 0;
 
    mc_truth_h0_id = 0;
@@ -841,10 +842,14 @@ void Tree::Init(TChain *ch)
    fChain->SetBranchAddress("pv_z", &pv_z, &b_pv_z);
    fChain->SetBranchAddress("pv_zError", &pv_zError, &b_pv_zError);
    
+   fChain->SetBranchAddress("weight_originalXWGTUP", &weight_originalXWGTUP, &b_weight_originalXWGTUP);
    fChain->SetBranchAddress("weight_scale_muF0p5", &weight_scale_muF0p5, &b_weight_scale_muF0p5);
    fChain->SetBranchAddress("weight_scale_muF2",   &weight_scale_muF2,   &b_weight_scale_muF2  );
    fChain->SetBranchAddress("weight_scale_muR0p5", &weight_scale_muR0p5, &b_weight_scale_muR0p5);
    fChain->SetBranchAddress("weight_scale_muR2",   &weight_scale_muR2,   &b_weight_scale_muR2  );
+   fChain->SetBranchAddress("weight_scale_muR2muF2",   &weight_scale_muR2muF2,   &b_weight_scale_muR2muF2  );
+   fChain->SetBranchAddress("weight_scale_muR0p5muF0p5",   &weight_scale_muR0p5muF0p5,   &b_weight_scale_muR0p5muF0p5  );
+   
    fChain->SetBranchAddress("mc_id", &mc_id, &b_mc_id);
    fChain->SetBranchAddress("mc_f1", &mc_f1, &b_mc_f1);
    fChain->SetBranchAddress("mc_f2", &mc_f2, &b_mc_f2);
@@ -1168,6 +1173,7 @@ void Tree::Init(TChain *ch)
    if( fChain->GetBranch("gen_status") ) fChain->SetBranchAddress("gen_status", &gen_status, &b_gen_status);
    if( fChain->GetBranch("gen_index") ) fChain->SetBranchAddress("gen_index", &gen_index, &b_gen_index);
    if( fChain->GetBranch("gen_mother_index") ) fChain->SetBranchAddress("gen_mother_index", &gen_mother_index, &b_gen_mother_index);
+   if( fChain->GetBranch("gen_daughter_index") ) fChain->SetBranchAddress("gen_daughter_index", &gen_daughter_index, &b_gen_daughter_index);
    if( fChain->GetBranch("gen_PVz") ) fChain->SetBranchAddress("gen_PVz", &gen_PVz, &b_gen_PVz);
    
    if( fChain->GetBranch("genJet_n") ) fChain->SetBranchAddress("genJet_n", &genJet_n, &b_genJet_n);

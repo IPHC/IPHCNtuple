@@ -119,6 +119,8 @@ class Pileup
     TH1F* h_PU_Data_Up;
     TH1F* h_PU_Data_Down;
 
+    TString output_dir; //Path of dir containing PU profile root files
+
     //Vectors filled simultaneously --> Get correspondance b/w given sample name, its EOS path, and the nof associated files
     // vector<TString> v_samples; vector<TString> v_paths; vector<int> v_nof_files;
 };

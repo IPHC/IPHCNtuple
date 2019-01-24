@@ -2,7 +2,7 @@
 
 using namespace std;
 
-bool use_my_own_PU_data_profile = false; //true <-> use my own PU for data ; false <-> use ttH file (different conventions) //NB : using tth for now, deleted my own data profile
+bool use_my_own_PU_data_profile = false; //true <-> use my own PU for *data* ; false <-> use ttH file (different conventions)
 
 //--------------------------------------------
 // ##     ## ######## ##       ########  ######## ########
@@ -40,6 +40,8 @@ bool Check_If_File_Exists(const TString& name)
 Pileup::Pileup()
 {
     dir_parent = "/home-pbs/ntonon/tHq/IPHCNtuple_2017/CMSSW_9_4_3/src/IPHCNtuple/NtupleAnalyzer/test/weights_2017/PU_SF/";
+
+    output_dir = dir_parent + "profiles_MC/";
 
     if(!use_my_own_PU_data_profile)
     {
@@ -225,7 +227,7 @@ bool Pileup::Fill_MC_vector_from_Pileup_Profile()
 {
     v_MC_PU.resize(0);
 
-    TString output_dir = "/home-pbs/ntonon/tHq/IPHCNtuple_2017/CMSSW_9_4_3/src/IPHCNtuple/NtupleAnalyzer/test/weights_2017/PU_SF/profiles_MC/";
+    // TString output_dir = "/home-pbs/ntonon/tHq/IPHCNtuple_2017/CMSSW_9_4_3/src/IPHCNtuple/NtupleAnalyzer/test/weights_2017/PU_SF/profiles_MC/";
     TString filename = output_dir + samplename + ".root";
 
     if(!Check_If_File_Exists(filename) ) {cout<<BOLD(FRED("Error : MC PU profile file "<<filename<<" not found !"))<<endl; return 0;}
@@ -237,13 +239,15 @@ bool Pileup::Fill_MC_vector_from_Pileup_Profile()
 
     double integral = h->Integral();
 
-    for(int ibin=0; ibin<100; ibin++)
+    for(int ibin=1; ibin<100+1; ibin++) //start at bin 1
     {
         v_MC_PU.push_back(h->GetBinContent(ibin) / integral );
     }
 
     delete h; h = NULL;
     f->Close();
+
+    cout<<endl<<FYEL("-> Pileup weightfile "<<filename<<" correctly loaded")<<endl<<endl<<endl;
 
     return 1;
 }
@@ -256,6 +260,10 @@ void Pileup::Compute_PU_Weights()
 {
     // cout<<BOLD(FYEL("--- Entering : Compute_PU_Weight()"))<<endl;
 
+    //Write PU weights in output txt file, to cross check values (not used directly)
+    ofstream textfile_PU_weights((output_dir + samplename + ".txt").Data());
+    textfile_PU_weights<<"nPU \t weight \t weight_up \t weight_down"<<endl;
+
     if(!v_MC_PU.size()) {return;}
 
     double tot = 0, tot_up = 0, tot_down = 0; //For final normalisation
@@ -265,13 +273,15 @@ void Pileup::Compute_PU_Weights()
 
     for(int i=0; i<v_MC_PU.size(); i++)
     {
-        double pu_data_nom = h_PU_Data_Nom->GetBinContent(h_PU_Data_Nom->GetXaxis()->FindBin(i) );
-        // cout<<"pu_data_nom = "<<pu_data_nom<<" / "<<tot<<" = "<<pu_data_nom/tot<<endl;
+        double pu_data_nom = h_PU_Data_Nom->GetBinContent(i+1); //start at bin 1
+        // double pu_data_nom = h_PU_Data_Nom->GetBinContent(h_PU_Data_Nom->GetXaxis()->FindBin(i) );
 
         pu_data_nom/= tot;
-        double weight = pu_data_nom / v_MC_PU[i];
-        if(isinf(weight) || isnan(weight) || weight < 0) {weight = 0;} //FIXME
+        double weight = pu_data_nom / v_MC_PU[i]; //start at index 0
+        if(isinf(weight) || isnan(weight) || weight < 0) {weight = 0;}
 
+        // cout<<"pu_data_nom = "<<pu_data_nom<<" / "<<tot<<" = "<<pu_data_nom/tot<<endl;
+        // cout<<"pu_data_nom = "<<pu_data_nom<<endl;
         // cout<<"v_MC_PU[i] = "<<v_MC_PU[i]<<endl;
         // cout<<"=> weight = "<<weight<<endl;
 
@@ -288,6 +298,8 @@ void Pileup::Compute_PU_Weights()
         double weight_down = pu_data_down / v_MC_PU[i];
         if(isinf(weight_down) || isnan(weight_down) || weight_down < 0) {weight_down = 0;}
         v_PU_weights_Down.push_back(weight_down);
+
+        textfile_PU_weights<<i<<"\t"<<weight<<"\t"<<weight_up<<"\t"<<weight_down<<endl;
     }
 
     return;

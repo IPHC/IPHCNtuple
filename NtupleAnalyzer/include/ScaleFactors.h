@@ -29,12 +29,12 @@ class ScaleFactors
 //-- Methods
     float Get_SF_RecoToLoose_Ele(float, float, float=0);
     float Get_SF_RecoToLoose_Mu(float, float, float=0);
-    float Get_SF_LooseToTight_Leptons(int, int, float, float);
-    float Get_Lepton_SF(int, int, float, float, float=0);
+    float Get_SF_LooseToTight_Leptons(int, int, float, float, float);
+    float Get_Lepton_SF(int, int, float, float, TString="");
     float Get_Trigger_SF(int, int, float, int, float=0);
     float Get_Btag_SF(TString, int, float, float, float);
     float Get_Pileup_SF(int, TString="nom");
-
+    void Read_Scale_SumWeights(TString, float&, float&, float&, float&, float&, float&, float&, float&);
 
 //-- Members
     TString path_dir; //Prefix of dir. containing efficiency files

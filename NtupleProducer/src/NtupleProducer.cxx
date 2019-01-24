@@ -95,8 +95,12 @@ int main(int argc, char *argv[])
    GenJetExt genjet;
    TriggerObjExt trigObj;
 
+
+
    evdebug = new std::vector<int>(); //Will printout debug info for these events only
-   //evdebug->push_back(18166894); 
+   //evdebug->push_back(); 
+
+
 
 
    int nlep = 0;
@@ -131,7 +135,9 @@ int main(int argc, char *argv[])
      {
 	if( i > nmax && nmax >= 0 ) break;
 
-	if(i%100000 == 0) {cout<<"-- "<<i<<" / "<<nentries<<endl;}
+	if(i%10000 == 0) {cout<<"-- "<<i<<" / "<<nentries<<endl;}
+	
+	//cout<<"ientry "<<i<<endl;
 
 	ch->GetEntry(i);
 	nt->clearVar();
@@ -139,9 +145,12 @@ int main(int argc, char *argv[])
 
         ev.init();
         ev.read(isdata);
+	
+	//if(!isdata) {nt->fill_histograms(ev);}
 
 	//Only keep events to debug -- disactivate if not debugging specific events
 	/*
+	{
 	bool is_debug_event = false;
 	for(int k = 0; k < evdebug->size(); k++)
 	{
@@ -149,7 +158,9 @@ int main(int argc, char *argv[])
 	}
 	if(!is_debug_event && evdebug->size() > 0) {continue;} //only debug
 	else {cout<<endl<<endl<<endl<<endl<<setprecision(12)<<"== Run/Lumi/Event "<<ev.run<<" / "<<ev.lumi<<" / "<<ev.id<<" =="<<endl;}
+	}
 	*/
+	
 
         int n_mu_evt = 0, n_mu_fakeable_evt = 0;
 
@@ -259,7 +270,7 @@ int main(int argc, char *argv[])
 
             if(sync == 0) //Don't apply JER for sync
             {
-               jet.apply_JER_smearing(isdata, JER_res, JER_sf, JER_sf_up, JER_sf_down); //Fill pt_jer_up & pt_jer_down
+               jet.apply_JER_smearing(isdata, JER_res, JER_sf, JER_sf_up, JER_sf_down); //Fill JER variables
             }
          }
 
@@ -267,7 +278,7 @@ int main(int argc, char *argv[])
 	     jesTotal->setJetPt(ntP->jet_pt->at(idx));
 	     jesTotal->setJetEta(ntP->jet_eta->at(idx));
 
-        if(sync == 0) //Don't apply JER for sync
+        if(sync == 0) //Don't apply JES for sync
         {
            jet.setJESUncertainty(isdata, jesTotal->getUncertainty(true)); //Fill pt_jes_up & pt_jes_down
         }
@@ -309,7 +320,7 @@ int main(int argc, char *argv[])
 	if( n_mu_evt > 0 ) n_presel_mu++;
 	if( n_tau_evt > 0 ) n_presel_tau++;
 	if( n_jet_evt > 0 ) n_presel_jet++;
-
+	
 	sc->get(nt,n_el_evt,n_mu_evt,n_tau_evt,n_jet_evt,n_el_fakeable_evt,n_mu_fakeable_evt, nBL);
 
 	bool pass = sc->fill(nt,&ev);
@@ -334,6 +345,7 @@ int main(int argc, char *argv[])
    delete sc;
 
    delete jesTotal;
+   
    // if(!isdata)
    // {
    //    delete JER_resolution;

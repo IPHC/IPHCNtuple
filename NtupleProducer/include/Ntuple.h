@@ -13,6 +13,7 @@
 #include "TriggerObjExt.h"
 
 #include "TFile.h"
+#include "TH1F.h"
 #include "TTree.h"
 #include "TChain.h"
 
@@ -53,12 +54,25 @@ class Ntuple
    std::vector<GenJetExt>*        NtGenJetExt;
    std::vector<TriggerObjExt>*    NtTriggerObjExt;
    
+   //TH1Fs storing sum of weights before preselection for scales
+   /*
+   TH1F* h_sumWeights_nominal;
+   TH1F* h_sumWeightsScale_originalXWGTUP;
+   TH1F* h_sumWeightsScale_muF0p5;
+   TH1F* h_sumWeightsScale_muF2;
+   TH1F* h_sumWeightsScale_muR0p5;
+   TH1F* h_sumWeightsScale_muR2;
+   TH1F* h_sumWeightsScale_muR2muF2;
+   TH1F* h_sumWeightsScale_muR0p5muF0p5;
+   */
+
    void Init();
    
    void setBranchAddress();
    void createVar();
    void clearVar();
    void fill();
+   //void fill_histograms(EventExt);
    void write();
    void convert();
    

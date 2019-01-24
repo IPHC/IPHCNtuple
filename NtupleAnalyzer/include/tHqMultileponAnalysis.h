@@ -107,10 +107,12 @@ class tHqMultileponAnalysis
 		void Dump_EventInfo_Synchro(std::ofstream&);
 		int Check_If_Save_Event(bool);
 		void Apply_ScaleFactors(int, int);
+		void Compute_Weight_ScaleSyst();
 		void Fill_Overlap_Histo();
         void Check_Disagreement_Category_NTP_NTA_Codes();
         void Define_New_Categorization();
 		float Compute_SumWeights_ctcvCouplings(vector<float>, vector<string>);
+        void Get_HadronFlavour_WZsample();
 
 		ScaleFactors* sf;
 
@@ -325,7 +327,26 @@ class tHqMultileponAnalysis
         //Event weights
         Float_t weight;
         Float_t mc_weight;
-        Float_t weightfake;
+
+        //FakeRate weights
+        Float_t weightfake; //store nominal FR weight separately
+		vector<TString> v_FR_type; //name of FR variations
+		vector<Float_t> v_floats_FR_variations; //store all FR variations
+        // Float_t FR_norm_elUp;
+        // Float_t FR_norm_elDown;
+        // Float_t FR_norm_muUp;
+        // Float_t FR_norm_muDown;
+        // Float_t FR_pt_elUp;
+        // Float_t FR_pt_elDown;
+        // Float_t FR_pt_muUp;
+        // Float_t FR_pt_muDown;
+        // Float_t FR_be_elUp;
+        // Float_t FR_be_elDown;
+        // Float_t FR_be_muUp;
+        // Float_t FR_be_muDown;
+
+
+        //QFlip weight
         Float_t weightflip;
 
 		//Scale factors
@@ -340,21 +361,26 @@ class tHqMultileponAnalysis
         std::vector<std::string> ids_pdf;
 
 		//Systematic weights
-		Float_t TrigEff__plus, TrigEff__minus;
-		Float_t MuEff__plus, MuEff__minus;
-		Float_t EleEff__plus, EleEff__minus;
+		Float_t TrigEffUp, TrigEffDown;
+		// Float_t MuEffUp, MuEffDown; //split lepton eff
+		// Float_t EleEffUp, EleEffDown; //split lepton eff
+        Float_t LepEff_elLooseUp, LepEff_elLooseDown;
+		Float_t LepEff_muLooseUp, LepEff_muLooseDown;
+        Float_t LepEff_elTightUp, LepEff_elTightDown;
+		// Float_t LepEff_muTightUp, LepEff_muTightDown; //Use flat syst for muTight uncert.
 
-		Float_t LFcont__plus, LFcont__minus;
-		Float_t HFstats1__plus, HFstats1__minus;
-		Float_t HFstats2__plus, HFstats2__minus;
-		Float_t CFerr1__plus, CFerr1__minus;
-		Float_t CFerr2__plus, CFerr2__minus;
-		Float_t HFcont__plus, HFcont__minus;
-		Float_t LFstats1__plus, LFstats1__minus;
-		Float_t LFstats2__plus, LFstats2__minus;
-		Float_t PU__plus, PU__minus;
-		Float_t Q2__plus, Q2__minus;
-		Float_t pdf__plus, pdf__minus;
+		Float_t LFcontUp, LFcontDown;
+		Float_t HFstats1Up, HFstats1Down;
+		Float_t HFstats2Up, HFstats2Down;
+		Float_t CFerr1Up, CFerr1Down;
+		Float_t CFerr2Up, CFerr2Down;
+		Float_t HFcontUp, HFcontDown;
+		Float_t LFstats1Up, LFstats1Down;
+		Float_t LFstats2Up, LFstats2Down;
+		Float_t PUUp, PUDown;
+		Float_t QCDscaleUp, QCDscaleDown;
+		Float_t pdfUp, pdfDown;
+
 
 
 		//--- Lots of variables, used for MEM computation
@@ -453,7 +479,7 @@ class tHqMultileponAnalysis
 
 		vector<TString> v_systTree; //can choose to store JES/JER TTrees, in addition to default
 
-		//LHE weights
+		//Scale weights, stored as LHE weights
 		float weight_originalXWGTUP;
 		float weight_scale_muF0p5;
 		float weight_scale_muF2;
@@ -461,10 +487,30 @@ class tHqMultileponAnalysis
 		float weight_scale_muR2;
 		float weight_scale_muR2muF2;
 		float weight_scale_muR0p5muF0p5;
+        //Sum of scale weights before preselection (stored in TH1Fs) for renormalization
+		float sumWeights_nominal;
+		float sumWeights_scale_originalXWGTUP;
+        float sumWeights_scale_muF0p5;
+		float sumWeights_scale_muF2;
+		float sumWeights_scale_muR0p5;
+		float sumWeights_scale_muR2;
+		float sumWeights_scale_muR2muF2;
+		float sumWeights_scale_muR0p5muF0p5;
 
+        //LHE weights
 		std::vector<float> LHEweights; //LHE weights
 		std::vector<std::string> LHEweights_Ids; //LHE weights ids
         float sumWeight_ctcv_couplings; //Need to normalize all ctcv couplings with sum
+
+        //Higgs decay modes
+		Char_t higgs_decay_ww;
+		Char_t higgs_decay_zz;
+		Char_t higgs_decay_tt;
+
+		//Flavour of jet, for splitting of WZ sample only
+		Char_t wz_jetFlav_b;
+		Char_t wz_jetFlav_c;
+		Char_t wz_jetFlav_l;
 };
 
 #endif

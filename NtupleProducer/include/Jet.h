@@ -24,6 +24,10 @@ class Jet : public Base
    float qgtag;
    float pileupJetId;
 
+   float JER_corr;
+   float JER_corr_up;
+   float JER_corr_down;
+
    float pt_JES_up;
    float pt_JES_down;
    float pt_JER_up;

@@ -680,6 +680,7 @@ void Sync::get(Ntuple *nt,int npresel_el,int npresel_mu,int npresel_tau,int npre
    n_presel_jet = npresel_jet;
    nBJetLoose = nbl;
 
+
    //CHANGED -- sort by conePt (leptons) & pT (jets) the original collections themselves, so that we get ordered object for object sync
    std::sort(nt->NtMuonLooseExt->begin(),nt->NtMuonLooseExt->end(),sort_by_conept());
    std::sort(nt->NtElectronLooseExt->begin(),nt->NtElectronLooseExt->end(),sort_by_conept());
@@ -1015,6 +1016,15 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 {
    bool pass = 1;
 
+    //For analysis, we save forward jets and jets with pT_jesUp>25 also
+    // However for the precategorization in this code, only want to account for jets with pt>25 && eta<2.4 => copy !
+    NtJetLooseExt_ttHselections = new std::vector<JetExt>;
+    for(int ijet=0; ijet<nt->NtJetLooseExt->size(); ijet++)
+    {
+    	if(nt->NtJetLooseExt->at(ijet).pt < 25 || fabs(nt->NtJetLooseExt->at(ijet).eta) > 2.4) {continue;}
+        NtJetLooseExt_ttHselections->push_back(nt->NtJetLooseExt->at(ijet));
+    }
+
    ev->metLD = metLD;
 
    if( sync == 1 ) m_tree->Fill();
@@ -1088,14 +1098,28 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 	int nTauLoose = nt->NtTauLooseExt->size();
 	int nTauMedium = nt->NtTauMediumExt->size();
 
-	int nJetLoose = nt->NtJetLooseExt->size();
+//Original jet vector (to decide if should let event pass)
+//--------------------------------------------
+    int nJetLoose_total = nt->NtJetLooseExt->size();
+    int nJetLooseBL_total = 0;
+    int nJetLooseBM_total = 0;
+    for(int ij=0;ij<nJetLoose_total;ij++)
+    {
+        if( nt->NtJetLooseExt->at(ij).isMediumBTag ) {nJetLooseBL_total++;}
+        if( nt->NtJetLooseExt->at(ij).isLooseBTag ) {nJetLooseBM_total++;}
+    }
+
+//Modified jet vector (to decide the categorization)
+//--------------------------------------------
+	int nJetLoose = NtJetLooseExt_ttHselections->size();
 	int nJetLooseBL = 0;
 	int nJetLooseBM = 0;
 	for(int ij=0;ij<nJetLoose;ij++)
-	  {
-	     if( nt->NtJetLooseExt->at(ij).isMediumBTag ) nJetLooseBM++;
-	     if( nt->NtJetLooseExt->at(ij).isLooseBTag ) nJetLooseBL++;
-	  }
+    {
+        if( NtJetLooseExt_ttHselections->at(ij).isMediumBTag ) {nJetLooseBM++;}
+        if( NtJetLooseExt_ttHselections->at(ij).isLooseBTag ) {nJetLooseBL++;}
+    }
+//--------------------------------------------
 
 	float mll_min = 10E+10;
 	float mll_z_min = 10E+10;
@@ -1288,7 +1312,7 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 		  bool pass_tau_veto = (nTauLoose == 0);
 		  bool pass_njet = (nJetLoose >= 4 && (nJetLooseBL >= 2 || nJetLooseBM >= 1));
 		  bool pass_njet3 = (nJetLoose == 3 && (nJetLooseBL >= 2 || nJetLooseBM >= 1));
-		  bool pass_njet_loose = (nJetLoose>= 2 && nJetLooseBL >= 1);
+		  bool pass_njet_loose = (nJetLoose_total>= 2 && nJetLooseBL_total >= 1);
 		  bool pass_lepTight = (nLepTight <= 2);
 		  bool pass_metLD = (metLD > 30);
 		  if( !(elmuFakeable->at(0).iElec >= 0) || !(elmuFakeable->at(1).iElec >= 0) ) pass_metLD = 1;
@@ -1570,7 +1594,7 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 		  bool pass_njet = (nJetLoose >= 2 && (nJetLooseBL >= 2 || nJetLooseBM >= 1));
 		  // bool pass_njet_ttZ = (nJetLoose >= 2 && nJetLooseBL >= 2 && nJetLooseBM >= 1);
 		  bool pass_njet_WZ = (nJetLoose >= 2 && nJetLooseBL <= 1 && nJetLooseBM == 0);
-		  bool pass_njet_loose = (nJetLoose >= 2 && nJetLooseBL >= 1);
+		  bool pass_njet_loose = (nJetLoose_total >= 2 && nJetLooseBL_total >= 1);
 		  bool pass_mllll = (mllll > 140 || mllll < 0);
 
 		  bool pass_tight = (elmuFakeable->at(0).isTightTTH && elmuFakeable->at(1).isTightTTH && elmuFakeable->at(2).isTightTTH);
@@ -1964,6 +1988,8 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 	       }
 	  }
      }
+
+	 delete NtJetLooseExt_ttHselections;
 
    return pass;
 }

@@ -8,8 +8,6 @@ using namespace std;
 
 
 
-
-
 //--------------------------------------------
 // ##     ## ######## ##       ########  ######## ########     ######## ##     ## ##    ##  ######
 // ##     ## ##       ##       ##     ## ##       ##     ##    ##       ##     ## ###   ## ##    ##
@@ -68,43 +66,43 @@ ScaleFactors::ScaleFactors(TString samplename, bool debug_pileup)
     else {file_Eff_Reco_Ele_ptGt20 = TFile::Open(filepath);}
 
     filepath = path_dir + "el_reco_loose_SF.root";
-    if(!Check_File_Exists(filepath) ) {cout<<"Error : SF file "<<filepath<<" not found !"<<endl;}
+    if(!Check_File_Exists(filepath) ) {cout<<BOLD(FRED("Error : SF file "<<filepath<<" not found !"))<<endl;}
     else {file_Eff_LooseID_Ele = TFile::Open(filepath);}
 
     filepath = path_dir + "mu_scaleFactors_trkEff_ptLt10.root";
-    if(!Check_File_Exists(filepath) ) {cout<<"Error : SF file "<<filepath<<" not found !"<<endl;}
+    if(!Check_File_Exists(filepath) ) {cout<<BOLD(FRED("Error : SF file "<<filepath<<" not found !"))<<endl;}
     else {file_Eff_Track_Mu_ptLt10 = TFile::Open(filepath);}
 
     filepath = path_dir + "mu_scaleFactors_trkEff_ptGt10.root";
-    if(!Check_File_Exists(filepath) ) {cout<<"Error : SF file "<<filepath<<" not found !"<<endl;}
+    if(!Check_File_Exists(filepath) ) {cout<<BOLD(FRED("Error : SF file "<<filepath<<" not found !"))<<endl;}
     else {file_Eff_Track_Mu_ptGt10 = TFile::Open(filepath);}
 
     filepath = path_dir + "mu_scaleFactors_ptLt30.root";
-    if(!Check_File_Exists(filepath) ) {cout<<"Error : SF file "<<filepath<<" not found !"<<endl;}
+    if(!Check_File_Exists(filepath) ) {cout<<BOLD(FRED("Error : SF file "<<filepath<<" not found !"))<<endl;}
     else {file_Eff_LooseID_Mu_ptLt30 = TFile::Open(filepath);}
 
     filepath = path_dir + "mu_scaleFactors_ptGt30.root";
-    if(!Check_File_Exists(filepath) ) {cout<<"Error : SF file "<<filepath<<" not found !"<<endl;}
+    if(!Check_File_Exists(filepath) ) {cout<<BOLD(FRED("Error : SF file "<<filepath<<" not found !"))<<endl;}
     else {file_Eff_LooseID_Mu_ptGt30 = TFile::Open(filepath);}
 
     filepath = path_dir + "mu_scaleFactors_trkVtxCut_and_isoEff.root";
-    if(!Check_File_Exists(filepath) ) {cout<<"Error : SF file "<<filepath<<" not found !"<<endl;}
+    if(!Check_File_Exists(filepath) ) {cout<<BOLD(FRED("Error : SF file "<<filepath<<" not found !"))<<endl;}
     else {file_Eff_Iso_Mu = TFile::Open(filepath);}
 
     filepath = path_dir + "lepMVAEffSF_e_2lss.root";
-    if(!Check_File_Exists(filepath) ) {cout<<"Error : SF file "<<filepath<<" not found !"<<endl;}
+    if(!Check_File_Exists(filepath) ) {cout<<BOLD(FRED("Error : SF file "<<filepath<<" not found !"))<<endl;}
     else {file_Eff_LooseToTight_Ele_2lss = TFile::Open(filepath);}
 
     filepath = path_dir + "lepMVAEffSF_m_2lss.root";
-    if(!Check_File_Exists(filepath) ) {cout<<"Error : SF file "<<filepath<<" not found !"<<endl;}
+    if(!Check_File_Exists(filepath) ) {cout<<BOLD(FRED("Error : SF file "<<filepath<<" not found !"))<<endl;}
     else {file_Eff_LooseToTight_Mu_2lss = TFile::Open(filepath);}
 
     filepath = path_dir + "lepMVAEffSF_e_3l.root";
-    if(!Check_File_Exists(filepath) ) {cout<<"Error : SF file "<<filepath<<" not found !"<<endl;}
+    if(!Check_File_Exists(filepath) ) {cout<<BOLD(FRED("Error : SF file "<<filepath<<" not found !"))<<endl;}
     else {file_Eff_LooseToTight_Ele_3l = TFile::Open(filepath);}
 
     filepath = path_dir + "lepMVAEffSF_m_3l.root";
-    if(!Check_File_Exists(filepath) ) {cout<<"Error : SF file "<<filepath<<" not found !"<<endl;}
+    if(!Check_File_Exists(filepath) ) {cout<<BOLD(FRED("Error : SF file "<<filepath<<" not found !"))<<endl;}
     else {file_Eff_LooseToTight_Mu_3l = TFile::Open(filepath);}
 
     //Read the histograms and tgraphs
@@ -134,7 +132,7 @@ ScaleFactors::ScaleFactors(TString samplename, bool debug_pileup)
     const string& inputCSVfile = (const string&) path_dir.Data() + btag_csv_filename.Data();
     const string& measType = "iterativefit";
 
-    if(!Check_File_Exists(inputCSVfile) ) {cout<<"Error : btag .csv file "<<inputCSVfile<<" not found !"<<endl;}
+    if(!Check_File_Exists(inputCSVfile) ) {cout<<BOLD(FRED("Error : btag .csv file "<<inputCSVfile<<" not found !"))<<endl;}
 
     //Load the .csv file containing the SFs using BTagCalibration Standalone tool
     calib = BTagCalibrationX(tagger_type, inputCSVfile);
@@ -193,12 +191,11 @@ ScaleFactors::ScaleFactors(TString samplename, bool debug_pileup)
         }
     }
 
-    cout<<"-> Efficiency files (lepton, btag) correctly opened"<<endl<<endl;
+    cout<<FYEL("-> Efficiency files (lepton, btag) correctly opened")<<endl<<endl;
 
     //--- PILEUP
     my_pileup.Init(samplename);
-    if(my_pileup.Fill_MC_vector_from_Pileup_Profile()) {cout<<endl<<"-> Pileup weights correctly loaded"<<endl<<endl<<endl;} //Read files
-    else {cout<<endl<<"Pileup files not loaded..."<<endl<<endl<<endl;} //files not found
+    if(!my_pileup.Fill_MC_vector_from_Pileup_Profile()) {cout<<endl<<FRED("Pileup files not loaded...")<<endl<<endl<<endl;} //if files not found
 
     my_pileup.Compute_PU_Weights(); //Store PU weights in member vectors //obsolete
     if(debug_pileup) {my_pileup.Print_Debug();} //Print some debug infos
@@ -326,7 +323,7 @@ float ScaleFactors::Get_SF_RecoToLoose_Mu(float pt, float eta, float var)
 /**
  * Return efficiency SF for identifying loose leptons as "tight-ID"
  */
-float ScaleFactors::Get_SF_LooseToTight_Leptons(int pdgid, int nlep, float pt, float eta)
+float ScaleFactors::Get_SF_LooseToTight_Leptons(int pdgid, int nlep, float pt, float eta, float var)
 {
     if(abs(pdgid) != 11 && abs(pdgid) != 13) {return 1;}
     if(nlep != 2 && nlep != 3) {return 1;}
@@ -352,7 +349,10 @@ float ScaleFactors::Get_SF_LooseToTight_Leptons(int pdgid, int nlep, float pt, f
 
     // cout<<"Get_SF_LooseToTight_Leptons = "<<h->GetBinContent(ptbin,etabin)<<endl;
 
-    return h->GetBinContent(ptbin,etabin);
+    float result = h->GetBinContent(ptbin,etabin);
+    if(abs(pdgid) == 11) {result+= var * h->GetBinError(ptbin,etabin);}
+
+    return result;
 }
 
 
@@ -360,26 +360,48 @@ float ScaleFactors::Get_SF_LooseToTight_Leptons(int pdgid, int nlep, float pt, f
  * Get global lepton SF, by combining other SFs
  * Var (to access uncert.) null by default
 */
-float ScaleFactors::Get_Lepton_SF(int nlep, int pdgid, float pt, float eta, float var)
+float ScaleFactors::Get_Lepton_SF(int nlep, int pdgid, float pt, float eta, TString var_type)
 {
+    if(var_type != "" && var_type != "looseUp" && var_type != "looseDown" && var_type != "tightUp" && var_type != "tightDown") {return 1;}
     if(abs(pdgid) != 11 && abs(pdgid) != 13) {return 1;}
     if(nlep != 2 && nlep != 3) {return 1;}
 
+    float var=0;
     float eff_recoToLoose = 1;
 
+    if(var_type == "looseUp") {var = +1;}
+    else if(var_type == "looseDown") {var = -1;}
+    else {var = 0;}
     if(abs(pdgid) == 11) {eff_recoToLoose = Get_SF_RecoToLoose_Ele(pt, eta, var);}
     else {eff_recoToLoose = Get_SF_RecoToLoose_Mu(pt, eta, var);}
 
-    float eff_looseToTight = Get_SF_LooseToTight_Leptons(pdgid, nlep, pt, eta); // var is ignored in all cases for the tight part (systematics handled as nuisance parameter)
+    if(var_type == "looseUp") {var = +1;}
+    else if(var_type == "looseDown") {var = -1;}
+    else {var = 0;}
+    float eff_looseToTight = Get_SF_LooseToTight_Leptons(pdgid, nlep, pt, eta, var); // var is ignored in all cases for the tight part (systematics handled as nuisance parameter)
 
     float sf = eff_recoToLoose * eff_looseToTight;
 
-    if(!sf) {cout<<"Problem in ScaleFactors.cxx : Get_Lepton_SF() = 0"<<endl;}
+    if(!sf) {cout<<FRED("Problem in ScaleFactors.cxx : Get_Lepton_SF() = 0")<<endl;}
 
     // cout<<"Get_Lepton_SF = "<<sf<<endl;
 
     return sf;
 }
+
+
+
+
+
+//--------------------------------------------
+// ######## ########  ####  ######    ######   ######## ########      ######  ########
+//    ##    ##     ##  ##  ##    ##  ##    ##  ##       ##     ##    ##    ## ##
+//    ##    ##     ##  ##  ##        ##        ##       ##     ##    ##       ##
+//    ##    ########   ##  ##   #### ##   #### ######   ########      ######  ######
+//    ##    ##   ##    ##  ##    ##  ##    ##  ##       ##   ##            ## ##
+//    ##    ##    ##   ##  ##    ##  ##    ##  ##       ##    ##     ##    ## ##
+//    ##    ##     ## ####  ######    ######   ######## ##     ##     ######  ##
+//--------------------------------------------
 
 /**
  * Get trigger SF, based on nof leptons, ele or muons, and pT of leading lepton
@@ -409,7 +431,7 @@ float ScaleFactors::Get_Trigger_SF(int nlep, int pdgid1, float pt1, int pdgid2, 
         }
     }
 
-    cout<<"Error : wrong nlep value !"<<endl; return 1.;
+    cout<<BOLD(FRED("Error : wrong nlep value !"))<<endl; return 1.;
 }
 
 
@@ -553,4 +575,85 @@ float ScaleFactors::Get_Pileup_SF(int nPU, TString var)
     else {cout<<BOLD(FRED("Error : wrong arg 'var= "<<var<<" ' in Pileup::Get_PU_Weight() !"))<<endl; return 1;}
 
     return 1;
+}
+
+
+
+
+//--------------------------------------------
+//  ######   ######     ###    ##       ########  ######
+// ##    ## ##    ##   ## ##   ##       ##       ##    ##
+// ##       ##        ##   ##  ##       ##       ##
+//  ######  ##       ##     ## ##       ######    ######
+//       ## ##       ######### ##       ##             ##
+// ##    ## ##    ## ##     ## ##       ##       ##    ##
+//  ######   ######  ##     ## ######## ########  ######
+//--------------------------------------------
+
+void ScaleFactors::Read_Scale_SumWeights(TString samplename, float& sumWeights_nominal, float& sumWeights_scale_originalXWGTUP, float& sumWeights_scale_muF0p5, float& sumWeights_scale_muF2, float& sumWeights_scale_muR0p5, float& sumWeights_scale_muR2, float& sumWeights_scale_muR2muF2, float& sumWeights_scale_muR0p5muF0p5)
+{
+    TString filename = "/home-pbs/ntonon/tHq/IPHCNtuple_2017/CMSSW_9_4_3/src/IPHCNtuple/NtupleAnalyzer/test/weights_2017/Scales/" + samplename + ".root";
+    if(!Check_File_Exists(filename))
+    {
+        cout<<endl<<endl<<FRED("File "<<filename<<" containing the Sum of Weights for the scale variations was not found. The scale variations are set to 1.")<<endl<<endl;
+        return;
+    }
+    else {cout<<FYEL("-> File containing sum of weights for scale variations correctly opened")<<endl<<endl;}
+
+
+    TFile* f = TFile::Open(filename);
+    TH1F* h_tmp = 0;
+
+    //Nominal
+    h_tmp = (TH1F*) f->Get("h_sumWeights_nominal");
+    if(!h_tmp) {cout<<FRED("Histogram not found (sum weights scale variation) ! Abort")<<endl; return;}
+    sumWeights_nominal = h_tmp->Integral();
+
+    delete h_tmp; h_tmp = 0;
+
+    //originalXWGTUP -- useless ?
+    h_tmp = (TH1F*) f->Get("h_sumWeightsScale_originalXWGTUP");
+    if(!h_tmp) {cout<<FRED("Histogram not found (sum weights scale variation) ! Abort")<<endl; return;}
+    sumWeights_scale_originalXWGTUP = h_tmp->Integral();
+    delete h_tmp; h_tmp = 0;
+
+    //muR = 0.5 / muF = 1
+    h_tmp = (TH1F*) f->Get("h_sumWeightsScale_muR0p5");
+    if(!h_tmp) {cout<<FRED("Histogram not found (sum weights scale variation) ! Abort")<<endl; return;}
+    sumWeights_scale_muR0p5 = h_tmp->Integral();
+    delete h_tmp; h_tmp = 0;
+
+    //muR = 2 / muF = 1
+    h_tmp = (TH1F*) f->Get("h_sumWeightsScale_muR2");
+    if(!h_tmp) {cout<<FRED("Histogram not found (sum weights scale variation) ! Abort")<<endl; return;}
+    sumWeights_scale_muR2 = h_tmp->Integral();
+    delete h_tmp; h_tmp = 0;
+
+    //muR = 1 / muF = 0.5
+    h_tmp = (TH1F*) f->Get("h_sumWeightsScale_muF0p5");
+    if(!h_tmp) {cout<<FRED("Histogram not found (sum weights scale variation) ! Abort")<<endl; return;}
+    sumWeights_scale_muF0p5 = h_tmp->Integral();
+    delete h_tmp; h_tmp = 0;
+
+    //muR = 1 / muF = 2
+    h_tmp = (TH1F*) f->Get("h_sumWeightsScale_muF2");
+    if(!h_tmp) {cout<<FRED("Histogram not found (sum weights scale variation) ! Abort")<<endl; return;}
+    sumWeights_scale_muF2 = h_tmp->Integral();
+    delete h_tmp; h_tmp = 0;
+
+    //muR = 0.5 / muF = 0.5
+    h_tmp = (TH1F*) f->Get("h_sumWeightsScale_muR0p5muF0p5");
+    if(!h_tmp) {cout<<FRED("Histogram not found (sum weights scale variation) ! Abort")<<endl; return;}
+    sumWeights_scale_muR0p5muF0p5 = h_tmp->Integral();
+    delete h_tmp; h_tmp = 0;
+
+    //muR = 2 / muF = 2
+    h_tmp = (TH1F*) f->Get("h_sumWeightsScale_muR2muF2");
+    if(!h_tmp) {cout<<FRED("Histogram not found (sum weights scale variation) ! Abort")<<endl; return;}
+    sumWeights_scale_muR2muF2 = h_tmp->Integral();
+    delete h_tmp; h_tmp = 0;
+
+    f->Close();
+
+    return;
 }

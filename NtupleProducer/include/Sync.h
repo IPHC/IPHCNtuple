@@ -31,6 +31,11 @@ class Sync
    bool fill(Ntuple *nt,EventExt *ev);
    
    TFile*  m_file;
+   
+   //This is a copy of the original jet vector, BUT with only the jets having strictly pT>25 && eta<2.4
+   //Vector used for precategorization in Sync.cxx ; original vector is the one ultimately written in the output
+   std::vector<JetExt>* NtJetLooseExt_ttHselections;
+
 
    // https://gitlab.cern.ch/ttH_leptons/doc/blob/master/2017/taus/sync/vars.md
    
