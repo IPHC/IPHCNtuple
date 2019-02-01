@@ -1,7 +1,7 @@
 #!/bin/env zsh
 
-version="ttH2017" #output subdir
-#version="tHq2017" #output subdir
+#version="ttH2017" #output subdir
+version="tHq2017" #output subdir
 
 echo ""
 #Don't forget to update the lumi and the xsec table

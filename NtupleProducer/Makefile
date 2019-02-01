@@ -23,7 +23,7 @@ INCLUDE_FLAGS  = $(JETINC) $(BOOSTINC)
 LDLIBS         = $(JETLIBS) $(ROOTLIBS)
 GLIBS          = $(ROOTGLIBS)
 
-PILEUP	      = test/Make_PU_Histograms.exe
+PILEUP	      = test/Make_Histograms_From_FlatTrees.exe
 
 EXE           = test/NtupleProducer
 
@@ -71,8 +71,8 @@ $(EXE):	      $(LIB) src/NtupleProducer.cxx
 	      @echo "####### Building executable"
 	      @$(CXX) $(CXXFLAGS) obj/NtupleProducer.o -o $(EXE) $(LDLIBS) $(LIB)
 	      
-$(PILEUP):   src/Make_PU_Histograms.cxx
-	     @$(CXX) $(CXXFLAGS) $(GLIBS) src/Make_PU_Histograms.cxx -o $(PILEUP)
+$(PILEUP):   src/Make_Histograms_From_FlatTrees.cxx
+	     @$(CXX) $(CXXFLAGS) $(GLIBS) src/Make_Histograms_From_FlatTrees.cxx -o $(PILEUP)
 
 
 clean:

@@ -6,22 +6,33 @@
 
 #SIGNALS
 #====================================
-THQ_4f_Hincl_13TeV_madgraph_pythia8      		 	0.2568	      	3361686 #kT=-1, tmp
-THQ_ctcvcp_4f_Hincl_13TeV_madgraph_pythia8			0.2568		6125476 #All couplings #0.07096 for SM
+THQ_4f_Hincl_13TeV_madgraph_pythia8      		 	0.2568	      	3361686 #kT=-1 only, leptonic top
+THQ_ctcvcp_4f_Hincl_13TeV_madgraph_pythia8			0.7927		9017630 #All couplings, inclusive top decay #0.07096 for SM
 
 THW_5f_Hincl_13TeV_madgraph_pythia8				0.1472		1439996 #kt=-1, tmp 
-THW_ctcvcp_5f_Hincl_13TeV_madgraph_pythia8			0.1472		3340781 #0.01561 for SM
+THW_ctcvcp_5f_Hincl_13TeV_madgraph_pythia8			0.1472		4573679 #0.01561 for SM
 
-ttHJetToNonbb_M125_TuneCP5_13TeV_amcatnloFXFX_madspin_pythia8	0.212		3320940
+ttHJetToNonbb_M125_TuneCP5_13TeV_amcatnloFXFX_madspin_pythia8	0.212		3286498
 ttHToNonbb_M125_TuneCP5_13TeV-powheg-pythia8			0.212		7522972
 ttH_M125_TuneCP5_13TeV-powheg-pythia8				0.5071		9540346
 
-ST_FCNC-TH_Tleptonic_HToWWZZtautau_eta_hct-MadGraph5-pythia8		1.90	3938944
-ST_FCNC-TH_Tleptonic_HToWWZZtautau_eta_hut-MadGraph5-pythia8		13.84	3819820
-TT_FCNC-TtoHJ_aTleptonic_HToWWZZtautau_eta_hct-MadGraph5-pythia8	18.49	909639
-TT_FCNC-TtoHJ_aTleptonic_HToWWZZtautau_eta_hut-MadGraph5-pythia8	18.49	982780
-TT_FCNC-aTtoHJ_Tleptonic_HToWWZZtautau_eta_hct-MadGraph5-pythia8	18.49	1006914
-TT_FCNC-aTtoHJ_Tleptonic_HToWWZZtautau_eta_hut-MadGraph5-pythia8	18.49	954770
+#FCNC
+ST_FCNC-TH_Tleptonic_HToWWZZtautau_eta_hct-MadGraph5-pythia8		1	3938944
+ST_FCNC-TH_Tleptonic_HToWWZZtautau_eta_hut-MadGraph5-pythia8		1	3819820
+TT_FCNC-TtoHJ_aTleptonic_HToWWZZtautau_eta_hct-MadGraph5-pythia8	1	909639
+TT_FCNC-TtoHJ_aTleptonic_HToWWZZtautau_eta_hut-MadGraph5-pythia8	1	982780
+TT_FCNC-aTtoHJ_Tleptonic_HToWWZZtautau_eta_hct-MadGraph5-pythia8	1	1006914
+TT_FCNC-aTtoHJ_Tleptonic_HToWWZZtautau_eta_hut-MadGraph5-pythia8	1	954770
+
+#VLQ
+TprimeBToTH_M-600_LH_TuneCP5_13TeV-madgraph-pythia8		0.1764		298544
+TprimeBToTH_M-650_LH_TuneCP5_13TeV-madgraph-pythia8		0.1213		298514
+TprimeBToTH_M-700_LH_TuneCP5_13TeV-madgraph-pythia8		0.0886		287382
+TprimeBToTH_M-800_LH_TuneCP5_13TeV-madgraph-pythia8		0.0459		298076
+TprimeBToTH_M-900_LH_TuneCP5_13TeV-madgraph-pythia8		0.0251		297678
+TprimeBToTH_M-1000_LH_TuneCP5_13TeV-madgraph-pythia8		0.0145		297554
+TprimeBToTH_M-1100_LH_TuneCP5_13TeV-madgraph-pythia8		0.00867		297288
+TprimeBToTH_M-1200_LH_TuneCP5_13TeV-madgraph-pythia8		0.00536		297032
 #====================================
 
 
@@ -74,7 +85,7 @@ WW_DoubleScattering_13TeV-pythia8_TuneCP5			1.921		1000000
 
 WZG_TuneCP5_13TeV-amcatnlo-pythia8				0.04345		837172
 
-ST_tWll_5f_LO_TuneCP5_PSweights_13TeV-madgraph-pythia8_Fall17	0.01123		12498	
+ST_tWll_5f_LO_TuneCP5_PSweights_13TeV_madgraph_pythia8_Fall17	0.01123		12498
 
 VHToNonbb_M125_13TeV_amcatnloFXFX_madspin_pythia8_Fall17	0.9561		98527
 

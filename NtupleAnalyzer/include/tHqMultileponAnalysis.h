@@ -200,7 +200,14 @@ class tHqMultileponAnalysis
 		Char_t is_tHq_WZctrl_Fake;
 		Char_t is_tHq_WZctrl_GammaConv;
 		Char_t is_tHq_4l_SR;
-		Char_t is_tHq_ZZctrl_SR;
+        Char_t is_tHq_ZZctrl_SR;
+		Char_t is_tHqFCNC_2lSS_SR;
+		Char_t is_tHqFCNC_2lSS_Fake;
+		Char_t is_tHqFCNC_2lSS_Flip;
+		Char_t is_tHqFCNC_2lSS_GammaConv;
+		Char_t is_tHqFCNC_3l_SR;
+		Char_t is_tHqFCNC_3l_Fake;
+		Char_t is_tHqFCNC_3l_GammaConv;
 
 		//-- ttH 2017 categories
 		Char_t is_ttH_2lSS;
@@ -503,9 +510,10 @@ class tHqMultileponAnalysis
         float sumWeight_ctcv_couplings; //Need to normalize all ctcv couplings with sum
 
         //Higgs decay modes
-		Char_t higgs_decay_ww;
-		Char_t higgs_decay_zz;
-		Char_t higgs_decay_tt;
+		// Char_t higgs_decay_ww;
+		// Char_t higgs_decay_zz;
+		// Char_t higgs_decay_tt;
+        int higgs_daughter_id;
 
 		//Flavour of jet, for splitting of WZ sample only
 		Char_t wz_jetFlav_b;

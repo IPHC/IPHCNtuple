@@ -13,7 +13,7 @@ fpathDATAXRD=$(echo ${fpath} | sed "s%/dpm%root://sbgse1.in2p3.fr//dpm%g")
 fpathMCXRD=$(echo ${fpath} | sed "s%/dpm%root://sbgse1.in2p3.fr//dpm%g")
 
 nFilesDATA=40
-nFilesMC=10
+nFilesMC=8
 outDir="lists/"
 
 rm -rf ${outDir}
@@ -103,8 +103,4 @@ done
 
 
 ### REMOVE MANUALLY SOME SAMPLES HERE (keep FlatTree files, but don't run NTProd on them bc not needed)
-rm ./lists/TTWJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8*
-rm ./lists/TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8*
-rm ./lists/TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8*
-rm ./lists/TGJets_TuneCP5_13TeV_amcatnlo_madspin_pythia8*
-rm ./lists/ST_s-channel_4f_leptonDecays_TuneCP5_13TeV-amcatnlo-pythia8*
+#rm ./lists/TTWJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8*

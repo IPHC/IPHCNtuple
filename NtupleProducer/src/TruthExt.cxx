@@ -1419,19 +1419,22 @@ void TruthExt::readMultiLepton()
        (*multiLepton).mET = PtotNeut;
     */
     
-    int higgs_decay = Determine_Higgs_Decay();
-    if(higgs_decay == 1) {higgs_decay_ww = true;}
-    else if(higgs_decay == 2) {higgs_decay_zz = true;}
-    else if(higgs_decay == 3) {higgs_decay_tt = true;}
+    //--- Higgs decay mode
+    higgs_daughter_id = Determine_Higgs_Decay();
+    //int higgs_decay = Determine_Higgs_Decay();
+    //if(higgs_decay == 1) {higgs_decay_ww = true;}
+    //else if(higgs_decay == 2) {higgs_decay_zz = true;}
+    //else if(higgs_decay == 3) {higgs_decay_tt = true;}
 }
 
 void TruthExt::init()
 {
    gen_PVz = -100.;
    
-   higgs_decay_ww = false;
-   higgs_decay_zz = false;
-   higgs_decay_tt = false;
+   higgs_daughter_id = -1;
+   //higgs_decay_ww = false;
+   //higgs_decay_zz = false;
+   //higgs_decay_tt = false;
    
    metGen_px = -100.;
    metGen_py = -100.;
@@ -1518,14 +1521,18 @@ void TruthExt::init()
 
 int TruthExt::Determine_Higgs_Decay()
 {
-    //cout<<"ntP->gen_n = "<<ntP->gen_n<<endl;
+    bool debug = false;
+    
+    if(debug) {cout<<endl<<endl<<"* Event has ntP->gen_n = "<<ntP->gen_n<<" gen particles"<<endl;}
     
     for(int itruth=0; itruth<ntP->gen_n; itruth++)
     {
-        //cout<<"id "<<ntP->gen_id->at(itruth)<<endl;
+        if(debug) {cout<<"GenPart "<<itruth<<" / ID : "<<ntP->gen_id->at(itruth)<<endl;}
 
         if(abs(ntP->gen_id->at(itruth)) == 25) //Higgs found
         {
+	    if(debug) {cout<<"Found a Higgs !"<<endl;}
+	
 	    //Must make sure that the daughter of the Higgs is not again a Higgs
 	    int index_decaying_higgs = itruth;
 	    int n_tries = 0;
@@ -1541,33 +1548,38 @@ int TruthExt::Determine_Higgs_Decay()
 	    {
             	int idaughter = ntP->gen_daughter_index->at(index_decaying_higgs).at(0);
 	    
-	    	//cout<<"idaughter 0 = "<<idaughter<<endl;
-		//cout<<"id idaughter 0 = "<<ntP->gen_id->at(idaughter)<<endl;
+	    	if(debug) {cout<<"Select the first daughter : genIndex = "<<idaughter<<" / ID = "<<ntP->gen_id->at(idaughter)<<endl;}
+		
+		return fabs(ntP->gen_id->at(idaughter));
 	    
-            	// for(int idaughter=0; idaughter<ntP->gen_daughter_index.size(); idaughter++)
+	    	//Now, store directly daughter ID instead of checking if it's a W || Z || tautau
+	    	/*
+            	//for(int idaughter=0; idaughter<ntP->gen_daughter_index.size(); idaughter++)
             	if(abs(ntP->gen_id->at(idaughter)) == 24)
             	{
-                	//cout<<"W decay !"<<endl;
+                	if(debug) {cout<<"W decay !"<<endl;}
                 	return 1;
             	}
             	else if(abs(ntP->gen_id->at(idaughter)) == 23)
             	{
-                	//cout<<"Z decay !"<<endl;
+                	if(debug) {cout<<"Z decay !"<<endl;}
                 	return 2;
             	}
             	else if(abs(ntP->gen_id->at(idaughter)) == 15)
             	{
-             	   //cout<<"Tau decay !"<<endl;
-             	   return 3;
+             		if(debug) {cout<<"Tau decay !"<<endl;}
+             		return 3;
            	}
            	else 
 		{
-			//cout<<"Decay not found : id="<<ntP->gen_id->at(idaughter)<<endl;
+			if(debug) {cout<<"Different decay mode ? Daughter ID ="<<ntP->gen_id->at(idaughter)<<endl;}
 			return 0;
 		}
+		*/
 	    }
         }
     }
 
-    return 0;
+    if(debug) {cout<<"Decay not found !"<<endl;}
+    return -1;
 }

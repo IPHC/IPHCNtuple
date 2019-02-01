@@ -18,9 +18,13 @@ class Truth : public Helper
    std::vector<float>  mc_truth_E;
    
    int gen_n;
-   int higgs_decay_ww;
-   int higgs_decay_zz;
-   int higgs_decay_tt;
+   
+   //Higgs decay modes
+   //int higgs_decay_ww;
+   //int higgs_decay_zz;
+   //int higgs_decay_tt;
+   int higgs_daughter_id;
+   
    float gen_PVz;
    std::vector<float>  gen_pt;
    std::vector<float>  gen_eta;

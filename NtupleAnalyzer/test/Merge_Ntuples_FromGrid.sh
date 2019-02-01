@@ -1,9 +1,8 @@
 #!/bin/env zsh
 export x509_USER_PROXY=/home-pbs/ntonon/proxy/x509up_u8066
 
-version="ttH2017"
-# version="tHq2017"
-# version="tHq2017_v2"
+# version="ttH2017"
+version="tHq2017"
 
 fpath="/dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleAnalyzer/"$version"/"
 
@@ -114,24 +113,16 @@ rm $outDir/merged_DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIIFall17
 
 
 hadd -f $outDir/ttZ.root $outDir/merged_TTZToLL_M-1to10_TuneCP5_13TeV-amcatnlo-pythia8.root $outDir/merged_TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8.root
-# rm $outDir/merged_TTZToLL_M-1to10_TuneCP5_13TeV-amcatnlo-pythia8.root
-# rm $outDir/merged_TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8.root
-
-hadd -f $outDir/ST_tchan.root $outDir/merged_ST_t-channel_top_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8.root  $outDir/merged_ST_t-channel_antitop_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8.root
-rm $outDir/merged_ST_t-channel_top_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8.root
-rm $outDir/merged_ST_t-channel_antitop_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8.root
-
-hadd -f $outDir/ST_tW.root $outDir/merged_ST_tW_top_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8.root  $outDir/merged_ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8.root
-rm $outDir/merged_ST_tW_top_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8.root
-rm $outDir/merged_ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8.root
+rm $outDir/merged_TTZToLL_M-1to10_TuneCP5_13TeV-amcatnlo-pythia8.root
+rm $outDir/merged_TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8.root
 
 hadd -f $outDir/TTJets_SemiLep_MLM.root $outDir/merged_TTJets_SingleLeptFromT_TuneCP5_13TeV-madgraphMLM-pythia8.root $outDir/merged_TTJets_SingleLeptFromTbar_TuneCP5_13TeV-madgraphMLM-pythia8.root
 rm $outDir/merged_TTJets_SingleLeptFromT_TuneCP5_13TeV-madgraphMLM-pythia8.root
 rm $outDir/merged_TTJets_SingleLeptFromTbar_TuneCP5_13TeV-madgraphMLM-pythia8.root
 
-hadd -f $outDir/WJets.root $outDir/merged_W3JetsToLNu_TuneCP5_13TeV_madgraphMLM_pythia8.root $outDir/merged_W4JetsToLNu_TuneCP5_13TeV_madgraphMLM_pythia8.root
-rm $outDir/merged_W3JetsToLNu_TuneCP5_13TeV_madgraphMLM_pythia8.root
-rm $outDir/merged_W4JetsToLNu_TuneCP5_13TeV_madgraphMLM_pythia8.root
+hadd -f $outDir/WJets.root $outDir/merged_W3JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8.root $outDir/merged_W4JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8.root
+rm $outDir/merged_W3JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8.root
+rm $outDir/merged_W4JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8.root
 #//--------------------------------------------
 
 
@@ -154,11 +145,11 @@ mv $outDir/merged_WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8.root $outDir/WZ.ro
 mv $outDir/merged_WZZ_TuneCP5_13TeV-amcatnlo-pythia8.root $outDir/WZZ.root
 mv $outDir/merged_ZZZ_TuneCP5_13TeV-amcatnlo-pythia8.root $outDir/ZZZ.root
 mv $outDir/merged_tZq_ll_4f_ckm_NLO_TuneCP5_PSweights_13TeV-amcatnlo-pythia8.root $outDir/tZq.root
-mv $outDir/merged_ttHJetToNonbb_M125_TuneCP5_13TeV_amcatnloFXFX_madspin_pythia8.root $outDir/ttHnobb.root
+mv $outDir/merged_ttHJetToNonbb_M125_TuneCP5_13TeV_amcatnloFXFX_madspin_pythia8.root $outDir/ttH.root
 mv $outDir/merged_TTWW_TuneCP5_13TeV-madgraph-pythia8.root $outDir/ttWW.root
 mv $outDir/merged_TGJets_leptonDecays_TuneCP5_PSweights_13TeV-amcatnlo-pythia8.root $outDir/tGJets.root
 mv $outDir/merged_TTTT_TuneCP5_13TeV-amcatnlo-pythia8.root $outDir/TTTT.root
-mv $outDir/merged_ttHToNonbb_M125_TuneCP5_13TeV-powheg-pythia8.root $outDir/ttHnobb_LO.root
+mv $outDir/merged_ttHToNonbb_M125_TuneCP5_13TeV-powheg-pythia8.root $outDir/ttH_LO_nonbb.root
 mv $outDir/merged_ttWJets_TuneCP5_13TeV_madgraphMLM_pythia8.root $outDir/ttW_LO.root
 mv $outDir/merged_ttZJets_TuneCP5_13TeV_madgraphMLM_pythia8.root $outDir/ttZ_LO.root
 mv $outDir/merged_TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8.root $outDir/TTJets.root
@@ -175,24 +166,48 @@ mv $outDir/merged_WZG_TuneCP5_13TeV-amcatnlo-pythia8.root $outDir/WZG.root
 mv $outDir/merged_ttH_M125_TuneCP5_13TeV-powheg-pythia8.root $outDir/ttH_LO.root
 mv $outDir/merged_VHToNonbb_M125_13TeV_amcatnloFXFX_madspin_pythia8_Fall17.root $outDir/VHToNonbb.root
 mv $outDir/merged_ST_tWll_5f_LO_TuneCP5_PSweights_13TeV_madgraph_pythia8_Fall17.root $outDir/tWZ.root
+mv $outDir/merged_TprimeBToTH_M-600_LH_TuneCP5_13TeV-madgraph-pythia8.root $outDir/VLQ_M600.root
+mv $outDir/merged_TprimeBToTH_M-650_LH_TuneCP5_13TeV-madgraph-pythia8.root $outDir/VLQ_M650.root
+mv $outDir/merged_TprimeBToTH_M-700_LH_TuneCP5_13TeV-madgraph-pythia8.root $outDir/VLQ_M700.root
+mv $outDir/merged_TprimeBToTH_M-800_LH_TuneCP5_13TeV-madgraph-pythia8.root $outDir/VLQ_M800.root
+mv $outDir/merged_TprimeBToTH_M-900_LH_TuneCP5_13TeV-madgraph-pythia8.root $outDir/VLQ_M900.root
+mv $outDir/merged_TprimeBToTH_M-1000_LH_TuneCP5_13TeV-madgraph-pythia8.root $outDir/VLQ_M1000.root
+mv $outDir/merged_TprimeBToTH_M-1100_LH_TuneCP5_13TeV-madgraph-pythia8.root $outDir/VLQ_M1100.root
+mv $outDir/merged_TprimeBToTH_M-1200_LH_TuneCP5_13TeV-madgraph-pythia8.root $outDir/VLQ_M1200.root
+
 
 
 #FCNC
-mv $outDir/merged_ST_FCNC-TH_Tleptonic_HToWWZZtautau_eta_hct-MadGraph5-pythia8.root $outDir/tH_ST_hct_FCNC.root
+# mv $outDir/merged_ST_FCNC-TH_Tleptonic_HToWWZZtautau_eta_hut-MadGraph5-pythia8.root $outDir/tH_ST_hut_FCNC.root
+# mv $outDir/merged_TT_FCNC-TtoHJ_aTleptonic_HToWWZZtautau_eta_hut-MadGraph5-pythia8.root $outDir/tH_TT_hut_FCNC.root
+# mv $outDir/merged_TT_FCNC-aTtoHJ_Tleptonic_HToWWZZtautau_eta_hut-MadGraph5-pythia8.root $outDir/tH_TT_aT_hut_FCNC.root
+# hadd -f $outDir/tH_hut_FCNC.root $outDir/tH_ST_hut_FCNC.root $outDir/tH_TT_hut_FCNC.root $outDir/tH_TT_aT_hut_FCNC.root
+
+# mv $outDir/merged_ST_FCNC-TH_Tleptonic_HToWWZZtautau_eta_hct-MadGraph5-pythia8.root $outDir/tH_ST_hct_FCNC.root
+# mv $outDir/merged_TT_FCNC-TtoHJ_aTleptonic_HToWWZZtautau_eta_hct-MadGraph5-pythia8.root $outDir/tH_TT_hct_FCNC.root
+# mv $outDir/merged_TT_FCNC-aTtoHJ_Tleptonic_HToWWZZtautau_eta_hct-MadGraph5-pythia8.root $outDir/tH_TT_aT_hct_FCNC.root
+# hadd -f $outDir/tH_hct_FCNC.root $outDir/tH_ST_hct_FCNC.root $outDir/tH_TT_hct_FCNC.root $outDir/tH_TT_aT_hct_FCNC.root
+
 mv $outDir/merged_ST_FCNC-TH_Tleptonic_HToWWZZtautau_eta_hut-MadGraph5-pythia8.root $outDir/tH_ST_hut_FCNC.root
-mv $outDir/merged_TT_FCNC-TtoHJ_aTleptonic_HToWWZZtautau_eta_hct-MadGraph5-pythia8.root $outDir/tH_TT_hct_FCNC.root
-mv $outDir/merged_TT_FCNC-TtoHJ_aTleptonic_HToWWZZtautau_eta_hut-MadGraph5-pythia8.root $outDir/tH_TT_hut_FCNC.root
-mv $outDir/merged_TT_FCNC-aTtoHJ_Tleptonic_HToWWZZtautau_eta_hct-MadGraph5-pythia8.root $outDir/tH_TT_aT_hct_FCNC.root
-mv $outDir/merged_TT_FCNC-aTtoHJ_Tleptonic_HToWWZZtautau_eta_hut-MadGraph5-pythia8.root $outDir/tH_TT_aT_hut_FCNC.root
+hadd -f $outDir/tH_TT_hut_FCNC.root $outDir/merged_TT_FCNC-TtoHJ_aTleptonic_HToWWZZtautau_eta_hut-MadGraph5-pythia8.root $outDir/merged_TT_FCNC-aTtoHJ_Tleptonic_HToWWZZtautau_eta_hut-MadGraph5-pythia8.root
+rm $outDir/merged_TT_FCNC-TtoHJ_aTleptonic_HToWWZZtautau_eta_hut-MadGraph5-pythia8.root
+rm $outDir/merged_TT_FCNC-aTtoHJ_Tleptonic_HToWWZZtautau_eta_hut-MadGraph5-pythia8.root
+
+mv $outDir/merged_ST_FCNC-TH_Tleptonic_HToWWZZtautau_eta_hct-MadGraph5-pythia8.root $outDir/tH_ST_hct_FCNC.root
+hadd -f $outDir/tH_TT_hct_FCNC.root $outDir/merged_TT_FCNC-TtoHJ_aTleptonic_HToWWZZtautau_eta_hct-MadGraph5-pythia8.root $outDir/merged_TT_FCNC-aTtoHJ_Tleptonic_HToWWZZtautau_eta_hct-MadGraph5-pythia8.root
+rm $outDir/merged_TT_FCNC-TtoHJ_aTleptonic_HToWWZZtautau_eta_hct-MadGraph5-pythia8.root
+rm $outDir/merged_TT_FCNC-aTtoHJ_Tleptonic_HToWWZZtautau_eta_hct-MadGraph5-pythia8.root
 
 
 #Obsolete
 # //--------------------------------------------
-# mv $outDir/merged_ST_s-channel_4f_leptonDecays_TuneCP5_PSweights_13TeV-amcatnlo-pythia8.root $outDir/ST_schan.root
-# mv $outDir/merged_WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8.root $outDir/WJets.root
-# mv $outDir/merged_WWTo2L2Nu_NNPDF31_TuneCP5_13TeV-powheg-pythia8.root $outDir/WW.root
-# mv $outDir/merged_WWTo2L2Nu_DoubleScattering_13TeV-herwigpp.root $outDir/WW_DS.root
+# hadd -f $outDir/ST_tchan.root $outDir/merged_ST_t-channel_top_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8.root  $outDir/merged_ST_t-channel_antitop_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8.root
+# rm $outDir/merged_ST_t-channel_top_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8.root
+# rm $outDir/merged_ST_t-channel_antitop_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8.root
 
+# hadd -f $outDir/ST_tW.root $outDir/merged_ST_tW_top_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8.root  $outDir/merged_ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8.root
+# rm $outDir/merged_ST_tW_top_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8.root
+# rm $outDir/merged_ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8.root
 #//--------------------------------------------
 
 #//--------------------------------------------

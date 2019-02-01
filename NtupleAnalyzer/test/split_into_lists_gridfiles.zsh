@@ -1,8 +1,8 @@
 #!/bin/env zsh
 export x509_USER_PROXY=/home-pbs/ntonon/proxy/x509up_u8066
 
+version="tHq2017"
 #version="ttH2017"
-version="tHq2017_v1"
 
 fpath="/dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/"$version"/"
 
@@ -15,8 +15,8 @@ fpathDATAXRD=$(echo ${fpath} | sed "s%/dpm%root://sbgse1.in2p3.fr//dpm%g")
 fpathMCXRD=$(echo ${fpath} | sed "s%/dpm%root://sbgse1.in2p3.fr//dpm%g")
 
 #--- Files per job
-nFilesDATA=10
-nFilesMC=5
+nFilesDATA=20
+nFilesMC=10
 outDir="lists/"
 
 rm -rf ${outDir}

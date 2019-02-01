@@ -1018,6 +1018,7 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 
     //For analysis, we save forward jets and jets with pT_jesUp>25 also
     // However for the precategorization in this code, only want to account for jets with pt>25 && eta<2.4 => copy !
+    //NB : removing jets having only JES_up>25, so can only use this vector for 'nominal' categories (not for JES variations)
     NtJetLooseExt_ttHselections = new std::vector<JetExt>;
     for(int ijet=0; ijet<nt->NtJetLooseExt->size(); ijet++)
     {
@@ -1099,12 +1100,15 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 	int nTauMedium = nt->NtTauMediumExt->size();
 
 //Original jet vector (to decide if should let event pass)
+//Includes jets with JES_up>25 and forward jets (if included in JetExt.cxx code)
 //--------------------------------------------
     int nJetLoose_total = nt->NtJetLooseExt->size();
+    int nJetLooseCentral_total = 0;
     int nJetLooseBL_total = 0;
     int nJetLooseBM_total = 0;
     for(int ij=0;ij<nJetLoose_total;ij++)
     {
+        if( fabs(nt->NtJetLooseExt->at(ij).eta) < 2.4) {nJetLooseCentral_total++;}
         if( nt->NtJetLooseExt->at(ij).isMediumBTag ) {nJetLooseBL_total++;}
         if( nt->NtJetLooseExt->at(ij).isLooseBTag ) {nJetLooseBM_total++;}
     }
@@ -1116,8 +1120,8 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 	int nJetLooseBM = 0;
 	for(int ij=0;ij<nJetLoose;ij++)
     {
-        if( NtJetLooseExt_ttHselections->at(ij).isMediumBTag ) {nJetLooseBM++;}
-        if( NtJetLooseExt_ttHselections->at(ij).isLooseBTag ) {nJetLooseBL++;}
+        if(NtJetLooseExt_ttHselections->at(ij).isMediumBTag) {nJetLooseBM++;}
+        if(NtJetLooseExt_ttHselections->at(ij).isLooseBTag) {nJetLooseBL++;}
     }
 //--------------------------------------------
 
@@ -1292,8 +1296,8 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 	bool pass_ttWctrl_Fake = 0;
 	bool pass_ttWctrl_Flip_Data = 0;
 	bool pass_ttWctrl_Flip = 0;
-	bool pass_2lSS_Training = 0; //NEW -- ttH training selection
-	bool pass_2lSS_LooseSel = 0; //NEW -- Define looser category, to make sure that 100% of events needed for final analysis will be saved
+	bool pass_2lSS_Training = 0;
+	bool pass_2lSS_LooseSel = 0; //Define looser category, to make sure that 100% of events needed for final analysis will be saved
 	  {
 	     bool pass_nlep = (nLepFakeable > 1);
 	     if( pass_nlep )
@@ -1310,18 +1314,24 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 		  bool pass_fakeable_pt_loose = (elmuFakeable->at(0).conept > 20. && elmuFakeable->at(1).conept > 10.);
 		  bool pass_tight_charge = (elmuFakeable->at(0).tightCharge && elmuFakeable->at(1).tightCharge);
 		  bool pass_tau_veto = (nTauLoose == 0);
-		  bool pass_njet = (nJetLoose >= 4 && (nJetLooseBL >= 2 || nJetLooseBM >= 1));
-		  bool pass_njet3 = (nJetLoose == 3 && (nJetLooseBL >= 2 || nJetLooseBM >= 1));
-		  bool pass_njet_loose = (nJetLoose_total>= 2 && nJetLooseBL_total >= 1);
 		  bool pass_lepTight = (nLepTight <= 2);
 		  bool pass_metLD = (metLD > 30);
 		  if( !(elmuFakeable->at(0).iElec >= 0) || !(elmuFakeable->at(1).iElec >= 0) ) pass_metLD = 1;
   		  bool pass_has_elec = (elmuFakeable->at(0).iElec >= 0 || elmuFakeable->at(1).iElec >= 0);
 
-		  bool pass_tight = (elmuFakeable->at(0).isTightTTH && elmuFakeable->at(1).isTightTTH);
-		  bool pass_ss = (elmuFakeable->at(0).charge*elmuFakeable->at(1).charge > 0);
-		  // bool pass_truth = (elmuFakeable->at(0).hasMCMatch && elmuFakeable->at(1).hasMCMatch);
-		  bool pass_truth = (elmuFakeable->at(0).hasChargeMCMatch && elmuFakeable->at(1).hasChargeMCMatch); //CHANGED -- in 2lSS regions, also require charge matching
+          bool pass_tight = (elmuFakeable->at(0).isTightTTH && elmuFakeable->at(1).isTightTTH);
+          bool pass_ss = (elmuFakeable->at(0).charge*elmuFakeable->at(1).charge > 0);
+          // bool pass_truth = (elmuFakeable->at(0).hasMCMatch && elmuFakeable->at(1).hasMCMatch);
+          bool pass_truth = (elmuFakeable->at(0).hasChargeMCMatch && elmuFakeable->at(1).hasChargeMCMatch); //CHANGED -- in 2lSS regions, also require charge matching
+
+          //nJet cuts only to define here the ttH SR and ttW CR (no forward jets, or jets with only JES_up>25)
+          bool pass_njet = (nJetLoose >= 4 && (nJetLooseBL >= 2 || nJetLooseBM >= 1)); //for ttH SR
+          bool pass_njet3 = (nJetLoose == 3 && (nJetLooseBL >= 2 || nJetLooseBM >= 1)); //for ttW CR
+
+          //These nJet cuts are loose, to make sure all the necessary events will pass at least 1 categ (also for JES variations, etc.)
+          bool pass_njet_loose_ttH = (nJetLooseCentral_total >= 3 && (nJetLooseBL_total >= 2 || nJetLooseBM_total >= 1)); //For ttH SR : at least 3 central jets, among which at least 1 medium or 2 loose btags
+          bool pass_njet_loose_tHq = (nJetLoose_total >= 2 && nJetLooseBM_total >= 1); //For tHq SR : at least 2 jets (central or fwd), among which at least 1 medium btag
+          bool pass_njet_FCNC = (nJetLooseCentral_total >= 1 && nJetLooseBM_total == 1); //For FCNC categ : at least 1 central jet, among which exactly 1 btag
 
 		  pass_2lSS = (pass_trig && pass_lepTight && pass_fakeable_pt && pass_tight_charge && pass_mll && pass_tau_veto && pass_mee && pass_metLD && pass_njet);
 
@@ -1355,7 +1365,7 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 
 		  pass_2lSS_Training = (pass_trig && pass_fakeable_pt && pass_ss && pass_njet && pass_truth);
 
-		  pass_2lSS_LooseSel = (pass_trig && pass_fakeable_pt_loose && pass_ss && pass_njet_loose);
+		  pass_2lSS_LooseSel = (pass_trig && pass_fakeable_pt_loose && pass_ss && (pass_njet_loose_ttH || pass_njet_loose_tHq || pass_njet_FCNC));
 
 		  for(int d=0;d<evdebug->size();d++)
 		    {
@@ -1434,7 +1444,7 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 		  bool pass_tight_charge = (elmuFakeable->at(0).tightCharge && elmuFakeable->at(1).tightCharge);
 		  bool pass_tau = (nTauLoose >= 1);
 		  bool pass_njet = (nJetLoose >= 3 && (nJetLooseBL >= 2 || nJetLooseBM >= 1));
-		  bool pass_metLD = (metLD > 0.2); //FIXME -- definition changed
+		  bool pass_metLD = (metLD > 0.2);
 		  if( !(elmuFakeable->at(0).iElec >= 0) || !(elmuFakeable->at(1).iElec >= 0) ) pass_metLD = 1;
 
 		  bool pass_tight = (elmuFakeable->at(0).isTightTTH && elmuFakeable->at(1).isTightTTH);
@@ -1518,7 +1528,7 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 		    (nElectronFakeable >= 1 && nMuonFakeable >= 1 && trig_em);
 		  bool pass_fakeable_pt = (elmuFakeable->at(0).conept > 25. && elmuFakeable->at(1).conept > 10.);
 		  if( elmuFakeable->at(1).iElec >= 0 ) pass_fakeable_pt = pass_fakeable_pt && (elmuFakeable->at(1).conept > 15.);
-		  bool pass_metLD = (((metLD > 0.2 && nSFOS == 0) || (metLD > 0.3 && nSFOS > 0)) || nJetLoose >= 4); //FIXME -- definition changed
+		  bool pass_metLD = (((metLD > 0.2 && nSFOS == 0) || (metLD > 0.3 && nSFOS > 0)) || nJetLoose >= 4);
 		  int lep_charge_sum = elmuFakeable->at(0).charge+elmuFakeable->at(1).charge+nt->NtTauFakeableExt->at(0).charge+nt->NtTauFakeableExt->at(1).charge;
 		  bool pass_charge = (lep_charge_sum == 0);
 		  bool pass_njet = (nJetLoose >= 2 && (nJetLooseBL >= 2 || nJetLooseBM >= 1));
@@ -1591,14 +1601,21 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 		  bool pass_metLD = (((metLD > 30 && nSFOS == 0) || (metLD > 45 && nSFOS > 0)) || nJetLoose >= 4);
 		  int lep_charge_sum = elmuFakeable->at(0).charge+elmuFakeable->at(1).charge+elmuFakeable->at(2).charge;
 		  bool pass_charge = (lep_charge_sum == -1 || lep_charge_sum == 1);
-		  bool pass_njet = (nJetLoose >= 2 && (nJetLooseBL >= 2 || nJetLooseBM >= 1));
-		  // bool pass_njet_ttZ = (nJetLoose >= 2 && nJetLooseBL >= 2 && nJetLooseBM >= 1);
-		  bool pass_njet_WZ = (nJetLoose >= 2 && nJetLooseBL <= 1 && nJetLooseBM == 0);
-		  bool pass_njet_loose = (nJetLoose_total >= 2 && nJetLooseBL_total >= 1);
 		  bool pass_mllll = (mllll > 140 || mllll < 0);
 
-		  bool pass_tight = (elmuFakeable->at(0).isTightTTH && elmuFakeable->at(1).isTightTTH && elmuFakeable->at(2).isTightTTH);
-		  bool pass_truth = (elmuFakeable->at(0).hasMCMatch && elmuFakeable->at(1).hasMCMatch && elmuFakeable->at(2).hasMCMatch);
+          bool pass_tight = (elmuFakeable->at(0).isTightTTH && elmuFakeable->at(1).isTightTTH && elmuFakeable->at(2).isTightTTH);
+          bool pass_truth = (elmuFakeable->at(0).hasMCMatch && elmuFakeable->at(1).hasMCMatch && elmuFakeable->at(2).hasMCMatch);
+
+          //nJet cuts only to define here the ttH SR and CRs (no forward jets, or jets with only JES_up>25)
+          bool pass_njet = (nJetLoose >= 2 && (nJetLooseBL >= 2 || nJetLooseBM >= 1));
+          // bool pass_njet_ttZ = (nJetLoose >= 2 && nJetLooseBL >= 2 && nJetLooseBM >= 1);
+          bool pass_njet_WZ = (nJetLoose >= 2 && nJetLooseBL <= 1 && nJetLooseBM == 0);
+
+          //These nJet cuts are loose, to make sure all the necessary events will pass at least 1 categ
+          bool pass_njet_loose_ttH = (nJetLooseCentral_total >= 2 && (nJetLooseBL_total >= 2 || nJetLooseBM_total >= 1)); //For ttH SR : at least 2 central jets, among which at least 1 medium or 2 loose btags
+          bool pass_njet_loose_tHq = (nJetLoose_total >= 2 && nJetLooseBM_total >= 1); //For tHq SR : at least 2 jets (central or fwd), among which at least 1 medium btag
+          bool pass_njet_FCNC = (nJetLooseCentral_total >= 1 && nJetLooseBM_total == 1); //For FCNC categ : at least 1 central jet, among which exactly 1 btag
+
 
 		  pass_3l = (pass_trig && pass_fakeable_pt && pass_mll && pass_Z_veto && pass_tau_veto && pass_metLD && pass_charge && pass_njet &&
 		  pass_mllll && pass_nlep);
@@ -1628,7 +1645,7 @@ bool Sync::fill(Ntuple *nt,EventExt *ev)
 
 		  pass_3l_Training = (pass_trig && pass_fakeable_pt && pass_Z_veto && pass_metLD && pass_truth && nJetLooseBL >= 2);
 
-		  pass_3l_LooseSel = (pass_trig && pass_fakeable_pt_loose && pass_Z_veto && pass_njet_loose);
+		  pass_3l_LooseSel = (pass_trig && pass_fakeable_pt_loose && pass_Z_veto && (pass_njet_loose_ttH || pass_njet_loose_tHq || pass_njet_FCNC));
 
 		  for(int d=0;d<evdebug->size();d++)
 		    {

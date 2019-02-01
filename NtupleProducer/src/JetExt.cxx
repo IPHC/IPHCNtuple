@@ -268,7 +268,7 @@ void JetExt::apply_JER_smearing(bool isdata, float JER_res, float JER_sf, float 
     JER_corr_down = 1.;
 
     if(idx_matched_genjet >= 0) //if jet matched
-    {
+    {   
         float genpt = ntP->genJet_pt->at(idx_matched_genjet);
 
         if(genpt >= 0.)
@@ -279,7 +279,7 @@ void JetExt::apply_JER_smearing(bool isdata, float JER_res, float JER_sf, float 
         }
     }
     else
-    {
+    {   
         TRandom3 rnd;
         float smear = rnd.Gaus(0., JER_res);
 
@@ -299,8 +299,9 @@ void JetExt::apply_JER_smearing(bool isdata, float JER_res, float JER_sf, float 
     E_JER_down = E * JER_corr_down;
 
     //Correct jet pt/E by JER correcting factor
-    pt*= JER_corr;
-    E*= JER_corr;
+    //NB : don't do it here (ttH does not apply JER). Store corrections instead, for later use
+    //pt*= JER_corr;
+    //E*= JER_corr;
 
     return;
 }

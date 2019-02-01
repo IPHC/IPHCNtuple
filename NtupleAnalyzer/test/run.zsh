@@ -16,7 +16,6 @@ export LD_LIBRARY_PATH=${cdir}:${NtupleDir}:${NtupleDir}/obj:$LD_LIBRARY_PATH
 --lumi 41500 \
 --dataset THQ_ctcvcp_4f_Hincl_13TeV_madgraph_pythia8
 
-
 #====================================
 #====================================
 #THQ_ctcvcp
