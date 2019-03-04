@@ -121,121 +121,33 @@ bool Pileup::Init(TString samplename)
 */
 void Pileup::Fill_MC_vector_from_HardCoded()
 {
-    // v_MC_PU.push_back(3.39597497605e-05);
-    // v_MC_PU.push_back(6.63688402133e-06);
-    // v_MC_PU.push_back(1.39533611284e-05);
-    // v_MC_PU.push_back(3.64963078209e-05);
-    // v_MC_PU.push_back(6.00872171664e-05);
-    // v_MC_PU.push_back(9.33932578027e-05);
-    // v_MC_PU.push_back(0.000120591524486);
-    // v_MC_PU.push_back(0.000128694546198);
-    // v_MC_PU.push_back(0.000361697233219);
-    // v_MC_PU.push_back(0.000361796847553);
-    // v_MC_PU.push_back(0.000702474896113);
-    // v_MC_PU.push_back(0.00133766053707);
-    // v_MC_PU.push_back(0.00237817050805);
-    // v_MC_PU.push_back(0.00389825605651);
-    // v_MC_PU.push_back(0.00594546732588);
-    // v_MC_PU.push_back(0.00856825906255);
-    // v_MC_PU.push_back(0.0116627396044);
-    // v_MC_PU.push_back(0.0148793350787);
-    // v_MC_PU.push_back(0.0179897368379);
-    // v_MC_PU.push_back(0.0208723871946);
-    // v_MC_PU.push_back(0.0232564170641);
-    // v_MC_PU.push_back(0.0249826433945);
-    // v_MC_PU.push_back(0.0262245860346);
-    // v_MC_PU.push_back(0.0272704617569);
-    // v_MC_PU.push_back(0.0283301107549);
-    // v_MC_PU.push_back(0.0294006137386);
-    // v_MC_PU.push_back(0.0303026836965);
-    // v_MC_PU.push_back(0.0309692426278);
-    // v_MC_PU.push_back(0.0308818046328);
-    // v_MC_PU.push_back(0.0310566806228);
-    // v_MC_PU.push_back(0.0309692426278);
-    // v_MC_PU.push_back(0.0310566806228);
-    // v_MC_PU.push_back(0.0310566806228);
-    // v_MC_PU.push_back(0.0310566806228);
-    // v_MC_PU.push_back(0.0307696426944);
-    // v_MC_PU.push_back(0.0300103336052);
-    // v_MC_PU.push_back(0.0288355370103);
-    // v_MC_PU.push_back(0.0273233309106);
-    // v_MC_PU.push_back(0.0264343533951);
-    // v_MC_PU.push_back(0.0255453758796);
-    // v_MC_PU.push_back(0.0235877272306);
-    // v_MC_PU.push_back(0.0215627588047);
-    // v_MC_PU.push_back(0.0195825559393);
-    // v_MC_PU.push_back(0.0177296309658);
-    // v_MC_PU.push_back(0.0160560731931);
-    // v_MC_PU.push_back(0.0146022004183);
-    // v_MC_PU.push_back(0.0134080690078);
-    // v_MC_PU.push_back(0.0129586991411);
-    // v_MC_PU.push_back(0.0125093292745);
-    // v_MC_PU.push_back(0.0124360740539);
-    // v_MC_PU.push_back(0.0123547104433);
-    // v_MC_PU.push_back(0.0123953922486);
-    // v_MC_PU.push_back(0.0124360740539);
-    // v_MC_PU.push_back(0.0124360740539);
-    // v_MC_PU.push_back(0.0123547104433);
-    // v_MC_PU.push_back(0.0124360740539);
-    // v_MC_PU.push_back(0.0123387597772);
-    // v_MC_PU.push_back(0.0122414455005);
-    // v_MC_PU.push_back(0.011705203844);
-    // v_MC_PU.push_back(0.0108187105305);
-    // v_MC_PU.push_back(0.00963985508986);
-    // v_MC_PU.push_back(0.00827210065136);
-    // v_MC_PU.push_back(0.00683770076341);
-    // v_MC_PU.push_back(0.00545237697118);
-    // v_MC_PU.push_back(0.00420456901556);
-    // v_MC_PU.push_back(0.00367513566191);
-    // v_MC_PU.push_back(0.00314570230825);
-    // v_MC_PU.push_back(0.0022917978982);
-    // v_MC_PU.push_back(0.00163221454973);
-    // v_MC_PU.push_back(0.00114065309494);
-    // v_MC_PU.push_back(0.000784838366118);
-    // v_MC_PU.push_back(0.000533204105387);
-    // v_MC_PU.push_back(0.000358474034915);
-    // v_MC_PU.push_back(0.000238881117601);
-    // v_MC_PU.push_back(0.0001984254989);
-    // v_MC_PU.push_back(0.000157969880198);
-    // v_MC_PU.push_back(0.00010375646169);
-    // v_MC_PU.push_back(6.77366175538e-05);
-    // v_MC_PU.push_back(4.39850477645e-05);
-    // v_MC_PU.push_back(2.84298066026e-05);
-    // v_MC_PU.push_back(1.83041729561e-05);
-    // v_MC_PU.push_back(1.17473542058e-05);
-    // v_MC_PU.push_back(7.51982735129e-06);
-    // v_MC_PU.push_back(6.16160108867e-06);
-    // v_MC_PU.push_back(4.80337482605e-06);
-    // v_MC_PU.push_back(3.06235473369e-06);
-    // v_MC_PU.push_back(1.94863396999e-06);
-    // v_MC_PU.push_back(1.23726800704e-06);
-    // v_MC_PU.push_back(7.83538083774e-07);
-    // v_MC_PU.push_back(4.94602064224e-07);
-    // v_MC_PU.push_back(3.10989480331e-07);
-    // v_MC_PU.push_back(1.94628487765e-07);
-    // v_MC_PU.push_back(1.57888581037e-07);
-    // v_MC_PU.push_back(1.2114867431e-07);
-    // v_MC_PU.push_back(7.49518929908e-08);
-    // v_MC_PU.push_back(4.6060444984e-08);
-    // v_MC_PU.push_back(2.81008884326e-08);
-    // v_MC_PU.push_back(1.70121486128e-08);
-    // v_MC_PU.push_back(1.02159894812e-08);
+
+    return;
 }
 
+
+
+
+ // ###### # #      #         #    #  ####     #    # ######  ####  #####  ####  #####
+ // #      # #      #         ##  ## #    #    #    # #      #    #   #   #    # #    #
+ // #####  # #      #         # ## # #         #    # #####  #        #   #    # #    #
+ // #      # #      #         #    # #         #    # #      #        #   #    # #####
+ // #      # #      #         #    # #    #     #  #  #      #    #   #   #    # #   #
+ // #      # ###### ######    #    #  ####       ##   ######  ####    #    ####  #    #
 
 bool Pileup::Fill_MC_vector_from_Pileup_Profile()
 {
     v_MC_PU.resize(0);
 
-    // TString output_dir = "/home-pbs/ntonon/tHq/IPHCNtuple_2017/CMSSW_9_4_3/src/IPHCNtuple/NtupleAnalyzer/test/weights_2017/PU_SF/profiles_MC/";
-    TString filename = output_dir + samplename + ".root";
+    TString input_dir = "/home-pbs/ntonon/tHq/IPHCNtuple_2017/CMSSW_9_4_3/src/IPHCNtuple/NtupleAnalyzer/test/weights_2017/merged_histograms/"; //HARD-CODED
+    TString filename = input_dir + samplename + ".root";
 
     if(!Check_If_File_Exists(filename) ) {cout<<BOLD(FRED("Error : MC PU profile file "<<filename<<" not found !"))<<endl; return 0;}
 
     TFile* f = TFile::Open(filename);
     if(!f->GetNkeys()) {cout<<BOLD(FRED("Error : file found, but has no keys !"))<<endl; return 0;}
 
-    TH1F* h = (TH1F*) f->Get("Pileup_MC");
+    TH1F* h = (TH1F*) f->Get("hpileup");
 
     double integral = h->Integral();
 
@@ -247,10 +159,18 @@ bool Pileup::Fill_MC_vector_from_Pileup_Profile()
     delete h; h = NULL;
     f->Close();
 
-    cout<<endl<<FYEL("-> Pileup weightfile "<<filename<<" correctly loaded")<<endl<<endl<<endl;
+    cout<<endl<<"-> Pileup weightfile opened"<<endl<<endl<<endl;
 
     return 1;
 }
+
+
+ // #####  #    #    #    # ###### #  ####  #    # #####  ####
+ // #    # #    #    #    # #      # #    # #    #   #   #
+ // #    # #    #    #    # #####  # #      ######   #    ####
+ // #####  #    #    # ## # #      # #  ### #    #   #        #
+ // #      #    #    ##  ## #      # #    # #    #   #   #    #
+ // #       ####     #    # ###### #  ####  #    #   #    ####
 
 
 /**
@@ -306,8 +226,42 @@ void Pileup::Compute_PU_Weights()
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+//--------------------------------------------
+//  #######  ########   ######   #######  ##       ######## ######## ########
+// ##     ## ##     ## ##    ## ##     ## ##       ##          ##    ##
+// ##     ## ##     ## ##       ##     ## ##       ##          ##    ##
+// ##     ## ########   ######  ##     ## ##       ######      ##    ######
+// ##     ## ##     ##       ## ##     ## ##       ##          ##    ##
+// ##     ## ##     ## ##    ## ##     ## ##       ##          ##    ##
+//  #######  ########   ######   #######  ######## ########    ##    ########
+//--------------------------------------------
+
+
+ // #####  ######   ##   #####     #    # ###### #  ####  #    # #####  ####
+ // #    # #       #  #  #    #    #    # #      # #    # #    #   #   #
+ // #    # #####  #    # #    #    #    # #####  # #      ######   #    ####
+ // #####  #      ###### #    #    # ## # #      # #  ### #    #   #        #
+ // #   #  #      #    # #    #    ##  ## #      # #    # #    #   #   #    #
+ // #    # ###### #    # #####     #    # ###### #  ####  #    #   #    ####
+
 /**
  * If PU weights have already been written in a text file (e.g. done by ttH2017), just need to read the file !
+ * NB -- NOT USED ?
  */
 void Pileup::Read_PU_Weights()
 {

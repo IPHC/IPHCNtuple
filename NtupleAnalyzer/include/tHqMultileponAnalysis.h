@@ -111,8 +111,8 @@ class tHqMultileponAnalysis
 		void Fill_Overlap_Histo();
         void Check_Disagreement_Category_NTP_NTA_Codes();
         void Define_New_Categorization();
-		float Compute_SumWeights_ctcvCouplings(vector<float>, vector<string>);
         void Get_HadronFlavour_WZsample();
+		void Get_SumWeights();
 
 		ScaleFactors* sf;
 
@@ -290,50 +290,93 @@ class tHqMultileponAnalysis
 		Int_t event_lumi;
 
 
+
+
+ // # #    # #####  #    # #####    #    #   ##   #####  #   ##   #####  #      ######  ####
+ // # ##   # #    # #    #   #      #    #  #  #  #    # #  #  #  #    # #      #      #
+ // # # #  # #    # #    #   #      #    # #    # #    # # #    # #####  #      #####   ####
+ // # #  # # #####  #    #   #      #    # ###### #####  # ###### #    # #      #           #
+ // # #   ## #      #    #   #       #  #  #    # #   #  # #    # #    # #      #      #    #
+ // # #    # #       ####    #        ##   #    # #    # # #    # #####  ###### ######  ####
+
 		//NB -- all variables that may be needed to compute BDT output at NTA level (i.e. variables used in ttH2017 or tHq2016 BDTs) are defined in SignalExtraction.h
 
-        //-- New variables -- inspired from other analysis (to be tested, ...) -- OR for control plots
-        Float_t inv_mll;
-		Float_t metpt, metphi, metLD, mHT;
-		Float_t hardestBjetPt;
-		Float_t hardestBjetEta;
-		Float_t minv_FwdJetBJet;
-        Float_t FwdJetEta;
-        Float_t FwdJetPt;
-        Float_t LeadJetEta;
-        Float_t LeadJetPt;
-        Float_t dRjj;
-        Float_t deepCSV_max;
-        Float_t deepCSV_2nd;
-        Float_t Mjj_max;
-        Float_t dPhiLepBJet_max;
-        Float_t dPhijj_max;
-        Float_t m3l;
-        Float_t dPhiLepLep_max;
-        Float_t top_mass;
-        Float_t mTW;
-		Float_t lW_asym;
-		Float_t dRBjetRecoilJet;
-		Float_t dRLepWRecoilJet;
-		Float_t RecoilJetPt;
-		Float_t RecoilJetEta;
-		Float_t LepWPt;
-		Float_t LepWEta;
-        Float_t top_Pt;
+        //Input variables (some for testing only) === See definitions in function 'Compute_Variables()'
+        //NB1 : "bjet" <-> loose WP, unless specified
+        //NB2 : "fwd jet" <-> most forward light jet, unless specified
+        //NB3 : jets are taken from 'vJetLoose'/'vLooseBTagJets' vectors, and leptons from 'vLeptonFakeable' (see .cxx code)
+        //--------------------------------------------
+        Float_t inv_mll; //Invariant mass of SFOS lepton pair, closest to mZ
+		Float_t metpt, metphi; //MET (pt & phi)
+        Float_t mHT; // mHT = sqrt(Sum over squared pT of all jets and leptons)
+        Float_t metLD; //metLD = 0.6 * metpt + 0.4 * mHT (used by ttH, more robust against pileup)
+		Float_t hardestBjetPt; //pT of hardest bjet
+		Float_t hardestBjetEta; //eta of hardest bjet
+		Float_t minv_FwdJetBJet; //Invariant mass of most forward light jet and hardest bjet
+        Float_t FwdJetPt; //pt of most forward light jet
+        Float_t FwdJetEta; //eta of most forward light jet
+        Float_t LeadJetPt; //pt of leading jet (any jet)
+        Float_t LeadJetEta; //eta of leading jet (any jet)
+        Float_t dRjj_max; //Max dR among any 2 jets
+        Float_t deepCSV_max; //Max deepCSV score among jets
+        Float_t deepCSV_2nd; //Second max deepCSV score among jets
+        Float_t Mjj_max; //Max. invariant mass of any 2 jets
+        Float_t dPhiLepBJet_max; //Max. dPhi between hardest btag and any lepton
+        Float_t dPhijj_max; //Max dPhi between any 2 jets
+        Float_t m3l; //Invariant mass of all fakeable leptons (2 or 3)
+        Float_t dPhiLepLep_max; //Max. dPhi between any 2 leptons
         Float_t mass_LepBJet_min;
         Float_t sum_jetPt;
 
-		Float_t HjTag_max;
-		Float_t HjTag_mean;
+        //These variables are filled in the testing function 'Compute_Top_W_variables()'
+        // == !! May be bugged !! ==
+        //Try to infer neutrino pT from MET and lepton infos
+        //Lepton associated with W decay => reconstructed system has mass closest to 173 GeV
+        //Recoiling jet defined has jet with highest pT, not associated to reconstructed top decay
+        Float_t top_mass; //Reconstructed top mass
+        Float_t mTW; //Reconstructed mTW
+		Float_t lW_asym_mtop; //Charge asymmetry from the lepton assigned to top (<-> reconstructed system has mass closest to 173 GeV)
+		Float_t dRBjetRecoilJet; //dR of hardest bjet and recoil jet
+		Float_t dRLepWRecoilJet; //dR of lepton from W and recoil jet
+		Float_t RecoilJetPt; //pt of recoil jet
+		Float_t RecoilJetEta; //eta of recoil jet
+		Float_t LepWPt; //pt of lepton from W
+		Float_t LepWEta; //eta of lepton from W
+        Float_t top_Pt; //pt of reconstructed top
+
+        //HjTagger (testing)
+		Float_t HjTag_max; //Max value of the HjTag classifier among all jets
+		Float_t HjTag_mean; //Average value of the HjTag classifier among all jets
 
         //Low-level variables (for DNN tests, ...)
         Float_t lep1_conePt, lep2_conePt, lep3_conePt, lep1Eta, lep2Eta, lep3Eta, lep1Phi, lep2Phi, lep3Phi;
 
+        //Additional variables for FCNC analysis (consider central jets only !)
+		Float_t nSoftJets; //Nof 'ttH loose jets' with pT between 15 and 25
+		Float_t min_dr_lep_bjet; //Min. dR between any lepton and any bjet
+		Float_t min_dr_lep_lightjet; //Min. dR between any lepton and any light jet
+		Float_t lW_asym; //Charge asymmetry of the lepton (not part of OS pair) having min dR with hardest bjet
+		Float_t ratio_lep3pt_closestJetPt; //Ratio of pt of softest lepton and pt of closest jet (any jet)
+		Float_t dPhiLepLep_hardestOS; //dPhi between the 2 leptons in 2lSS, and b/w the 2 leptons forming hardest OS pair in 3l
+
+/*
+* le nombre de jets "soft", ayant un pT en entre 15 et 25 GeV,
+* le deltaR de la pair de lepton-bjet les plus proches,
+* le deltaR de la pair de lepton-ljet les plus proches,
+* la somme de la charge de leptons selectionnés,
+* dans le cas 3l, asymmetry de charge q*|eta_L| pour le candidat lepton venant du top  (celui ayant le deltaR avec le jet b le plus petit et qui ne donne pas de paire de leptons de même signe),
+* le pT du lepton le plus soft,
+* le pT du lepton le plus soft divisé par le pT du jet le plus proche,
+* dans le 2LSS; Delta Phi entre les leptons, dans 3L, Delta Phi entre les deux leptons de chargé opposé avec le pT le plus élevé
+ */
 
 
         //Event weights
-        Float_t weight;
-        Float_t mc_weight;
+        Float_t mc_weight; //set to +/-1 (old)
+        Float_t weight_old; //=> weight_old = +-1 * xsec * lumi / swe_old
+
+        Float_t mc_weight_originalValue; //'true' mc weight, can different from +/-1 (new)
+        Float_t weight; //=> weight = real_gen_weight * xsec * lumi / swe_real
 
         //FakeRate weights
         Float_t weightfake; //store nominal FR weight separately
@@ -488,21 +531,27 @@ class tHqMultileponAnalysis
 
 		//Scale weights, stored as LHE weights
 		float weight_originalXWGTUP;
-		float weight_scale_muF0p5;
-		float weight_scale_muF2;
 		float weight_scale_muR0p5;
-		float weight_scale_muR2;
-		float weight_scale_muR2muF2;
+		float weight_scale_muF0p5;
 		float weight_scale_muR0p5muF0p5;
-        //Sum of scale weights before preselection (stored in TH1Fs) for renormalization
-		float sumWeights_nominal;
-		float sumWeights_scale_originalXWGTUP;
-        float sumWeights_scale_muF0p5;
-		float sumWeights_scale_muF2;
-		float sumWeights_scale_muR0p5;
-		float sumWeights_scale_muR2;
-		float sumWeights_scale_muR2muF2;
-		float sumWeights_scale_muR0p5muF0p5;
+		float weight_scale_muR2;
+		float weight_scale_muF2;
+		float weight_scale_muR2muF2;
+
+        //Sum of different weights before preselection (nominal, scale variations, ...)
+		// float sumWeights_nominal;
+		// float sumWeights_scale_originalXWGTUP;
+		// float sumWeights_scale_muR0p5;
+        // float sumWeights_scale_muF0p5;
+		// float sumWeights_scale_muR0p5muF0p5;
+		// float sumWeights_scale_muR2;
+		// float sumWeights_scale_muF2;
+		// float sumWeights_scale_muR2muF2;
+
+		//Sum of weights for the LHE kT/kV reweights
+		float sumWeights_SMcoupling;
+
+		TH1F* hSumWeights;
 
         //LHE weights
 		std::vector<float> LHEweights; //LHE weights
@@ -510,9 +559,6 @@ class tHqMultileponAnalysis
         float sumWeight_ctcv_couplings; //Need to normalize all ctcv couplings with sum
 
         //Higgs decay modes
-		// Char_t higgs_decay_ww;
-		// Char_t higgs_decay_zz;
-		// Char_t higgs_decay_tt;
         int higgs_daughter_id;
 
 		//Flavour of jet, for splitting of WZ sample only

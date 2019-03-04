@@ -49,7 +49,7 @@ bool Check_File_Exists(const TString& name)
  */
 ScaleFactors::ScaleFactors(TString samplename, bool debug_pileup)
 {
-    cout<<"-- Opening efficiency files..."<<endl;
+    cout<<FYEL("-- Opening efficiency files...")<<endl;
 
     TString filepath;
 
@@ -191,7 +191,7 @@ ScaleFactors::ScaleFactors(TString samplename, bool debug_pileup)
         }
     }
 
-    cout<<FYEL("-> Efficiency files (lepton, btag) correctly opened")<<endl<<endl;
+    cout<<"-> Efficiency files (lepton, btag) opened"<<endl<<endl;
 
     //--- PILEUP
     my_pileup.Init(samplename);
@@ -256,7 +256,12 @@ ScaleFactors::~ScaleFactors()
 //--------------------------------------------
 
 
-
+ // #       ####   ####   ####  ######
+ // #      #    # #    # #      #
+ // #      #    # #    #  ####  #####
+ // #      #    # #    #      # #
+ // #      #    # #    # #    # #
+ // ######  ####   ####   ####  ######
 
 /**
  * Return efficiency SF for reconstruction of loose electrons
@@ -285,6 +290,7 @@ float ScaleFactors::Get_SF_RecoToLoose_Ele(float pt, float eta, float var)
 
     return eff_reco*eff_looseID;
 }
+
 
 /**
  * Return efficiency SF for reconstruction of loose muons
@@ -320,8 +326,17 @@ float ScaleFactors::Get_SF_RecoToLoose_Mu(float pt, float eta, float var)
 }
 
 
+// ##### #  ####  #    # #####
+//   #   # #    # #    #   #
+//   #   # #      ######   #
+//   #   # #  ### #    #   #
+//   #   # #    # #    #   #
+//   #   #  ####  #    #   #
+
+
 /**
  * Return efficiency SF for identifying loose leptons as "tight-ID"
+ * NB : for muons, apply lnN syst directly in datacard
  */
 float ScaleFactors::Get_SF_LooseToTight_Leptons(int pdgid, int nlep, float pt, float eta, float var)
 {
@@ -350,10 +365,22 @@ float ScaleFactors::Get_SF_LooseToTight_Leptons(int pdgid, int nlep, float pt, f
     // cout<<"Get_SF_LooseToTight_Leptons = "<<h->GetBinContent(ptbin,etabin)<<endl;
 
     float result = h->GetBinContent(ptbin,etabin);
-    if(abs(pdgid) == 11) {result+= var * h->GetBinError(ptbin,etabin);}
+    if(abs(pdgid) == 11)
+    {
+        if(pt>25) {result+= var * 0.03;} //3% uncert for ele with pT>25
+        else {result+= var * 0.05;} //5% uncert for ele with pT<25
+    }
 
     return result;
 }
+
+
+ // #####  ####  #####   ##   #
+ //   #   #    #   #    #  #  #
+ //   #   #    #   #   #    # #
+ //   #   #    #   #   ###### #
+ //   #   #    #   #   #    # #
+ //   #    ####    #   #    # ######
 
 
 /**
@@ -375,10 +402,10 @@ float ScaleFactors::Get_Lepton_SF(int nlep, int pdgid, float pt, float eta, TStr
     if(abs(pdgid) == 11) {eff_recoToLoose = Get_SF_RecoToLoose_Ele(pt, eta, var);}
     else {eff_recoToLoose = Get_SF_RecoToLoose_Mu(pt, eta, var);}
 
-    if(var_type == "looseUp") {var = +1;}
-    else if(var_type == "looseDown") {var = -1;}
+    if(var_type == "tightUp") {var = +1;}
+    else if(var_type == "tightDown") {var = -1;}
     else {var = 0;}
-    float eff_looseToTight = Get_SF_LooseToTight_Leptons(pdgid, nlep, pt, eta, var); // var is ignored in all cases for the tight part (systematics handled as nuisance parameter)
+    float eff_looseToTight = Get_SF_LooseToTight_Leptons(pdgid, nlep, pt, eta, var);
 
     float sf = eff_recoToLoose * eff_looseToTight;
 
@@ -598,7 +625,7 @@ void ScaleFactors::Read_Scale_SumWeights(TString samplename, float& sumWeights_n
         cout<<endl<<endl<<FRED("File "<<filename<<" containing the Sum of Weights for the scale variations was not found. The scale variations are set to 1.")<<endl<<endl;
         return;
     }
-    else {cout<<FYEL("-> File containing sum of weights for scale variations correctly opened")<<endl<<endl;}
+    else {cout<<"-> File containing sum of weights for scale variations correctly opened"<<endl<<endl;}
 
 
     TFile* f = TFile::Open(filename);
