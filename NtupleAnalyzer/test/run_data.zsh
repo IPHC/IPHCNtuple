@@ -7,10 +7,11 @@ export LD_LIBRARY_PATH=${cdir}:${NtupleDir}:${NtupleDir}/obj:$LD_LIBRARY_PATH
 ./../Analyzer \
 --file input.txt \
 --tree Nt \
---outfile ./output_Data \
+--outfile ./output_tHq_MC \
 --nmax -1  \
 --isdata 1 \
 --doSystCombine 0 \
---nowe -1 \
---xsec -1 \
---lumi 41500 \
+--lumi 1 \
+--nowe 1 \
+--xsec 1 \
+--dataset SingleMuon_Run2017B_17Nov2017_v1_MINIAOD \

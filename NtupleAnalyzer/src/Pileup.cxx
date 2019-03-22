@@ -153,7 +153,10 @@ bool Pileup::Fill_MC_vector_from_Pileup_Profile()
 
     for(int ibin=1; ibin<100+1; ibin++) //start at bin 1
     {
-        v_MC_PU.push_back(h->GetBinContent(ibin) / integral );
+      double content = 0;
+      if(ibin == 1) {content = h->GetBinContent(0) + h->GetBinContent(1);} //I have underflow, put it in bin 1 (like data?)
+      else {content = h->GetBinContent(ibin);}
+      v_MC_PU.push_back(content / integral );
     }
 
     delete h; h = NULL;
@@ -174,7 +177,7 @@ bool Pileup::Fill_MC_vector_from_Pileup_Profile()
 
 
 /**
- * Compute and store all PU weights in member vectors
+ * Compute and store all PU weights in member vectors -- also write them in txt file
  */
 void Pileup::Compute_PU_Weights()
 {
@@ -196,14 +199,16 @@ void Pileup::Compute_PU_Weights()
         double pu_data_nom = h_PU_Data_Nom->GetBinContent(i+1); //start at bin 1
         // double pu_data_nom = h_PU_Data_Nom->GetBinContent(h_PU_Data_Nom->GetXaxis()->FindBin(i) );
 
+        // cout<<endl<<"//--------------------------------------------"<<endl;
+        // cout<<"Bin "<<i+1<<" :"<<endl;
+        // cout<<"PU data = "<<pu_data_nom<<" / "<<tot<<" = "<<pu_data_nom/tot<<endl;
+        // cout<<"v_MC_PU[i] = "<<v_MC_PU[i]<<endl;
+
         pu_data_nom/= tot;
         double weight = pu_data_nom / v_MC_PU[i]; //start at index 0
         if(isinf(weight) || isnan(weight) || weight < 0) {weight = 0;}
 
-        // cout<<"pu_data_nom = "<<pu_data_nom<<" / "<<tot<<" = "<<pu_data_nom/tot<<endl;
-        // cout<<"pu_data_nom = "<<pu_data_nom<<endl;
-        // cout<<"v_MC_PU[i] = "<<v_MC_PU[i]<<endl;
-        // cout<<"=> weight = "<<weight<<endl;
+        // cout<<"=> weight = "<<weight<<endl<<endl;
 
         v_PU_weights_Nom.push_back(weight);
 
@@ -228,104 +233,6 @@ void Pileup::Compute_PU_Weights()
 
 
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-//--------------------------------------------
-//  #######  ########   ######   #######  ##       ######## ######## ########
-// ##     ## ##     ## ##    ## ##     ## ##       ##          ##    ##
-// ##     ## ##     ## ##       ##     ## ##       ##          ##    ##
-// ##     ## ########   ######  ##     ## ##       ######      ##    ######
-// ##     ## ##     ##       ## ##     ## ##       ##          ##    ##
-// ##     ## ##     ## ##    ## ##     ## ##       ##          ##    ##
-//  #######  ########   ######   #######  ######## ########    ##    ########
-//--------------------------------------------
-
-
- // #####  ######   ##   #####     #    # ###### #  ####  #    # #####  ####
- // #    # #       #  #  #    #    #    # #      # #    # #    #   #   #
- // #    # #####  #    # #    #    #    # #####  # #      ######   #    ####
- // #####  #      ###### #    #    # ## # #      # #  ### #    #   #        #
- // #   #  #      #    # #    #    ##  ## #      # #    # #    #   #   #    #
- // #    # ###### #    # #####     #    # ###### #  ####  #    #   #    ####
-
-/**
- * If PU weights have already been written in a text file (e.g. done by ttH2017), just need to read the file !
- * NB -- NOT USED ?
- */
-void Pileup::Read_PU_Weights()
-{
-    cout<<"OBSOLETE ! Or update filepaths !"<<endl; return;
-
-
-    TString filepath = dir_parent + "xxx/" + GetFilename(samplename); //obsolete
-    if(!Check_If_File_Exists(filepath) ) {cout<<"Error : SF file "<<filepath<<" not found !"<<endl; return;}
-    else {cout<<endl<<"-- Opening PU weight file : "<<filepath<<endl<<endl<<endl;}
-
-    ifstream file_in(filepath.Data());
-
-    string line;
-    while(getline(file_in, line))
-    {
-        stringstream ss(line);
-        int npu; double weight;
-        ss >> npu >> weight;
-
-        if(npu > 99) {break;} //Only consider nPU up to 99
-
-        v_PU_weights_Nom.push_back(weight);
-    }
-
-    return;
-}
-
-
-/**
- * Relate filename to samplename
- * //FIXME -- need to fix list !
- */
-TString Pileup::GetFilename(TString name)
-{
-    TString _inputFile;
-
-    if (name.Contains("WZTo3LNu") ) _inputFile = "WZTo3LNu.txt";
-    else if (name.Contains("TTZ_M1to10") ) _inputFile = "TTZ_M1to10.txt";
-    else if (name.Contains("TTZ") ) _inputFile = "TTZ.txt";
-
-    else if (name.Contains("TTWJetsToLNu") ) _inputFile = "TTW_psw.txt";
-    else if (name.Contains("tZq") ) _inputFile = "tZq.txt";
-    else if (name.Contains("ttHJetToNonbb") ) _inputFile = "ttHJetToNonbb.txt";
-
-    else if (name.Contains("DYJetsToLL_M-10to50") ) _inputFile = "DYJets_M10to50.txt";
-    else if (name.Contains("DYJetsToLL_M-50_") ) _inputFile = "DYJets_M50.txt";
-    else if (name.Contains("TTGJets") ) _inputFile = "TTGJets.txt";
-    else if (name.Contains("TTTo2L2Nu_TuneCP5_PSweights") ) _inputFile = "TTToDiLep_psw.txt";
-    else if (name.Contains("TTToSemiLeptonic_TuneCP5_PSweights") ) _inputFile = "TTToSemiLep_psw.txt";
-    else if (name.Contains("TTTT") ) _inputFile = "TTTT.txt";
-    else if (name.Contains("TTWW") ) _inputFile = "TTWW.txt";
-    else if (name.Contains("WJets") ) _inputFile = "WJets.txt";
-    else if (name.Contains("WWTo2L2Nu_NNPDF31") ) _inputFile = "WW.txt";
-    else if (name.Contains("WWTo2L2Nu_DoubleScattering") ) _inputFile = "WWTo2L2Nuds.txt";
-    else if (name.Contains("WWW") ) _inputFile = "WWW.txt";
-    else if (name.Contains("WWZ") ) _inputFile = "WWZ.txt";
-    else if (name.Contains("WZZ") ) _inputFile = "WZZ.txt";
-    else if (name.Contains("ZZZ") ) _inputFile = "ZZZ.txt";
-    else if (name.Contains("ZZTo") ) _inputFile = "ZZ.txt"; //FIXME : which ZZ sample is it ?
-
-    else {return "xxx";} //Raise error
-
-    return _inputFile;
-}
 
 
 void Pileup::Print_Debug()

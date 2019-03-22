@@ -87,8 +87,8 @@ float Get_FR_Weight(std::vector<double> leptonsPts, std::vector<double> leptonsE
     else if(FR_type == "FR_norm_elDown")
     {
         if(isChannel_withoutEl) {return 0;} //set to nominal
-        h_FR_el = h_FR_normUp_el;
-        h_FR_mu = h_FR_normDown_el;
+        h_FR_el = h_FR_normDown_el;
+        h_FR_mu = h_FR_nominal_mu;
     }
     else if(FR_type == "FR_norm_muUp")
     {
@@ -148,7 +148,7 @@ float Get_FR_Weight(std::vector<double> leptonsPts, std::vector<double> leptonsE
     {
         if(isChannel_withoutMu) {return 0;} //set to nominal
         h_FR_el = h_FR_nominal_el;
-        h_FR_mu = h_FR_be1_mu;
+        h_FR_mu = h_FR_be2_mu;
     }
     else
     {

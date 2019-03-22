@@ -1,3 +1,6 @@
+#Need to keep this file in ./test, needed to move outputs of batch jobs to
+#correct location
+
 if [ "$1" == "" ]
 then
 echo "Missing arg : file name"

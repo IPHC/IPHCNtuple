@@ -8,16 +8,24 @@ export LD_LIBRARY_PATH=${cdir}:${NtupleDir}:${NtupleDir}/obj:$LD_LIBRARY_PATH
 --file input.txt \
 --tree Nt \
 --outfile ./output_tHq_MC \
---nmax -1  \
+--nmax 1000  \
 --isdata 0 \
 --doSystCombine 0 \
---nowe 6125476 \
---xsec 0.2568 \
 --lumi 41500 \
---dataset THQ_ctcvcp_4f_Hincl_13TeV_madgraph_pythia8
+--nowe 9865010 \
+--xsec 0.7927 \
+--dataset THQ_ctcvcp_4f_Hincl_13TeV_madgraph_pythia8 \
 
 #====================================
 #====================================
 #THQ_ctcvcp
-#xsec = 0.2568
-#SWE = 6125476
+#xsec = 0.7927
+#nowe = 9865010
+
+#TTWJets
+#xsec = 0.2043
+#nowe = 2678775
+
+#ST_tWll
+#xsec = 0.01123
+#nowe = 927720

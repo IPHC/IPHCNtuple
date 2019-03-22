@@ -1,0 +1,10 @@
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/tHq2017/TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8/TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8_ID136_0.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/tHq2017/TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8/TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8_ID137_0.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/tHq2017/TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8/TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8_ID138_0.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/tHq2017/TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8/TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8_ID139_0.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/tHq2017/TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8/TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8_ID13_0.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/tHq2017/TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8/TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8_ID140_0.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/tHq2017/TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8/TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8_ID141_0.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/tHq2017/TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8/TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8_ID142_0.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/tHq2017/TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8/TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8_ID143_0.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/tHq2017/TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8/TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8_ID144_0.root

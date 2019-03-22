@@ -34,6 +34,7 @@
 #include <iostream>
 #include <iomanip>
 #include <fstream>
+#include <map>
 
 //NTProducer
 #include "Event.h"
@@ -47,6 +48,11 @@
 #include "Lepton.h"
 #include "ScaleFactors.h" //Class for Scale factors
 
+//ttH Kinematic Fitter (needed to compute resHTT tagger)
+#include "../test/HTT_kinfit/HadTopKinFit.h" // HadTopKinFit
+#include <Math/LorentzVector.h>
+#include <Math/PtEtaPhiM4D.h>
+typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > LorentzVector;
 
 class tHqMultileponAnalysis
 {
@@ -113,6 +119,12 @@ class tHqMultileponAnalysis
         void Define_New_Categorization();
         void Get_HadronFlavour_WZsample();
 		void Get_SumWeights();
+		void Get_Mapping_LHE_PDF();
+		void Read_LHE_ScaleVariations();
+		void Get_PDFset_Weights();
+
+		//TESTING
+		void Modify_DefaultCategories_Orthogonal(TString);
 
 		ScaleFactors* sf;
 
@@ -135,7 +147,8 @@ class tHqMultileponAnalysis
 		std::vector<Tau>      *vTauLoose;
 		std::vector<Tau>      *vTauFakeable;
 		std::vector<Tau>      *vTauMedium;
-        std::vector<Jet>      *vJetLoose_original; //This is the 'original' vector of loose jets, directly taken from NtupleProducer output TTree
+		std::vector<Jet>      *vJetLoose_original; //This is the 'original' vector of loose jets, directly taken from NtupleProducer output TTree
+		std::vector<Jet>      *vJetSoft; //new vector, containing only soft jets (pt b/w 15 and 25)
 		std::vector<Truth>    *vTruth;
 		// std::vector<Truth>    *vGenJet;
 
@@ -159,7 +172,7 @@ class tHqMultileponAnalysis
 		//Nof objects
         float nLooseBJets;
         float nMediumBJets;
-		float nLightJets, nLightJets_tHq, nLightJets_ttH, nLightJets_Fwd;
+		float nLightJets, nLightJets_tHq, nLightJets_ttH, nLightJets_Fwd, nJetLoose;
 		float nTightLep;
 		float nFakeableLep;
 		float nLightJets_eta_Gt2;
@@ -213,7 +226,6 @@ class tHqMultileponAnalysis
 		Char_t is_ttH_2lSS;
 		Char_t is_ttH_2lSS_Training;
         Char_t is_ttH_2lSS_SR;
-        // Char_t is_ttH_2lSS_SR_Data;
 		Char_t is_ttH_2lSS_Fake;
         Char_t is_ttH_2lSS_Flip;
 		Char_t is_ttH_2lSS_GammaConv;
@@ -238,31 +250,40 @@ class tHqMultileponAnalysis
 		Char_t is_ttH_4l_SR;
 		Char_t is_ttH_ZZctrl_SR;
 
-        //NEW -- test orthogonal regions
-        Char_t is_ttH_2lSS_SR_fwd;
-        Char_t is_ttH_3l_SR_fwd;
-        Char_t is_tHq_2lSS_SR_fwd;
-        Char_t is_tHq_3l_SR_fwd;
+        //-- Test orthogonal regions
 
+        //Using nof btags (NB : ttW CR and tHq_2lSS_SR not orthogonalized)
         Char_t is_ttH_2lSS_SR_btag;
         Char_t is_ttH_3l_SR_btag;
         Char_t is_tHq_2lSS_SR_btag;
         Char_t is_tHq_3l_SR_btag;
 
-        Char_t is_ttH_2lSS_SR_njet;
-        Char_t is_ttH_3l_SR_njet;
-        Char_t is_tHq_2lSS_SR_njet;
-        Char_t is_tHq_3l_SR_njet;
-		Char_t is_ttH_ttWctrl_SR_njet;
+        //Using presence of fwd jet
+        Char_t is_ttH_2lSS_SR_fwd;
+        Char_t is_ttH_3l_SR_fwd;
+        Char_t is_tHq_2lSS_SR_fwd;
+        Char_t is_tHq_3l_SR_fwd;
+        //Modified to account for overlap with ttW CR (made orthog.)
+        Char_t is_tHq_2lSS_SR_fwd2;
+        Char_t is_ttH_ttWctrl_SR_fwd2;
 
-		Char_t is_tHq_2lSS_SR_fwd2;
-		Char_t is_ttH_ttWctrl_SR_fwd2;
+        //Using total nof jets (including fwd)
+        //If nJets < 4, goes to tHq SR
+        //Then, if overlap with ttW CR : check presence of fwd jet
+        //NB : in 2lSS <-> all overlap events go to ttH SR
+        Char_t is_ttH_2lSS_SR_njet4;
+        Char_t is_ttH_3l_SR_njet4;
+        Char_t is_tHq_2lSS_SR_njet4;
+        Char_t is_tHq_3l_SR_njet4;
+		Char_t is_ttH_ttWctrl_SR_njet4;
 
-        Char_t is_tHq_3l_SR_njet2;
-		Char_t is_ttH_3l_SR_njet2;
-
+        //Modified nJets<3 criterion
         Char_t is_tHq_3l_SR_njet3;
         Char_t is_ttH_3l_SR_njet3;
+
+        //For 3l, also put all overlap in ttH SR
+        Char_t is_tHq_3l_SR_ttHfirst;
+		Char_t is_ttH_3l_SR_ttHfirst;
 
 
 
@@ -313,7 +334,7 @@ class tHqMultileponAnalysis
 		Float_t hardestBjetPt; //pT of hardest bjet
 		Float_t hardestBjetEta; //eta of hardest bjet
 		Float_t minv_FwdJetBJet; //Invariant mass of most forward light jet and hardest bjet
-        Float_t FwdJetPt; //pt of most forward light jet
+        // Float_t FwdJetPt; //pt of most forward light jet //declared in SignalExtraction.h, used in BDT at NTA level
         Float_t FwdJetEta; //eta of most forward light jet
         Float_t LeadJetPt; //pt of leading jet (any jet)
         Float_t LeadJetEta; //eta of leading jet (any jet)
@@ -325,8 +346,7 @@ class tHqMultileponAnalysis
         Float_t dPhijj_max; //Max dPhi between any 2 jets
         Float_t m3l; //Invariant mass of all fakeable leptons (2 or 3)
         Float_t dPhiLepLep_max; //Max. dPhi between any 2 leptons
-        Float_t mass_LepBJet_min;
-        Float_t sum_jetPt;
+        Float_t sum_jetPt; //Sum of the pt of all jets
 
         //These variables are filled in the testing function 'Compute_Top_W_variables()'
         // == !! May be bugged !! ==
@@ -343,13 +363,14 @@ class tHqMultileponAnalysis
 		Float_t LepWPt; //pt of lepton from W
 		Float_t LepWEta; //eta of lepton from W
         Float_t top_Pt; //pt of reconstructed top
+        Float_t mass_LepBJet_min; //Min inv mass between any lepton and any *medium* bjet
 
         //HjTagger (testing)
-		Float_t HjTag_max; //Max value of the HjTag classifier among all jets
-		Float_t HjTag_mean; //Average value of the HjTag classifier among all jets
+		Float_t HjTagger; //Max value of the HjTag classifier among all jets
 
         //Low-level variables (for DNN tests, ...)
-        Float_t lep1_conePt, lep2_conePt, lep3_conePt, lep1Eta, lep2Eta, lep3Eta, lep1Phi, lep2Phi, lep3Phi;
+        // Float_t lep1_conePt, lep2_conePt, lep3_conePt; //Already declared in SignalExtraction.h, since may be used to book/evaluate MVA !
+        Float_t lep1Eta, lep2Eta, lep3Eta, lep1Phi, lep2Phi, lep3Phi;
 
         //Additional variables for FCNC analysis (consider central jets only !)
 		Float_t nSoftJets; //Nof 'ttH loose jets' with pT between 15 and 25
@@ -358,6 +379,7 @@ class tHqMultileponAnalysis
 		Float_t lW_asym; //Charge asymmetry of the lepton (not part of OS pair) having min dR with hardest bjet
 		Float_t ratio_lep3pt_closestJetPt; //Ratio of pt of softest lepton and pt of closest jet (any jet)
 		Float_t dPhiLepLep_hardestOS; //dPhi between the 2 leptons in 2lSS, and b/w the 2 leptons forming hardest OS pair in 3l
+		Float_t jet1_pt, jet2_pt, jet3_pt, jet4_pt; //pt of the 4 leading jets -- INCLUDE SOFT JETS WITH PT > 15
 
 /*
 * le nombre de jets "soft", ayant un pT en entre 15 et 25 GeV,
@@ -428,8 +450,9 @@ class tHqMultileponAnalysis
 		Float_t LFstats1Up, LFstats1Down;
 		Float_t LFstats2Up, LFstats2Down;
 		Float_t PUUp, PUDown;
-		Float_t QCDscaleUp, QCDscaleDown;
+        Float_t scaleShapeAccUp, scaleShapeAccDown;
 		Float_t pdfUp, pdfDown;
+		Float_t fwdJetUp, fwdJetDown;
 
 
 
@@ -529,35 +552,6 @@ class tHqMultileponAnalysis
 
 		vector<TString> v_systTree; //can choose to store JES/JER TTrees, in addition to default
 
-		//Scale weights, stored as LHE weights
-		float weight_originalXWGTUP;
-		float weight_scale_muR0p5;
-		float weight_scale_muF0p5;
-		float weight_scale_muR0p5muF0p5;
-		float weight_scale_muR2;
-		float weight_scale_muF2;
-		float weight_scale_muR2muF2;
-
-        //Sum of different weights before preselection (nominal, scale variations, ...)
-		// float sumWeights_nominal;
-		// float sumWeights_scale_originalXWGTUP;
-		// float sumWeights_scale_muR0p5;
-        // float sumWeights_scale_muF0p5;
-		// float sumWeights_scale_muR0p5muF0p5;
-		// float sumWeights_scale_muR2;
-		// float sumWeights_scale_muF2;
-		// float sumWeights_scale_muR2muF2;
-
-		//Sum of weights for the LHE kT/kV reweights
-		float sumWeights_SMcoupling;
-
-		TH1F* hSumWeights;
-
-        //LHE weights
-		std::vector<float> LHEweights; //LHE weights
-		std::vector<std::string> LHEweights_Ids; //LHE weights ids
-        float sumWeight_ctcv_couplings; //Need to normalize all ctcv couplings with sum
-
         //Higgs decay modes
         int higgs_daughter_id;
 
@@ -565,6 +559,63 @@ class tHqMultileponAnalysis
 		Char_t wz_jetFlav_b;
 		Char_t wz_jetFlav_c;
 		Char_t wz_jetFlav_l;
+
+		//Scale variation weights, stored as LHE weights
+		float weight_originalXWGTUP; //can differ from mc_weight_originalValue
+		float weight_scale_muR0p5;
+		float weight_scale_muF0p5;
+		float weight_scale_muR0p5muF0p5;
+		float weight_scale_muR2;
+		float weight_scale_muF2;
+		float weight_scale_muR2muF2;
+
+		//Sums of weights (for nominal and scales)
+		float sumWeights_mc_weight_originalValue;
+		float sumWeights_originalXWGTUP;
+		float sumWeights_scale_muR0p5;
+		float sumWeights_scale_muF0p5;
+		float sumWeights_scale_muR0p5muF0p5;
+		float sumWeights_scale_muR2;
+		float sumWeights_scale_muF2;
+		float sumWeights_scale_muR2muF2;
+
+		TH1D* hSumWeights; //Histo containing sums of weights for nominal + all scale variations //NB : for scale variations, now reading from hLHE ; but still use this nominal
+		TH1D* hLHE; //Histo containing sums of weights for all LHE weights
+		// TH1D* hktkv; //Histo containing sums of weights for kT/kV reweights //not present in FlatTrees yet, called "hLHE" for now
+
+		vector<Float_t> v_sums_LHEweights; //Sum of weights for the LHE kT/kV reweights
+		vector<Float_t> v_couplings_SF; //Scale factors for the LHE kT/kV reweights (kinematics/acceptance only ! Not xsec)
+		Float_t SMcoupling_SF; //SF for SM coupling (kin + acceptance + xsec !)
+		Float_t xsec_SM; //SM xsec (hardcoded, for tHq and tHW)
+
+        //--- LHE weights
+		//Full vectors
+		std::vector<Float_t> LHEweights; //LHE weights
+		std::vector<std::string> LHEweights_Ids; //LHE weights ids
+
+		//--- Mapping LHE <-> PDF
+		vector<int> v_LHE_ids;
+		vector<int> v_PDF_ids;
+		vector<TString> v_scale_ids;
+
+		//Subvector, only to store given PDF sets
+        std::vector<Float_t> v_PDF_weights_1;
+        std::vector<Float_t> v_PDF_SumWeights_1;
+		std::vector<Float_t> v_PDF_weights_2;
+		std::vector<Float_t> v_PDF_SumWeights_2;
+		std::vector<Float_t> v_PDF_weights_3;
+		std::vector<Float_t> v_PDF_SumWeights_3;
+		std::vector<Float_t> v_PDF_weights_4;
+		std::vector<Float_t> v_PDF_SumWeights_4;
+		Int_t minIdx_PDFset1, maxIdx_PDFset1; //Min/max indices (in LHE vector) of PDF set 1
+		Int_t minIdx_PDFset2, maxIdx_PDFset2; //Min/max indices (in LHE vector) of PDF set 2
+		Int_t minIdx_PDFset3, maxIdx_PDFset3; //Min/max indices (in LHE vector) of PDF set 3
+		Int_t minIdx_PDFset4, maxIdx_PDFset4; //Min/max indices (in LHE vector) of PDF set 4
+
+		//NEW -- Kin fit for resHTT
+		// class HadTopKinFit; // forward declaration
+		HadTopKinFit * kinFit_;
+		Float_t resHTT;
 };
 
 #endif

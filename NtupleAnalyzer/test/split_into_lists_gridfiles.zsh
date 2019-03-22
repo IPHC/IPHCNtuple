@@ -2,7 +2,6 @@
 export x509_USER_PROXY=/home-pbs/ntonon/proxy/x509up_u8066
 
 version="tHq2017"
-#version="ttH2017"
 
 fpath="/dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/"$version"/"
 

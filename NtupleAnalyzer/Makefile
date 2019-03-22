@@ -3,9 +3,15 @@
 #CC = g++ -g -Wno-writable-strings -Wno-write-strings -fsanitize=address -lTMVA
 CC = g++ -g -Wno-writable-strings -Wno-write-strings -lTMVA
 
+# gsl -- needed for kinFit, resHTT
+GSLINCS = $(shell gsl-config --cflags)
+GSLLIBS = $(shell gsl-config --libs)
+
+
 #NB : first, must compile NtupleProducer, to produce libNtuple.so !
-NTUPLEINC    = -I../NtupleProducer/include -I$(CMSSW_RELEASE_BASE)/src
-NTUPLELIB    = -L../NtupleProducer -L$(CMSSW_RELEASE_BASE)/lib/slc6_amd64_gcc630 -lCondFormatsJetMETObjects -lNtuple
+#Added '$(GSLLIBS) -lGenVector' for resHTT
+NTUPLEINC    = -I../NtupleProducer/include -I$(CMSSW_RELEASE_BASE)/src $(GSLINCS)
+NTUPLELIB    = -L../NtupleProducer -L$(CMSSW_RELEASE_BASE)/lib/slc6_amd64_gcc630 -lCondFormatsJetMETObjects -lNtuple $(GSLLIBS) -lGenVector
 
 SOVERSION               = $(shell echo $(VERSION) | \
                                sed 's/\(.*\)\.\(.*\)\.\(.*\)/\1:\2:0/')
@@ -47,13 +53,13 @@ OBJ = tHqMultileponAnalysis.o \
  Pileup.o \
 
 EXE = Analyzer
+COMPUTE_SUMWEIGHT = test/Get_SumWeightEvents_FlatTrees.exe
+SAVE_SUMWEIGHT = test/Store_SumsOfWeights_inMergedNtuple.exe
 
-SUMWEIGHT = test/Get_SumWeightEvents_FlatTrees.exe
-
-all:  	     		$(EXE) $(SUMWEIGHT)
+all:  	     		$(EXE) $(COMPUTE_SUMWEIGHT) $(SAVE_SUMWEIGHT)
 #@rm -f *.o
 
-$(EXE):     	 	$(OBJ) $@
+$(EXE):     	 	$(OBJ) test/HTT_kinfit/HadTopKinFit.o $@
 
 
 $(OBJ):     		$(SRC) $(INC)
@@ -65,14 +71,25 @@ $(OBJ):     		$(SRC) $(INC)
 			@echo "###################################"
 			@echo ""
 
-$(SUMWEIGHT):		
+$(COMPUTE_SUMWEIGHT):	src/Get_SumWeightEvents_FlatTrees.cxx	
 			@echo ""
 			@echo "###################################"
 			@echo "-- Creating executable $(SUMWEIGHT) --"
-			@$(CC) $(ROOTFLAGS2) test/Get_SumWeightEvents_FlatTrees.cxx -o $@
+			@$(CC) $(ROOTFLAGS2) src/Get_SumWeightEvents_FlatTrees.cxx -o $@
 			@echo "-- Done --"
 			@echo "###################################"
 			@echo ""
 
+
+$(SAVE_SUMWEIGHT):	src/Store_SumsOfWeights_inMergedNtuple.cxx	
+			@echo ""
+			@echo "###################################"
+			@echo "-- Creating executable $(SAVE_SUMWEIGHT) --"
+			@$(CC) $(ROOTFLAGS2) src/Store_SumsOfWeights_inMergedNtuple.cxx -o $@
+			@echo "-- Done --"
+			@echo "###################################"
+			@echo ""
+
+
 clean: 		
-			@rm -f $(OBJ) $(EXE) $(SUMWEIGHT)
+			@rm -f $(OBJ) $(EXE) $(COMPUTE_SUMWEIGHT) $(SAVE_SUMWEIGHT)

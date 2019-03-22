@@ -85,9 +85,7 @@ class Pileup
     bool Init(TString); //Open files, histograms
     void Fill_MC_vector_from_HardCoded(); //Fill MC PU vector from hard-coded values
     bool Fill_MC_vector_from_Pileup_Profile();
-    void Read_PU_Weights(); //Read PU weights from text file
     void Compute_PU_Weights();
-    TString GetFilename(TString);
     void Print_Debug();
     // void Write_PU_Weight_File();
 
