@@ -8,7 +8,7 @@ export LD_LIBRARY_PATH=${cdir}:${NtupleDir}:${NtupleDir}/obj:$LD_LIBRARY_PATH
 --file input.txt \
 --tree Nt \
 --outfile ./output_tHq_MC \
---nmax 1000  \
+--nmax 10000  \
 --isdata 0 \
 --doSystCombine 0 \
 --lumi 41500 \

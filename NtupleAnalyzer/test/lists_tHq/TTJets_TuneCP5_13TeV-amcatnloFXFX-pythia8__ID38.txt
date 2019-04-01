@@ -1,10 +1,5 @@
-root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/tHq2017/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8_ID442_0.root
-root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/tHq2017/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8_ID443_0.root
-root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/tHq2017/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8_ID444_0.root
-root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/tHq2017/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8_ID445_0.root
-root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/tHq2017/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8_ID446_0.root
-root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/tHq2017/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8_ID447_0.root
-root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/tHq2017/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8_ID448_0.root
-root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/tHq2017/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8_ID449_0.root
-root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/tHq2017/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8_ID44_0.root
-root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/tHq2017/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8_ID450_0.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/tHq2017/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8_ID271_0.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/tHq2017/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8_ID272_0.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/tHq2017/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8_ID273_0.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/tHq2017/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8_ID274_0.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/tHq2017/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8/TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8_ID275_0.root

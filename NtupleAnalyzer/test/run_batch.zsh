@@ -1,8 +1,8 @@
 #!/bin/env zsh
 
 #version="njet3" #output subdir
-version="ttH2017" #output subdir
-#version="tHq2017" #output subdir
+#version="ttH2017" #output subdir
+version="tHq2017" #output subdir
 
 echo ""
 #Don't forget to update the lumi and the xsec table
@@ -19,10 +19,9 @@ if [[ ${jName} == "" ]]; then
   exit 1
 fi
 
-#que="cms_local_mdm"
+#que="cms_local_mdm" #used for NTP
 #que="cms"
-que="cms_local_short" #reseved slots, fast, <1h jobs only
-
+que="cms_local_short" #reserved slots, fast, <1h jobs only. Try to split jobs so that can use this queue
 
 export HOME=$(pwd)
 
@@ -35,6 +34,7 @@ logName="log_${jName}"
 rm -rf ${dout_f}/${runName}
 mkdir ${dout_f} #NEW
 mkdir ${dout_f}/${runName}
+
 rm -rf ${logName}
 mkdir ${logName}
 
@@ -56,9 +56,9 @@ echo $flist | while read line
 do
   jidx=0
   sample=$(echo $line | sed 's%.txt%%g')
-  dataset=$(echo $sample | sed 's%__ID..*%%g') #CHANGED
+  dataset=$(echo $sample | sed 's%__ID..*%%g')
   if [[ ! -d ${runName}/${dataset} ]]; then
-    mkdir ${dout_f}/${runName}/${dataset} 
+    mkdir ${dout_f}/${runName}/${dataset}
   fi
   linexsec=$(grep -m 1 $dataset $fxsec) #grep -m 1 <-> only first occurence
   nowe=$(echo $linexsec | awk '{print $3}')
@@ -99,7 +99,7 @@ do
   #echo "${fpath}${line}"
  
   qsub -N ${dir} -q ${que} -o ${logName}/${sample}.log -j oe single_batch_job.sh \
--v dout=${dout},line2=${fpath}${line},dout_f=${dout_f},fout=${fout},nowe=${nowe},xsec=${xsec},lumi=${lumi},isdata=${isdata},doSystCombine=${doSystCombine},dataset=${dataset},nmax=${nmax},version=${version}
+-v dout=${dout},line2=${fpath}${line},dout_f=${dout_f},fout=${fout},nowe=${nowe},xsec=${xsec},lumi=${lumi},isdata=${isdata},doSystCombine=${doSystCombine},dataset=${dataset},nmax=${nmax},version=${version},logName=${logName},runName=${runName}
 done
 
 echo "going to sleep 2700 s (45 mn)"

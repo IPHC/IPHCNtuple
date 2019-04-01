@@ -134,8 +134,8 @@ class tHqMultileponAnalysis
         TH1F* h_PU_withCorr;
 		TH1F* h_nPV_noCorr;
         TH1F* h_nPV_withCorr;
-		Int_t nPU;
-		Int_t nPV;
+		Float_t nPU;
+		Float_t nPV;
 
         std::vector<Event>    *vEvent;
 		std::vector<Electron> *vElectronLoose;
@@ -183,7 +183,7 @@ class tHqMultileponAnalysis
 		bool pass_Zveto;
 		bool pass_Zveto_ee;
 		bool pass_cleanup;
-		int nSFOS;
+		float nSFOS;
 		double mllll;
 
         //NB : all categories (used for cuts) should start with "is_" <-> automated in analysis code
@@ -196,6 +196,7 @@ class tHqMultileponAnalysis
         Char_t is_tHq_2lSS_GammaConv;
         Char_t is_tHq_3l;
 		Char_t is_tHq_3l_SR;
+		Char_t is_tHq_3l_SR_noMETLD; //FIXME -- testing
 		Char_t is_tHq_3l_Training;
 		Char_t is_tHq_3l_Fake;
 		Char_t is_tHq_3l_GammaConv;
@@ -212,7 +213,8 @@ class tHqMultileponAnalysis
 		Char_t is_tHq_WZctrl_SR;
 		Char_t is_tHq_WZctrl_Fake;
 		Char_t is_tHq_WZctrl_GammaConv;
-		Char_t is_tHq_4l_SR;
+        Char_t is_tHq_4l;
+        Char_t is_tHq_4l_SR;
         Char_t is_tHq_ZZctrl_SR;
 		Char_t is_tHqFCNC_2lSS_SR;
 		Char_t is_tHqFCNC_2lSS_Fake;
@@ -382,6 +384,7 @@ class tHqMultileponAnalysis
 		Float_t jet1_pt, jet2_pt, jet3_pt, jet4_pt; //pt of the 4 leading jets -- INCLUDE SOFT JETS WITH PT > 15
 
 /*
+//For Jeremy - FCNC : try inputs variables :
 * le nombre de jets "soft", ayant un pT en entre 15 et 25 GeV,
 * le deltaR de la pair de lepton-bjet les plus proches,
 * le deltaR de la pair de lepton-ljet les plus proches,
@@ -391,8 +394,6 @@ class tHqMultileponAnalysis
 * le pT du lepton le plus soft divisé par le pT du jet le plus proche,
 * dans le 2LSS; Delta Phi entre les leptons, dans 3L, Delta Phi entre les deux leptons de chargé opposé avec le pT le plus élevé
  */
-
-
         //Event weights
         Float_t mc_weight; //set to +/-1 (old)
         Float_t weight_old; //=> weight_old = +-1 * xsec * lumi / swe_old
@@ -404,22 +405,9 @@ class tHqMultileponAnalysis
         Float_t weightfake; //store nominal FR weight separately
 		vector<TString> v_FR_type; //name of FR variations
 		vector<Float_t> v_floats_FR_variations; //store all FR variations
-        // Float_t FR_norm_elUp;
-        // Float_t FR_norm_elDown;
-        // Float_t FR_norm_muUp;
-        // Float_t FR_norm_muDown;
-        // Float_t FR_pt_elUp;
-        // Float_t FR_pt_elDown;
-        // Float_t FR_pt_muUp;
-        // Float_t FR_pt_muDown;
-        // Float_t FR_be_elUp;
-        // Float_t FR_be_elDown;
-        // Float_t FR_be_muUp;
-        // Float_t FR_be_muDown;
 
-
-        //QFlip weight
-        Float_t weightflip;
+        Float_t weightflip; //QFlip weight
+		Float_t chargeLeadingLep; //To decide if QFlip +- event goes into "positive" or "negative" subcategory
 
 		//Scale factors
         Float_t lepton_SF;
@@ -461,7 +449,7 @@ class tHqMultileponAnalysis
         Int_t catJets;
 
         //NEW -- add collections of jets without selection -- store all infos in vectors of float
-        Int_t nJets, nJets_tHq, nJets_ttH;
+        Float_t nJets, nJets_tHq, nJets_ttH;
 		vector<Float_t>* JetsPt;
         vector<Float_t>* JetsEta;
         vector<Float_t>* JetsPhi;
@@ -534,8 +522,8 @@ class tHqMultileponAnalysis
         bool _isdata;
         float _xsec;
         float _lumi;
-        int   _nowe; // number of weighted events
-        int   _nmax; // max number of events to process
+        float   _nowe; // number of weighted events
+        float   _nmax; // max number of events to process
 
         //SYNCHRO
 		std::ofstream outfile_2lSS_SR;
@@ -553,7 +541,9 @@ class tHqMultileponAnalysis
 		vector<TString> v_systTree; //can choose to store JES/JER TTrees, in addition to default
 
         //Higgs decay modes
-        int higgs_daughter_id;
+        float higgs_daughter_id; //obsolete
+        float higgs_daughter_id1;
+        float higgs_daughter_id2;
 
 		//Flavour of jet, for splitting of WZ sample only
 		Char_t wz_jetFlav_b;
