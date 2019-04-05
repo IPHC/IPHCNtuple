@@ -1,7 +1,7 @@
 #!/bin/env zsh
 export x509_USER_PROXY=/home-pbs/ntonon/proxy/x509up_u8066
 
-#version="ttH2017"
+# version="ttH2017"
 version="tHq2017"
 
 fpath="/dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleAnalyzer/"$version"/"
@@ -115,9 +115,13 @@ rm $outDir/merged_DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIIFall17
 rm $outDir/merged_DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM.root
 
 #DY_M4to50
-hadd -f $outDir/DY_M4to50.root $outDir/merged_DYJetsToLL_M-4to50_HT-100to200_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v1_MINIAODSIM.root $outDir/merged_DYJetsToLL_M-4to50_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM.root $outDir/merged_DYJetsToLL_M-4to50_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM.root $outDir/merged_DYJetsToLL_M-4to50_HT-600toInf_TuneCP5_13TeV-madgraphMLM-pythia8.root
+hadd -f $outDir/DY_M4to50.root $outDir/merged_DYJetsToLL_M-4to50_HT-100to200_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v1_MINIAODSIM.root $outDir/merged_DYJetsToLL_M-4to50_HT-100to200_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM.root $outDir/merged_DYJetsToLL_M-4to50_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM.root $outDir/merged_DYJetsToLL_M-4to50_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v1_MINIAODSIM.root $outDir/merged_DYJetsToLL_M-4to50_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v2_MINIAODSIM.root $outDir/merged_DYJetsToLL_M-4to50_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM.root $outDir/merged_DYJetsToLL_M-4to50_HT-600toInf_TuneCP5_13TeV-madgraphMLM-pythia8.root
+
 rm $outDir/merged_DYJetsToLL_M-4to50_HT-100to200_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v1_MINIAODSIM.root
+rm $outDir/merged_DYJetsToLL_M-4to50_HT-100to200_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM.root
 rm $outDir/merged_DYJetsToLL_M-4to50_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM.root
+rm $outDir/merged_DYJetsToLL_M-4to50_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v1_MINIAODSIM.root
+rm $outDir/merged_DYJetsToLL_M-4to50_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v2_MINIAODSIM.root
 rm $outDir/merged_DYJetsToLL_M-4to50_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM.root
 rm $outDir/merged_DYJetsToLL_M-4to50_HT-600toInf_TuneCP5_13TeV-madgraphMLM-pythia8.root
 
@@ -131,10 +135,10 @@ rm $outDir/merged_DY3JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17
 rm $outDir/merged_DY3JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v11_ext1_v1_MINIAODSIM.root
 rm $outDir/merged_DY4JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8.root
 
-#FIXME -- merge DY_LO (=DYJets_M50) with DYxJets (=DYXXXJets_M50) ?
-hadd -f $outDir/DYxJets.root $outDir/DYxJets_LO.root $outDir/DY_LO.root
-rm $outDir/DYxJets_LO.root
-rm $outDir/DY_LO.root
+#FIXME -- merge DY_LO (=DYJets_M50) with DYxJets (=DYXXXJets_M50) ? #can not sum them ?
+# hadd -f $outDir/DYxJets.root $outDir/DYxJets_LO.root $outDir/DY_LO.root
+# rm $outDir/DYxJets_LO.root
+# rm $outDir/DY_LO.root
 
 hadd -f $outDir/ttZ.root $outDir/merged_TTZToLL_M-1to10_TuneCP5_13TeV-amcatnlo-pythia8.root $outDir/merged_TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8.root
 rm $outDir/merged_TTZToLL_M-1to10_TuneCP5_13TeV-amcatnlo-pythia8.root
@@ -149,9 +153,9 @@ rm $outDir/merged_TTJets_SingleLeptFromTbar_TuneCP5_13TeV-madgraphMLM-pythia8.ro
 # rm $outDir/merged_W4JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8.root
 # rm $outDir/merged_WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8.root
 
-hadd -f $outDir/VHToNonbb.root $outDir/merged_VHToNonbb_M125_13TeV_amcatnloFXFX_madspin_pythia8_Fall17.root $outDir/merged_VHToNonbb_M125_13TeV_amcatnloFXFX_madspin_pythia8.root
-rm $outDir/merged_VHToNonbb_M125_13TeV_amcatnloFXFX_madspin_pythia8_Fall17.root
-rm $outDir/merged_VHToNonbb_M125_13TeV_amcatnloFXFX_madspin_pythia8.root
+# hadd -f $outDir/VHToNonbb.root $outDir/merged_VHToNonbb_M125_13TeV_amcatnloFXFX_madspin_pythia8_Fall17.root $outDir/merged_VHToNonbb_M125_13TeV_amcatnloFXFX_madspin_pythia8.root
+# rm $outDir/merged_VHToNonbb_M125_13TeV_amcatnloFXFX_madspin_pythia8.root
+# rm $outDir/merged_VHToNonbb_M125_13TeV_amcatnloFXFX_madspin_pythia8_Fall17.root
 
 hadd -f $outDir/tWZ.root $outDir/merged_ST_tWll_5f_LO_TuneCP5_PSweights_13TeV-madgraph-pythia8.root $outDir/merged_ST_tWll_5f_LO_TuneCP5_PSweights_13TeV_madgraph_pythia8_Fall17.root
 rm $outDir/merged_ST_tWll_5f_LO_TuneCP5_PSweights_13TeV-madgraph-pythia8.root
@@ -162,9 +166,9 @@ rm $outDir/merged_ST_tW_top_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8.root
 rm $outDir/merged_ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8.root
 
 
-hadd -f $outDir/WxJets.root $outDir/merged_W4JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAODv2_PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14_v2_MINIAODSIM.root $outDir/merged_W3JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM.root $outDir/merged_W2JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8.root $outDir/merged_W1JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8.root
-rm $outDir/merged_W4JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAODv2_PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14_v2_MINIAODSIM.root
-rm $outDir/merged_W3JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM.root
+hadd -f $outDir/WxJets.root $outDir/merged_W4JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8.root $outDir/merged_W3JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8.root $outDir/merged_W2JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8.root $outDir/merged_W1JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8.root
+rm $outDir/merged_W4JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8.root
+rm $outDir/merged_W3JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8.root
 rm $outDir/merged_W2JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8.root
 rm $outDir/merged_W1JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8.root
 
@@ -211,8 +215,8 @@ mv $outDir/merged_ttWJets_TuneCP5_13TeV_madgraphMLM_pythia8.root $outDir/ttW_LO.
 mv $outDir/merged_ttZJets_TuneCP5_13TeV_madgraphMLM_pythia8.root $outDir/ttZ_LO.root
 mv $outDir/merged_TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8.root $outDir/TTJets.root
 mv $outDir/merged_TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8.root $outDir/TTJets_DiLep_MLM.root
-mv $outDir/merged_ZZTo4L_13TeV_powheg_pythia8.root $outDir/ZZ_old.root
-mv $outDir/merged_ZZTo4L_13TeV_powheg_pythia8_RunIIFall17MiniAODv2_PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14_v1_MINIAODSIM.root $outDir/ZZ.root
+mv $outDir/merged_ZZTo4L_13TeV_powheg_pythia8.root $outDir/ZZ.root
+# mv $outDir/merged_ZZTo4L_13TeV_powheg_pythia8_RunIIFall17MiniAODv2_PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14_v1_MINIAODSIM.root $outDir/ZZ.root
 mv $outDir/WZG_TuneCP5_13TeV-amcatnlo-pythia8.root $outDir/WZG.root
 mv $outDir/merged_WpWpJJ_EWK-QCD_TuneCP5_13TeV-madgraph-pythia8.root $outDir/WpWp.root
 mv $outDir/merged_WW_DoubleScattering_13TeV-pythia8_TuneCP5.root $outDir/WW_DPS.root
@@ -230,7 +234,7 @@ mv $outDir/merged_TprimeBToTH_M-900_LH_TuneCP5_13TeV-madgraph-pythia8.root $outD
 mv $outDir/merged_TprimeBToTH_M-1000_LH_TuneCP5_13TeV-madgraph-pythia8.root $outDir/VLQ_M1000.root
 mv $outDir/merged_TprimeBToTH_M-1100_LH_TuneCP5_13TeV-madgraph-pythia8.root $outDir/VLQ_M1100.root
 mv $outDir/merged_TprimeBToTH_M-1200_LH_TuneCP5_13TeV-madgraph-pythia8.root $outDir/VLQ_M1200.root
-# mv $outDir/merged_ST_tWll_5f_LO_TuneCP5_PSweights_13TeV-madgraph-pythia8.root $outDir/tWZ.root
+mv $outDir/merged_VHToNonbb_M125_13TeV_amcatnloFXFX_madspin_pythia8.root $outDir/VHToNonbb.root
 
 
 

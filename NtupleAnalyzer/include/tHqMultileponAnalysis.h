@@ -47,12 +47,13 @@
 //NTAnalyzer
 #include "Lepton.h"
 #include "ScaleFactors.h" //Class for Scale factors
+#include <TLorentzVector.h>
 
 //ttH Kinematic Fitter (needed to compute resHTT tagger)
 #include "../test/HTT_kinfit/HadTopKinFit.h" // HadTopKinFit
 #include <Math/LorentzVector.h>
 #include <Math/PtEtaPhiM4D.h>
-typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > LorentzVector;
+typedef ROOT::Math::LorentzVector<ROOT::Math::PtEtaPhiM4D<double> > LorentzVector; //for kinFit
 
 class tHqMultileponAnalysis
 {
@@ -188,13 +189,13 @@ class tHqMultileponAnalysis
 
         //NB : all categories (used for cuts) should start with "is_" <-> automated in analysis code
 		//tHq2017 categories : based on ttH2017, defined at NTA level
-		Char_t is_tHq_2lSS;
+		Char_t is_2lSS;
 		Char_t is_tHq_2lSS_SR;
 		Char_t is_tHq_2lSS_Training;
 		Char_t is_tHq_2lSS_Fake;
         Char_t is_tHq_2lSS_Flip;
         Char_t is_tHq_2lSS_GammaConv;
-        Char_t is_tHq_3l;
+        Char_t is_3l;
 		Char_t is_tHq_3l_SR;
 		Char_t is_tHq_3l_SR_noMETLD; //FIXME -- testing
 		Char_t is_tHq_3l_Training;
@@ -225,13 +226,11 @@ class tHqMultileponAnalysis
 		Char_t is_tHqFCNC_3l_GammaConv;
 
 		//-- ttH 2017 categories
-		Char_t is_ttH_2lSS;
 		Char_t is_ttH_2lSS_Training;
         Char_t is_ttH_2lSS_SR;
 		Char_t is_ttH_2lSS_Fake;
         Char_t is_ttH_2lSS_Flip;
 		Char_t is_ttH_2lSS_GammaConv;
-		Char_t is_ttH_3l;
 		Char_t is_ttH_3l_Training;
 		Char_t is_ttH_3l_SR;
 		Char_t is_ttH_3l_GammaConv;
@@ -575,7 +574,8 @@ class tHqMultileponAnalysis
 
 		vector<Float_t> v_sums_LHEweights; //Sum of weights for the LHE kT/kV reweights
 		vector<Float_t> v_couplings_SF; //Scale factors for the LHE kT/kV reweights (kinematics/acceptance only ! Not xsec)
-		Float_t SMcoupling_SF; //SF for SM coupling (kin + acceptance + xsec !)
+        Float_t SMcoupling_SF; //SF for SM coupling (kin + acceptance + xsec !) -- used to rescale the nominal weight
+        Float_t SMcoupling_weight; //also store weight for now (i.e. compute directly the SM weight in NTA)
 		Float_t xsec_SM; //SM xsec (hardcoded, for tHq and tHW)
 
         //--- LHE weights
@@ -604,7 +604,7 @@ class tHqMultileponAnalysis
 
 		//NEW -- Kin fit for resHTT
 		// class HadTopKinFit; // forward declaration
-		HadTopKinFit * kinFit_;
+		HadTopKinFit* kinFit_;
 		Float_t resHTT;
 };
 

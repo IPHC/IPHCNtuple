@@ -1,5 +1,0 @@
-root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/tHq2017/W1JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/W1JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8_ID159_0.root
-root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/tHq2017/W1JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/W1JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8_ID15_0.root
-root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/tHq2017/W1JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/W1JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8_ID160_0.root
-root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/tHq2017/W1JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/W1JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8_ID161_0.root
-root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/tHq2017/W1JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8/W1JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8_ID162_0.root

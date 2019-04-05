@@ -1,6 +1,6 @@
 // ThreeLeptonSelection_THQ3l
 // tHqMultileponAnalysis::fillOutputTree()
-
+// initializeOutputTree()
 
 //----------  FIXMES  -------------------------
 // - pT 25/15/15 in 3l ?
@@ -45,20 +45,20 @@ bool DEBUG = false;
 //--------------------------------------------
 bool do_tHq_analysis = true; // false <-> will save events passing >=1 ttH cat ; true <-> idem with tHq cat. Jet vectors will also be different, and thus other variables
 
-bool add_JES_TTrees = true;
+bool add_JES_TTrees = false;
 bool add_JER_TTrees = false; //adds 1 TTree with JER smearing applied (buggy?), and 2 JER variations TTrees
-bool apply_JER_smearing = true; //NB : seems to have large effect, must xcheck ! true <-> smear pt of jets with JER correcting factor
+bool apply_JER_smearing = true; //true <-> smear pt of jets with JER correcting factor //should still crosscheck
 
 bool make_ntuples_for_overlap_studies = false; // true <-> adds histograms containing overlaps between categs
 bool add_orthogocal_cat = false; //true <-> adds new categs for overlap/ortho studies
 
 bool write_branches_forMEM = true; //true <-> write inputs necessary for MEM code
 
-bool write_ScaleAndPDF_Variations = true; //true <-> write all scale variations (+ sumWeights) separately, for studies
+bool write_ScaleAndPDF_Variations = true; //true <-> write all scale variations (+ sumWeights) separately, for studies //slows down processing
 
-bool apply_PU_SF = true; //Still want to cross-check it before applying by default
+bool apply_PU_SF = false; //Still want to cross-check it before applying by default
 
-bool dump_synchro_info = true;
+bool dump_synchro_info = false;
 
 // ===TESTING ORTHOG CAT NTUPLES=== !!!
 TString scheme = ""; //...
@@ -93,14 +93,14 @@ tHqMultileponAnalysis::~tHqMultileponAnalysis()
 {
     cout<<"--- Destroy 'tHqMultileponAnalysis' object..."<<endl;
 
-    delete vEvent;
-    delete vElectronLoose; delete vElectronFakeable; delete vElectronTight;
-    delete vMuonLoose; delete vMuonFakeable; delete vMuonTight;
-    delete vTauLoose; delete vTauMedium; delete vTauFakeable;
-    delete vJetLoose_original;
-    delete vJetSoft;
-    delete vJetLoose_tmp;
-    delete vTruth;
+    // delete vEvent;
+    // delete vElectronLoose; delete vElectronFakeable; delete vElectronTight;
+    // delete vMuonLoose; delete vMuonFakeable; delete vMuonTight;
+    // delete vTauLoose; delete vTauMedium; delete vTauFakeable;
+    // delete vJetLoose_original;
+    // delete vJetSoft;
+    // delete vJetLoose_tmp;
+    // delete vTruth;
 
     // delete tOutput;
     for(int itree=0; itree<v_tOutput.size(); itree++)
@@ -118,7 +118,10 @@ tHqMultileponAnalysis::~tHqMultileponAnalysis()
     delete h_totalYield_ttH_cat; h_totalYield_ttH_cat = NULL;
     delete h_totalYield_tHq_cat; h_totalYield_tHq_cat = NULL;
 
-    delete kinFit_; kinFit_ = NULL;
+    if(kinFit_ != 0) {delete kinFit_; kinFit_ = NULL;}
+
+    delete fChain; fChain = NULL;
+
 
     sf->~ScaleFactors(); //Destroy SF object
 }
@@ -237,6 +240,7 @@ tHqMultileponAnalysis::tHqMultileponAnalysis(TString inputFileName, TString samp
     v_floats_FR_variations.resize(v_FR_type.size()); //reserve 1 float per FR variation
 
     //Kin fit (from ttH)
+    kinFit_ = 0;
     string hTT_filepath = "/home-pbs/ntonon/tHq/IPHCNtuple_2017/CMSSW_9_4_3/src/IPHCNtuple/NtupleAnalyzer/test/HTT_kinfit/TF_jets.root";
     if(!Check_File_Existence(hTT_filepath)) {cout<<BOLD(FRED("File "<<hTT_filepath<<" not found ! Can not compute kinFit/resHTT tagger !"))<<endl;kinFit_ = 0;}
     else {kinFit_ = new HadTopKinFit(1, hTT_filepath);}
@@ -252,21 +256,20 @@ void tHqMultileponAnalysis::InitTree()
     if (!fChain) return;
 
 	//Object collections defined in NtupleProducer
-    vEvent             = new std::vector<Event>();
-    vElectronLoose     = new std::vector<Electron>();
-    vElectronFakeable  = new std::vector<Electron>();
-    vElectronTight     = new std::vector<Electron>();
-    vMuonLoose         = new std::vector<Muon>();
-    vMuonFakeable      = new std::vector<Muon>();
-    vMuonTight         = new std::vector<Muon>();
-    vTauLoose          = new std::vector<Tau>();
-    vTauFakeable       = new std::vector<Tau>();
-    vTauMedium         = new std::vector<Tau>();
-    vJetLoose_original = new std::vector<Jet>();
-    vJetSoft           = new std::vector<Jet>();
-    vJetLoose_tmp      = new std::vector<Jet>();
-    vTruth             = new std::vector<Truth>();
-
+    // vEvent             = new std::vector<Event>();
+    // vElectronLoose     = new std::vector<Electron>();
+    // vElectronFakeable  = new std::vector<Electron>();
+    // vElectronTight     = new std::vector<Electron>();
+    // vMuonLoose         = new std::vector<Muon>();
+    // vMuonFakeable      = new std::vector<Muon>();
+    // vMuonTight         = new std::vector<Muon>();
+    // vTauLoose          = new std::vector<Tau>();
+    // vTauFakeable       = new std::vector<Tau>();
+    // vTauMedium         = new std::vector<Tau>();
+    // vJetLoose_original = new std::vector<Jet>();
+    // vJetSoft           = new std::vector<Jet>();
+    // vJetLoose_tmp      = new std::vector<Jet>();
+    // vTruth             = new std::vector<Truth>();
 
     fChain->SetBranchAddress("Event", &vEvent);
     fChain->SetBranchAddress("ElectronLoose", &vElectronLoose);
@@ -365,14 +368,15 @@ void tHqMultileponAnalysis::InitCollections()
  */
 void tHqMultileponAnalysis::InitCustomCategories()
 {
-    //Custom categories
-    is_tHq_2lSS              = 0;
+    is_3l                = 0;
+    is_2lSS              = 0;
+
+    //tHq categories
     is_tHq_2lSS_SR           = 0;
     is_tHq_2lSS_Training     = 0;
     is_tHq_2lSS_Fake         = 0;
     is_tHq_2lSS_Flip         = 0;
     is_tHq_2lSS_GammaConv    = 0;
-    is_tHq_3l                = 0;
     is_tHq_3l_SR             = 0;
     is_tHq_3l_SR_noMETLD = 0;
     is_tHq_3l_Training       = 0;
@@ -403,13 +407,11 @@ void tHqMultileponAnalysis::InitCustomCategories()
     is_tHqFCNC_3l_GammaConv   = 0;
 
     //ttH2017 categories
-    is_ttH_2lSS              = 0;
     is_ttH_2lSS_Training     = 0;
     is_ttH_2lSS_SR           = 0;
     is_ttH_2lSS_Fake         = 0;
     is_ttH_2lSS_Flip         = 0;
     is_ttH_2lSS_GammaConv    = 0;
-    is_ttH_3l                = 0;
     is_ttH_3l_Training       = 0;
     is_ttH_3l_SR             = 0;
     is_ttH_3l_Fake           = 0;
@@ -615,7 +617,7 @@ void tHqMultileponAnalysis::Get_SumWeights()
 //-- Sums of weights for nominal + scale variations
     TString path_sumweight_file = "/home-pbs/ntonon/tHq/IPHCNtuple_2017/CMSSW_9_4_3/src/IPHCNtuple/NtupleAnalyzer/test/weights_2017/merged_histograms/"+samplename_tmp+".root";
 
-    if(!Check_File_Existence(path_sumweight_file)) {cout<<BOLD(FRED("File "<<path_sumweight_file<<" not found ! Can not retrieve sum of weights to properly rescale events !"))<<endl; return;}
+    if(!Check_File_Existence(path_sumweight_file)) {cout<<BOLD(FRED("File "))<<path_sumweight_file<<BOLD(FRED(" not found ! Can not retrieve sum of weights to reweight events Abort !"))<<endl; return;}
     TFile* f = TFile::Open(path_sumweight_file);
 
     //Read sums of weights
@@ -636,7 +638,7 @@ void tHqMultileponAnalysis::Get_SumWeights()
     sumWeights_mc_weight_originalValue = hSumWeights->GetBinContent(2);
 
 
-//-- Sums of weights for kT/kV weights in TH samples
+//-- Sums of weights for kT/kV weights in TH sample
     //Read sums of weights for kT/kV weights (only SM for now ?)
     TH1D* h_tmp = 0;
     v_sums_LHEweights.clear();
@@ -647,16 +649,17 @@ void tHqMultileponAnalysis::Get_SumWeights()
         for(int ibin=0; ibin<h_tmp->GetNbinsX(); ibin++)
         {
             v_sums_LHEweights.push_back(h_tmp->GetBinContent(ibin+1) ); //SM should be in bin 12 <-> 11th element in vector
+            // cout<<"v_sums_LHEweights["<<ibin<<"] = "<<v_sums_LHEweights[ibin]<<endl;
         }
 
-        v_couplings_SF.resize(70); //at most, will store the 70 available couplings (as scale factors)
+        v_couplings_SF.resize(70); //at most, will store the 70 available kT/kV couplings (as scale factors)
     }
     f->Close();
 
 //-- Sums of weights *for all LHE weights* (including nominal [first element] + scale variations [following 8 elements])
     TString path_LHE_sumWeights_file = "/home-pbs/ntonon/tHq/IPHCNtuple_2017/CMSSW_9_4_3/src/IPHCNtuple/NtupleAnalyzer/test/weights_2017/LHE/"+samplename_tmp+".root";
 
-    if(!Check_File_Existence(path_LHE_sumWeights_file)) {cout<<BOLD(FRED("File "<<path_LHE_sumWeights_file<<" not found ! Can not retrieve sum of weights for PDFs!"))<<endl; return;}
+    if(!Check_File_Existence(path_LHE_sumWeights_file)) {cout<<endl<<BOLD(FRED("File "))<<path_LHE_sumWeights_file<<" not found, or empty ! Can not retrieve sums of LHE weights (needed for scale/PDF syst, etc.) !"<<endl<<endl<<endl; return;}
     else
     {
         TFile* f_LHE = TFile::Open(path_LHE_sumWeights_file);
@@ -674,6 +677,14 @@ void tHqMultileponAnalysis::Get_SumWeights()
                 cout<<"-> Histogram containing sums of weights (for *all* LHE weights) opened"<<endl<<endl<<endl;
                 hLHE = (TH1D*) f_LHE->Get("hLHE")->Clone();
                 hLHE->SetDirectory(0); //NECESSARY so that histo is not associated with TFile, and doesn't get deleted when file closed !
+
+                // for(int ibin=0; ibin<hLHE->GetNbinsX(); ibin++)
+                // {
+                //     v_sums_LHEweights.push_back(hLHE->GetBinContent(ibin+1) ); //SM should be in bin 12 <-> 11th element in vector
+                //     cout<<"v_sums_LHEweights["<<ibin<<"] = "<<v_sums_LHEweights[ibin]<<endl;
+                // }
+
+                // v_couplings_SF.resize(70); //at most, will store the 70 available kT/kV couplings (as scale factors)
             }
         }
         f_LHE->Close();
@@ -710,7 +721,7 @@ void tHqMultileponAnalysis::Get_Mapping_LHE_PDF()
     ifstream file_in(mapfile_path.Data());
     if(!Check_File_Existence(mapfile_path) || file_in.peek() == std::ifstream::traits_type::eof()) //Mapping not found or empty (maybe was not created)
     {
-        cout<<BOLD(FRED("File ")<<mapfile_path<<FRED(" not found, or empty ! Can not retrieve sums of LHE weights (needed for scale/PDF syst, etc.) !"))<<endl<<endl<<endl;
+        cout<<endl<<BOLD(FRED("File "))<<mapfile_path<<" not found, or empty ! Can not retrieve sums of LHE weights (needed for scale/PDF syst, etc.) !"<<endl<<endl<<endl;
         write_ScaleAndPDF_Variations = false;
         return;
     }
@@ -1081,6 +1092,7 @@ void tHqMultileponAnalysis::Loop()
             nPU = 0;
             nPV = 0;
             SMcoupling_SF = 1;
+            SMcoupling_weight = 0;
             mc_weight = 1; mc_weight_originalValue = 1;
 
             //Decay modes and jets flavours
@@ -1125,27 +1137,44 @@ void tHqMultileponAnalysis::Loop()
                     // LHEweights_Ids = vEvent->at(0).pdf_ids;
 
                     //Get SM reweighting SF (store as SF, because it will be multiplied with event weight in code)
-                    int index_SMweight = -1;
-                    if((_sampleName.Contains("THQ_ctcvcp")) ) {index_SMweight = 893;}
-                    else if((_sampleName.Contains("THW_ctcvcp")) ) {index_SMweight = 1091;}
+                    int index_SMweight_SUM = -1; //Index in vector of sums of weight (only storing kT/kV -> 12th weight)
+                    int index_SMweight_LHE = -1; //Index in vector of LHE weights (storing all LHE weights -> Xth weight depending on sample)
+                    if((_sampleName.Contains("THQ_ctcvcp")) || (_sampleName.Contains("THW_ctcvcp")) ) {index_SMweight_SUM = 12-1;} //only consider kT/kV LHE weights (in 'LHE' dir)
 
-                    if(index_SMweight != -1) //take into account the fact that it will be multiplied by the nominal event weight
+                    if((_sampleName.Contains("THQ_ctcvcp")) ) {index_SMweight_LHE = 893;} //if considering all LHE weights (in 'merged_histograms' dir)
+                    else if((_sampleName.Contains("THW_ctcvcp")) ) {index_SMweight_LHE = 1091;} //if considering all LHE weights (in 'merged_histograms' dir)
+
+                    if(index_SMweight_SUM != -1 && index_SMweight_LHE != -1) //take into account the fact that it will be multiplied by the nominal event weight
                     {
-                        SMcoupling_SF = (LHEweights[index_SMweight] / mc_weight_originalValue) * (xsec_SM / _xsec) * (sumWeights_mc_weight_originalValue / v_sums_LHEweights[index_SMweight]);
+                        SMcoupling_SF = (LHEweights[index_SMweight_LHE] / mc_weight_originalValue) * (xsec_SM / _xsec) * (sumWeights_mc_weight_originalValue / v_sums_LHEweights[index_SMweight_SUM]);
                     }
 
+                    //Also compute SM event weight directly for now, for xchecks, etc.
+                    SMcoupling_weight = _lumi * xsec_SM * LHEweights[index_SMweight_LHE] / v_sums_LHEweights[index_SMweight_SUM];
+
+                    //Debug Printout
+                    // cout<<endl<<"weight = "<<weight<<endl;
+                    // cout<<endl<<"SM_tmp = "<<SM_tmp<<endl;
+                    // cout<<"SMcoupling_SF = "<<SMcoupling_SF<<endl;
+                    // cout<<"LHEweights[index_SMweight_LHE] = "<<LHEweights[index_SMweight_LHE]<<endl;
+                    // cout<<"mc_weight_originalValue = "<<mc_weight_originalValue<<endl;
+                    // cout<<"(xsec_SM / _xsec) = "<<(xsec_SM / _xsec)<<endl;
+                    // cout<<"sumWeights_mc_weight_originalValue = "<<sumWeights_mc_weight_originalValue<<endl;
+                    // cout<<"v_sums_LHEweights[index_SMweight_SUM] = "<<v_sums_LHEweights[index_SMweight_SUM]<<endl;
+
+                    // cout<<"//--------------------------------------------"<<endl;
+                    // cout<<"LHEweights[index_SMweight_LHE-1] "<<LHEweights[index_SMweight_LHE-1]<<endl;
+                    // cout<<"LHEweights[index_SMweight_LHE] "<<LHEweights[index_SMweight_LHE]<<endl;
+                    // cout<<"LHEweights[index_SMweight_LHE+1] "<<LHEweights[index_SMweight_LHE+1]<<endl;
+                    // cout<<"v_sums_LHEweights[index_SMweight_SUM-1] "<<v_sums_LHEweights[index_SMweight_SUM-1]<<endl;
+                    // cout<<"v_sums_LHEweights[index_SMweight_SUM] "<<v_sums_LHEweights[index_SMweight_SUM]<<endl;
+                    // cout<<"v_sums_LHEweights[index_SMweight_SUM+1] "<<v_sums_LHEweights[index_SMweight_SUM+1]<<endl;
+
+                    //-- Reweighting by generator weight //Not sure if should do it anymore ?
                     // cout<<"LHEweights.size() = "<<LHEweights.size()<<endl;
                     for(int ilhe=0; ilhe<LHEweights.size(); ilhe++)
                     {
                         LHEweights[ilhe]*= mc_weight_originalValue / weight_originalXWGTUP; //rescaling not done in current FTP prod ; remove for next prod !
-
-                        // if(!ilhe)
-                        // {
-                        //     cout<<endl<<"ilhe = "<<ilhe<<endl;
-                        //     cout<<"mc_weight_originalValue = "<<mc_weight_originalValue<<endl;
-                        //     cout<<"weight_originalXWGTUP = "<<weight_originalXWGTUP<<endl;
-                        //     cout<<"LHEweights[ilhe] = "<<LHEweights[ilhe]<<endl;
-                        // }
                     }
 
                     if(write_ScaleAndPDF_Variations)
@@ -1353,6 +1382,8 @@ void tHqMultileponAnalysis::Loop()
             //'vJetLoose_tmp' is a copy of 'vJetLoose_original', but here we can modify the pT of the jets (JES/JER variations)
             //Can also decide to apply the jet pt JER-smearing here
             //After this, the "original" jet vector is not used anymore
+            vJetLoose_tmp = new std::vector<Jet>(); //CHANGED
+
             vJetLoose_tmp->resize(0);
             for(unsigned int ijet=0; ijet < vJetLoose_original->size() ; ijet++)
             {
@@ -1747,7 +1778,7 @@ void tHqMultileponAnalysis::Loop()
             //--------------------------------------------
 
             //Dump event infos into synchro text file
-            if(dump_synchro_info)
+            if(dump_synchro_info && itree == 0)
             {
                 if(!do_tHq_analysis)
                 {
@@ -1823,6 +1854,7 @@ void tHqMultileponAnalysis::Loop()
 
             } //Debug condition
 
+            delete vJetLoose_tmp;
         } //end event loop
 
 
@@ -1841,9 +1873,6 @@ void tHqMultileponAnalysis::Loop()
     	outputfile->cd();
 
         v_tOutput[itree]->Write();
-        // v_tOutput[itree]->CloneTree()->Write(); //segfault ?
-
-        // tOutput->Write();
     } //itree loop
 
     //Write histograms to output file
@@ -2001,7 +2030,6 @@ bool tHqMultileponAnalysis::ThreeLeptonSelection_THQ3l_Regions(int evt)
     //-- 3l SR (ttH)
     if(pass_Zveto && pass_basic_SR_cuts && pass_metLD && pass_njet_tth)
     {
-        is_ttH_3l = 1;
         if(pass_MCMatching && pass_isTight) {is_ttH_3l_SR = 1; pass_cat = 1;}
         else if(pass_MCMatching && !pass_isTight) {is_ttH_3l_Fake = 1; pass_cat = 1;}
         else if(is_GammaConv && pass_isTight) {is_ttH_3l_GammaConv = 1; pass_cat = 1;}
@@ -2010,17 +2038,15 @@ bool tHqMultileponAnalysis::ThreeLeptonSelection_THQ3l_Regions(int evt)
     //-- 3l SR (tHq) //FIXME : added metLD cut ! Keep it ? Check impact on stat
     if(pass_Zveto && pass_basic_SR_cuts && pass_metLD && pass_nJets_tHq)
     {
-        is_tHq_3l = 1;
         if(pass_MCMatching && pass_isTight) {is_tHq_3l_SR = 1; pass_cat = 1;}
         else if(pass_MCMatching && !pass_isTight) {is_tHq_3l_Fake = 1; pass_cat = 1;}
         else if(is_GammaConv && pass_isTight) {is_tHq_3l_GammaConv = 1; pass_cat = 1;}
     }
-    else if(pass_Zveto && pass_basic_SR_cuts && pass_nJets_tHq) {is_tHq_3l = 1; is_tHq_3l_SR_noMETLD = 1; pass_cat = 1;} //TEST impact of metLD cut
+    if(pass_Zveto && pass_basic_SR_cuts && pass_nJets_tHq && pass_MCMatching && pass_isTight) {is_tHq_3l_SR_noMETLD = 1; pass_cat = 1;} //TEST impact of metLD cut
 
     //-- 3l SR (FCNC)
     if(pass_Zveto && pass_basic_SR_cuts && nJets_ttH >= 1 && nMediumBJets == 1)
     {
-        is_tHq_3l = 1;
         if(pass_MCMatching && pass_isTight) {is_tHqFCNC_3l_SR = 1; pass_cat = 1;}
         else if(pass_MCMatching && !pass_isTight) {is_tHqFCNC_3l_Fake = 1; pass_cat = 1;}
         else if(is_GammaConv && pass_isTight) {is_tHqFCNC_3l_GammaConv = 1; pass_cat = 1;}
@@ -2029,7 +2055,6 @@ bool tHqMultileponAnalysis::ThreeLeptonSelection_THQ3l_Regions(int evt)
     //ttZ CR (same for ttH/tHq)
     if(!pass_Zveto && pass_metLD && pass_njet_tth && pass_basic_SR_cuts)
     {
-        is_tHq_3l = 1;
         is_ttH_ttZctrl = 1;
         if(pass_MCMatching && pass_isTight) {is_ttH_ttZctrl_SR = 1; pass_cat = 1;}
         else if(pass_MCMatching && !pass_isTight) {is_ttH_ttZctrl_Fake = 1; pass_cat = 1;}
@@ -2041,7 +2066,6 @@ bool tHqMultileponAnalysis::ThreeLeptonSelection_THQ3l_Regions(int evt)
     //WZ CR (same for ttH/tHq)
     if(!pass_Zveto && pass_basic_SR_cuts && pass_metLD && nJets_ttH >= 2 && !pass_njet_tth)
     {
-        is_tHq_3l = 1;
         is_ttH_WZctrl = 1;
         if(pass_MCMatching && pass_isTight) {is_ttH_WZctrl_SR = 1; pass_cat = 1;} //removed basic cuts for now
         else if(pass_MCMatching && !pass_isTight) {is_ttH_WZctrl_Fake = 1; pass_cat = 1;}
@@ -2050,6 +2074,7 @@ bool tHqMultileponAnalysis::ThreeLeptonSelection_THQ3l_Regions(int evt)
         is_tHq_WZctrl = is_ttH_WZctrl; is_tHq_WZctrl_SR = is_ttH_WZctrl_SR; is_tHq_WZctrl_Fake = is_ttH_WZctrl_Fake; is_tHq_WZctrl_GammaConv = is_ttH_WZctrl_GammaConv;
     }
 
+    if(pass_cat) {is_3l = 1;} //used for MEM, ...
 
 //--------------------------------------------
 
@@ -2118,7 +2143,7 @@ bool tHqMultileponAnalysis::TwoLeptonSelection_THQ2lSSl(int evt)
     if(DEBUG) {cout<<"- Passed Zee cut"<<endl;}
 
     if(fabs(vLeptonFakeable.at(0).id) == 11 && fabs(vLeptonFakeable.at(1).id) == 11 && metLD < 30) {return 0;}
-    if(DEBUG) {cout<<"- Passed SS cut"<<endl;}
+    if(DEBUG) {cout<<"- Passed metLD cut"<<endl;}
 
     if(nJets_tHq < 2) {return 0;} //All cat. contain at least 2 jets (NB : tHq jets looser than ttH)
     if(DEBUG) {cout<<"- Passed first jet cut"<<endl;}
@@ -2171,7 +2196,6 @@ bool tHqMultileponAnalysis::TwoLeptonSelection_THQ2lSS_Regions(int evt)
     //-- 2lSS SR (ttH)
     if(nJets_ttH >= 4 && pass_njet_tth)
     {
-        is_ttH_2lSS = 1;
         if(pass_MCMatching && is_SS_pair && pass_isTight) {is_ttH_2lSS_SR = 1; pass_cat = 1;}
         else if(pass_MCMatching && is_SS_pair && !pass_isTight) {is_ttH_2lSS_Fake = 1; pass_cat = 1;}
         else if(pass_MCMatching && !is_SS_pair && contains_ele && pass_isTight) {is_ttH_2lSS_Flip = 1; pass_cat = 1; Apply_FlipRate_Weight();}
@@ -2180,7 +2204,6 @@ bool tHqMultileponAnalysis::TwoLeptonSelection_THQ2lSS_Regions(int evt)
     //-- 2lSS SR (tHq)
     if(pass_nJets_tHq)
     {
-        is_tHq_2lSS = 1;
         if(pass_MCMatching && is_SS_pair && pass_isTight) {is_tHq_2lSS_SR = 1; pass_cat = 1;}
         else if(pass_MCMatching && is_SS_pair && !pass_isTight) {is_tHq_2lSS_Fake = 1; pass_cat = 1;}
         else if(pass_MCMatching && !is_SS_pair && contains_ele && pass_isTight) {is_tHq_2lSS_Flip = 1; pass_cat = 1; Apply_FlipRate_Weight();}
@@ -2214,6 +2237,8 @@ bool tHqMultileponAnalysis::TwoLeptonSelection_THQ2lSS_Regions(int evt)
         else if(pass_MCMatching && !is_SS_pair && contains_ele && pass_isTight) {is_tHq_ttWctrl_Flip = 1; pass_cat = 1; Apply_FlipRate_Weight();}
         else if(is_GammaConv && is_SS_pair && contains_ele && pass_isTight) {is_tHq_ttWctrl_GammaConv = 1; pass_cat = 1;}
     }
+
+    if(pass_cat) {is_2lSS = 1;} //Used for MEM, ...
 
 //--------------------------------------------
 	return pass_cat;
@@ -2387,7 +2412,7 @@ bool tHqMultileponAnalysis::ThreeLeptonSelection_THQ3l_TrainingSelection(int evt
         if(nLooseBJets < 2) {is_ttH_3l_Training = 0;}
     }
 
-    if(is_tHq_3l_Training || is_ttH_3l_Training) {is_tHq_3l = 1;} //needed to fill MEM inputs
+    if(is_tHq_3l_Training || is_ttH_3l_Training) {is_3l = 1;} //needed to fill MEM inputs
 
     //--------------------------------------------
     return 1;
@@ -2410,6 +2435,9 @@ bool tHqMultileponAnalysis::TwoLeptonSelection_THQ2lSS_TrainingSelection(int evt
 
     //At least 2 FO leptons
     if(vLeptonFakeable.size() < 2) {return 0;}
+
+    //At most 2 tight leptons
+    if(vLeptonTight.size() > 2) {return 0;}
 
     //SS pair
     if(vLeptonFakeable.at(0).charge != vLeptonFakeable.at(1).charge) {return 0;}
@@ -2438,6 +2466,8 @@ bool tHqMultileponAnalysis::TwoLeptonSelection_THQ2lSS_TrainingSelection(int evt
         if(nJets_ttH < 4) {is_ttH_2lSS_Training = 0;}
         if(nLooseBJets < 2 && nMediumBJets == 0) {is_ttH_2lSS_Training = 0;}
     }
+
+    if(is_tHq_2lSS_Training || is_ttH_2lSS_Training) {is_2lSS = 1;} //for MEM, ...
 
     //--------------------------------------------
     return 1;
@@ -2593,71 +2623,23 @@ void tHqMultileponAnalysis::Apply_ScaleFactors(int nlep, int itree)
     btag_SF    = 1;
     PU_SF      = 1;
     total_SF   = 1;
+    scaleShapeAccDown = 1; scaleShapeAccUp = 1;
 
-    //Init systematics weights with event MC weight
-    TrigEffUp           = weight; TrigEffDown        = weight;
-    LepEff_elLooseUp    = weight; LepEff_elLooseDown = weight;
-    LepEff_muLooseUp    = weight; LepEff_muLooseDown = weight;
-    LepEff_elTightUp    = weight; LepEff_elTightDown = weight;
-    // LepEff_muTightUp = weight; LepEff_muTightDown = weight; //Use flat syst for muTight uncert.
-    LFcontUp            = weight; LFcontDown         = weight;
-    HFstats1Up          = weight; HFstats1Down       = weight;
-    HFstats2Up          = weight; HFstats2Down       = weight;
-    CFerr1Up            = weight; CFerr1Down         = weight;
-    CFerr2Up            = weight; CFerr2Down         = weight;
-    HFcontUp            = weight; HFcontDown         = weight;
-    LFstats1Up          = weight; LFstats1Down       = weight;
-    LFstats2Up          = weight; LFstats2Down       = weight;
-    PUUp                = weight; PUDown             = weight;
-    scaleShapeAccUp     = weight; scaleShapeAccDown  = weight;
-    pdfUp               = weight; pdfDown            = weight;
-    fwdJetUp            = weight; fwdJetDown         = weight;
+//-- First : apply SFs to nominal event weight
 
-    //Lepton SF (split)
+    //Lepton SF
     //--------------------------------------------
     for(int ilep=0; ilep<nlep; ilep++)
     {
         lepton_SF*= sf->Get_Lepton_SF(nlep, vLeptonFakeable[ilep].id, vLeptonFakeable[ilep].conept, vLeptonFakeable[ilep].eta, "");
-
-        if(abs(vLeptonFakeable[ilep].id) == 11) //Ele
-        {
-            LepEff_elLooseUp*= sf->Get_Lepton_SF(nlep, vLeptonFakeable[ilep].id, vLeptonFakeable[ilep].conept, vLeptonFakeable[ilep].eta, "looseUp");
-            LepEff_elLooseDown*= sf->Get_Lepton_SF(nlep, vLeptonFakeable[ilep].id, vLeptonFakeable[ilep].conept, vLeptonFakeable[ilep].eta, "looseDown");
-            LepEff_elTightUp*= sf->Get_Lepton_SF(nlep, vLeptonFakeable[ilep].id, vLeptonFakeable[ilep].conept, vLeptonFakeable[ilep].eta, "tightUp");
-            LepEff_elTightDown*= sf->Get_Lepton_SF(nlep, vLeptonFakeable[ilep].id, vLeptonFakeable[ilep].conept, vLeptonFakeable[ilep].eta, "tightDown");
-        }
-        else if(abs(vLeptonFakeable[ilep].id) == 13) //Mu
-        {
-            LepEff_muLooseUp*= sf->Get_Lepton_SF(nlep, vLeptonFakeable[ilep].id, vLeptonFakeable[ilep].conept, vLeptonFakeable[ilep].eta, "looseUp");
-            LepEff_muLooseDown*= sf->Get_Lepton_SF(nlep, vLeptonFakeable[ilep].id, vLeptonFakeable[ilep].conept, vLeptonFakeable[ilep].eta, "looseDown");
-
-            //Use flat syst for muTight uncert.
-            // LepEff_muTightUp*= sf->Get_Lepton_SF(nlep, vLeptonFakeable[ilep].id, vLeptonFakeable[ilep].conept, vLeptonFakeable[ilep].eta, "tightUp");
-            // LepEff_muTightDown*= sf->Get_Lepton_SF(nlep, vLeptonFakeable[ilep].id, vLeptonFakeable[ilep].conept, vLeptonFakeable[ilep].eta, "tightDown");
-        }
     }
-
-    // cout<<"lepton_SF = "<<lepton_SF<<endl;
-    // cout<<"Weight : "<<weight<<" --> "<<weight * lepton_SF<<endl;
-    //--------------------------------------------
-
 
     //Trigger SF
     //--------------------------------------------
     trigger_SF = sf->Get_Trigger_SF(nlep, vLeptonFakeable[0].id, vLeptonFakeable[0].conept, vLeptonFakeable[1].id, 0);
 
-    TrigEffUp*= sf->Get_Trigger_SF(nlep, vLeptonFakeable[0].id, vLeptonFakeable[0].conept, vLeptonFakeable[1].id, +1);
-    TrigEffDown*= sf->Get_Trigger_SF(nlep, vLeptonFakeable[0].id, vLeptonFakeable[0].conept, vLeptonFakeable[1].id, -1);
-
-    // cout<<"trigger_SF = "<<trigger_SF<<endl;
-    // cout<<"Weight : "<<weight<<" --> "<<weight * trigger_SF<<endl;
+    //Btag SF
     //--------------------------------------------
-
-
-   //Btag SF
-   //--------------------------------------------
-   //Using the BTagShapeCalibration method : https://twiki.cern.ch/twiki/bin/view/CMS/BTagShapeCalibration
-   //NB : assign flat scale factor of 1 (no correction) to charm jets
     for(int ijet=0; ijet<vJetLoose.size(); ijet++)
     {
         if(v_systTree[itree] == "JESUp")
@@ -2672,83 +2654,160 @@ void tHqMultileponAnalysis::Apply_ScaleFactors(int nlep, int itree)
         {
             btag_SF*= sf->Get_Btag_SF("central", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
         }
-
-        if(v_systTree[itree] == "") //Only compute syst weights for nominal TTree
-        {
-            LFcontUp*= sf->Get_Btag_SF("up_lf", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
-            HFstats1Up*= sf->Get_Btag_SF("up_hfstats1", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
-            HFstats2Up*= sf->Get_Btag_SF("up_hfstats2", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
-            CFerr1Up*= sf->Get_Btag_SF("up_cferr1", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
-            CFerr2Up*= sf->Get_Btag_SF("up_cferr2", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
-            HFcontUp*= sf->Get_Btag_SF("up_hf", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
-            LFstats1Up*= sf->Get_Btag_SF("up_lfstats1", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
-            LFstats2Up*= sf->Get_Btag_SF("up_lfstats2", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
-
-            LFcontDown*= sf->Get_Btag_SF("down_lf", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
-            HFstats1Down*= sf->Get_Btag_SF("down_hfstats1", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
-            HFstats2Down*= sf->Get_Btag_SF("down_hfstats2", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
-            CFerr1Down*= sf->Get_Btag_SF("down_cferr1", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
-            CFerr2Down*= sf->Get_Btag_SF("down_cferr2", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
-            HFcontDown*= sf->Get_Btag_SF("down_hf", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
-            LFstats1Down*= sf->Get_Btag_SF("down_lfstats1", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
-            LFstats2Down*= sf->Get_Btag_SF("down_lfstats2", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
-        }
     }
-
-    // cout<<"btag_SF = "<<btag_SF<<endl;
-    //--------------------------------------------
-
 
     //PU SF
     //--------------------------------------------
     //The 'ScaleFactors' class possesses an object of the 'Pileup' class, used to get PU SF
     PU_SF = sf->Get_Pileup_SF(nPU, "nom");
-    PUUp*= sf->Get_Pileup_SF(nPU, "up");
-    PUDown*= sf->Get_Pileup_SF(nPU, "down");
 
-    // cout<<"nPU = "<<nPU<<" => PU_SF = "<<PU_SF<<endl;
-    // cout<<"weight*PU_SF = "<<weight*PU_SF<<" / PUUp = "<<PUUp<<" / PUDown = "<<PUDown<<endl;
+//-- Second : apply total SF to nominal weight
+        if(apply_PU_SF) {total_SF = lepton_SF * trigger_SF * btag_SF * PU_SF;}
+        else {total_SF = lepton_SF * trigger_SF * btag_SF;}
+
+        weight*= total_SF; //Note that the "default" weight now contains the SF corrections
+
+//-- Third : init systematics with nominal weight, and compute systematics
+    //For nominal tree only
+    if(!itree)
+    {
+        TrigEffUp           = weight; TrigEffDown        = weight;
+        LepEff_elLooseUp    = weight; LepEff_elLooseDown = weight;
+        LepEff_muLooseUp    = weight; LepEff_muLooseDown = weight;
+        LepEff_elTightUp    = weight; LepEff_elTightDown = weight;
+        // LepEff_muTightUp = weight; LepEff_muTightDown = weight; //Use flat syst for muTight uncert.
+        LFcontUp            = weight; LFcontDown         = weight;
+        HFstats1Up          = weight; HFstats1Down       = weight;
+        HFstats2Up          = weight; HFstats2Down       = weight;
+        CFerr1Up            = weight; CFerr1Down         = weight;
+        CFerr2Up            = weight; CFerr2Down         = weight;
+        HFcontUp            = weight; HFcontDown         = weight;
+        LFstats1Up          = weight; LFstats1Down       = weight;
+        LFstats2Up          = weight; LFstats2Down       = weight;
+        PUUp                = weight; PUDown             = weight;
+        scaleShapeAccUp     = weight; scaleShapeAccDown  = weight;
+        pdfUp               = weight; pdfDown            = weight;
+        fwdJetUp            = weight; fwdJetDown         = weight;
+
+        //Lepton eff syst
+        //Multiply weights by SF for each lepton, then divide by nominal SF at the end
+        for(int ilep=0; ilep<nlep; ilep++)
+        {
+            if(abs(vLeptonFakeable[ilep].id) == 11) //Ele
+            {
+                LepEff_elLooseUp*= sf->Get_Lepton_SF(nlep, vLeptonFakeable[ilep].id, vLeptonFakeable[ilep].conept, vLeptonFakeable[ilep].eta, "looseUp");
+                LepEff_elLooseDown*= sf->Get_Lepton_SF(nlep, vLeptonFakeable[ilep].id, vLeptonFakeable[ilep].conept, vLeptonFakeable[ilep].eta, "looseDown");
+                LepEff_elTightUp*= sf->Get_Lepton_SF(nlep, vLeptonFakeable[ilep].id, vLeptonFakeable[ilep].conept, vLeptonFakeable[ilep].eta, "tightUp");
+                LepEff_elTightDown*= sf->Get_Lepton_SF(nlep, vLeptonFakeable[ilep].id, vLeptonFakeable[ilep].conept, vLeptonFakeable[ilep].eta, "tightDown");
+                LepEff_muLooseUp*= sf->Get_Lepton_SF(nlep, vLeptonFakeable[ilep].id, vLeptonFakeable[ilep].conept, vLeptonFakeable[ilep].eta, "");
+                LepEff_muLooseDown*= sf->Get_Lepton_SF(nlep, vLeptonFakeable[ilep].id, vLeptonFakeable[ilep].conept, vLeptonFakeable[ilep].eta, "");
+            }
+            else if(abs(vLeptonFakeable[ilep].id) == 13) //Mu
+            {
+                LepEff_elLooseUp*= sf->Get_Lepton_SF(nlep, vLeptonFakeable[ilep].id, vLeptonFakeable[ilep].conept, vLeptonFakeable[ilep].eta, "");
+                LepEff_elLooseDown*= sf->Get_Lepton_SF(nlep, vLeptonFakeable[ilep].id, vLeptonFakeable[ilep].conept, vLeptonFakeable[ilep].eta, "");
+                LepEff_elTightUp*= sf->Get_Lepton_SF(nlep, vLeptonFakeable[ilep].id, vLeptonFakeable[ilep].conept, vLeptonFakeable[ilep].eta, "");
+                LepEff_elTightDown*= sf->Get_Lepton_SF(nlep, vLeptonFakeable[ilep].id, vLeptonFakeable[ilep].conept, vLeptonFakeable[ilep].eta, "");
+                LepEff_muLooseUp*= sf->Get_Lepton_SF(nlep, vLeptonFakeable[ilep].id, vLeptonFakeable[ilep].conept, vLeptonFakeable[ilep].eta, "looseUp");
+                LepEff_muLooseDown*= sf->Get_Lepton_SF(nlep, vLeptonFakeable[ilep].id, vLeptonFakeable[ilep].conept, vLeptonFakeable[ilep].eta, "looseDown");
+
+                //Use flat syst for muTight uncert.
+                // LepEff_muTightUp*= sf->Get_Lepton_SF(nlep, vLeptonFakeable[ilep].id, vLeptonFakeable[ilep].conept, vLeptonFakeable[ilep].eta, "tightUp");
+                // LepEff_muTightDown*= sf->Get_Lepton_SF(nlep, vLeptonFakeable[ilep].id, vLeptonFakeable[ilep].conept, vLeptonFakeable[ilep].eta, "tightDown");
+            }
+        }
+
+        // cout<<"lepton_SF = "<<lepton_SF<<endl;
+        // cout<<"Weight : "<<weight<<" --> "<<weight * lepton_SF<<endl;
+        //--------------------------------------------
+
+        //Trigger eff syst
+        TrigEffUp*= sf->Get_Trigger_SF(nlep, vLeptonFakeable[0].id, vLeptonFakeable[0].conept, vLeptonFakeable[1].id, +1);
+        TrigEffDown*= sf->Get_Trigger_SF(nlep, vLeptonFakeable[0].id, vLeptonFakeable[0].conept, vLeptonFakeable[1].id, -1);
+
+        // cout<<"trigger_SF = "<<trigger_SF<<endl;
+        // cout<<"Weight : "<<weight<<" --> "<<weight * trigger_SF<<endl;
+        //--------------------------------------------
+
+       //Btag SF
+       //--------------------------------------------
+       //Multiply weights by SF for each lepton, then divide by nominal SF at the end
+       //Using the BTagShapeCalibration method : https://twiki.cern.ch/twiki/bin/view/CMS/BTagShapeCalibration
+       //NB : assign flat scale factor of 1 (no correction) to charm jets
+        for(int ijet=0; ijet<vJetLoose.size(); ijet++)
+        {
+            if(v_systTree[itree] == "") //Only compute syst weights for nominal TTree
+            {
+                LFcontUp*= sf->Get_Btag_SF("up_lf", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+                HFstats1Up*= sf->Get_Btag_SF("up_hfstats1", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+                HFstats2Up*= sf->Get_Btag_SF("up_hfstats2", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+                CFerr1Up*= sf->Get_Btag_SF("up_cferr1", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+                CFerr2Up*= sf->Get_Btag_SF("up_cferr2", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+                HFcontUp*= sf->Get_Btag_SF("up_hf", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+                LFstats1Up*= sf->Get_Btag_SF("up_lfstats1", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+                LFstats2Up*= sf->Get_Btag_SF("up_lfstats2", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+
+                LFcontDown*= sf->Get_Btag_SF("down_lf", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+                HFstats1Down*= sf->Get_Btag_SF("down_hfstats1", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+                HFstats2Down*= sf->Get_Btag_SF("down_hfstats2", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+                CFerr1Down*= sf->Get_Btag_SF("down_cferr1", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+                CFerr2Down*= sf->Get_Btag_SF("down_cferr2", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+                HFcontDown*= sf->Get_Btag_SF("down_hf", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+                LFstats1Down*= sf->Get_Btag_SF("down_lfstats1", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+                LFstats2Down*= sf->Get_Btag_SF("down_lfstats2", abs(vJetLoose.at(ijet).jet_hadronFlavour), vJetLoose.at(ijet).pt, fabs(vJetLoose.at(ijet).eta), vJetLoose.at(ijet).DeepCSVbtag);
+            }
+        }
+
+        //PU syst
+        //--------------------------------------------
+        //The 'ScaleFactors' class possesses an object of the 'Pileup' class, used to get PU SF
+        PU_SF = sf->Get_Pileup_SF(nPU, "nom");
+        PUUp*= sf->Get_Pileup_SF(nPU, "up");
+        PUDown*= sf->Get_Pileup_SF(nPU, "down");
+
+        // cout<<"nPU = "<<nPU<<" => PU_SF = "<<PU_SF<<endl;
+        // cout<<"weight*PU_SF = "<<weight*PU_SF<<" / PUUp = "<<PUUp<<" / PUDown = "<<PUDown<<endl;
+        //--------------------------------------------
+
+    //=== Other systematics weights
+
+        //Scale
+        //--------------------------------------------
+        Compute_Weight_ScaleSyst();
+
+        //Fwd jet SF (from Pallabi : https://github.com/pallabidas/cmgtools-lite/blob/94X_dev_tHq_options/TTHAnalysis/python/plotter/tHq-multilepton/functionsTHQ.cc)
+        //NB : down variation is mirrored shape, do it in analysis code
+        //--------------------------------------------
+        fwdJetUp*= fwdjet_eventWeight_2017_option3_modified(FwdJetEta); //SF depends on eta of most
+
     //--------------------------------------------
 
-//=== Other systematics weights
+    //-- Fourth : divide lepton/trigger/btag/PU systematics by central SF
+        TrigEffUp/= trigger_SF; TrigEffDown/= trigger_SF;
+        LepEff_elLooseUp/= lepton_SF; LepEff_elLooseDown/= lepton_SF;
+        LepEff_muLooseUp/= lepton_SF; LepEff_muLooseDown/= lepton_SF;
+        LepEff_elTightUp/= lepton_SF; LepEff_elTightDown/= lepton_SF;
+        LFcontUp/= btag_SF; LFcontDown/= btag_SF;
+        HFstats1Up/= btag_SF; HFstats1Down/= btag_SF;
+        HFstats2Up/= btag_SF; HFstats2Down/= btag_SF;
+        CFerr1Up/= btag_SF; CFerr1Down/= btag_SF;
+        CFerr2Up/= btag_SF; CFerr2Down/= btag_SF;
+        HFcontUp/= btag_SF; HFcontDown/= btag_SF;
+        LFstats1Up/= btag_SF; LFstats1Down/= btag_SF;
+        LFstats2Up/= btag_SF; LFstats2Down/= btag_SF;
+        PUUp/= PU_SF; PUDown/= PU_SF;
 
-    //Scale
-    //--------------------------------------------
-    Compute_Weight_ScaleSyst();
-
-    //Fwd jet SF (from Pallabi : https://github.com/pallabidas/cmgtools-lite/blob/94X_dev_tHq_options/TTHAnalysis/python/plotter/tHq-multilepton/functionsTHQ.cc)
-    //NB : down variation is mirrored shape, do it in analysis code
-    //--------------------------------------------
-    fwdJetUp*= fwdjet_eventWeight_2017_option3_modified(FwdJetEta); //SF depends on eta of most
-
-//--------------------------------------------
-//--------------------------------------------
-//Apply total SF to all weights (nominal + systematics)
-    if(apply_PU_SF) {total_SF = lepton_SF * trigger_SF * btag_SF * PU_SF;}
-    else {total_SF = lepton_SF * trigger_SF * btag_SF;}
-
-    weight*= total_SF; //Note that the "default" weight now contains the SF corrections
-
-    //Need to also multiply syst weights with total SF, so they are consistent with nominal weight
-    //But e.g. need to divide triggerUp by trigger_SF, since we want to multiply it with upper variation, not nominal
-    TrigEffUp*= total_SF/trigger_SF; TrigEffDown*= total_SF/trigger_SF;
-    // EleEffUp*= total_SF/lepton_SF; EleEffDown*= total_SF/lepton_SF;
-    // MuEffUp*= total_SF/lepton_SF; MuEffDown*= total_SF/lepton_SF;
-    LepEff_elLooseUp*= total_SF/lepton_SF; LepEff_elLooseDown*= total_SF/lepton_SF;
-    LepEff_muLooseUp*= total_SF/lepton_SF; LepEff_muLooseDown*= total_SF/lepton_SF;
-    LepEff_elTightUp*= total_SF/lepton_SF; LepEff_elTightDown*= total_SF/lepton_SF;
-    PUUp*= total_SF/PU_SF; PUDown*= total_SF/PU_SF;
-    LFcontUp*= total_SF/btag_SF; LFcontDown*= total_SF/btag_SF;
-    HFstats1Up*= total_SF/btag_SF; HFstats1Down*= total_SF/btag_SF;
-    HFstats2Up*= total_SF/btag_SF; HFstats2Down*= total_SF/btag_SF;
-    CFerr1Up*= total_SF/btag_SF; CFerr1Down*= total_SF/btag_SF;
-    CFerr2Up*= total_SF/btag_SF; CFerr2Down*= total_SF/btag_SF;
-    HFcontUp*= total_SF/btag_SF; HFcontDown*= total_SF/btag_SF;
-    LFstats1Up*= total_SF/btag_SF; LFstats1Down*= total_SF/btag_SF;
-    LFstats2Up*= total_SF/btag_SF; LFstats2Down*= total_SF/btag_SF;
-    scaleShapeAccUp*= total_SF; scaleShapeAccDown*= total_SF;
-    pdfUp*= total_SF; pdfDown*= total_SF;
-    fwdJetUp*= total_SF; fwdJetDown*= total_SF;
+        //Debug
+        // cout<<endl<<"AFTER"<<endl;
+        // cout<<"weight = "<<weight<<endl;
+        // cout<<"lepton_SF = "<<lepton_SF<<endl;
+        // cout<<"- LepEff_elLooseUp = "<<LepEff_elLooseUp<<endl;
+        // cout<<"- LepEff_elLooseDown = "<<LepEff_elLooseDown<<endl;
+        // cout<<"- LepEff_elTightUp = "<<LepEff_elTightUp<<endl;
+        // cout<<"- LepEff_elTightDown = "<<LepEff_elTightDown<<endl;
+        // cout<<"- LepEff_muLooseUp = "<<LepEff_muLooseUp<<endl;
+        // cout<<"- LepEff_muLooseDown = "<<LepEff_muLooseDown<<endl;
+    } //Syst : nominal tree only
 
     return;
 }
@@ -2860,28 +2919,27 @@ void tHqMultileponAnalysis::fillOutputTree(int itree)
 
 
     //Define jet category
-    //2lss
-    if (is_tHq_2lSS && ib1!=-1 && ib2!=-1 && vJetLoose.size()-2>=4) catJets = kCat_2lss_2b_4j;
-    else if (is_tHq_2lSS && ib1!=-1 && ib2==-1 && vJetLoose.size()-1>=4) catJets = kCat_2lss_1b_4j;
-    else if (is_tHq_2lSS && ib1!=-1 && ib2!=-1 && vJetLoose.size()-2==3) catJets = kCat_2lss_2b_3j;
-    else if (is_tHq_2lSS && ib1!=-1 && ib2==-1 && vJetLoose.size()-1==3) catJets = kCat_2lss_1b_3j;
-    else if (is_tHq_2lSS && ib1!=-1 && ib2!=-1 && vJetLoose.size()-2==2) catJets = kCat_2lss_2b_2j;
-    else if (is_tHq_2lSS && ib1!=-1 && ib2!=-1 && vJetLoose.size()-2==1) catJets = kCat_2lss_2b_1j;
-    else if (is_tHq_2lSS && ib1!=-1 && ib2==-1 && vJetLoose.size()-1==2) catJets = kCat_2lss_1b_2j;
-    else if (is_tHq_2lSS && ib1!=-1 && ib2==-1 && vJetLoose.size()-1==1) catJets = kCat_2lss_1b_1j;
+    //3l
+    if (is_3l && ib1!=-1 && ib2!=-1 && vJetLoose.size()-2>=2) catJets = kCat_3l_2b_2j;
+    else if (is_3l && ib1!=-1 && ib2==-1 && vJetLoose.size()-1>=2) catJets = kCat_3l_1b_2j;
+    else if (is_3l && ib1!=-1 && ib2!=-1 && vJetLoose.size()-2==1) catJets = kCat_3l_2b_1j;
+    else if (is_3l && ib1!=-1 && ib2==-1 && vJetLoose.size()-1==1) catJets = kCat_3l_1b_1j;
+    else if (is_3l && ib1!=-1 && ib2!=-1 && vJetLoose.size()-2==0) catJets = kCat_3l_2b_0j;
+    else if (is_3l && ib1!=-1 && ib2==-1 && vJetLoose.size()-1==0) catJets = kCat_3l_1b_0j;
+    else if (is_3l && ib1==-1 && ib2==-1 && vJetLoose.size()==1) catJets = kCat_3l_0b_1j;
+    else if (is_3l && ib1==-1 && ib2==-1 && vJetLoose.size()==0) catJets = kCat_3l_0b_0j;
     //4l
     // else if (is4l && ib1!=-1 && ib2!=-1) catJets = kCat_4l_2b;
     // else if (is4l && ib1!=-1 && ib2==-1) catJets = kCat_4l_1b;
-    //3l
-    else if (is_tHq_3l && ib1!=-1 && ib2!=-1 && vJetLoose.size()-2>=2) catJets = kCat_3l_2b_2j;
-    else if (is_tHq_3l && ib1!=-1 && ib2==-1 && vJetLoose.size()-1>=2) catJets = kCat_3l_1b_2j;
-    else if (is_tHq_3l && ib1!=-1 && ib2!=-1 && vJetLoose.size()-2==1) catJets = kCat_3l_2b_1j;
-    else if (is_tHq_3l && ib1!=-1 && ib2==-1 && vJetLoose.size()-1==1) catJets = kCat_3l_1b_1j;
-    else if (is_tHq_3l && ib1!=-1 && ib2!=-1 && vJetLoose.size()-2==0) catJets = kCat_3l_2b_0j;
-    else if (is_tHq_3l && ib1!=-1 && ib2==-1 && vJetLoose.size()-1==0) catJets = kCat_3l_1b_0j;
-    else if (is_tHq_3l && ib1==-1 && ib2==-1 && vJetLoose.size()==1) catJets = kCat_3l_0b_1j;
-    else if (is_tHq_3l && ib1==-1 && ib2==-1 && vJetLoose.size()==0) catJets = kCat_3l_0b_0j;
-
+    //2lss
+    else if (is_2lSS && ib1!=-1 && ib2!=-1 && vJetLoose.size()-2>=4) catJets = kCat_2lss_2b_4j;
+    else if (is_2lSS && ib1!=-1 && ib2==-1 && vJetLoose.size()-1>=4) catJets = kCat_2lss_1b_4j;
+    else if (is_2lSS && ib1!=-1 && ib2!=-1 && vJetLoose.size()-2==3) catJets = kCat_2lss_2b_3j;
+    else if (is_2lSS && ib1!=-1 && ib2==-1 && vJetLoose.size()-1==3) catJets = kCat_2lss_1b_3j;
+    else if (is_2lSS && ib1!=-1 && ib2!=-1 && vJetLoose.size()-2==2) catJets = kCat_2lss_2b_2j;
+    else if (is_2lSS && ib1!=-1 && ib2!=-1 && vJetLoose.size()-2==1) catJets = kCat_2lss_2b_1j;
+    else if (is_2lSS && ib1!=-1 && ib2==-1 && vJetLoose.size()-1==2) catJets = kCat_2lss_1b_2j;
+    else if (is_2lSS && ib1!=-1 && ib2==-1 && vJetLoose.size()-1==1) catJets = kCat_2lss_1b_1j;
     else catJets = -1;
 
 
@@ -2907,7 +2965,7 @@ void tHqMultileponAnalysis::fillOutputTree(int itree)
     multilepton_Lepton2_P4 = vLeptonFakeable.at(1).p4;
     multilepton_Lepton2_Id = vLeptonFakeable.at(1).id;
 
-    if(is_tHq_3l) //If corresponds to a 3l event
+    if(is_3l) //If corresponds to a 3l event
     {
         multilepton_Lepton3_P4 = vLeptonFakeable.at(2).p4;
         multilepton_Lepton3_Id = vLeptonFakeable.at(2).id;
@@ -3114,7 +3172,7 @@ void tHqMultileponAnalysis::fillOutputTree(int itree)
 
 
     //--- Fill 2nd pairs (first one is closest to mW) -- needed for 2l only (more jets)
-    if(is_tHq_2lSS && ij1!=-1 && ij2!=-1)
+    if(is_2lSS && ij1!=-1 && ij2!=-1)
     {
         if (im1!=-1)
         {
@@ -3521,7 +3579,7 @@ void tHqMultileponAnalysis::Compute_Variables(TString region)
     mT_lep2 = sqrt( 2*vLeptonFakeable.at(1).conept * metpt * (1 - cos(vLeptonFakeable.at(1).phi - vEvent->at(0).metphi) ) );
 
     max_lep_eta = std::max( fabs(vLeptonFakeable.at(0).eta), fabs(vLeptonFakeable.at(1).eta) );
-    // if(is_tHq_3l) {max_lep_eta = std::max(std::max(fabs(vLeptonFakeable.at(0).eta), fabs(vLeptonFakeable.at(1).eta)), fabs(vLeptonFakeable.at(2).eta));} //CHANGED -- noticed that ttH only take 2 hardest leptons into account for max_lep_eta... don't know why yet
+    // if(is_3l) {max_lep_eta = std::max(std::max(fabs(vLeptonFakeable.at(0).eta), fabs(vLeptonFakeable.at(1).eta)), fabs(vLeptonFakeable.at(2).eta));} //CHANGED -- noticed that ttH only take 2 hardest leptons into account for max_lep_eta... don't know why yet
 
 
 
@@ -3854,11 +3912,16 @@ void tHqMultileponAnalysis::Compute_Variables(TString region)
     {
         signal_2lss_TT_MVA = mva_2lss_tt->EvaluateMVA("BDTG method");
         signal_2lss_TTV_MVA = mva_2lss_ttV->EvaluateMVA("BDTG method");
+        // cout<<"signal_2lss_TT_MVA = "<<signal_2lss_TT_MVA<<endl;
+        // cout<<"signal_2lss_TTV_MVA = "<<signal_2lss_TTV_MVA<<endl;
     }
     else if(region == "3l")
     {
         signal_3l_TT_MVA = mva_3l_tt->EvaluateMVA("BDTG method");
         signal_3l_TTV_MVA = mva_3l_ttV->EvaluateMVA("BDTG method");
+
+        // cout<<"signal_3l_TT_MVA = "<<signal_3l_TT_MVA<<endl;
+        // cout<<"signal_3l_TTV_MVA = "<<signal_3l_TTV_MVA<<endl;
     }
 
 
@@ -3977,6 +4040,12 @@ void tHqMultileponAnalysis::initializeOutputTree(int itree)
     v_tOutput[itree]->Branch("mc_weight",&mc_weight,"mc_weight/F"); //obsolete
     v_tOutput[itree]->Branch("mc_weight_originalValue",&mc_weight_originalValue,"mc_weight_originalValue/F");
 
+    if(!_isdata && (_sampleName.Contains("THQ_ctcvcp") || _sampleName.Contains("THW_ctcvcp")))
+    {
+        v_tOutput[itree]->Branch("SMcoupling_SF",&SMcoupling_SF,"SMcoupling_SF/F"); //Weight corresponding to SM coupling
+        v_tOutput[itree]->Branch("SMcoupling_weight",&SMcoupling_weight,"SMcoupling_weight/F"); //Weight corresponding to SM coupling
+        // v_tOutput[itree]->Branch("v_couplings_SF",&v_couplings_SF); //not used yet
+    }
 
     v_tOutput[itree]->Branch("total_SF",&total_SF,"total_SF/F");
     v_tOutput[itree]->Branch("lepton_SF",&lepton_SF,"lepton_SF/F");
@@ -3988,13 +4057,13 @@ void tHqMultileponAnalysis::initializeOutputTree(int itree)
 	//--- Categories & MVA
 
     //tHq 2017 categories (implemented in NTA)
-    v_tOutput[itree]->Branch("is_tHq_2lSS",&is_tHq_2lSS,"is_tHq_2lSS/B");
+    v_tOutput[itree]->Branch("is_2lSS",&is_2lSS,"is_2lSS/B");
 	v_tOutput[itree]->Branch("is_tHq_2lSS_SR",&is_tHq_2lSS_SR,"is_tHq_2lSS_SR/B");
 	v_tOutput[itree]->Branch("is_tHq_2lSS_Training",&is_tHq_2lSS_Training,"is_tHq_2lSS_Training/B");
     v_tOutput[itree]->Branch("is_tHq_2lSS_Fake",&is_tHq_2lSS_Fake,"is_tHq_2lSS_Fake/B");
     v_tOutput[itree]->Branch("is_tHq_2lSS_Flip",&is_tHq_2lSS_Flip,"is_tHq_2lSS_Flip/B");
     v_tOutput[itree]->Branch("is_tHq_2lSS_GammaConv",&is_tHq_2lSS_GammaConv,"is_tHq_2lSS_GammaConv/B");
-    v_tOutput[itree]->Branch("is_tHq_3l",&is_tHq_3l,"is_tHq_3l/B");
+    v_tOutput[itree]->Branch("is_3l",&is_3l,"is_3l/B");
     v_tOutput[itree]->Branch("is_tHq_3l_SR",&is_tHq_3l_SR,"is_tHq_3l_SR/B");
 
     v_tOutput[itree]->Branch("is_tHq_3l_SR_noMETLD",&is_tHq_3l_SR_noMETLD,"is_tHq_3l_SR_noMETLD/B"); //TESTING
@@ -4027,13 +4096,13 @@ void tHqMultileponAnalysis::initializeOutputTree(int itree)
 
 
     //ttH2017 predefined categories (implemented in NTP)
-    v_tOutput[itree]->Branch("is_ttH_2lSS",&is_ttH_2lSS,"is_ttH_2lSS/B");
+    v_tOutput[itree]->Branch("is_2lSS",&is_2lSS,"is_2lSS/B");
     v_tOutput[itree]->Branch("is_ttH_2lSS_Training",&is_ttH_2lSS_Training,"is_ttH_2lSS_Training/B");
     v_tOutput[itree]->Branch("is_ttH_2lSS_SR",&is_ttH_2lSS_SR,"is_ttH_2lSS_SR/B");
     v_tOutput[itree]->Branch("is_ttH_2lSS_Fake",&is_ttH_2lSS_Fake,"is_ttH_2lSS_Fake/B");
     v_tOutput[itree]->Branch("is_ttH_2lSS_Flip",&is_ttH_2lSS_Flip,"is_ttH_2lSS_Flip/B");
     v_tOutput[itree]->Branch("is_ttH_2lSS_GammaConv",&is_ttH_2lSS_GammaConv,"is_ttH_2lSS_GammaConv/B");
-    v_tOutput[itree]->Branch("is_ttH_3l",&is_ttH_3l,"is_ttH_3l/B");
+    v_tOutput[itree]->Branch("is_3l",&is_3l,"is_3l/B");
     v_tOutput[itree]->Branch("is_ttH_3l_Training",&is_ttH_3l_Training,"is_ttH_3l_Training/B");
     v_tOutput[itree]->Branch("is_ttH_3l_SR",&is_ttH_3l_SR,"is_ttH_3l_SR/B");
     v_tOutput[itree]->Branch("is_ttH_3l_Fake",&is_ttH_3l_Fake,"is_ttH_3l_Fake/B");
@@ -4226,12 +4295,6 @@ void tHqMultileponAnalysis::initializeOutputTree(int itree)
 
         if(!_isdata)
         {
-            if(_sampleName.Contains("THQ_ctcvcp") || _sampleName.Contains("THW_ctcvcp"))
-            {
-                v_tOutput[itree]->Branch("SMcoupling_SF",&SMcoupling_SF,"SMcoupling_SF/F"); //Weight corresponding to SM coupling
-                // v_tOutput[itree]->Branch("v_couplings_SF",&v_couplings_SF); //not used yet
-            }
-
             //Systematics weights
             v_tOutput[itree]->Branch("TrigEffUp",&TrigEffUp,"TrigEffUp/F");
             v_tOutput[itree]->Branch("TrigEffDown",&TrigEffDown,"TrigEffDown/F");
@@ -5048,12 +5111,12 @@ void tHqMultileponAnalysis::Read_Predefined_Categories()
 {
     //Can't convert directly boolean into Char_t
     //NB : using Char_t because booleans should not be used in vectors (later)
-    if(vEvent->at(0).is_2lSS) {is_tHq_2lSS                           = 1;}
+    if(vEvent->at(0).is_2lSS) {is_2lSS                           = 1;}
     if(vEvent->at(0).is_2lSS_Training) {is_tHq_2lSS_Training         = 1;}
     if(vEvent->at(0).is_2lSS_SR) {is_tHq_2lSS_SR                     = 1;}
     if(vEvent->at(0).is_2lSS_Fake) {is_tHq_2lSS_Fake                 = 1;}
     if(vEvent->at(0).is_2lSS_Flip) {is_tHq_2lSS_Flip                 = 1;}
-    if(vEvent->at(0).is_3l) {is_tHq_3l                               = 1;}
+    if(vEvent->at(0).is_3l) {is_3l                               = 1;}
     if(vEvent->at(0).is_3l_Training) {is_tHq_3l_Training             = 1;}
     if(vEvent->at(0).is_3l_SR) {is_tHq_3l_SR                         = 1;}
     if(vEvent->at(0).is_3l_Fake) {is_tHq_3l_Fake                     = 1;}
@@ -5085,12 +5148,12 @@ void tHqMultileponAnalysis::Read_Predefined_Categories()
  */
 void tHqMultileponAnalysis::InitPredefinedCategories()
 {
-    is_tHq_2lSS              = 0;
+    is_2lSS              = 0;
     is_tHq_2lSS_Training     = 0;
     is_tHq_2lSS_SR           = 0;
     is_tHq_2lSS_Fake         = 0;
     is_tHq_2lSS_Flip         = 0;
-    is_tHq_3l                = 0;
+    is_3l                = 0;
     is_tHq_3l_Training       = 0;
     is_tHq_3l_SR             = 0;
     is_tHq_3l_SR_noMETLD     = 0;
@@ -5227,7 +5290,7 @@ int tHqMultileponAnalysis::Check_If_Save_Event(bool do_tHq_analysis)
 void tHqMultileponAnalysis::Fill_Overlap_Histo()
 {
     vector<Char_t> v_tHq_cat(0);
-    // v_tHq_cat.push_back(is_tHq_2lSS);
+    // v_tHq_cat.push_back(is_2lSS);
     v_tHq_cat.push_back(is_tHq_2lSS_SR);
     // v_tHq_cat.push_back(is_tHq_2lSS_Training);
     // v_tHq_cat.push_back(is_tHq_2lSS_Fake);
@@ -5238,7 +5301,7 @@ void tHqMultileponAnalysis::Fill_Overlap_Histo()
     // v_tHq_cat.push_back(is_tHq_ttWctrl_Fake);
     // v_tHq_cat.push_back(is_tHq_ttWctrl_Flip);
     // v_tHq_cat.push_back(is_tHq_ttWctrl_GammaConv);
-    // v_tHq_cat.push_back(is_ttH_3l);
+    // v_tHq_cat.push_back(is_3l);
     v_tHq_cat.push_back(is_tHq_3l_SR);
     // v_tHq_cat.push_back(is_tHq_3l_Training);
     // v_tHq_cat.push_back(is_tHq_3l_Fake);
@@ -5250,7 +5313,7 @@ void tHqMultileponAnalysis::Fill_Overlap_Histo()
     // v_tHq_cat.push_back(is_tHq_WZctrl_Fake);
 
     vector<Char_t> v_ttH_cat(0);
-    // v_ttH_cat.push_back(is_ttH_2lSS);
+    // v_ttH_cat.push_back(is_2lSS);
     v_ttH_cat.push_back(is_ttH_2lSS_SR);
     // v_ttH_cat.push_back(is_ttH_2lSS_Training);
     // v_ttH_cat.push_back(is_ttH_2lSS_Fake);
@@ -5260,7 +5323,7 @@ void tHqMultileponAnalysis::Fill_Overlap_Histo()
     // v_ttH_cat.push_back(is_ttH_ttWctrl_Fake);
     // v_ttH_cat.push_back(is_ttH_ttWctrl_Flip);
     // v_ttH_cat.push_back(is_ttH_ttWctrl_GammaConv);
-    // v_ttH_cat.push_back(is_ttH_3l);
+    // v_ttH_cat.push_back(is_3l);
     v_ttH_cat.push_back(is_ttH_3l_SR);
     // v_ttH_cat.push_back(is_ttH_3l_Training);
     // v_ttH_cat.push_back(is_ttH_3l_Fake);

@@ -1,12 +1,14 @@
 # Makefile
 
 #CC = g++ -g -Wno-writable-strings -Wno-write-strings -fsanitize=address -lTMVA
-CC = g++ -g -Wno-writable-strings -Wno-write-strings -lTMVA
+CC = g++ -g -lTMVA
 
 # gsl -- needed for kinFit, resHTT
 GSLINCS = $(shell gsl-config --cflags)
 GSLLIBS = $(shell gsl-config --libs)
 
+BOOSTSYS       = $(shell scram tool tag boost BOOST_BASE)
+BOOSTINC       = -I$(BOOSTSYS)/include
 
 #NB : first, must compile NtupleProducer, to produce libNtuple.so !
 #Added '$(GSLLIBS) -lGenVector' for resHTT
@@ -21,14 +23,14 @@ ROOTLIBS                = $(shell $(ROOTCONF) --libs)
 ROOTGLIBS               = $(shell $(ROOTCONF) --glibs)
 ROOTCFLAGS              = $(shell $(ROOTCONF) --cflags)
 INCLUDES                = $(shell $(ROOTCONF) --incdir) $(ROOTCFLAGS)
-CINTINCLUDES            = $(shell $(ROOTCONF) --incdir)
+CINTINCLUDES            = $(shell $(ROOTCONF) --incdir) 
 LIBS                    = $(ROOTLIBS)
 ROOTFLAGS2 		= `root-config --glibs --cflags`
 
 
 LDLIBS  = $(ROOTLIBS) $(NTUPLELIB) $(KINFITLIB) 
 
-ADDINC = $(NTUPLEINC) $(KINFITINC) 
+ADDINC = $(NTUPLEINC) $(KINFITINC) $(BOOSTINC)
 
 SRC = src/tHqMultileponAnalysis.cxx \
  src/Analyzer.cxx \
@@ -36,7 +38,6 @@ SRC = src/tHqMultileponAnalysis.cxx \
  src/BTagCalibrationXStandalone.cxx \
  src/ScaleFactors.cxx \
  src/Pileup.cxx \
-
 
 INC = include/tHqMultileponAnalysis.h \
  include/Analyzer.h \
@@ -57,7 +58,6 @@ COMPUTE_SUMWEIGHT = test/Get_SumWeightEvents_FlatTrees.exe
 SAVE_SUMWEIGHT = test/Store_SumsOfWeights_inMergedNtuple.exe
 
 all:  	     		$(EXE) $(COMPUTE_SUMWEIGHT) $(SAVE_SUMWEIGHT)
-#@rm -f *.o
 
 $(EXE):     	 	$(OBJ) test/HTT_kinfit/HadTopKinFit.o $@
 

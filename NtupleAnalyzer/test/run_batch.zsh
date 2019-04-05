@@ -19,9 +19,10 @@ if [[ ${jName} == "" ]]; then
   exit 1
 fi
 
-#que="cms_local_mdm" #used for NTP
-#que="cms"
-que="cms_local_short" #reserved slots, fast, <1h jobs only. Try to split jobs so that can use this queue
+#que="cms_local_long" #180h
+#que="cms_local" #72h
+que="cms_local_mdm" #4h
+#que="cms_local_short" #reserved slots, fast, <1h jobs only, mostly for testing
 
 export HOME=$(pwd)
 
@@ -32,11 +33,14 @@ runName="toy_${jName}"
 logName="log_${jName}"
 
 rm -rf ${dout_f}/${runName}
-mkdir ${dout_f} #NEW
-mkdir ${dout_f}/${runName}
+#mkdir ${dout_f} #Changed -- done by job
+#mkdir ${dout_f}/${runName} #Changed -- done by job
 
 rm -rf ${logName}
 mkdir ${logName}
+
+#NEW : copy executable 'Analyzer' into dedicated logdir of jobs <-> can then modify the code without affecting the ongoing jobs
+cp ../Analyzer ${logName}
 
 nmax=-1
 
@@ -58,7 +62,7 @@ do
   sample=$(echo $line | sed 's%.txt%%g')
   dataset=$(echo $sample | sed 's%__ID..*%%g')
   if [[ ! -d ${runName}/${dataset} ]]; then
-    mkdir ${dout_f}/${runName}/${dataset}
+    #mkdir ${dout_f}/${runName}/${dataset} #CHANGED
   fi
   linexsec=$(grep -m 1 $dataset $fxsec) #grep -m 1 <-> only first occurence
   nowe=$(echo $linexsec | awk '{print $3}')

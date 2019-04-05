@@ -1,5 +1,4 @@
-#Need to keep this file in ./test, needed to move outputs of batch jobs to
-#correct location
+#Need to keep this file in ./test, needed to move outputs of batch jobs to correct location
 
 if [ "$1" == "" ]
 then
@@ -11,6 +10,8 @@ elif [ "$3" == "" ]
 then
 echo "Missing arg : version"
 fi
+
+echo ""
 
 #Copy file from scratch1 to grid (overwrite)
 gfal-mkdir srm://sbgse1.in2p3.fr:8446/dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleAnalyzer/$3

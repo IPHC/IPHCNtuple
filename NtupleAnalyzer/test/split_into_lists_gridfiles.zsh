@@ -13,9 +13,9 @@ liMC=($(/usr/bin/rfdir ${fpath} | egrep -v "$dataStr" | awk '{print $9}'))
 fpathDATAXRD=$(echo ${fpath} | sed "s%/dpm%root://sbgse1.in2p3.fr//dpm%g")
 fpathMCXRD=$(echo ${fpath} | sed "s%/dpm%root://sbgse1.in2p3.fr//dpm%g")
 
-#--- Files per job
-nFilesDATA=20
-nFilesMC=5
+#--- Files per job -- can fine-tune for each sample below
+nFilesDATA=50
+nFilesMC=20
 outDir="lists/"
 
 rm -rf ${outDir}
@@ -58,11 +58,17 @@ done
 # --- MC ---
 
 rm -f /tmp/tempMC.txt
+
+#-- Can fine-tune here the nof files per job, depending on the sample
 for line in $liMC
 do
   #TTbar_Single files are very large --> split further
-  if [[ $line == TTJets_SingleLeptFromT*_ext* ]]; then
-    nFilesMC_tmp=1
+  if [[ $line == *"ttHJetToNonbb"* || $line == *"TTJets_TuneCP5"* || $line == *"TTTT"* || $line == *"TTZToLLNuNu_M-10"*  || $line == *"TTJets_DiLept"* || $line == *"TTTo2"* || $line == *"TTWJetsToLNu"* || $line == *"tZq_ll_4f"* ]]; then
+    nFilesMC_tmp=5
+  elif [[ $line == *"DY"* ]]; then
+    nFilesMC_tmp=200
+  elif [[ $line == *"TTJets_SingleLeptFromT"* ]]; then
+    nFilesMC_tmp=40
   else 
     nFilesMC_tmp=$nFilesMC
   fi
@@ -100,3 +106,8 @@ do
   rm -f /tmp/tempMC.txt
 done
 
+### REMOVE MANUALLY SOME SAMPLES HERE (keep NtupleProducer files, but don't run NTAnalyzer on them bc not needed)
+rm ./lists/old*
+rm ./lists/THQ_4f_Hincl_13TeV_madgraph_pythia8__ID*
+rm ./lists/THW_5f_Hincl_13TeV_madgraph_pythia8*
+rm ./lists/ST_tW_*
