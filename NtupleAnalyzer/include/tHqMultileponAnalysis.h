@@ -60,6 +60,14 @@ class tHqMultileponAnalysis
 
     public:
 
+// ######## ##     ## ##    ##  ######  ######## ####  #######  ##    ##  ######
+// ##       ##     ## ###   ## ##    ##    ##     ##  ##     ## ###   ## ##    ##
+// ##       ##     ## ####  ## ##          ##     ##  ##     ## ####  ## ##
+// ######   ##     ## ## ## ## ##          ##     ##  ##     ## ## ## ##  ######
+// ##       ##     ## ##  #### ##          ##     ##  ##     ## ##  ####       ##
+// ##       ##     ## ##   ### ##    ##    ##     ##  ##     ## ##   ### ##    ##
+// ##        #######  ##    ##  ######     ##    ####  #######  ##    ##  ######
+
         // tHqMultileponAnalysis(); //Default constructor
         tHqMultileponAnalysis(TString inputFileName, TString sampleName, TString treeName, TString outputFileName, bool isdata, bool doSystCombine, float xsec, float lumi, int nowe, int nmax); //Constructor
         ~tHqMultileponAnalysis(); //Destructor
@@ -127,6 +135,15 @@ class tHqMultileponAnalysis
 		//TESTING
 		void Modify_DefaultCategories_Orthogonal(TString);
 
+
+// ##     ## ######## ##     ## ########  ######## ########   ######
+// ###   ### ##       ###   ### ##     ## ##       ##     ## ##    ##
+// #### #### ##       #### #### ##     ## ##       ##     ## ##
+// ## ### ## ######   ## ### ## ########  ######   ########   ######
+// ##     ## ##       ##     ## ##     ## ##       ##   ##         ##
+// ##     ## ##       ##     ## ##     ## ##       ##    ##  ##    ##
+// ##     ## ######## ##     ## ########  ######## ##     ##  ######
+
 		ScaleFactors* sf;
 
         TChain *fChain;   //!pointer to the analyzed TTree or TChain
@@ -187,8 +204,15 @@ class tHqMultileponAnalysis
 		float nSFOS;
 		double mllll;
 
-        //NB : all categories (used for cuts) should start with "is_" <-> automated in analysis code
-		//tHq2017 categories : based on ttH2017, defined at NTA level
+//  ####    ##   ##### ######  ####
+// #    #  #  #    #   #      #    #
+// #      #    #   #   #####  #
+// #      ######   #   #      #  ###
+// #    # #    #   #   #      #    #
+//  ####  #    #   #   ######  ####
+
+		//tHq2017 categories (mix of ttH2017 and tHq2016 cuts -- to be used for tHq0217 standalone)
+        //NB : CRs are taken exactly as those of ttH ! Only SRs are different
 		Char_t is_2lSS;
 		Char_t is_tHq_2lSS_SR;
 		Char_t is_tHq_2lSS_Training;
@@ -197,7 +221,6 @@ class tHqMultileponAnalysis
         Char_t is_tHq_2lSS_GammaConv;
         Char_t is_3l;
 		Char_t is_tHq_3l_SR;
-		Char_t is_tHq_3l_SR_noMETLD; //FIXME -- testing
 		Char_t is_tHq_3l_Training;
 		Char_t is_tHq_3l_Fake;
 		Char_t is_tHq_3l_GammaConv;
@@ -224,6 +247,16 @@ class tHqMultileponAnalysis
 		Char_t is_tHqFCNC_3l_SR;
 		Char_t is_tHqFCNC_3l_Fake;
 		Char_t is_tHqFCNC_3l_GammaConv;
+
+        //tHq 2017 bis : follows exactly ttH2017 cuts, except jet cuts and metLD => To sync with ttH2017, compare, etc.
+        Char_t is_tHqbis_2lSS_SR;
+		Char_t is_tHqbis_2lSS_Fake;
+        Char_t is_tHqbis_2lSS_Flip;
+        Char_t is_tHqbis_2lSS_GammaConv;
+		Char_t is_tHqbis_3l_SR;
+		Char_t is_tHqbis_3l_Fake;
+		Char_t is_tHqbis_3l_GammaConv;
+
 
 		//-- ttH 2017 categories
 		Char_t is_ttH_2lSS_Training;
@@ -287,6 +320,12 @@ class tHqMultileponAnalysis
 		Char_t is_ttH_3l_SR_ttHfirst;
 
 
+//  ####  ##### #    # ###### #####
+// #    #   #   #    # #      #    #
+// #    #   #   ###### #####  #    #
+// #    #   #   #    # #      #####
+// #    #   #   #    # #      #   #
+//  ####    #   #    # ###### #    #
 
         Char_t is_trigger_1lep;
         Char_t is_trigger_2lep;
@@ -382,17 +421,14 @@ class tHqMultileponAnalysis
 		Float_t dPhiLepLep_hardestOS; //dPhi between the 2 leptons in 2lSS, and b/w the 2 leptons forming hardest OS pair in 3l
 		Float_t jet1_pt, jet2_pt, jet3_pt, jet4_pt; //pt of the 4 leading jets -- INCLUDE SOFT JETS WITH PT > 15
 
-/*
-//For Jeremy - FCNC : try inputs variables :
-* le nombre de jets "soft", ayant un pT en entre 15 et 25 GeV,
-* le deltaR de la pair de lepton-bjet les plus proches,
-* le deltaR de la pair de lepton-ljet les plus proches,
-* la somme de la charge de leptons selectionnés,
-* dans le cas 3l, asymmetry de charge q*|eta_L| pour le candidat lepton venant du top  (celui ayant le deltaR avec le jet b le plus petit et qui ne donne pas de paire de leptons de même signe),
-* le pT du lepton le plus soft,
-* le pT du lepton le plus soft divisé par le pT du jet le plus proche,
-* dans le 2LSS; Delta Phi entre les leptons, dans 3L, Delta Phi entre les deux leptons de chargé opposé avec le pT le plus élevé
- */
+
+// #    # ###### #  ####  #    # #####
+// #    # #      # #    # #    #   #
+// #    # #####  # #      ######   #
+// # ## # #      # #  ### #    #   #
+// ##  ## #      # #    # #    #   #
+// #    # ###### #  ####  #    #   #
+
         //Event weights
         Float_t mc_weight; //set to +/-1 (old)
         Float_t weight_old; //=> weight_old = +-1 * xsec * lumi / swe_old
@@ -407,6 +443,13 @@ class tHqMultileponAnalysis
 
         Float_t weightflip; //QFlip weight
 		Float_t chargeLeadingLep; //To decide if QFlip +- event goes into "positive" or "negative" subcategory
+
+//  ####  #   #  ####  #####
+// #       # #  #        #
+//  ####    #    ####    #
+//      #   #        #   #
+// #    #   #   #    #   #
+//  ####    #    ####    #
 
 		//Scale factors
         Float_t lepton_SF;
@@ -441,7 +484,12 @@ class tHqMultileponAnalysis
 		Float_t pdfUp, pdfDown;
 		Float_t fwdJetUp, fwdJetDown;
 
-
+// #    # ###### #    #
+// ##  ## #      ##  ##
+// # ## # #####  # ## #
+// #    # #      #    #
+// #    # #      #    #
+// #    # ###### #    #
 
 		//--- Lots of variables, used for MEM computation
         Int_t mc_ttZhypAllowed;
@@ -521,8 +569,8 @@ class tHqMultileponAnalysis
         bool _isdata;
         float _xsec;
         float _lumi;
-        float   _nowe; // number of weighted events
-        float   _nmax; // max number of events to process
+        float _nowe; // number of weighted events
+        float _nmax; // max number of events to process
 
         //SYNCHRO
 		std::ofstream outfile_2lSS_SR;

@@ -8,13 +8,14 @@ export LD_LIBRARY_PATH=${cdir}:${NtupleDir}:${NtupleDir}/obj:$LD_LIBRARY_PATH
 --file input.txt \
 --tree Nt \
 --outfile ./output_tHq_MC \
---nmax 1000  \
+--nmax -1  \
 --isdata 0 \
 --doSystCombine 0 \
 --lumi 41500 \
---nowe 9865010 \
+--nowe 1 \
 --xsec 0.7927 \
 --dataset THQ_ctcvcp_4f_Hincl_13TeV_madgraph_pythia8 \
+#--dataset ttHJetToNonbb_M125_TuneCP5_13TeV_amcatnloFXFX_madspin_pythia8 \
 
 #====================================
 #====================================

@@ -1,7 +1,8 @@
 #!/bin/env zsh
 export x509_USER_PROXY=/home-pbs/ntonon/proxy/x509up_u8066
 
-version="tHq2017"
+#version="tHq2017"
+version="test5"
 
 fpath="/dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/"$version"/"
 

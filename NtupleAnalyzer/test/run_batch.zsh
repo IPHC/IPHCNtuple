@@ -1,8 +1,8 @@
 #!/bin/env zsh
 
-#version="njet3" #output subdir
+version="test" #output subdir
 #version="ttH2017" #output subdir
-version="tHq2017" #output subdir
+#version="tHq2017" #output subdir
 
 echo ""
 #Don't forget to update the lumi and the xsec table
@@ -21,8 +21,8 @@ fi
 
 #que="cms_local_long" #180h
 #que="cms_local" #72h
-que="cms_local_mdm" #4h
-#que="cms_local_short" #reserved slots, fast, <1h jobs only, mostly for testing
+que="cms_local_mdm" #4h #use this one
+#que="cms_local_short" #few reserved slots, fast, <1h jobs only. TESTING ONLY
 
 export HOME=$(pwd)
 

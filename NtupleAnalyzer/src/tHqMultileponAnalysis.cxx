@@ -1,11 +1,10 @@
 // ThreeLeptonSelection_THQ3l
-// tHqMultileponAnalysis::fillOutputTree()
+// fillOutputTree()
 // initializeOutputTree()
+// Compute_Variables()
 
-//----------  FIXMES  -------------------------
-// - pT 25/15/15 in 3l ?
-// - noisy jets treatment ?
-// - 4l SR, ZZ CR : differences with NTP code ?
+//----------  NOTES  -------------------------
+// - Try to speed up Compute_Variables()
 //--------------------------------------------
 
 #include "../include/tHqMultileponAnalysis.h"
@@ -45,23 +44,31 @@ bool DEBUG = false;
 //--------------------------------------------
 bool do_tHq_analysis = true; // false <-> will save events passing >=1 ttH cat ; true <-> idem with tHq cat. Jet vectors will also be different, and thus other variables
 
+//-- Add JES/JER TTrees
 bool add_JES_TTrees = false;
 bool add_JER_TTrees = false; //adds 1 TTree with JER smearing applied (buggy?), and 2 JER variations TTrees
-bool apply_JER_smearing = true; //true <-> smear pt of jets with JER correcting factor //should still crosscheck
 
-bool make_ntuples_for_overlap_studies = false; // true <-> adds histograms containing overlaps between categs
-bool add_orthogocal_cat = false; //true <-> adds new categs for overlap/ortho studies
+//-- Baseline categ. studies
+bool make_ntuples_for_overlap_studies = true; // true <-> adds histograms containing overlaps between categs
+bool add_orthogocal_cat = true; //true <-> adds new categs for overlap/ortho studies
 
-bool write_branches_forMEM = true; //true <-> write inputs necessary for MEM code
+//-- All input variables (slower)
+bool write_allInputVars = false; //true <-> write full list of input variables ; slower, not neede for tests
 
-bool write_ScaleAndPDF_Variations = true; //true <-> write all scale variations (+ sumWeights) separately, for studies //slows down processing
+//-- MEM variables
+bool write_branches_forMEM = false; //true <-> write inputs necessary for MEM code
 
-bool apply_PU_SF = false; //Still want to cross-check it before applying by default
+//-- Scale/PDF variables
+bool write_ScaleAndPDF_Variations = false; //true <-> write all scale variations (+ sumWeights) separately, for studies //slows down processing
 
+//-- Apply PU
+bool apply_PU_SF = true; //Still want to cross-check it before applying by default
+
+//-- Dump event list
 bool dump_synchro_info = false;
 
 // ===TESTING ORTHOG CAT NTUPLES=== !!!
-TString scheme = ""; //...
+TString scheme = "njet4"; //...
 
 //--------------------------------------------
 
@@ -202,11 +209,11 @@ tHqMultileponAnalysis::tHqMultileponAnalysis(TString inputFileName, TString samp
         if(add_JES_TTrees) {v_systTree.push_back("JESUp"); v_systTree.push_back("JESDown");}
         if(add_JER_TTrees)
         {
-            if(!apply_JER_smearing)
-            {
-                cout<<BOLD(FRED("--- You are not applying the JER smearing, but want to create a TTree corresponding to JER up/down variations. Are you sure ?"))<<endl;
-                v_systTree.push_back("JER"); //For now : don't apply JER in default tree, but only in a separate TTree for studies
-            }
+            // if(!apply_JER_smearing)
+            // {
+            //     cout<<BOLD(FRED("--- You are not applying the JER smearing, but want to create a TTree corresponding to JER up/down variations. Are you sure ?"))<<endl;
+            //     v_systTree.push_back("JER"); //For now : don't apply JER in default tree, but only in a separate TTree for studies
+            // }
 
             v_systTree.push_back("JERUp"); v_systTree.push_back("JERDown");
         }
@@ -378,7 +385,6 @@ void tHqMultileponAnalysis::InitCustomCategories()
     is_tHq_2lSS_Flip         = 0;
     is_tHq_2lSS_GammaConv    = 0;
     is_tHq_3l_SR             = 0;
-    is_tHq_3l_SR_noMETLD = 0;
     is_tHq_3l_Training       = 0;
     is_tHq_3l_Fake           = 0;
     is_tHq_3l_GammaConv       = 0;
@@ -405,6 +411,15 @@ void tHqMultileponAnalysis::InitCustomCategories()
     is_tHqFCNC_3l_SR          = 0;
     is_tHqFCNC_3l_Fake        = 0;
     is_tHqFCNC_3l_GammaConv   = 0;
+
+    //tHq 2017 bis : follows exactly ttH cuts, except jets and metLD (for sync, comparison, ...)
+    is_tHqbis_2lSS_SR         = 0;
+    is_tHqbis_2lSS_Fake       = 0;
+    is_tHqbis_2lSS_Flip       = 0;
+    is_tHqbis_2lSS_GammaConv  = 0;
+    is_tHqbis_3l_SR           = 0;
+    is_tHqbis_3l_Fake         = 0;
+    is_tHqbis_3l_GammaConv    = 0;
 
     //ttH2017 categories
     is_ttH_2lSS_Training     = 0;
@@ -830,7 +845,7 @@ void tHqMultileponAnalysis::Get_Mapping_LHE_PDF()
             minIdx_PDFset2 = ipdf = ipdf; maxIdx_PDFset2 = ipdf + nreplicas_PDFset2;
             cout<<"PDF set 2 found ! Min. index = "<<minIdx_PDFset2<<" / Max. index = "<<maxIdx_PDFset2<<endl;
         }
-        //Alternative numbering for PDF set 2 (depends on flavour scheme)
+        //Alternative numbering for PDF set 2 (depends on 4fs/5fs)
         else if(minIdx_PDFset2 == -1 && v_PDF_ids[ipdf] == LHAPDFid_PDFset2_bis && v_PDF_ids[ipdf+1] == LHAPDFid_PDFset2_bis+1)
         {
             minIdx_PDFset2 = ipdf = ipdf; maxIdx_PDFset2 = ipdf + nreplicas_PDFset2;
@@ -895,7 +910,8 @@ void tHqMultileponAnalysis::Get_Mapping_LHE_PDF()
 
 
 /**
- * Depending on the mapping, read the scale variations from LHE vector in different order
+ * Read the LHE ID to associate LHE weight with correct scale variations
+ * Could also read the LHE mapping first, and then associate the 'scale_index_X' variables with the proper variables !
  */
 void tHqMultileponAnalysis::Read_LHE_ScaleVariations()
 {
@@ -1107,6 +1123,13 @@ void tHqMultileponAnalysis::Loop()
             metpt       = vEvent->at(0).metpt;
             metphi       = vEvent->at(0).metphi;
             metLD     = vEvent->at(0).metLD;
+
+            //FIXME -- not available in NTP yet !
+            // if(v_systTree[itree] == "JESUp") {metLD = vEvent->at(0).metLD_JESup;}
+            // if(v_systTree[itree] == "JESDown") {metLD = vEvent->at(0).metLD_JESdown;}
+            // if(v_systTree[itree] == "JERUp") {metLD = vEvent->at(0).metLD_JERup;}
+            // if(v_systTree[itree] == "JERDown") {metLD = vEvent->at(0).metLD_JERdown;}
+
             event_run = vEvent->at(0).run;
             event_lumi = vEvent->at(0).lumi;
             nPU       = vEvent->at(0).mc_pu_trueNumInt;
@@ -1267,15 +1290,6 @@ void tHqMultileponAnalysis::Loop()
             weightflip = 1;
             weightfake = 1;
 
-            //Fill pileup/nPV histos, before correction --only for nominal
-            if(itree == 0)
-            {
-                h_nPV_noCorr->Fill(nPV, weight);
-
-                if(!_isdata) {h_PU_noCorr->Fill(nPU, weight);} //MC info
-            }
-
-
             //--------------------------------------------
             // #    # #    #  ####  #    #  ####
             // ##  ## #    # #    # ##   # #
@@ -1389,10 +1403,10 @@ void tHqMultileponAnalysis::Loop()
             {
                 vJetLoose_tmp->push_back(vJetLoose_original->at(ijet));
 
-                if(apply_JER_smearing || v_systTree[itree] == "JER")
-                {
-                    vJetLoose_tmp->at(ijet).pt*= vJetLoose_tmp->at(ijet).JER_corr;
-                }
+                // if(apply_JER_smearing || v_systTree[itree] == "JER")
+                // {
+                //     vJetLoose_tmp->at(ijet).pt*= vJetLoose_tmp->at(ijet).JER_corr;
+                // }
 
                 if(v_systTree[itree] == "JESUp")
                 {
@@ -1709,12 +1723,11 @@ void tHqMultileponAnalysis::Loop()
             // #    # #      #      #      #    #   #   # #    # #   ## #    #
             //  ####  ###### ###### ######  ####    #   #  ####  #    #  ####
             //--------------------------------------------
-
             //Regions
             //NB : all regions not entirely orthogonal, since an event can be e.g. both 3l_SR_Fake and 2lSS_ttWctrl !
             ThreeLeptonSelection_THQ3l(jentry);
             TwoLeptonSelection_THQ2lSSl(jentry);
-            FourLeptonSelection_THQ4l(jentry);
+            // FourLeptonSelection_THQ4l(jentry);
 
             if(Sample_isUsed_forTraining() ) //Looser training selection (training samples only)
             {
@@ -1722,10 +1735,10 @@ void tHqMultileponAnalysis::Loop()
                 TwoLeptonSelection_THQ2lSS_TrainingSelection(jentry);
             }
 
-            Modify_DefaultCategories_Orthogonal(scheme); //-- TESTING
+            if(make_ntuples_for_overlap_studies) {Modify_DefaultCategories_Orthogonal(scheme);} //-- TESTING : replace default categ booleans with ortho categories ; use "tHqbis" booleans, following ttH selections
 
             if(add_orthogocal_cat) {Define_New_Categorization();} //Fill additional categ. booleans, for overlap studies
-    //--------------------------------------------
+//--------------------------------------------
             //Debug : make sure categories implemented in NTProd/NTAnalyzer codes are the same
             //Read NTProd categ., store them in the "is_tHq_xxx" booleans
             //Keep the "is_ttH_xxx" booleans as computed by this code ==> Compare both !
@@ -1753,19 +1766,42 @@ void tHqMultileponAnalysis::Loop()
                 else {cout<<"ERROR !"<<endl; continue;}
 
                 //Account all events from both analyses for overlap study
-                Fill_Overlap_Histo();
+                if(make_ntuples_for_overlap_studies) {Fill_Overlap_Histo();}
 
                 //If part of considered analysis - or if making ntuples for overlap studies -, save full event
                 if(event_belongs_toAnalysis || make_ntuples_for_overlap_studies) {fillOutputTree(itree);}
             }
 
-            //Fill pileup/nPV histos, after correction -- only for nominal
+            //Fill pileup/nPV histos before/after correction -- only for nominal
             if(itree == 0)
             {
-                h_nPV_withCorr->Fill(nPV, weight*PU_SF);
-                if(_isdata) {h_PU_withCorr->Fill(nPU, weight*PU_SF);} //MC info
+                if(apply_PU_SF) //Must divide by PU_SF if it was applied
+                {
+                    h_nPV_noCorr->Fill(nPV, weight/PU_SF);
+                    h_nPV_withCorr->Fill(nPV, weight);
+                    if(!_isdata) //MC info
+                    {
+                        h_PU_noCorr->Fill(nPU, weight/PU_SF);
+                        h_PU_withCorr->Fill(nPU, weight);
+                    }
+                }
+                else
+                {
+                    h_nPV_noCorr->Fill(nPV, weight);
+                    h_nPV_withCorr->Fill(nPV, weight*PU_SF);
+                    if(!_isdata) //MC info
+                    {
+                        h_PU_noCorr->Fill(nPU, weight);
+                        h_PU_withCorr->Fill(nPU, weight*PU_SF);
+                    }
+                }
+                // if(nPV > 44 && nPV < 53)
+                // {
+                //     cout<<endl<<"nPU "<<nPU<<endl;
+                //     cout<<"nPV "<<nPV<<endl;
+                //     cout<<"PU_SF "<<PU_SF<<endl;
+                // }
             }
-
 
 
             // --------------------------------------------
@@ -1856,8 +1892,6 @@ void tHqMultileponAnalysis::Loop()
 
             delete vJetLoose_tmp;
         } //end event loop
-
-
 
     	ofstream file_out("cutflow.txt");
         // for(int i=0; i<v_cutflow.size(); i++)
@@ -1952,13 +1986,16 @@ bool tHqMultileponAnalysis::ThreeLeptonSelection_THQ3l(int evt)
     InitVariables();
 	// v_cutflow[0]++;
 
-    //If data doesn't pass trigger, weight=0
-    if(weight==0 || !is_trigger_3l) {return 0;}
+    //Must pass at least 1 trigger
+    if(!is_trigger_3l) {return 0;}
 
 	//At least 3 FO leptons
     if(vLeptonFakeable.size() < 3) {return 0;}
     // v_cutflow[1]++;
     if(DEBUG) {cout<<"- Passed nLep cut"<<endl;}
+
+    //At most 3 tight leptons
+    if(vLeptonTight.size() > 3) {return 0;}
 
     //pT cuts
     if(vLeptonFakeable.at(0).conept < 25 || vLeptonFakeable.at(1).conept < 15 || vLeptonFakeable.at(2).conept < 10) {return 0;}
@@ -2000,16 +2037,14 @@ bool tHqMultileponAnalysis::ThreeLeptonSelection_THQ3l_Regions(int evt)
     bool pass_MCMatching    = false;
     bool is_GammaConv       = false;
     bool pass_m4l           = false;
-    bool has_lessThan4Tight = false;
     bool has_noIsoTau       = false;
 
     if(vLeptonFakeable.at(0).isTightTTH && vLeptonFakeable.at(1).isTightTTH && vLeptonFakeable.at(2).isTightTTH) {pass_isTight = true;}
     if(_isdata || (vLeptonFakeable.at(0).hasMCMatch && vLeptonFakeable.at(1).hasMCMatch && vLeptonFakeable.at(2).hasMCMatch) ) {pass_MCMatching = true;}
     if(!_isdata && (vLeptonFakeable.at(0).hasPhotonMCMatch || vLeptonFakeable.at(1).hasPhotonMCMatch || vLeptonFakeable.at(2).hasPhotonMCMatch) ) {is_GammaConv = true;}
     if(mllll > 140 || mllll < 0) {pass_m4l = true;}
-    if(vLeptonTight.size() < 4) {has_lessThan4Tight = true;}
     if(vTauLoose->size() == 0) {has_noIsoTau = true;} //NB : tight or loose taus ?
-    bool pass_basic_SR_cuts(pass_m4l && has_lessThan4Tight && has_noIsoTau);
+    bool pass_basic_SR_cuts(pass_m4l && has_noIsoTau);
 
     //Depends on analysis type (jets)
     bool pass_njet_tth  = false;
@@ -2035,14 +2070,22 @@ bool tHqMultileponAnalysis::ThreeLeptonSelection_THQ3l_Regions(int evt)
         else if(is_GammaConv && pass_isTight) {is_ttH_3l_GammaConv = 1; pass_cat = 1;}
     }
 
-    //-- 3l SR (tHq) //FIXME : added metLD cut ! Keep it ? Check impact on stat
-    if(pass_Zveto && pass_basic_SR_cuts && pass_metLD && pass_nJets_tHq)
+    //-- 3l SR (tHq)
+    // if(pass_Zveto && pass_basic_SR_cuts && pass_nJets_tHq)
+    if(pass_Zveto && pass_nJets_tHq)
     {
         if(pass_MCMatching && pass_isTight) {is_tHq_3l_SR = 1; pass_cat = 1;}
         else if(pass_MCMatching && !pass_isTight) {is_tHq_3l_Fake = 1; pass_cat = 1;}
         else if(is_GammaConv && pass_isTight) {is_tHq_3l_GammaConv = 1; pass_cat = 1;}
+
+        //tHqbis : follow exactly same cuts as ttH, except jets and metLD
+        if(pass_basic_SR_cuts)
+        {
+            if(pass_MCMatching && pass_isTight) {is_tHqbis_3l_SR = 1; pass_cat = 1;}
+            else if(pass_MCMatching && !pass_isTight) {is_tHqbis_3l_Fake = 1; pass_cat = 1;}
+            else if(is_GammaConv && pass_isTight) {is_tHqbis_3l_GammaConv = 1; pass_cat = 1;}
+        }
     }
-    if(pass_Zveto && pass_basic_SR_cuts && pass_nJets_tHq && pass_MCMatching && pass_isTight) {is_tHq_3l_SR_noMETLD = 1; pass_cat = 1;} //TEST impact of metLD cut
 
     //-- 3l SR (FCNC)
     if(pass_Zveto && pass_basic_SR_cuts && nJets_ttH >= 1 && nMediumBJets == 1)
@@ -2115,16 +2158,12 @@ bool tHqMultileponAnalysis::TwoLeptonSelection_THQ2lSSl(int evt)
     InitVariables();
 
     //Must pass single or double lepton trigger
-    if(weight==0 || !is_trigger_2lss) {return 0;}
+    if(!is_trigger_2lss) {return 0;}
 
     //At least 2 leptons
     if(vLeptonFakeable.size() < 2) {return 0;}
     if(vLeptonTight.size() > 2) {return 0;}
     if(DEBUG) {cout<<"- Passed nLep cut"<<endl;}
-
-    //Dilepton channel  : leptons need to pass tightCharge cut (dPt/pT>0.2 for muons, tightCharge>1 for ele)
-    if(!vLeptonFakeable.at(0).passTightCharge || !vLeptonFakeable.at(1).passTightCharge ) {return 0;}
-    if(DEBUG) {cout<<"- Passed TightQ cut"<<endl;}
 
     //pT cuts
     if(vLeptonFakeable.at(0).conept < 25 || vLeptonFakeable.at(1).conept < 15) {return 0;}
@@ -2134,16 +2173,13 @@ bool tHqMultileponAnalysis::TwoLeptonSelection_THQ2lSSl(int evt)
     if(!pass_cleanup) {return 0;}
     if(DEBUG) {cout<<"- Passed cleanup cut"<<endl;}
 
-    //No loose tau
-    if(vTauLoose->size() > 0) {return 0;}
-    if(DEBUG) {cout<<"- Passed tau cut"<<endl;}
+    //Dilepton channel  : leptons need to pass tightCharge cut (dPt/pT>0.2 for muons, tightCharge>1 for ele)
+    if(!vLeptonFakeable.at(0).passTightCharge || !vLeptonFakeable.at(1).passTightCharge ) {return 0;}
+    if(DEBUG) {cout<<"- Passed TightQ cut"<<endl;}
 
     //No ee pair with mll-mZ < 10
     if(!pass_Zveto_ee) {return 0;}
     if(DEBUG) {cout<<"- Passed Zee cut"<<endl;}
-
-    if(fabs(vLeptonFakeable.at(0).id) == 11 && fabs(vLeptonFakeable.at(1).id) == 11 && metLD < 30) {return 0;}
-    if(DEBUG) {cout<<"- Passed metLD cut"<<endl;}
 
     if(nJets_tHq < 2) {return 0;} //All cat. contain at least 2 jets (NB : tHq jets looser than ttH)
     if(DEBUG) {cout<<"- Passed first jet cut"<<endl;}
@@ -2171,12 +2207,16 @@ bool tHqMultileponAnalysis::TwoLeptonSelection_THQ2lSS_Regions(int evt)
     bool is_GammaConv    = false;
     bool is_SS_pair      = false;
     bool contains_ele    = false;
+    bool has_noIsoTau    = false;
+    bool pass_metLD      = true;
 
     if(vLeptonFakeable.at(0).isTightTTH && vLeptonFakeable.at(1).isTightTTH) {pass_isTight = true;}
     if(_isdata || (vLeptonFakeable.at(0).hasChargeMCMatch && vLeptonFakeable.at(1).hasChargeMCMatch) ) {pass_MCMatching = true;} //In 2lSS, also require charge matching
     if(!_isdata && (vLeptonFakeable.at(0).hasPhotonMCMatch || vLeptonFakeable.at(1).hasPhotonMCMatch) ) {is_GammaConv = true;}
     if(vLeptonFakeable.at(0).charge * vLeptonFakeable.at(1).charge > 0) {is_SS_pair = true;}
-    if( fabs(vLeptonFakeable.at(0).id) == 11 || fabs(vLeptonFakeable.at(1).id) == 11 ) {contains_ele = true;}
+    if(fabs(vLeptonFakeable.at(0).id) == 11 || fabs(vLeptonFakeable.at(1).id) == 11 ) {contains_ele = true;}
+    if(fabs(vLeptonFakeable.at(0).id) == 11 && fabs(vLeptonFakeable.at(1).id) == 11 && metLD < 30) {pass_metLD = false;}
+    if(vTauLoose->size() == 0) {has_noIsoTau = true;}
 
     //Depends on analysis type (jets)
     bool pass_njet_tth = false;
@@ -2194,7 +2234,7 @@ bool tHqMultileponAnalysis::TwoLeptonSelection_THQ2lSS_Regions(int evt)
     //Determine categories
 
     //-- 2lSS SR (ttH)
-    if(nJets_ttH >= 4 && pass_njet_tth)
+    if(nJets_ttH >= 4 && pass_njet_tth && pass_metLD && has_noIsoTau)
     {
         if(pass_MCMatching && is_SS_pair && pass_isTight) {is_ttH_2lSS_SR = 1; pass_cat = 1;}
         else if(pass_MCMatching && is_SS_pair && !pass_isTight) {is_ttH_2lSS_Fake = 1; pass_cat = 1;}
@@ -2208,6 +2248,15 @@ bool tHqMultileponAnalysis::TwoLeptonSelection_THQ2lSS_Regions(int evt)
         else if(pass_MCMatching && is_SS_pair && !pass_isTight) {is_tHq_2lSS_Fake = 1; pass_cat = 1;}
         else if(pass_MCMatching && !is_SS_pair && contains_ele && pass_isTight) {is_tHq_2lSS_Flip = 1; pass_cat = 1; Apply_FlipRate_Weight();}
         else if(is_GammaConv && is_SS_pair && contains_ele && pass_isTight) {is_tHq_2lSS_GammaConv = 1; pass_cat = 1;}
+
+        //tHqbis : follow exactly same cuts as ttH, except jets and metLD
+        if(has_noIsoTau)
+        {
+            if(pass_MCMatching && is_SS_pair && pass_isTight) {is_tHqbis_2lSS_SR = 1; pass_cat = 1;}
+            else if(pass_MCMatching && is_SS_pair && !pass_isTight) {is_tHqbis_2lSS_Fake = 1; pass_cat = 1;}
+            else if(pass_MCMatching && !is_SS_pair && contains_ele && pass_isTight) {is_tHqbis_2lSS_Flip = 1; pass_cat = 1; Apply_FlipRate_Weight();}
+            else if(is_GammaConv && is_SS_pair && contains_ele && pass_isTight) {is_tHqbis_2lSS_GammaConv = 1; pass_cat = 1;}
+        }
     }
     //-- 2lSS SR (FCNC)
     if(nJets_ttH >= 1 && nMediumBJets == 1)
@@ -2219,7 +2268,7 @@ bool tHqMultileponAnalysis::TwoLeptonSelection_THQ2lSS_Regions(int evt)
     }
 
     //-- ttW CR (ttH)
-    if(nJets_ttH == 3 && pass_njet_tth)
+    if(nJets_ttH == 3 && pass_njet_tth && pass_metLD && has_noIsoTau)
     {
         is_ttH_ttWctrl = 1;
         if(pass_MCMatching && is_SS_pair && pass_isTight) {is_ttH_ttWctrl_SR = 1; pass_cat = 1;}
@@ -2274,8 +2323,8 @@ bool tHqMultileponAnalysis::FourLeptonSelection_THQ4l(int evt)
 
     InitVariables();
 
-    //Must pass single/double/tri-lepton trigger
-    if(weight==0 || !is_trigger_3l) {return 0;}
+    //Must pass at least 1 trigger
+    if(!is_trigger_3l) {return 0;}
 
     //At least 4 FO leptons
     if(vLeptonFakeable.size() < 4) {return 0;}
@@ -2662,10 +2711,12 @@ void tHqMultileponAnalysis::Apply_ScaleFactors(int nlep, int itree)
     PU_SF = sf->Get_Pileup_SF(nPU, "nom");
 
 //-- Second : apply total SF to nominal weight
-        if(apply_PU_SF) {total_SF = lepton_SF * trigger_SF * btag_SF * PU_SF;}
-        else {total_SF = lepton_SF * trigger_SF * btag_SF;}
+    if(apply_PU_SF) {total_SF = lepton_SF * trigger_SF * btag_SF * PU_SF;}
+    else {total_SF = lepton_SF * trigger_SF * btag_SF;}
 
-        weight*= total_SF; //Note that the "default" weight now contains the SF corrections
+    weight*= total_SF; //Note that the "default" weight now contains the SF corrections
+
+    SMcoupling_weight*= total_SF;
 
 //-- Third : init systematics with nominal weight, and compute systematics
     //For nominal tree only
@@ -2761,7 +2812,6 @@ void tHqMultileponAnalysis::Apply_ScaleFactors(int nlep, int itree)
         //PU syst
         //--------------------------------------------
         //The 'ScaleFactors' class possesses an object of the 'Pileup' class, used to get PU SF
-        PU_SF = sf->Get_Pileup_SF(nPU, "nom");
         PUUp*= sf->Get_Pileup_SF(nPU, "up");
         PUDown*= sf->Get_Pileup_SF(nPU, "down");
 
@@ -3345,24 +3395,15 @@ void tHqMultileponAnalysis::Compute_Variables(TString region)
 		cout<<FRED("Error ! Wrong region name at Compute_Variables() call !")<<endl;
 	}
 
-    TLorentzVector lep1, lep2, lep3;
-    bool lep1_isSSpair = false;
-    bool lep2_isSSpair = false;
-    bool lep3_isSSpair = false;
-    lep1.SetPtEtaPhiE(vLeptonFakeable.at(0).conept, vLeptonFakeable.at(0).eta, vLeptonFakeable.at(0).phi, vLeptonFakeable.at(0).E );
-    lep2.SetPtEtaPhiE(vLeptonFakeable.at(1).conept, vLeptonFakeable.at(1).eta, vLeptonFakeable.at(1).phi, vLeptonFakeable.at(1).E );
-    if(vLeptonFakeable.at(0).id == vLeptonFakeable.at(1).id) {lep1_isSSpair = true; lep2_isSSpair = true;}
-    if(region==3l)
-    {
-        if(vLeptonFakeable.at(0).id == vLeptonFakeable.at(2).id) {lep1_isSSpair = true; lep3_isSSpair = true;}
-        if(vLeptonFakeable.at(2).id == vLeptonFakeable.at(1).id) {lep3_isSSpair = true; lep2_isSSpair = true;}
-
-        lep3.SetPtEtaPhiE(vLeptonFakeable.at(2).conept, vLeptonFakeable.at(2).eta, vLeptonFakeable.at(2).phi, vLeptonFakeable.at(2).E );
-    }
-
     int nleptons = 0;
     if(region == "3l") {nleptons = 3;}
     else {nleptons = 2;}
+
+    TLorentzVector lep1, lep2, lep3;
+
+    lep1.SetPtEtaPhiE(vLeptonFakeable.at(0).conept, vLeptonFakeable.at(0).eta, vLeptonFakeable.at(0).phi, vLeptonFakeable.at(0).E );
+    lep2.SetPtEtaPhiE(vLeptonFakeable.at(1).conept, vLeptonFakeable.at(1).eta, vLeptonFakeable.at(1).phi, vLeptonFakeable.at(1).E );
+    if(region==3l) {lep3.SetPtEtaPhiE(vLeptonFakeable.at(2).conept, vLeptonFakeable.at(2).eta, vLeptonFakeable.at(2).phi, vLeptonFakeable.at(2).E );}
 
     //--- Determine leptonic channel of event
 	int sum_id = 0;
@@ -3382,8 +3423,7 @@ void tHqMultileponAnalysis::Compute_Variables(TString region)
         else if(sum_id == 22) {channel = 2;} //ee -- not used in tHq2016
     }
 
-
-
+    //-- Leading bjet, most forward jet
     int ijet_forward=-1, ijet_hardest_btag=-1, ijet_2nd_hardest_btag=-1;
     double tmp = -999, tmp2=-999;
 
@@ -3423,6 +3463,12 @@ void tHqMultileponAnalysis::Compute_Variables(TString region)
     // cout<<"ijet_hardest_btag "<<ijet_hardest_btag<<endl;
     // cout<<"ijet_2nd_hardest_btag "<<ijet_2nd_hardest_btag<<endl;
 
+    FwdJetEta = -999;
+    if(ijet_forward >= 0) {FwdJetEta = fwdJet.Eta();} //Needed to get fwd jet syst
+
+    FwdJetPt = -999;
+    if(ijet_forward >= 0) {FwdJetPt = fwdJet.Pt();}
+
 
 //       #     #         #####    ###     #    #####
 // ##### #     #  ####  #     #  #   #   ##   #     #
@@ -3444,7 +3490,6 @@ void tHqMultileponAnalysis::Compute_Variables(TString region)
 
     //NB : nJet25 != vJetLoose.size(), because vJetLoose accounts for JES variations (pT could be slightly < 25 !)
     nJetLoose = vJetLoose.size();
-
 
     //--- Var2: max eta of any 'non-CSV-loose' jet
     tmp = -999;
@@ -3478,7 +3523,6 @@ void tHqMultileponAnalysis::Compute_Variables(TString region)
 	//--- Var6 : dEta between forward and 2nd hardest tagged jet
     if(ijet_2nd_hardest_btag < 0 || ijet_forward < 0) {dEtaFwdJet2BJet = -1;}
     else {dEtaFwdJet2BJet = fabs( vLightJets.at(ijet_forward).eta - vLooseBTagJets.at(ijet_2nd_hardest_btag).eta );}
-
 
 	//--- Var7 : dEta between forward light jet and closet lepton (angular dist.)
     dEtaFwdJetClosestLep = -999; tmp = 999;
@@ -3515,8 +3559,8 @@ void tHqMultileponAnalysis::Compute_Variables(TString region)
 
     //--- Var9 : min. dR between any 2 leptons
     minDRll = 999;
-    lepi = TLorentzVector();
-    lepj = TLorentzVector();
+    // lepi = TLorentzVector();
+    // lepj = TLorentzVector();
     for(int i=0; i<vLeptonFakeable.size()-1; i++)
     {
         lepi.SetPtEtaPhiE(vLeptonFakeable.at(i).conept, vLeptonFakeable.at(i).eta, vLeptonFakeable.at(i).phi, vLeptonFakeable.at(i).E );
@@ -3545,8 +3589,6 @@ void tHqMultileponAnalysis::Compute_Variables(TString region)
     }
 
 
-
-
 //             #     #  #####    ###     #   #######
 // ##### ##### #     # #     #  #   #   ##   #    #
 //   #     #   #     #       # #     # # #       #
@@ -3554,8 +3596,6 @@ void tHqMultileponAnalysis::Compute_Variables(TString region)
 //   #     #   #     # #       #     #   #     #
 //   #     #   #     # #        #   #    #     #
 //   #     #   #     # #######   ###   #####   #
-
-
 
     lep1_conePt = vLeptonFakeable.at(0).conept;
     lep2_conePt = vLeptonFakeable.at(1).conept;
@@ -3581,178 +3621,178 @@ void tHqMultileponAnalysis::Compute_Variables(TString region)
     max_lep_eta = std::max( fabs(vLeptonFakeable.at(0).eta), fabs(vLeptonFakeable.at(1).eta) );
     // if(is_3l) {max_lep_eta = std::max(std::max(fabs(vLeptonFakeable.at(0).eta), fabs(vLeptonFakeable.at(1).eta)), fabs(vLeptonFakeable.at(2).eta));} //CHANGED -- noticed that ttH only take 2 hardest leptons into account for max_lep_eta... don't know why yet
 
-
-
-    //                               #
-    // #    # ###### #    #         #     ##### ######  ####  ##### # #    #  ####
-    // ##   # #      #    #        #        #   #      #        #   # ##   # #    #
-    // # #  # #####  #    #       #         #   #####   ####    #   # # #  # #
-    // #  # # #      # ## #      #          #   #           #   #   # #  # # #  ###
-    // #   ## #      ##  ##     #           #   #      #    #   #   # #   ## #    #
-    // #    # ###### #    #    #            #   ######  ####    #   # #    #  ####
-
-
-    minv_FwdJetBJet = -999;
-    if(ijet_forward >= 0 && ijet_hardest_btag >= 0) {minv_FwdJetBJet = (fwdJet + BJet).M();}
-
-    FwdJetEta = -999;
-    if(ijet_forward >= 0) {FwdJetEta = fwdJet.Eta();}
-
-    FwdJetPt = -999;
-    if(ijet_forward >= 0) {FwdJetPt = fwdJet.Pt();}
-
-    LeadJetEta = -999;
-    LeadJetPt = -999;
-    sum_jetPt = 0;
-    for(int j=0; j<vJetLoose.size(); j++)
+    //-- Can decide not to compute all these variables if not needed --> Speed up processing
+    if(write_allInputVars)
     {
-        sum_jetPt+= vJetLoose.at(j).pt;
 
-        if(vJetLoose.at(j).pt > LeadJetPt)
-        {
-            LeadJetPt = vJetLoose.at(j).pt;
-            LeadJetEta = vJetLoose.at(j).eta;
-        }
-    }
+//                               #
+// #    # ###### #    #         #     ##### ######  ####  ##### # #    #  ####
+// ##   # #      #    #        #        #   #      #        #   # ##   # #    #
+// # #  # #####  #    #       #         #   #####   ####    #   # # #  # #
+// #  # # #      # ## #      #          #   #           #   #   # #  # # #  ###
+// #   ## #      ##  ##     #           #   #      #    #   #   # #   ## #    #
+// #    # ###### #    #    #            #   ######  ####    #   # #    #  ####
 
-    dRjj_max = 0;
-    dPhijj_max = 0;
-    Mjj_max = 0;
-    TLorentzVector jet_tmp;
-    for(int i=0; i<vJetLoose.size(); i++)
-    {
-        jet_tmp.SetPtEtaPhiE(vJetLoose.at(i).pt, vJetLoose.at(i).eta, vJetLoose.at(i).phi, vJetLoose.at(i).E );
-        for(int j=i+1; j<vJetLoose.size(); j++)
-        {
-            TLorentzVector jet_tmp_2;
-            jet_tmp_2.SetPtEtaPhiE(vJetLoose.at(j).pt, vJetLoose.at(j).eta, vJetLoose.at(j).phi, vJetLoose.at(j).E );
+        minv_FwdJetBJet = -999;
+        if(ijet_forward >= 0 && ijet_hardest_btag >= 0) {minv_FwdJetBJet = (fwdJet + BJet).M();}
 
-            if( fabs(GetDeltaR(vJetLoose.at(i).eta, vJetLoose.at(i).phi, vJetLoose.at(j).eta, vJetLoose.at(j).phi) ) > fabs(dRjj_max))
-            {
-                dRjj_max = GetDeltaR(vJetLoose.at(i).eta, vJetLoose.at(i).phi, vJetLoose.at(j).eta, vJetLoose.at(j).phi);
-            }
-            if( (jet_tmp + jet_tmp_2).M() >  Mjj_max)
-            {
-                Mjj_max = (jet_tmp + jet_tmp_2).M();
-            }
-            if(Phi_MPi_Pi(vJetLoose.at(i).phi - vJetLoose.at(j).phi ) > fabs(dPhijj_max) )
-            {
-                dPhijj_max = Phi_MPi_Pi(vJetLoose.at(i).phi - vJetLoose.at(j).phi );
-            }
-        }
-    }
-
-    deepCSV_max = 0;
-    deepCSV_2nd = 0;
-    for(int i=0; i<vLooseBTagJets.size(); i++)
-    {
-        if(vLooseBTagJets.at(i).DeepCSVbtag > deepCSV_max) {deepCSV_2nd = deepCSV_max; deepCSV_max = vLooseBTagJets.at(i).DeepCSVbtag;}
-        else if(vLooseBTagJets.at(i).DeepCSVbtag > deepCSV_2nd) {deepCSV_2nd = vLooseBTagJets.at(i).DeepCSVbtag;}
-    }
-
-    dPhiLepBJet_max = 0;
-    if(ijet_hardest_btag >= 0)
-    {
-        for(int i=0; i<nleptons; i++)
-        {
-            if( fabs(Phi_MPi_Pi(vLooseBTagJets.at(ijet_hardest_btag).phi - vLeptonFakeable.at(i).phi)) > fabs(dPhiLepBJet_max) )
-            {
-                dPhiLepBJet_max = fabs(Phi_MPi_Pi(vLooseBTagJets.at(ijet_hardest_btag).phi - vLeptonFakeable.at(i).phi) );
-            }
-        }
-    }
-
-    m3l = -999;
-    if(region == "3l") {m3l = (lep1+lep2+lep3).M();}
-    else {m3l = (lep1+lep2).M();}
-
-    mHT = Compute_mHT();
-
-    Compute_Top_W_variables(); //TESTING -- Fill high-level reco variables
-
-    //3l - compute charge asymmetry for lepton (not part of SS pair) with min dR with bjet
-    lW_asym = -999;
-    float dr_min = 999;
-    tmp = 0;
-    if(ijet_hardest_btag >= 0)
-    {
-        if(!lep1_isSSpair)
-        {
-            tmp = GetDeltaR(lep1.Eta(), lep1.Phi(), vLooseBTagJets.at(ijet_hardest_btag).eta, vLooseBTagJets.at(ijet_hardest_btag).phi);
-            if(fabs(tmp) < fabs(dr_min) ) {lW_asym = vLeptonFakeable.at(0).charge * fabs(vLeptonFakeable.at(0).eta);}
-        }
-        if(!lep2_isSSpair)
-        {
-            tmp = GetDeltaR(lep2.Eta(), lep2.Phi(), vLooseBTagJets.at(ijet_hardest_btag).eta, vLooseBTagJets.at(ijet_hardest_btag).phi);
-            if(fabs(tmp) < fabs(dr_min) ) {lW_asym = vLeptonFakeable.at(1).charge * fabs(vLeptonFakeable.at(1).eta);}
-        }
-        if(region == "3l" && !lep3_isSSpair)
-        {
-            tmp = GetDeltaR(lep3.Eta(), lep3.Phi(), vLooseBTagJets.at(ijet_hardest_btag).eta, vLooseBTagJets.at(ijet_hardest_btag).phi);
-            if(fabs(tmp) < fabs(dr_min) ) {lW_asym = vLeptonFakeable.at(2).charge * fabs(vLeptonFakeable.at(2).eta);}
-        }
-    }
-
-    min_dr_lep_bjet = 999;
-    min_dr_lep_lightjet = 999;
-    for(int i=0; i<vLeptonFakeable.size(); i++)
-    {
-        lepi.SetPtEtaPhiE(vLeptonFakeable.at(i).conept, vLeptonFakeable.at(i).eta, vLeptonFakeable.at(i).phi, vLeptonFakeable.at(i).E );
-
+        LeadJetEta = -999;
+        LeadJetPt = -999;
+        sum_jetPt = 0;
         for(int j=0; j<vJetLoose.size(); j++)
         {
-            jet_tmp.SetPtEtaPhiE(vJetLoose.at(j).pt, vJetLoose.at(j).eta, vJetLoose.at(j).phi, vJetLoose.at(j).E );
+            sum_jetPt+= vJetLoose.at(j).pt;
 
-            tmp = GetDeltaR(lepi.Eta(), lepi.Phi(), vJetLoose.at(j).eta, vJetLoose.at(j).phi);
-
-            if(fabs(tmp) < fabs(min_dr_lep_lightjet) && !vJetLoose.at(j).isLooseBTag) {min_dr_lep_lightjet = tmp;}
-            else if(fabs(tmp) < fabs(min_dr_lep_lightjet) && vJetLoose.at(j).isLooseBTag) {min_dr_lep_bjet = tmp;}
+            if(vJetLoose.at(j).pt > LeadJetPt)
+            {
+                LeadJetPt = vJetLoose.at(j).pt;
+                LeadJetEta = vJetLoose.at(j).eta;
+            }
         }
-    }
 
-    tmp = 999;
-    ratio_lep3pt_closestJetPt = -999;
-    if(region == "3l") {lepi.SetPtEtaPhiE(vLeptonFakeable.at(2).conept, vLeptonFakeable.at(2).eta, vLeptonFakeable.at(2).phi, vLeptonFakeable.at(2).E );}
-    else {lepi.SetPtEtaPhiE(vLeptonFakeable.at(1).conept, vLeptonFakeable.at(1).eta, vLeptonFakeable.at(1).phi, vLeptonFakeable.at(1).E );}
-    for(int j=0; j<vJetLoose.size(); j++)
-    {
-        jet_tmp.SetPtEtaPhiE(vJetLoose.at(j).pt, vJetLoose.at(j).eta, vJetLoose.at(j).phi, vJetLoose.at(j).E );
+        dRjj_max = 0;
+        dPhijj_max = 0;
+        Mjj_max = 0;
+        TLorentzVector jeti;
+        for(int i=0; i<vJetLoose.size(); i++)
+        {
+            jeti.SetPtEtaPhiE(vJetLoose.at(i).pt, vJetLoose.at(i).eta, vJetLoose.at(i).phi, vJetLoose.at(i).E );
+            for(int j=i+1; j<vJetLoose.size(); j++)
+            {
+                TLorentzVector jetj;
+                jetj.SetPtEtaPhiE(vJetLoose.at(j).pt, vJetLoose.at(j).eta, vJetLoose.at(j).phi, vJetLoose.at(j).E );
 
-        if(fabs(GetDeltaR(lepi.Eta(), lepi.Phi(), vJetLoose.at(j).eta, vJetLoose.at(j).phi) ) < fabs(tmp) ) {ratio_lep3pt_closestJetPt = lepi.Pt() / vJetLoose.at(j).pt;}
-    }
+                if( fabs(GetDeltaR(vJetLoose.at(i).eta, vJetLoose.at(i).phi, vJetLoose.at(j).eta, vJetLoose.at(j).phi) ) > fabs(dRjj_max))
+                {
+                    dRjj_max = GetDeltaR(vJetLoose.at(i).eta, vJetLoose.at(i).phi, vJetLoose.at(j).eta, vJetLoose.at(j).phi);
+                }
+                if( (jeti + jetj).M() >  Mjj_max)
+                {
+                    Mjj_max = (jeti + jetj).M();
+                }
+                if(Phi_MPi_Pi(vJetLoose.at(i).phi - vJetLoose.at(j).phi ) > fabs(dPhijj_max) )
+                {
+                    dPhijj_max = Phi_MPi_Pi(vJetLoose.at(i).phi - vJetLoose.at(j).phi );
+                }
+            }
+        }
 
-    dPhiLepLep_hardestOS = -999;
-    if(region == "2l") {dPhiLepLep_hardestOS = fabs(Phi_MPi_Pi(vLeptonFakeable.at(1).phi - vLeptonFakeable.at(0).phi) );}
-    else
-    {
-        if(vLeptonFakeable.at(0).id == - vLeptonFakeable.at(1).id) {dPhiLepLep_hardestOS =  fabs(Phi_MPi_Pi(vLeptonFakeable.at(1).phi - vLeptonFakeable.at(0).phi) );}
-        else if(vLeptonFakeable.at(0).id == - vLeptonFakeable.at(2).id) {dPhiLepLep_hardestOS =  fabs(Phi_MPi_Pi(vLeptonFakeable.at(2).phi - vLeptonFakeable.at(0).phi) );}
-        else if(vLeptonFakeable.at(1).id == - vLeptonFakeable.at(2).id) {dPhiLepLep_hardestOS =  fabs(Phi_MPi_Pi(vLeptonFakeable.at(1).phi - vLeptonFakeable.at(2).phi) );}
-    }
+        deepCSV_max = 0;
+        deepCSV_2nd = 0;
+        for(int i=0; i<vLooseBTagJets.size(); i++)
+        {
+            if(vLooseBTagJets.at(i).DeepCSVbtag > deepCSV_max) {deepCSV_2nd = deepCSV_max; deepCSV_max = vLooseBTagJets.at(i).DeepCSVbtag;}
+            else if(vLooseBTagJets.at(i).DeepCSVbtag > deepCSV_2nd) {deepCSV_2nd = vLooseBTagJets.at(i).DeepCSVbtag;}
+        }
 
-    //Nof soft jets (pt between 15 and 25 GeV), and pt of 4 leading jets (including soft)
-    nSoftJets = vJetSoft->size();
+        dPhiLepBJet_max = 0;
+        if(ijet_hardest_btag >= 0)
+        {
+            for(int i=0; i<nleptons; i++)
+            {
+                if( fabs(Phi_MPi_Pi(vLooseBTagJets.at(ijet_hardest_btag).phi - vLeptonFakeable.at(i).phi)) > fabs(dPhiLepBJet_max) )
+                {
+                    dPhiLepBJet_max = fabs(Phi_MPi_Pi(vLooseBTagJets.at(ijet_hardest_btag).phi - vLeptonFakeable.at(i).phi) );
+                }
+            }
+        }
 
-    jet1_pt = -999; jet2_pt = -999; jet3_pt = -999; jet4_pt = -999;
-    for(int j=0; j<vJetLoose.size(); j++)
-    {
-        if(vJetLoose.at(j).pt > jet1_pt) {jet4_pt = jet3_pt; jet3_pt = jet2_pt; jet2_pt = jet1_pt; jet1_pt = vJetLoose.at(j).pt;}
-        else if(vJetLoose.at(j).pt > jet2_pt) {jet4_pt = jet3_pt; jet3_pt = jet2_pt; jet2_pt = vJetLoose.at(j).pt;}
-        else if(vJetLoose.at(j).pt > jet3_pt) {jet4_pt = jet3_pt; jet3_pt = vJetLoose.at(j).pt;}
-        else if(vJetLoose.at(j).pt > jet4_pt) {jet4_pt = vJetLoose.at(j).pt;}
-    }
-    for(int ijet=0; ijet<vJetSoft->size(); ijet++)
-    {
-        if(vJetSoft->at(ijet).pt > jet1_pt) {jet4_pt = jet3_pt; jet3_pt = jet2_pt; jet2_pt = jet1_pt; jet1_pt = vJetSoft->at(ijet).pt;}
-        else if(vJetSoft->at(ijet).pt > jet2_pt) {jet4_pt = jet3_pt; jet3_pt = jet2_pt; jet2_pt = vJetSoft->at(ijet).pt;}
-        else if(vJetSoft->at(ijet).pt > jet3_pt) {jet4_pt = jet3_pt; jet3_pt = vJetSoft->at(ijet).pt;}
-        else if(vJetSoft->at(ijet).pt > jet4_pt) {jet4_pt = vJetSoft->at(ijet).pt;}
-    }
+        m3l = -999;
+        if(region == "3l") {m3l = (lep1+lep2+lep3).M();}
+        else {m3l = (lep1+lep2).M();}
 
+        mHT = Compute_mHT();
 
+        Compute_Top_W_variables(); //TESTING -- Fill high-level reco variables
 
+        bool lep1_isSSpair = false;
+        bool lep2_isSSpair = false;
+        bool lep3_isSSpair = false;
+        if(vLeptonFakeable.at(0).id == vLeptonFakeable.at(1).id) {lep1_isSSpair = true; lep2_isSSpair = true;}
+        if(region==3l)
+        {
+            if(vLeptonFakeable.at(0).id == vLeptonFakeable.at(2).id) {lep1_isSSpair = true; lep3_isSSpair = true;}
+            if(vLeptonFakeable.at(2).id == vLeptonFakeable.at(1).id) {lep3_isSSpair = true; lep2_isSSpair = true;}
+        }
 
+        //3l - compute charge asymmetry for lepton (not part of SS pair) with min dR with bjet
+        lW_asym = -999;
+        float dr_min = 999;
+        tmp = 0;
+        if(ijet_hardest_btag >= 0)
+        {
+            if(!lep1_isSSpair)
+            {
+                tmp = GetDeltaR(lep1.Eta(), lep1.Phi(), vLooseBTagJets.at(ijet_hardest_btag).eta, vLooseBTagJets.at(ijet_hardest_btag).phi);
+                if(fabs(tmp) < fabs(dr_min) ) {lW_asym = vLeptonFakeable.at(0).charge * fabs(vLeptonFakeable.at(0).eta);}
+            }
+            if(!lep2_isSSpair)
+            {
+                tmp = GetDeltaR(lep2.Eta(), lep2.Phi(), vLooseBTagJets.at(ijet_hardest_btag).eta, vLooseBTagJets.at(ijet_hardest_btag).phi);
+                if(fabs(tmp) < fabs(dr_min) ) {lW_asym = vLeptonFakeable.at(1).charge * fabs(vLeptonFakeable.at(1).eta);}
+            }
+            if(region == "3l" && !lep3_isSSpair)
+            {
+                tmp = GetDeltaR(lep3.Eta(), lep3.Phi(), vLooseBTagJets.at(ijet_hardest_btag).eta, vLooseBTagJets.at(ijet_hardest_btag).phi);
+                if(fabs(tmp) < fabs(dr_min) ) {lW_asym = vLeptonFakeable.at(2).charge * fabs(vLeptonFakeable.at(2).eta);}
+            }
+        }
 
+        min_dr_lep_bjet = 999;
+        min_dr_lep_lightjet = 999;
+        for(int i=0; i<vLeptonFakeable.size(); i++)
+        {
+            lepi.SetPtEtaPhiE(vLeptonFakeable.at(i).conept, vLeptonFakeable.at(i).eta, vLeptonFakeable.at(i).phi, vLeptonFakeable.at(i).E );
+
+            for(int j=0; j<vJetLoose.size(); j++)
+            {
+                jeti.SetPtEtaPhiE(vJetLoose.at(j).pt, vJetLoose.at(j).eta, vJetLoose.at(j).phi, vJetLoose.at(j).E );
+
+                tmp = GetDeltaR(lepi.Eta(), lepi.Phi(), vJetLoose.at(j).eta, vJetLoose.at(j).phi);
+
+                if(fabs(tmp) < fabs(min_dr_lep_lightjet) && !vJetLoose.at(j).isLooseBTag) {min_dr_lep_lightjet = tmp;}
+                else if(fabs(tmp) < fabs(min_dr_lep_lightjet) && vJetLoose.at(j).isLooseBTag) {min_dr_lep_bjet = tmp;}
+            }
+        }
+
+        tmp = 999;
+        ratio_lep3pt_closestJetPt = -999;
+        if(region == "3l") {lepi.SetPtEtaPhiE(vLeptonFakeable.at(2).conept, vLeptonFakeable.at(2).eta, vLeptonFakeable.at(2).phi, vLeptonFakeable.at(2).E );}
+        else {lepi.SetPtEtaPhiE(vLeptonFakeable.at(1).conept, vLeptonFakeable.at(1).eta, vLeptonFakeable.at(1).phi, vLeptonFakeable.at(1).E );}
+        for(int j=0; j<vJetLoose.size(); j++)
+        {
+            jeti.SetPtEtaPhiE(vJetLoose.at(j).pt, vJetLoose.at(j).eta, vJetLoose.at(j).phi, vJetLoose.at(j).E );
+
+            if(fabs(GetDeltaR(lepi.Eta(), lepi.Phi(), vJetLoose.at(j).eta, vJetLoose.at(j).phi) ) < fabs(tmp) ) {ratio_lep3pt_closestJetPt = lepi.Pt() / vJetLoose.at(j).pt;}
+        }
+
+        dPhiLepLep_hardestOS = -999;
+        if(region == "2l") {dPhiLepLep_hardestOS = fabs(Phi_MPi_Pi(vLeptonFakeable.at(1).phi - vLeptonFakeable.at(0).phi) );}
+        else
+        {
+            if(vLeptonFakeable.at(0).id == - vLeptonFakeable.at(1).id) {dPhiLepLep_hardestOS =  fabs(Phi_MPi_Pi(vLeptonFakeable.at(1).phi - vLeptonFakeable.at(0).phi) );}
+            else if(vLeptonFakeable.at(0).id == - vLeptonFakeable.at(2).id) {dPhiLepLep_hardestOS =  fabs(Phi_MPi_Pi(vLeptonFakeable.at(2).phi - vLeptonFakeable.at(0).phi) );}
+            else if(vLeptonFakeable.at(1).id == - vLeptonFakeable.at(2).id) {dPhiLepLep_hardestOS =  fabs(Phi_MPi_Pi(vLeptonFakeable.at(1).phi - vLeptonFakeable.at(2).phi) );}
+        }
+
+        //Nof soft jets (pt between 15 and 25 GeV), and pt of 4 leading jets (including soft)
+        nSoftJets = vJetSoft->size();
+
+        jet1_pt = -999; jet2_pt = -999; jet3_pt = -999; jet4_pt = -999;
+        for(int j=0; j<vJetLoose.size(); j++)
+        {
+            if(vJetLoose.at(j).pt > jet1_pt) {jet4_pt = jet3_pt; jet3_pt = jet2_pt; jet2_pt = jet1_pt; jet1_pt = vJetLoose.at(j).pt;}
+            else if(vJetLoose.at(j).pt > jet2_pt) {jet4_pt = jet3_pt; jet3_pt = jet2_pt; jet2_pt = vJetLoose.at(j).pt;}
+            else if(vJetLoose.at(j).pt > jet3_pt) {jet4_pt = jet3_pt; jet3_pt = vJetLoose.at(j).pt;}
+            else if(vJetLoose.at(j).pt > jet4_pt) {jet4_pt = vJetLoose.at(j).pt;}
+        }
+        for(int ijet=0; ijet<vJetSoft->size(); ijet++)
+        {
+            if(vJetSoft->at(ijet).pt > jet1_pt) {jet4_pt = jet3_pt; jet3_pt = jet2_pt; jet2_pt = jet1_pt; jet1_pt = vJetSoft->at(ijet).pt;}
+            else if(vJetSoft->at(ijet).pt > jet2_pt) {jet4_pt = jet3_pt; jet3_pt = jet2_pt; jet2_pt = vJetSoft->at(ijet).pt;}
+            else if(vJetSoft->at(ijet).pt > jet3_pt) {jet4_pt = jet3_pt; jet3_pt = vJetSoft->at(ijet).pt;}
+            else if(vJetSoft->at(ijet).pt > jet4_pt) {jet4_pt = vJetSoft->at(ijet).pt;}
+        }
 
 
 // #####  ######  ####  #    # ##### #####
@@ -3769,96 +3809,94 @@ void tHqMultileponAnalysis::Compute_Variables(TString region)
 //Code repo : https://github.com/acarvalh/HTT_kinfit
 //Slides : https://indico.cern.ch/event/718592/contributions/3038714/attachments/1666644/2672104/Hj_tagger_03_05_017_BLFR-1.pdf
 
-    //resHTT input variables
-    DeepCSV_bjet_kinFit = 0;
-    qg_Wj2 = 0;
-    pT_bWj1Wj2 = 0;
-    pT_Wj2 = 0;
-    m_Wj1Wj2 = 0;
-    nllKinFit = 0;
-    pT_b_o_kinFit_pT_b = 0;
+        //resHTT input variables
+        DeepCSV_bjet_kinFit = 0;
+        qg_Wj2 = 0;
+        pT_bWj1Wj2 = 0;
+        pT_Wj2 = 0;
+        m_Wj1Wj2 = 0;
+        nllKinFit = 0;
+        pT_b_o_kinFit_pT_b = 0;
 
-    resHTT = -2; //min value (-1 to +1)
-    int ibjet_kinfit=-1, iwj1_kinfit=-1, iwj2_kinfit=-1; //if combination found, save it, so that same jets are not re-used by Hjtagger
-    if(kinFit_ != 0)
-    {
-        for(int ibjet=0; ibjet<vJetLoose.size(); ibjet++)
+        resHTT = -2; //min value (-1 to +1)
+        int ibjet_kinfit=-1, iwj1_kinfit=-1, iwj2_kinfit=-1; //if combination found, save it, so that same jets are not re-used by Hjtagger
+        if(kinFit_ != 0)
         {
-            LorentzVector bjet;
-            // bjet.SetPtEtaPhiE(vJetLoose.at(ibjet).pt, vJetLoose.at(ibjet).eta, vJetLoose.at(ibjet).phi, vJetLoose.at(ibjet).E );
-            bjet.SetPt(vJetLoose.at(ibjet).pt);
-            bjet.SetEta(vJetLoose.at(ibjet).eta);
-            bjet.SetPhi(vJetLoose.at(ibjet).phi);
-            bjet.SetM(vJetLoose.at(ibjet).m);
-
-            for(int iwjet1=0; iwjet1<vJetLoose.size(); iwjet1++)
+            for(int ibjet=0; ibjet<vJetLoose.size(); ibjet++)
             {
-                if(iwjet1 == ibjet) {continue;}
+                LorentzVector bjet;
+                // bjet.SetPtEtaPhiE(vJetLoose.at(ibjet).pt, vJetLoose.at(ibjet).eta, vJetLoose.at(ibjet).phi, vJetLoose.at(ibjet).E );
+                bjet.SetPt(vJetLoose.at(ibjet).pt);
+                bjet.SetEta(vJetLoose.at(ibjet).eta);
+                bjet.SetPhi(vJetLoose.at(ibjet).phi);
+                bjet.SetM(vJetLoose.at(ibjet).m);
 
-                LorentzVector wj1;
-                // wj1.SetPtEtaPhiE(vJetLoose.at(iwjet1).pt, vJetLoose.at(iwjet1).eta, vJetLoose.at(iwjet1).phi, vJetLoose.at(iwjet1).E );
-                wj1.SetPt(vJetLoose.at(iwjet1).pt);
-                wj1.SetEta(vJetLoose.at(iwjet1).eta);
-                wj1.SetPhi(vJetLoose.at(iwjet1).phi);
-                wj1.SetM(vJetLoose.at(iwjet1).m);
-
-                for(int iwjet2=iwjet1+1; iwjet2<vJetLoose.size(); iwjet2++)
+                for(int iwjet1=0; iwjet1<vJetLoose.size(); iwjet1++)
                 {
-                    if(iwjet2 == ibjet) {continue;}
-                    if(iwjet2 == iwjet1) {continue;}
-                    // cout<<"3 jets found !"<<endl;
+                    if(iwjet1 == ibjet) {continue;}
 
-                    LorentzVector wj2;
-                    // wj2.SetPtEtaPhiE(vJetLoose.at(iwjet2).pt, vJetLoose.at(iwjet2).eta, vJetLoose.at(iwjet2).phi, vJetLoose.at(iwjet2).E );
-                    wj2.SetPt(vJetLoose.at(iwjet2).pt);
-                    wj2.SetEta(vJetLoose.at(iwjet2).eta);
-                    wj2.SetPhi(vJetLoose.at(iwjet2).phi);
-                    wj2.SetM(vJetLoose.at(iwjet2).m);
+                    LorentzVector wj1;
+                    // wj1.SetPtEtaPhiE(vJetLoose.at(iwjet1).pt, vJetLoose.at(iwjet1).eta, vJetLoose.at(iwjet1).phi, vJetLoose.at(iwjet1).E );
+                    wj1.SetPt(vJetLoose.at(iwjet1).pt);
+                    wj1.SetEta(vJetLoose.at(iwjet1).eta);
+                    wj1.SetPhi(vJetLoose.at(iwjet1).phi);
+                    wj1.SetM(vJetLoose.at(iwjet1).m);
 
-                    kinFit_->fit(bjet, wj1, wj2);//Do kin fit
-                    // Float_t nll_kinfit_tmp = kinFit_->nll();
-
-                    nllKinFit = kinFit_->nll(); //Kinematic fit, input to resHTT
-                    DeepCSV_bjet_kinFit = vJetLoose.at(ibjet).DeepCSVbtag;
-                    qg_Wj2 = vJetLoose.at(iwjet2).qgtag;
-                    pT_bWj1Wj2 = (bjet+wj1+wj2).Pt();
-                    pT_Wj2 = wj2.Pt();
-                    m_Wj1Wj2 = (wj1+wj2).M();
-                    pT_b_o_kinFit_pT_b = bjet.Pt() / kinFit_->fittedBJet().Pt();
-
-                    float tmp = mva_resHTT->EvaluateMVA("BDT method"); //Compute BDT score
-                    // cout<<"tmp = "<<tmp<<endl;
-
-                    if(tmp>resHTT)
+                    for(int iwjet2=iwjet1+1; iwjet2<vJetLoose.size(); iwjet2++)
                     {
-                        resHTT = tmp;
+                        if(iwjet2 == ibjet) {continue;}
+                        if(iwjet2 == iwjet1) {continue;}
+                        // cout<<"3 jets found !"<<endl;
 
-                        ibjet_kinfit = ibjet;
-                        iwj1_kinfit = iwjet1;
-                        iwj2_kinfit = iwjet2;
+                        LorentzVector wj2;
+                        // wj2.SetPtEtaPhiE(vJetLoose.at(iwjet2).pt, vJetLoose.at(iwjet2).eta, vJetLoose.at(iwjet2).phi, vJetLoose.at(iwjet2).E );
+                        wj2.SetPt(vJetLoose.at(iwjet2).pt);
+                        wj2.SetEta(vJetLoose.at(iwjet2).eta);
+                        wj2.SetPhi(vJetLoose.at(iwjet2).phi);
+                        wj2.SetM(vJetLoose.at(iwjet2).m);
+
+                        kinFit_->fit(bjet, wj1, wj2);//Do kin fit
+                        // Float_t nll_kinfit_tmp = kinFit_->nll();
+
+                        nllKinFit = kinFit_->nll(); //Kinematic fit, input to resHTT
+                        DeepCSV_bjet_kinFit = vJetLoose.at(ibjet).DeepCSVbtag;
+                        qg_Wj2 = vJetLoose.at(iwjet2).qgtag;
+                        pT_bWj1Wj2 = (bjet+wj1+wj2).Pt();
+                        pT_Wj2 = wj2.Pt();
+                        m_Wj1Wj2 = (wj1+wj2).M();
+                        pT_b_o_kinFit_pT_b = bjet.Pt() / kinFit_->fittedBJet().Pt();
+
+                        float tmp = mva_resHTT->EvaluateMVA("BDT method"); //Compute BDT score
+                        // cout<<"tmp = "<<tmp<<endl;
+
+                        if(tmp>resHTT)
+                        {
+                            resHTT = tmp;
+
+                            ibjet_kinfit = ibjet;
+                            iwj1_kinfit = iwjet1;
+                            iwj2_kinfit = iwjet2;
+                        }
                     }
                 }
             }
+
+            // cout<<" nllKinFit = "<<nllKinFit<<endl;
+            // cout<<" DeepCSV_bjet_kinFit = "<<DeepCSV_bjet_kinFit<<endl;
+            // cout<<" qg_Wj2 = "<<qg_Wj2<<endl;
+            // cout<<" pT_bWj1Wj2 = "<<pT_bWj1Wj2<<endl;
+            // cout<<" pT_Wj2 = "<<pT_Wj2<<endl;
+            // cout<<" m_Wj1Wj2 = "<<m_Wj1Wj2<<endl;
+            // cout<<" pT_b_o_kinFit_pT_b = "<<pT_b_o_kinFit_pT_b<<endl;
+            // cout<<"-> resHTT = "<<resHTT<<endl;
         }
 
-        // cout<<" nllKinFit = "<<nllKinFit<<endl;
-        // cout<<" DeepCSV_bjet_kinFit = "<<DeepCSV_bjet_kinFit<<endl;
-        // cout<<" qg_Wj2 = "<<qg_Wj2<<endl;
-        // cout<<" pT_bWj1Wj2 = "<<pT_bWj1Wj2<<endl;
-        // cout<<" pT_Wj2 = "<<pT_Wj2<<endl;
-        // cout<<" m_Wj1Wj2 = "<<m_Wj1Wj2<<endl;
-        // cout<<" pT_b_o_kinFit_pT_b = "<<pT_b_o_kinFit_pT_b<<endl;
-        // cout<<"-> resHTT = "<<resHTT<<endl;
-    }
-
-
-
-    // #    #      #    #####   ##    ####   ####  ###### #####
-    // #    #      #      #    #  #  #    # #    # #      #    #
-    // ######      #      #   #    # #      #      #####  #    #
-    // #    #      #      #   ###### #  ### #  ### #      #####
-    // #    # #    #      #   #    # #    # #    # #      #   #
-    // #    #  ####       #   #    #  ####   ####  ###### #    #
+// #    #      #    #####   ##    ####   ####  ###### #####
+// #    #      #      #    #  #  #    # #    # #      #    #
+// ######      #      #   #    # #      #      #####  #    #
+// #    #      #      #   ###### #  ### #  ### #      #####
+// #    # #    #      #   #    # #    # #    # #      #   #
+// #    #  ####       #   #    #  ####   ####  ###### #    #
 
         //Input variables needed for Hj tagger
         Jet25_lepdrmin = 0;
@@ -3892,26 +3930,22 @@ void tHqMultileponAnalysis::Compute_Variables(TString region)
         }
         // cout<<"HjTagger = "<<HjTagger<<endl;
 
+    } //if( write_allInputVars)
 
-
-
-// ##### ##### #    #    #####  #####  #####  ####
-//   #     #   #    #    #    # #    #   #   #
-//   #     #   ######    #####  #    #   #    ####
-//   #     #   #    #    #    # #    #   #        #
-//   #     #   #    #    #    # #    #   #   #    #
-//   #     #   #    #    #####  #####    #    ####
+// #     # #     #    #
+// ##   ## #     #   # #
+// # # # # #     #  #   #
+// #  #  # #     # #     #
+// #     #  #   #  #######
+// #     #   # #   #     #
+// #     #    #    #     #
 
     //-- Use the ttH2017 training xml files
-    // signal_2lss_TT_MVA = mva_2lss_tt->EvaluateMVA("BDTG method");
-    // signal_2lss_TTV_MVA = mva_2lss_ttV->EvaluateMVA("BDTG method");
-    // signal_3l_TT_MVA = mva_3l_tt->EvaluateMVA("BDTG method");
-    // signal_3l_TTV_MVA = mva_3l_ttV->EvaluateMVA("BDTG method");
-
     if(region == "2l")
     {
         signal_2lss_TT_MVA = mva_2lss_tt->EvaluateMVA("BDTG method");
         signal_2lss_TTV_MVA = mva_2lss_ttV->EvaluateMVA("BDTG method");
+
         // cout<<"signal_2lss_TT_MVA = "<<signal_2lss_TT_MVA<<endl;
         // cout<<"signal_2lss_TTV_MVA = "<<signal_2lss_TTV_MVA<<endl;
     }
@@ -3924,11 +3958,6 @@ void tHqMultileponAnalysis::Compute_Variables(TString region)
         // cout<<"signal_3l_TTV_MVA = "<<signal_3l_TTV_MVA<<endl;
     }
 
-
-    // cout<<"signal_2lss_TT_MVA = "<<signal_2lss_TT_MVA<<endl;
-    // cout<<"signal_2lss_TTV_MVA = "<<signal_2lss_TTV_MVA<<endl;
-    // cout<<"signal_3l_TT_MVA = "<<signal_3l_TT_MVA<<endl;
-    // cout<<"signal_3l_TTV_MVA = "<<signal_3l_TTV_MVA<<endl;
 
 // #####  #####  # #    # #####  ####  #    # #####
 // #    # #    # # ##   #   #   #    # #    #   #
@@ -4053,6 +4082,8 @@ void tHqMultileponAnalysis::initializeOutputTree(int itree)
     v_tOutput[itree]->Branch("btag_SF",&btag_SF,"btag_SF/F");
     v_tOutput[itree]->Branch("PU_SF",&PU_SF,"PU_SF/F");
     v_tOutput[itree]->Branch("nPU",&nPU,"nPU/F");
+    v_tOutput[itree]->Branch("nPV",&nPV,"nPV/F");
+
 
 	//--- Categories & MVA
 
@@ -4065,8 +4096,6 @@ void tHqMultileponAnalysis::initializeOutputTree(int itree)
     v_tOutput[itree]->Branch("is_tHq_2lSS_GammaConv",&is_tHq_2lSS_GammaConv,"is_tHq_2lSS_GammaConv/B");
     v_tOutput[itree]->Branch("is_3l",&is_3l,"is_3l/B");
     v_tOutput[itree]->Branch("is_tHq_3l_SR",&is_tHq_3l_SR,"is_tHq_3l_SR/B");
-
-    v_tOutput[itree]->Branch("is_tHq_3l_SR_noMETLD",&is_tHq_3l_SR_noMETLD,"is_tHq_3l_SR_noMETLD/B"); //TESTING
 
 	v_tOutput[itree]->Branch("is_tHq_3l_Training",&is_tHq_3l_Training,"is_tHq_3l_Training/B");
     v_tOutput[itree]->Branch("is_tHq_3l_Fake",&is_tHq_3l_Fake,"is_tHq_3l_Fake/B");
@@ -4094,6 +4123,13 @@ void tHqMultileponAnalysis::initializeOutputTree(int itree)
     v_tOutput[itree]->Branch("is_tHqFCNC_3l_Fake",&is_tHqFCNC_3l_Fake,"is_tHqFCNC_3l_Fake/B");
     v_tOutput[itree]->Branch("is_tHqFCNC_3l_GammaConv",&is_tHqFCNC_3l_GammaConv,"is_tHqFCNC_3l_GammaConv/B");
 
+    v_tOutput[itree]->Branch("is_tHqbis_2lSS_SR",&is_tHqbis_2lSS_SR,"is_tHqbis_2lSS_SR/B");
+    v_tOutput[itree]->Branch("is_tHqbis_2lSS_Fake",&is_tHqbis_2lSS_Fake,"is_tHqbis_2lSS_Fake/B");
+    v_tOutput[itree]->Branch("is_tHqbis_2lSS_Flip",&is_tHqbis_2lSS_Flip,"is_tHqbis_2lSS_Flip/B");
+    v_tOutput[itree]->Branch("is_tHqbis_2lSS_GammaConv",&is_tHqbis_2lSS_GammaConv,"is_tHqbis_2lSS_GammaConv/B");
+    v_tOutput[itree]->Branch("is_tHqbis_3l_SR",&is_tHqbis_3l_SR,"is_tHqbis_3l_SR/B");
+    v_tOutput[itree]->Branch("is_tHqbis_3l_Fake",&is_tHqbis_3l_Fake,"is_tHqbis_3l_Fake/B");
+    v_tOutput[itree]->Branch("is_tHqbis_3l_GammaConv",&is_tHqbis_3l_GammaConv,"is_tHqbis_3l_GammaConv/B");
 
     //ttH2017 predefined categories (implemented in NTP)
     v_tOutput[itree]->Branch("is_2lSS",&is_2lSS,"is_2lSS/B");
@@ -5156,7 +5192,6 @@ void tHqMultileponAnalysis::InitPredefinedCategories()
     is_3l                = 0;
     is_tHq_3l_Training       = 0;
     is_tHq_3l_SR             = 0;
-    is_tHq_3l_SR_noMETLD     = 0;
     is_tHq_3l_Fake           = 0;
     is_tHq_ttWctrl           = 0;
     is_tHq_ttWctrl_SR        = 0;
@@ -5200,10 +5235,13 @@ int tHqMultileponAnalysis::Check_If_Save_Event(bool do_tHq_analysis)
         || is_tHqFCNC_2lSS_SR
         || is_tHqFCNC_2lSS_Fake
         || is_tHqFCNC_2lSS_Flip
-        || is_tHqFCNC_2lSS_GammaConv) {nlep = 2;}
+        || is_tHqFCNC_2lSS_GammaConv
+        || is_tHqbis_2lSS_SR
+        || is_tHqbis_2lSS_Fake
+        || is_tHqbis_2lSS_Flip
+        || is_tHqbis_2lSS_GammaConv) {nlep = 2;}
 
         else if(is_tHq_3l_SR
-        || is_tHq_3l_SR_noMETLD
         || is_tHq_3l_Training
         || is_tHq_3l_Fake
         || is_tHq_3l_GammaConv
@@ -5215,7 +5253,10 @@ int tHqMultileponAnalysis::Check_If_Save_Event(bool do_tHq_analysis)
         || is_tHq_WZctrl_GammaConv
         || is_tHqFCNC_3l_SR
         || is_tHqFCNC_3l_Fake
-        || is_tHqFCNC_3l_GammaConv) {nlep = 3;}
+        || is_tHqFCNC_3l_GammaConv
+        || is_tHqbis_3l_SR
+        || is_tHqbis_3l_Fake
+        || is_tHqbis_3l_GammaConv) {nlep = 3;}
         else if(is_tHq_4l_SR
         || is_tHq_ZZctrl_SR) {nlep = 4;}
     }
@@ -5339,8 +5380,8 @@ void tHqMultileponAnalysis::Fill_Overlap_Histo()
     {
         if(v_tHq_cat[icat] == 1) //Add event yield to total
         {
-            float tmp = h_totalYield_tHq_cat->GetBinContent(icat+1);
-            h_totalYield_tHq_cat->SetBinContent(icat+1, tmp+weight);
+            // h_totalYield_tHq_cat->AddBinContent(icat+1, weight);
+            h_totalYield_tHq_cat->Fill(icat+0.5, weight);
         }
     }
 
@@ -5349,10 +5390,12 @@ void tHqMultileponAnalysis::Fill_Overlap_Histo()
     {
         if(v_ttH_cat[icat] == 1) //Add event yield to total
         {
-            float tmp = h_totalYield_ttH_cat->GetBinContent(icat+1);
-            h_totalYield_ttH_cat->SetBinContent(icat+1, tmp+weight);
+            // h_totalYield_ttH_cat->AddBinContent(icat+1, weight);
+            h_totalYield_ttH_cat->Fill(icat+0.5, weight);
         }
     }
+
+    // cout<<"h_totalYield_ttH_cat->GetBinContent(1) = "<<h_totalYield_ttH_cat->GetBinContent(1)<<endl;
 
     //Save total yield of events overlapping between tHq/ttH categories
     for(int i=0; i<v_tHq_cat.size(); i++)
@@ -5363,8 +5406,9 @@ void tHqMultileponAnalysis::Fill_Overlap_Histo()
             {
                 if(v_ttH_cat[j] == 1) //Add event yield to total
                 {
-                    float tmp = h_overlap_ttH_tHq_cat->GetBinContent(i+1, j+1);
-                    h_overlap_ttH_tHq_cat->SetBinContent(i+1, j+1, tmp+weight);
+                    // float tmp = h_overlap_ttH_tHq_cat->GetBinContent(i+1, j+1);
+                    // h_overlap_ttH_tHq_cat->SetBinContent(i+1, j+1, tmp+weight); //No AddBinContent() for TH2F?
+                    h_overlap_ttH_tHq_cat->Fill(i+0.5, j+0.5, weight); //No AddBinContent() for TH2F?
                 }
             }
         }
@@ -5773,113 +5817,203 @@ void tHqMultileponAnalysis::Compute_Weight_ScaleSyst()
  * => In analysis code, same boolean could be used as usual ; but they represent different categories
  * NB1 : ttZ/WZ CRs doesn't change, can use those from default ntuples
  * NB2 : decided to use "njet4" (= 'ttHfirst') scheme for 2lSS. But still need to compare options for 3l
+ * NB3 : Reads values of "is_tHqbis_xx" categories (instead of "is_tHq_xx"), because we want to make the orthogonalisation with the tHq categories directly based on ttH definitions
+ * ... BUT : at the end we modify the "is_tHq_xx" categories, are it is simpler to use these ones in the code
  */
 void tHqMultileponAnalysis::Modify_DefaultCategories_Orthogonal(TString scheme)
 {
-    if(scheme == "") {return;}
+    //NB : if scheme == "" => don't orthogonalize categories, but still do the change "is_tHq_xx = is_tHqbis_xx" at the end of the func ! Because for categ studies, want to use the 'bis' booleans, which follow the ttH selections
 
     if(scheme.Contains("njet") )
     {
         //-- Decided to use njet4/ttHfirst scheme in 2lSS
-        if(is_tHq_2lSS_SR) //SR
+        if(is_tHqbis_2lSS_SR) //SR
         {
-            if(is_ttH_2lSS_SR) {is_tHq_2lSS_SR = 0;} //thq/tth => overlap goes to ttH
+            if(is_ttH_2lSS_SR) {is_tHqbis_2lSS_SR = 0;} //thq/tth => overlap goes to ttH
 
-            if(is_tHq_2lSS_SR && is_ttH_ttWctrl_SR) //thq/tt< => depends on fwd jet
+            if(is_tHqbis_2lSS_SR && is_ttH_ttWctrl_SR) //thq/tth => depends on fwd jet
             {
                 if(nLightJets_Fwd > 0) {is_ttH_ttWctrl_SR = 0;}
-                else {is_tHq_2lSS_SR = 0;}
+                else {is_tHqbis_2lSS_SR = 0;}
             }
         }
-        else if(is_tHq_2lSS_Fake) //Fakes
+        else if(is_tHqbis_2lSS_Fake) //Fakes
         {
-            if(is_ttH_2lSS_Fake) {is_tHq_2lSS_Fake = 0;} //thq/tth => overlap goes to ttH
+            if(is_ttH_2lSS_Fake) {is_tHqbis_2lSS_Fake = 0;} //thq/tth => overlap goes to ttH
 
-            if(is_tHq_2lSS_Fake && is_ttH_ttWctrl_Fake) //thq/tt< => depends on fwd jet
+            if(is_tHqbis_2lSS_Fake && is_ttH_ttWctrl_Fake) //thq/tth => depends on fwd jet
             {
                 if(nLightJets_Fwd > 0) {is_ttH_ttWctrl_Fake = 0;}
-                else {is_tHq_2lSS_Fake = 0;}
+                else {is_tHqbis_2lSS_Fake = 0;}
             }
         }
-        else if(is_tHq_2lSS_Flip) //Flip
+        else if(is_tHqbis_2lSS_Flip) //Flip
         {
-            if(is_ttH_2lSS_Flip) {is_tHq_2lSS_Flip = 0;} //thq/tth => overlap goes to ttH
+            if(is_ttH_2lSS_Flip) {is_tHqbis_2lSS_Flip = 0;} //thq/tth => overlap goes to ttH
 
-            if(is_tHq_2lSS_Flip && is_ttH_ttWctrl_Flip) //thq/tt< => depends on fwd jet
+            if(is_tHqbis_2lSS_Flip && is_ttH_ttWctrl_Flip) //thq/tth => depends on fwd jet
             {
                 if(nLightJets_Fwd > 0) {is_ttH_ttWctrl_Flip = 0;}
-                else {is_tHq_2lSS_Flip = 0;}
+                else {is_tHqbis_2lSS_Flip = 0;}
             }
         }
-        else if(is_tHq_2lSS_GammaConv) //GammaConv
+        else if(is_tHqbis_2lSS_GammaConv) //GammaConv
         {
-            if(is_ttH_2lSS_GammaConv) {is_tHq_2lSS_GammaConv = 0;} //thq/tth => overlap goes to ttH
+            if(is_ttH_2lSS_GammaConv) {is_tHqbis_2lSS_GammaConv = 0;} //thq/tth => overlap goes to ttH
 
-            if(is_tHq_2lSS_GammaConv && is_ttH_ttWctrl_GammaConv) //thq/tt< => depends on fwd jet
+            if(is_tHqbis_2lSS_GammaConv && is_ttH_ttWctrl_GammaConv) //thq/tth => depends on fwd jet
             {
                 if(nLightJets_Fwd > 0) {is_ttH_ttWctrl_GammaConv = 0;}
-                else {is_tHq_2lSS_GammaConv = 0;}
+                else {is_tHqbis_2lSS_GammaConv = 0;}
             }
         }
 
         //For 3l, still want to compare schemes (njet3, njet4, ...)
         if(scheme == "njet4")
         {
-            if(is_tHq_3l_SR) //SR
+            if(is_tHqbis_3l_SR) //SR
             {
                 if(is_ttH_3l_SR)
                 {
                     if(nJets_tHq < 4) {is_ttH_3l_SR = 0;}
-                    else {is_tHq_3l_SR = 0;}
+                    else {is_tHqbis_3l_SR = 0;}
                 }
             }
-            else if(is_tHq_3l_Fake) //Fake
+            else if(is_tHqbis_3l_Fake) //Fake
             {
                 if(is_ttH_3l_Fake)
                 {
                     if(nJets_tHq < 4) {is_ttH_3l_Fake = 0;}
-                    else {is_tHq_3l_Fake = 0;}
+                    else {is_tHqbis_3l_Fake = 0;}
                 }
             }
-            else if(is_tHq_3l_GammaConv) //SR
+            else if(is_tHqbis_3l_GammaConv) //SR
             {
                 if(is_ttH_3l_GammaConv)
                 {
                     if(nJets_tHq < 4) {is_ttH_3l_GammaConv = 0;}
-                    else {is_tHq_3l_GammaConv = 0;}
+                    else {is_tHqbis_3l_GammaConv = 0;}
                 }
             }
         }
         else if(scheme == "njet3")
         {
-            if(is_tHq_3l_SR) //SR
+            if(is_tHqbis_3l_SR) //SR
             {
                 if(is_ttH_3l_SR)
                 {
                     if(nJets_tHq < 3) {is_ttH_3l_SR = 0;}
-                    else {is_tHq_3l_SR = 0;}
+                    else {is_tHqbis_3l_SR = 0;}
                 }
             }
-            else if(is_tHq_3l_Fake) //Fake
+            else if(is_tHqbis_3l_Fake) //Fake
             {
                 if(is_ttH_3l_Fake)
                 {
                     if(nJets_tHq < 3) {is_ttH_3l_Fake = 0;}
-                    else {is_tHq_3l_Fake = 0;}
+                    else {is_tHqbis_3l_Fake = 0;}
                 }
             }
-            else if(is_tHq_3l_GammaConv) //SR
+            else if(is_tHqbis_3l_GammaConv) //SR
             {
                 if(is_ttH_3l_GammaConv)
                 {
                     if(nJets_tHq < 3) {is_ttH_3l_GammaConv = 0;}
-                    else {is_tHq_3l_GammaConv = 0;}
+                    else {is_tHqbis_3l_GammaConv = 0;}
                 }
             }
         }
         else {return;}
     }
-    else {return;}
+    else if(scheme == "fwd")
+    {
+        if(is_tHqbis_2lSS_SR) //SR
+        {
+            if(is_ttH_2lSS_SR)
+            {
+                if(nLightJets_Fwd > 0) {is_ttH_2lSS_SR = 0;}
+                else {is_tHqbis_2lSS_SR = 0;}
+            }
+            if(is_tHqbis_2lSS_SR && is_ttH_ttWctrl_SR)
+            {
+                if(nLightJets_Fwd > 0) {is_ttH_ttWctrl_SR = 0;}
+                else {is_tHqbis_2lSS_SR = 0;}
+            }
+        }
+        else if(is_tHqbis_2lSS_Fake) //Fakes
+        {
+            if(is_ttH_2lSS_Fake)
+            {
+                if(nLightJets_Fwd > 0) {is_ttH_2lSS_Fake = 0;}
+                else {is_tHqbis_2lSS_Fake = 0;}
+            }
+            if(is_tHqbis_2lSS_Fake && is_ttH_ttWctrl_Fake)
+            {
+                if(nLightJets_Fwd > 0) {is_ttH_ttWctrl_Fake = 0;}
+                else {is_tHqbis_2lSS_Fake = 0;}
+            }
+        }
+        else if(is_tHqbis_2lSS_Flip) //Flip
+        {
+            if(is_ttH_2lSS_Flip)
+            {
+                if(nLightJets_Fwd > 0) {is_ttH_2lSS_Flip = 0;}
+                else {is_tHqbis_2lSS_Flip = 0;}
+            }
+            if(is_tHqbis_2lSS_Flip && is_ttH_ttWctrl_Flip)
+            {
+                if(nLightJets_Fwd > 0) {is_ttH_ttWctrl_Flip = 0;}
+                else {is_tHqbis_2lSS_Flip = 0;}
+            }
+        }
+        else if(is_tHqbis_2lSS_GammaConv) //GammaConv
+        {
+            if(is_ttH_2lSS_GammaConv)
+            {
+                if(nLightJets_Fwd > 0) {is_ttH_2lSS_GammaConv = 0;}
+                else {is_tHqbis_2lSS_GammaConv = 0;}
+            }
+            if(is_tHqbis_2lSS_GammaConv && is_ttH_ttWctrl_GammaConv)
+            {
+                if(nLightJets_Fwd > 0) {is_ttH_ttWctrl_GammaConv = 0;}
+                else {is_tHqbis_2lSS_GammaConv = 0;}
+            }
+        }
+        else if(is_tHqbis_3l_SR) //SR
+        {
+            if(is_ttH_3l_SR)
+            {
+                if(nLightJets_Fwd > 0) {is_ttH_3l_SR = 0;}
+                else {is_tHqbis_3l_SR = 0;}
+            }
+        }
+        else if(is_tHqbis_3l_Fake)
+        {
+            if(is_ttH_3l_Fake)
+            {
+                if(nLightJets_Fwd > 0) {is_ttH_3l_Fake = 0;}
+                else {is_tHqbis_3l_Fake = 0;}
+            }
+        }
+        else if(is_tHqbis_3l_GammaConv)
+        {
+            if(is_ttH_3l_GammaConv)
+            {
+                if(nLightJets_Fwd > 0) {is_ttH_3l_GammaConv = 0;}
+                else {is_tHqbis_3l_GammaConv = 0;}
+            }
+        }
+    }
+    // else {return;}
+
+    //Store the "is_tHqbis_xx" values in the "is_tHq_xx" variables, because they are then easier to read in the code
+    is_tHq_2lSS_SR = is_tHqbis_2lSS_SR;
+    is_tHq_2lSS_Fake = is_tHqbis_2lSS_Fake;
+    is_tHq_2lSS_Flip = is_tHqbis_2lSS_Flip;
+    is_tHq_2lSS_GammaConv = is_tHqbis_2lSS_GammaConv;
+    is_tHq_3l_SR = is_tHqbis_3l_SR;
+    is_tHq_3l_Fake = is_tHqbis_3l_Fake;
+    is_tHq_3l_GammaConv = is_tHqbis_3l_GammaConv;
 
     return;
 }
