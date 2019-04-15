@@ -1420,18 +1420,20 @@ void TruthExt::readMultiLepton()
     */
     
     //--- Higgs decay mode
-    higgs_daughter_id = Determine_Higgs_Decay();
-    //int higgs_decay = Determine_Higgs_Decay();
-    //if(higgs_decay == 1) {higgs_decay_ww = true;}
-    //else if(higgs_decay == 2) {higgs_decay_zz = true;}
-    //else if(higgs_decay == 3) {higgs_decay_tt = true;}
+    Determine_Higgs_Decay(higgs_daughter_id1, higgs_daughter_id2);
+    higgs_daughter_id = higgs_daughter_id1; //obsolete, just kept for retrocompatibility for now
+    //cout<<"H daughter 1 = "<<higgs_daughter_id1<<", 2 = "<<higgs_daughter_id2<<endl;
+    
+    //higgs_daughter_id = Determine_Higgs_Decay();
 }
 
 void TruthExt::init()
 {
    gen_PVz = -100.;
    
-   higgs_daughter_id = -1;
+   higgs_daughter_id = 0; //obsolete
+   higgs_daughter_id1 = 0;
+   higgs_daughter_id2 = 0;
    //higgs_decay_ww = false;
    //higgs_decay_zz = false;
    //higgs_decay_tt = false;
@@ -1519,7 +1521,7 @@ void TruthExt::init()
 }
 
 
-int TruthExt::Determine_Higgs_Decay()
+void TruthExt::Determine_Higgs_Decay(int& higgs_daughter_id1, int& higgs_daughter_id2)
 {
     bool debug = false;
     
@@ -1541,16 +1543,30 @@ int TruthExt::Determine_Higgs_Decay()
 	    	index_decaying_higgs = ntP->gen_daughter_index->at(index_decaying_higgs).at(0);
 		n_tries++; //few events stuck in this loop to find the proper "decaying" higgs ?
 	    }
+	    
+	    if(debug) {cout<<"---------"<<endl;}
 	
 	    //Check IDs of decay products
 	    //cout<<"ntP->gen_daughter_index size "<<ntP->gen_daughter_index->at(index_decaying_higgs).size()<<endl;
 	    //for(int i = 0; i<ntP->gen_daughter_index->at(index_decaying_higgs).size(); i++)
 	    {
-            	int idaughter = ntP->gen_daughter_index->at(index_decaying_higgs).at(0);
-	    
-	    	if(debug) {cout<<"Select the first daughter : genIndex = "<<idaughter<<" / ID = "<<ntP->gen_id->at(idaughter)<<endl;}
+            	//int idaughter = ntP->gen_daughter_index->at(index_decaying_higgs).at(i);
 		
-		return fabs(ntP->gen_id->at(idaughter));
+		//There should be 2 daughter particles => return their IDs
+		int idaughter1 = ntP->gen_daughter_index->at(index_decaying_higgs).at(0); 
+		higgs_daughter_id1 = ntP->gen_id->at(idaughter1);
+		
+		int idaughter2 = -1;
+		if(ntP->gen_daughter_index->at(index_decaying_higgs).size() > 1) {idaughter2 = ntP->gen_daughter_index->at(index_decaying_higgs).at(1);}
+		if(idaughter2 != -1) {higgs_daughter_id2 = ntP->gen_id->at(idaughter2);}
+		
+		return;
+		
+		//cout<<"genIndex = "<<idaughter<<" / ID = "<<ntP->gen_id->at(idaughter)<<endl;
+	    
+	    	//if(debug) {cout<<"Select the first daughter : genIndex = "<<idaughter<<" / ID = "<<ntP->gen_id->at(idaughter)<<endl;}
+		
+		//return fabs(ntP->gen_id->at(idaughter));
 	    
 	    	//Now, store directly daughter ID instead of checking if it's a W || Z || tautau
 	    	/*
@@ -1581,5 +1597,5 @@ int TruthExt::Determine_Higgs_Decay()
     }
 
     if(debug) {cout<<"Decay not found !"<<endl;}
-    return -1;
+    return;
 }

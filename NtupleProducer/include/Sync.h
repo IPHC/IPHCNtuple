@@ -28,7 +28,7 @@ class Sync
    void setBranchAddress();
    void initVar();
    void get(Ntuple *nt,int npresel_el,int npresel_mu,int npresel_tau,int npresel_jet,int nfakeable_el,int nfakeable_mu,int nBL);
-   bool fill(Ntuple *nt,EventExt *ev);
+   bool fill(Ntuple *nt,EventExt *ev, bool=false);
    
    TFile*  m_file;
    
@@ -251,6 +251,10 @@ class Sync
    float PFMETphi;
    float MHT;
    float metLD;
+   float metLD_JESup;
+   float metLD_JESdown;
+   float metLD_JERup;
+   float metLD_JERdown;
    int isGenMatched;
    int isGenChargeMatched;
    

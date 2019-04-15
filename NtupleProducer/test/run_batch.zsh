@@ -1,5 +1,9 @@
 #!/bin/env zsh
 
+version="test5" #output subdir.
+#version="tHq2017" #output subdir.
+#version="ttH2017" #output subdir.
+
 #--- UPDATE proxy
 cp /tmp/x509up_u8066 /home-pbs/ntonon/proxy/
 
@@ -14,17 +18,13 @@ sync=0
 #que="cms" #no reserved slots, higher demand, <72h
 #que="cms_local" #100 reserved local slots, <72h
 #que="sbg_local" #100 reserved local slots, <72h
-que="cms_local_mdm" #reseved slots, faster, <4h jobs only
+que="cms_local_mdm" #reseved slots, faster, <4h jobs only !
 
 
 export HOME=$(pwd)
 
 dout="/home-pbs/ntonon/tHq/IPHCNtuple_2017/CMSSW_9_4_3/src/IPHCNtuple/NtupleProducer/test"
-
 dout_f="/opt/sbg/scratch1/cms/ntonon/ntuples_prod_tHq"
-
-version="tHq2017" #output subdir.
-#version="ttH2017" #output subdir.
 
 echo "CMSSW_RELEASE_BASE" $CMSSW_RELEASE_BASE
 

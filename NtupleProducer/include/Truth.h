@@ -23,7 +23,9 @@ class Truth : public Helper
    //int higgs_decay_ww;
    //int higgs_decay_zz;
    //int higgs_decay_tt;
-   int higgs_daughter_id;
+   int higgs_daughter_id; //obsolete, just kept for retrocompatibility... can remove when will reproduce all NTP files
+   int higgs_daughter_id1;
+   int higgs_daughter_id2;
    
    float gen_PVz;
    std::vector<float>  gen_pt;

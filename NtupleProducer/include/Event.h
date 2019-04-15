@@ -11,18 +11,30 @@ class Event : public Base
    Event();
    virtual ~Event();
 
-   float mc_weight;
+   float mc_weight; //set to +/-1
+   float mc_weight_originalValue; //original weight, can differ from +/-1
    Int_t id;
    int   run;
    int   lumi;
       
    float weight_originalXWGTUP;
+   
+   /*
    float weight_scale_muF0p5;
    float weight_scale_muF2;
    float weight_scale_muR0p5;
    float weight_scale_muR2;
    float weight_scale_muR2muF2;
-   float weight_scale_muR0p5muF0p5;
+   float weight_scale_muR0p5muF0p5;*/
+
+   float weight_scale_index2;
+   float weight_scale_index3;
+   float weight_scale_index4;
+   float weight_scale_index5;
+   float weight_scale_index6;
+   float weight_scale_index7;
+   float weight_scale_index8;
+   float weight_scale_index9;
    
    std::vector<float> pdf_weights;
    std::vector<std::string> pdf_ids;
@@ -84,6 +96,12 @@ class Event : public Base
    float metpt;
    float metsumet;
    float metLD;
+
+//New -- also stored metLD recomputed for JES/JER variations
+   float metLD_JESup;
+   float metLD_JESdown;
+   float metLD_JERup;
+   float metLD_JERdown;
 
    float metcov00;
    float metcov01;

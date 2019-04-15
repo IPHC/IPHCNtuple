@@ -16,16 +16,6 @@ void ElectronExt::read(bool isdata)
 {
    ID                                = idx;
 
-/* OBSOLETE -- REMOVE WHEN NEXT VERSION AVAILABLE   
-   //E 	                            = ntP->el_E->at(idx); //before smearing (preCorr)
-   //pt	                            = ntP->el_pt->at(idx); //before smearing (preCorr)
-   E_preCorr                        = ntP->el_ecalTrkEnergyPreCorr->at(idx); //before smearing (preCorr)
-   pt_preCorr                       = ntP->el_pt->at(idx); //before smearing (preCorr)     
-   E 	                            = ntP->el_ecalTrkEnergyPostCorr->at(idx); //after smearing (postCorr)
-   pt 	 			    = pt_preCorr * (E / E_preCorr); //correct pT by smearing correction factor
-   errCorr                          = ntP->el_ecalTrkEnergyErrPostCorr->at(idx); //error on smearing
-*/
-
    E_preCorr                        = ntP->el_E->at(idx); //before smearing (preCorr)
    E 	                            = ntP->el_E_postCorr->at(idx);
    pt_preCorr                       = ntP->el_pt->at(idx); //before smearing (preCorr)     
@@ -195,7 +185,7 @@ void ElectronExt::init()
    gen_dr = -100;
 }
 
-void ElectronExt::sel()
+void ElectronExt::sel(bool DEBUG)
 {   
    bool isLoose = false;
 
@@ -282,13 +272,10 @@ void ElectronExt::sel()
    isTightTTH = ( isFakeableTTH &&
 		  pass_lepMVA );
 
-   for(int d=0;d<evdebug->size();d++)
-     {		       
-	double evId = ntP->ev_id;
-	if( evId == evdebug->at(d) )
+	if(DEBUG)
 	  {
 	     std::cout << "------------------------------" << std::endl;
-	     std::cout << "Event #" << std::setprecision(12) << evId << std::endl;
+	     std::cout << "Event #" << std::setprecision(12) << ntP->ev_id << std::endl;
 	     std::cout << "  electron #" << ID << std::endl << std::endl;
 	     std::cout << "  conept = " << conept << std::endl;
 	     std::cout << "  pt = " << pt << std::endl;
@@ -321,7 +308,6 @@ void ElectronExt::sel()
 	     std::cout << " pass_lepMVA = " << pass_lepMVA << std::endl;
 	     std::cout << " isTightTTH = " << isTightTTH << std::endl;
 	  }		  
-     }		  
 }
 
 

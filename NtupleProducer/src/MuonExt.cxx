@@ -140,7 +140,7 @@ void MuonExt::init()
    gen_dr = -100;
 }
 
-void MuonExt::sel()
+void MuonExt::sel(bool DEBUG)
 {
    bool pass_pt      = ( pt > 5 );
    bool pass_eta     = ( fabs(eta) < 2.4 );
@@ -186,13 +186,10 @@ void MuonExt::sel()
 		  pass_lepMVA && 
 		  isMedium );
 
-   for(int d=0;d<evdebug->size();d++)
-     {		       
-	double evId = ntP->ev_id;
-	if( evId == evdebug->at(d) )
+	if(DEBUG)
 	  {
 	     std::cout << "------------------------------" << std::endl;
-	     std::cout << "Event #" << std::setprecision(12) << evId << std::endl;
+	     std::cout << "Event #" << std::setprecision(12) << ntP->ev_id << std::endl;
 	     std::cout << "  muon #" << ID << std::endl << std::endl;
 	     std::cout << "  conept = " << conept << std::endl;
 	     std::cout << "  pt = " << pt << std::endl;
@@ -218,8 +215,7 @@ void MuonExt::sel()
 	     std::cout << "  pass_lepMVA = " << pass_lepMVA << std::endl;
 	     std::cout << "  isMedium = " << isMedium << std::endl;
 	     std::cout << "  isTightTTH = " << isTightTTH << std::endl;
- }		  
-     }		  
+ 	}		  
 }
 
 float MuonExt::getEffArea(float eta)

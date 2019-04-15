@@ -26,6 +26,5 @@ extern Tree *ntP;
 extern TChain *ch;
 extern Ntuple *nt;
 extern Sync *sc;
-extern std::vector<int> *evdebug;
 
 #endif

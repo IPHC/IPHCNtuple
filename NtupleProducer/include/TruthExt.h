@@ -16,7 +16,7 @@ class TruthExt : public Truth
    void readMultiLepton();
    void coup();
    void init();
-   int Determine_Higgs_Decay();
+   void Determine_Higgs_Decay(int&, int&);
 
  protected:
     

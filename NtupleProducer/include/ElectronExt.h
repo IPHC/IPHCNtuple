@@ -12,7 +12,7 @@ class ElectronExt : public Electron
    ElectronExt();
    virtual ~ElectronExt();
 
-   void sel();
+   void sel(bool=false);
    void read(bool isdata);
    void init();
    float getEffArea(float eta);

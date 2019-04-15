@@ -8,12 +8,13 @@
 #include <iomanip>
 #include <algorithm>
 #include <assert.h>
+#include <fstream>
+#include <sstream>
 
 Tree *ntP;
 TChain *ch;
 Ntuple *nt;
 Sync *sc;
-std::vector<int> *evdebug;
 
 unsigned int idx;
 
@@ -95,13 +96,27 @@ int main(int argc, char *argv[])
    GenJetExt genjet;
    TriggerObjExt trigObj;
 
-
-
-   evdebug = new std::vector<int>(); //Will printout debug info for these events only
-   //evdebug->push_back(); 
-
-
-
+//-- DEBUG : here, can read a list of event ids directly from a file, and then look specifically for them
+//===============================
+   std::vector<int> evdebugid;
+   std::vector<int> evdebuglumi;
+   /*
+   ifstream file_in("/home-pbs/ntonon/tHq/IPHCNtuple_2017/CMSSW_9_4_3/src/IPHCNtuple/NtupleProducer/test/sync/input_3l_SR_METinTH_noTriggerMatch_tH_only_not_in_tHq.txt");  
+   //if (file_in.is_open()) {std::cout <<"!"<<file_in.rdbuf();}
+   
+   string line;
+   while(getline(file_in, line))
+   {
+   	//std::cout<<"line = "<<line<<std::endl;
+   	std::stringstream ss(line);
+	Int_t run, lumi, ev_id;
+	char c1, c2;
+	ss>>run>>c1>>lumi>>c2>>ev_id;
+	evdebugid.push_back(ev_id);
+	evdebugid.push_back(lumi);
+	std::cout<<"DEBUG Ev ID = "<<ev_id<<std::endl;
+   }*/
+   //==========================
 
    int nlep = 0;
    int njet = 0;
@@ -111,15 +126,16 @@ int main(int argc, char *argv[])
    int n_presel_tau = 0;
    int n_presel_jet = 0;
 
-   //-- JES //NB -- newer versions available
+   //-- JES //Ask for "Total" source of uncert.
    JetCorrectionUncertainty* jesTotal = 0;
    std::string jecFilesPath = cmssw+"/src/IPHCNtuple/NtupleProducer/data/jecFiles/";
-   std::string jecMC = jecFilesPath+"Fall17_17Nov2017_V6_MC_UncertaintySources_AK4PFchs.txt";
-   std::string jecData = jecFilesPath+"Fall17_17Nov2017F_V6_DATA_UncertaintySources_AK4PFchs.txt"; //can use any run ? same files ?
+   std::string jecMC = jecFilesPath+"Fall17_17Nov2017_V32_MC/Fall17_17Nov2017_V32_MC_UncertaintySources_AK4PFchs.txt";
+   std::string jecData = jecFilesPath+"Fall17_17Nov2017F_V32_DATA/Fall17_17Nov2017F_V32_DATA_UncertaintySources_AK4PFchs.txt";
    if(!isdata) {jesTotal = new JetCorrectionUncertainty(*(new JetCorrectorParameters(jecMC.c_str(), "Total")));}
    else {jesTotal = new JetCorrectionUncertainty(*(new JetCorrectorParameters(jecData.c_str(), "Total")));}
 
-   //-- JER //not used yet in ttH analysis
+   //-- JER
+   //See : https://twiki.cern.ch/twiki/bin/viewauth/CMS/JetResolution#2017_data
    JME::JetResolution* JER_resolution = 0;
    JME::JetResolutionScaleFactor* JER_scalefactor = 0;
    std::string jerFilesPath = cmssw+"/src/IPHCNtuple/NtupleProducer/data/jerFiles/";
@@ -140,28 +156,28 @@ int main(int argc, char *argv[])
 	//cout<<"ientry "<<i<<endl;
 
 	ch->GetEntry(i);
+	
 	nt->clearVar();
 	sc->initVar();
 
         ev.init();
         ev.read(isdata);
 	
-	//if(!isdata) {nt->fill_histograms(ev);}
-
-	//Only keep events to debug -- disactivate if not debugging specific events
-	/*
-	{
+	//Only keep events to debug -- disactivate if not debugging specific events //FIXME
 	bool is_debug_event = false;
-	for(int k = 0; k < evdebug->size(); k++)
+//-------------------
+	/*
+	//cout<<"Event id = "<<ev.id<<endl;
+	for(int k = 0; k < evdebugid.size(); k++)
 	{
-		if(ev.id == evdebug->at(k)) {is_debug_event = true;}
+		if(ev.id == evdebugid.at(k)) {is_debug_event = true;} //match ID
+		if(evdebuglumi.size() > 0 && ev.lumi != evdebuglumi.at(k)) {is_debug_event = false;} //also match lumi
 	}
-	if(!is_debug_event && evdebug->size() > 0) {continue;} //only debug
-	else {cout<<endl<<endl<<endl<<endl<<setprecision(12)<<"== Run/Lumi/Event "<<ev.run<<" / "<<ev.lumi<<" / "<<ev.id<<" =="<<endl;}
-	}
+	if(!is_debug_event && evdebugid.size() > 0) {continue;} //only debug
+	else if(evdebugid.size() > 0) {cout<<endl<<endl<<endl<<endl<<setprecision(12)<<"== Run/Lumi/Event "<<ev.run<<" / "<<ev.lumi<<" / "<<ev.id<<" =="<<endl;}
 	*/
+//-------------------
 	
-
         int n_mu_evt = 0, n_mu_fakeable_evt = 0;
 
         // muons
@@ -171,7 +187,7 @@ int main(int argc, char *argv[])
 
 	     mu.init();
 	     mu.read(isdata);
-	     mu.sel();
+	     mu.sel(is_debug_event);
 
 	     if( mu.isLooseTTH )
 	       {
@@ -199,7 +215,7 @@ int main(int argc, char *argv[])
 
 	     el.init();
 	     el.read(isdata);
-	     el.sel();
+	     el.sel(is_debug_event);
 
 	     if( el.isLooseTTH  )
 	       {
@@ -226,7 +242,7 @@ int main(int argc, char *argv[])
 
 	     tau.init();
 	     tau.read(isdata);
-	     tau.sel();
+	     tau.sel(is_debug_event);
 
 	      if( tau.isLooseTTH )
 	      {
@@ -246,16 +262,16 @@ int main(int argc, char *argv[])
 
         int n_jet_evt = 0;
 	int nBL = 0;
-
+	
         // jets
         for(int j=0;j<ntP->jet_n;j++)
-	  {
+	{
 	     idx = j;
 
 	     jet.init();
 	     jet.read(isdata);
 
-         //JER
+         //JER (4-momentum smearing + uncertainties)
          if(!isdata)
          {
             JME::JetParameters param_JER;
@@ -270,29 +286,32 @@ int main(int argc, char *argv[])
 
             if(sync == 0) //Don't apply JER for sync
             {
-               jet.apply_JER_smearing(isdata, JER_res, JER_sf, JER_sf_up, JER_sf_down); //Fill JER variables
+               jet.apply_JER_smearing(isdata, JER_res, JER_sf, JER_sf_up, JER_sf_down); //Fill JER variables and apply JER SF
             }
          }
 
-         //JES -- NB : also stored in FlatTrees ("jet_Unc"). But must be computed after JER correction anyway... ?
-	     jesTotal->setJetPt(ntP->jet_pt->at(idx));
-	     jesTotal->setJetEta(ntP->jet_eta->at(idx));
+         //JES uncertainties
+	 //NB : also stored in FlatTrees (ntP->jet_Unc) ; re-computed here, since should apply JER first
+	 jesTotal->setJetPt(ntP->jet_pt->at(idx));
+	 jesTotal->setJetEta(ntP->jet_eta->at(idx));
 
-        if(sync == 0) //Don't apply JES for sync
-        {
-           jet.setJESUncertainty(isdata, jesTotal->getUncertainty(true)); //Fill pt_jes_up & pt_jes_down
-        }
+         if(sync == 0) //Don't apply JES for sync
+         {
+	    float jes_unc = jesTotal->getUncertainty(true);
+            jet.setJESUncertainty(isdata, jes_unc); //Fill pt_jes_up & pt_jes_down
+         }
 
-	     jet.sel(sync);
+	 jet.sel(sync, is_debug_event);
 
-	     if( jet.isLooseTTH )
-	       {
-		  nt->NtJetLooseExt->push_back(jet);
-		  n_jet_evt++;
+	 if( jet.isLooseTTH )
+	 {
+	 	nt->NtJetLooseExt->push_back(jet);
+		n_jet_evt++;
 
-		  if(jet.isLooseBTag) {nBL++;}
-	       }
-	       	  }
+		if(jet.isLooseBTag) {nBL++;}
+	 }
+	 else if(jet.isSoftLooseTTH) {nt->NtJetLooseSoftExt->push_back(jet);}
+	}
 
 
         if( !isdata )
@@ -323,7 +342,7 @@ int main(int argc, char *argv[])
 	
 	sc->get(nt,n_el_evt,n_mu_evt,n_tau_evt,n_jet_evt,n_el_fakeable_evt,n_mu_fakeable_evt, nBL);
 
-	bool pass = sc->fill(nt,&ev);
+	bool pass = sc->fill(nt,&ev, is_debug_event);
 
 	nt->NtEventExt->push_back(ev);
 
@@ -340,7 +359,6 @@ int main(int argc, char *argv[])
 	std::cout << "n_presel_jet = " << n_presel_jet << std::endl;
      }
 
-   delete evdebug;
    delete nt;
    delete sc;
 
@@ -351,4 +369,6 @@ int main(int argc, char *argv[])
    //    delete JER_resolution;
    //    delete JER_scalefactor;
    // }
+
+  return 0;
 }

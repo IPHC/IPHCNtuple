@@ -40,17 +40,29 @@ void EventExt::read(bool isdata)
    
    if( !isdata )
      {
+     	/*
         weight_originalXWGTUP = ntP->weight_originalXWGTUP;
         weight_scale_muF0p5 = ntP->weight_scale_muF0p5;
         weight_scale_muF2   = ntP->weight_scale_muF2;
         weight_scale_muR0p5 = ntP->weight_scale_muR0p5;
         weight_scale_muR2   = ntP->weight_scale_muR2;
         weight_scale_muR2muF2   = ntP->weight_scale_muR2muF2;
-        weight_scale_muR0p5muF0p5   = ntP->weight_scale_muR0p5muF0p5;
+        weight_scale_muR0p5muF0p5   = ntP->weight_scale_muR0p5muF0p5;*/
+	
+	weight_scale_index2 = ntP->weight_scale_index2;
+	weight_scale_index3 = ntP->weight_scale_index3;
+	weight_scale_index4 = ntP->weight_scale_index4;
+	weight_scale_index5 = ntP->weight_scale_index5;
+	weight_scale_index6 = ntP->weight_scale_index6;
+	weight_scale_index7 = ntP->weight_scale_index7;
+	weight_scale_index8 = ntP->weight_scale_index8;
+	weight_scale_index9 = ntP->weight_scale_index9;
 
         mc_weight           = ntP->mc_weight;
+	mc_weight_originalValue = ntP->mc_weight_originalValue;
         mc_ptHat            = ntP->mc_ptHat;
         mc_pu_trueNumInt    = ntP->mc_pu_trueNumInt;
+	//if(mc_pu_trueNumInt <=0) {std::cout<<"mc_pu_trueNumInt = "<<mc_pu_trueNumInt<<std::endl;} //FIXME
 
         pdf_weights = *ntP->mc_pdfweights;   
         pdf_ids = *ntP->mc_pdfweightIds;    
@@ -135,6 +147,11 @@ void EventExt::init()
    metpt                 = -1000;
    metphi                = -1000;
    metLD              	 = -1000;
+   metLD_JESup = -1000;
+   metLD_JESdown = -1000;
+   metLD_JERup = -1000;
+   metLD_JERdown = -1000;
+   
    metsumet              = -1000;
 //   metUncorrectedPt      = -1000;
 //   metUncorrectedPhi     = -1000;
@@ -148,15 +165,26 @@ void EventExt::init()
    metNoHF_phi           = -1000;
    metNoHF_sumet         = -1000; 
    
+   /*
    weight_originalXWGTUP   = -1000;
    weight_scale_muF0p5   = -1000;
    weight_scale_muF2     = -1000;
    weight_scale_muR0p5   = -1000;
    weight_scale_muR2     = -1000;
    weight_scale_muR2muF2     = -1000;
-   weight_scale_muR0p5muF0p5     = -1000;
+   weight_scale_muR0p5muF0p5     = -1000;*/
+
+   weight_scale_index2 = -1000;
+   weight_scale_index3 = -1000;
+   weight_scale_index4 = -1000;
+   weight_scale_index5 = -1000;
+   weight_scale_index6 = -1000;
+   weight_scale_index7 = -1000;
+   weight_scale_index8 = -1000;
+   weight_scale_index9 = -1000;   
    
    mc_weight             = -1000;
+   mc_weight_originalValue = -1000;
    mc_ptHat              = -1000;
    mc_pu_trueNumInt      = -1000;
    

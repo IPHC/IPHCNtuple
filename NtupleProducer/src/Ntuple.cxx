@@ -7,27 +7,6 @@ Ntuple::Ntuple(std::string name)
 
 Ntuple::~Ntuple()
 {   
-   //TH1Fs storing sum of weights before preselection for scales
-   /*
-   h_sumWeights_nominal->Write("h_sumWeights_nominal");
-   h_sumWeightsScale_originalXWGTUP->Write("h_sumWeightsScale_originalXWGTUP");
-   h_sumWeightsScale_muF0p5->Write("h_sumWeightsScale_muF0p5");
-   h_sumWeightsScale_muF2->Write("h_sumWeightsScale_muF2");
-   h_sumWeightsScale_muR0p5->Write("h_sumWeightsScale_muR0p5");
-   h_sumWeightsScale_muR2->Write("h_sumWeightsScale_muR2");
-   h_sumWeightsScale_muR2muF2->Write("h_sumWeightsScale_muR2muF2");
-   h_sumWeightsScale_muR0p5muF0p5->Write("h_sumWeightsScale_muR0p5muF0p5");
-
-   delete h_sumWeights_nominal;
-   delete h_sumWeightsScale_originalXWGTUP;
-   delete h_sumWeightsScale_muF0p5;
-   delete h_sumWeightsScale_muF2;
-   delete h_sumWeightsScale_muR0p5;
-   delete h_sumWeightsScale_muR2;
-   delete h_sumWeightsScale_muR2muF2;
-   delete h_sumWeightsScale_muR0p5muF0p5;
-   */
-
    m_file->Write();
    m_file->Close();
 }
@@ -36,18 +15,6 @@ void Ntuple::Init()
 {
    m_file = new TFile(fname_out.c_str(),"RECREATE");
    m_tree = new TTree("Nt","Ntuple");
-   
-   //TH1Fs storing sum of weights before preselection for scales  
-   /*
-   h_sumWeights_nominal = new TH1F("", "", 5, -2, 2);
-   h_sumWeightsScale_originalXWGTUP = new TH1F("", "", 5, -2, 2);
-   h_sumWeightsScale_muF0p5 = new TH1F("", "", 5, -2, 2);
-   h_sumWeightsScale_muF2 = new TH1F("", "", 5, -2, 2);
-   h_sumWeightsScale_muR0p5 = new TH1F("", "", 5, -2, 2);
-   h_sumWeightsScale_muR2 = new TH1F("", "", 5, -2, 2);
-   h_sumWeightsScale_muR2muF2 = new TH1F("", "", 5, -2, 2);
-   h_sumWeightsScale_muR0p5muF0p5 = new TH1F("", "", 5, -2, 2);
-   */
    
    return;
 }
@@ -65,6 +32,7 @@ void Ntuple::setBranchAddress()
    m_tree->Branch("TauLoose",          "std::vector<Tau>",         (NtTauLoose),32000,1);
    m_tree->Branch("TauMedium",         "std::vector<Tau>",         (NtTauMedium),32000,1);
    m_tree->Branch("JetLoose",          "std::vector<Jet>",         (NtJetLoose),32000,1);
+   m_tree->Branch("JetLooseSoft",      "std::vector<Jet>",         (NtJetLooseSoft),32000,1);
    m_tree->Branch("Truth",             "std::vector<Truth>",       (NtTruth),32000,1);
    m_tree->Branch("GenJet",            "std::vector<GenJet>",      (NtGenJet),32000,1);
    m_tree->Branch("TriggerObj",        "std::vector<TriggerObj>",  (NtTriggerObj),32000,1);
@@ -83,6 +51,7 @@ void Ntuple::createVar()
    NtTauLoose           = new std::vector<Tau>;
    NtTauMedium          = new std::vector<Tau>;
    NtJetLoose           = new std::vector<Jet>;
+   NtJetLooseSoft       = new std::vector<Jet>;
    NtTruth              = new std::vector<Truth>;
    NtGenJet             = new std::vector<GenJet>; 
    NtTriggerObj         = new std::vector<TriggerObj>;
@@ -98,6 +67,7 @@ void Ntuple::createVar()
    NtTauLooseExt           = new std::vector<TauExt>;
    NtTauMediumExt          = new std::vector<TauExt>;
    NtJetLooseExt           = new std::vector<JetExt>;
+   NtJetLooseSoftExt       = new std::vector<JetExt>;
    NtTruthExt              = new std::vector<TruthExt>;
    NtGenJetExt             = new std::vector<GenJetExt>; 
    NtTriggerObjExt         = new std::vector<TriggerObjExt>;
@@ -116,6 +86,7 @@ void Ntuple::clearVar()
    NtTauLoose->clear();
    NtTauMedium->clear();
    NtJetLoose->clear();
+   NtJetLooseSoft->clear();
    NtTruth->clear();
    NtGenJet->clear(); 
    NtTriggerObj->clear();
@@ -131,6 +102,7 @@ void Ntuple::clearVar()
    NtTauLooseExt->clear();
    NtTauMediumExt->clear();
    NtJetLooseExt->clear();
+   NtJetLooseSoftExt->clear();
    NtTruthExt->clear();
    NtGenJetExt->clear(); 
    NtTriggerObjExt->clear();
@@ -140,22 +112,6 @@ void Ntuple::fill()
 {
    convert();
 }
-
-/*
-void Ntuple::fill_histograms(EventExt ev)
-{
-  h_sumWeights_nominal->Fill(ev.mc_weight, 1);
-  h_sumWeightsScale_originalXWGTUP->Fill(ev.mc_weight, ev.weight_originalXWGTUP);
-  h_sumWeightsScale_muF0p5->Fill(ev.mc_weight ,ev.weight_scale_muF0p5);
-  h_sumWeightsScale_muF2->Fill(ev.mc_weight, ev.weight_scale_muF2);
-  h_sumWeightsScale_muR0p5->Fill(ev.mc_weight, ev.weight_scale_muR0p5);
-  h_sumWeightsScale_muR2->Fill(ev.mc_weight, ev.weight_scale_muR2);
-  h_sumWeightsScale_muR2muF2->Fill(ev.mc_weight, ev.weight_scale_muR2muF2);
-  h_sumWeightsScale_muR0p5muF0p5->Fill(ev.mc_weight, ev.weight_scale_muR0p5muF0p5);
-  
-  return;
-}
-*/
 
 void Ntuple::write()
 {
@@ -222,6 +178,12 @@ void Ntuple::convert()
      {
 	Jet* jet = dynamic_cast<Jet*>(&(NtJetLooseExt->at(i)));
 	NtJetLoose->push_back(*jet);
+     }
+     
+     for(int i=0;i<NtJetLooseSoftExt->size();i++)
+     {
+	Jet* jet = dynamic_cast<Jet*>(&(NtJetLooseSoftExt->at(i)));
+	NtJetLooseSoft->push_back(*jet);
      }
 
    for(int i=0;i<NtTruthExt->size();i++)

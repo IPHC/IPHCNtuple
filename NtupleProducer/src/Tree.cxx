@@ -374,6 +374,7 @@ void Tree::Init(TChain *ch)
    //jet_genParton_status = 0;
    jet_genParton_id = 0;
    jet_pileupJetId = 0;
+   jet_Unc = 0;
    
    genJet_n = 0;
    genJet_pt = 0;
@@ -842,13 +843,23 @@ void Tree::Init(TChain *ch)
    fChain->SetBranchAddress("pv_z", &pv_z, &b_pv_z);
    fChain->SetBranchAddress("pv_zError", &pv_zError, &b_pv_zError);
    
+   /*
    fChain->SetBranchAddress("weight_originalXWGTUP", &weight_originalXWGTUP, &b_weight_originalXWGTUP);
    fChain->SetBranchAddress("weight_scale_muF0p5", &weight_scale_muF0p5, &b_weight_scale_muF0p5);
    fChain->SetBranchAddress("weight_scale_muF2",   &weight_scale_muF2,   &b_weight_scale_muF2  );
    fChain->SetBranchAddress("weight_scale_muR0p5", &weight_scale_muR0p5, &b_weight_scale_muR0p5);
    fChain->SetBranchAddress("weight_scale_muR2",   &weight_scale_muR2,   &b_weight_scale_muR2  );
    fChain->SetBranchAddress("weight_scale_muR2muF2",   &weight_scale_muR2muF2,   &b_weight_scale_muR2muF2  );
-   fChain->SetBranchAddress("weight_scale_muR0p5muF0p5",   &weight_scale_muR0p5muF0p5,   &b_weight_scale_muR0p5muF0p5  );
+   fChain->SetBranchAddress("weight_scale_muR0p5muF0p5",   &weight_scale_muR0p5muF0p5,   &b_weight_scale_muR0p5muF0p5  );*/
+   
+   fChain->SetBranchAddress("weight_scale_index2",   &weight_scale_index2,   &b_weight_scale_index2);
+   fChain->SetBranchAddress("weight_scale_index3",   &weight_scale_index3,   &b_weight_scale_index3);
+   fChain->SetBranchAddress("weight_scale_index4",   &weight_scale_index4,   &b_weight_scale_index4);
+   fChain->SetBranchAddress("weight_scale_index5",   &weight_scale_index5,   &b_weight_scale_index5);
+   fChain->SetBranchAddress("weight_scale_index6",   &weight_scale_index6,   &b_weight_scale_index6);
+   fChain->SetBranchAddress("weight_scale_index7",   &weight_scale_index7,   &b_weight_scale_index7);
+   fChain->SetBranchAddress("weight_scale_index8",   &weight_scale_index8,   &b_weight_scale_index8);
+   fChain->SetBranchAddress("weight_scale_index9",   &weight_scale_index9,   &b_weight_scale_index9);
    
    fChain->SetBranchAddress("mc_id", &mc_id, &b_mc_id);
    fChain->SetBranchAddress("mc_f1", &mc_f1, &b_mc_f1);
@@ -858,6 +869,7 @@ void Tree::Init(TChain *ch)
    fChain->SetBranchAddress("mc_scale", &mc_scale, &b_mc_scale);
    fChain->SetBranchAddress("mc_ptHat", &mc_ptHat, &b_mc_ptHat);
    fChain->SetBranchAddress("mc_weight", &mc_weight, &b_mc_weight); 
+   fChain->SetBranchAddress("mc_weight_originalValue", &mc_weight_originalValue, &b_mc_weight_originalValue); 
    fChain->SetBranchAddress("mc_pdfweights", &mc_pdfweights, &b_mc_pdfweights);
    fChain->SetBranchAddress("mc_pdfweightIds", &mc_pdfweightIds, &b_mc_pdfweightIds);
    
@@ -1163,6 +1175,7 @@ void Tree::Init(TChain *ch)
    //fChain->SetBranchAddress("jet_genJet_status", &jet_genJet_status, &b_jet_genJet_status);
    //fChain->SetBranchAddress("jet_genJet_id", &jet_genJet_id, &b_jet_genJet_id);
    fChain->SetBranchAddress("jet_pileupJetId", &jet_pileupJetId, &b_jet_pileupJetId);
+   fChain->SetBranchAddress("jet_Unc", &jet_Unc, &b_jet_Unc);
    
    if( fChain->GetBranch("gen_n") ) fChain->SetBranchAddress("gen_n", &gen_n, &b_gen_n);
    if( fChain->GetBranch("gen_pt") ) fChain->SetBranchAddress("gen_pt", &gen_pt, &b_gen_pt);

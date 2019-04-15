@@ -12,7 +12,7 @@ class JetExt : public Jet
    JetExt();
    virtual ~JetExt();
 
-   void  sel(int sync);
+   void  sel(int sync, bool=false);
    void  read(bool isdata);
    void  init();
    void  setJESUncertainty(bool isdata, float unc);
@@ -41,6 +41,8 @@ class JetExt : public Jet
    float jet_genParton_pt     ;
    float jet_genParton_E      ;
    float jet_genParton_id     ;
+   
+   bool isSoftLooseTTH;
    
    ClassDef(JetExt,1)
 };

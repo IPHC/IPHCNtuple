@@ -54,13 +54,24 @@ class Tree {
    Float_t         pv_z;
    Float_t         pv_zError;
    
+   /*
    Float_t         weight_originalXWGTUP;
    Float_t         weight_scale_muF0p5;
    Float_t         weight_scale_muF2;
    Float_t         weight_scale_muR0p5;
    Float_t         weight_scale_muR2;
    Float_t         weight_scale_muR2muF2;
-   Float_t         weight_scale_muR0p5muF0p5;
+   Float_t         weight_scale_muR0p5muF0p5;*/
+
+   Float_t         weight_scale_index2;
+   Float_t         weight_scale_index3;
+   Float_t         weight_scale_index4;
+   Float_t         weight_scale_index5;
+   Float_t         weight_scale_index6;
+   Float_t         weight_scale_index7;
+   Float_t         weight_scale_index8;
+   Float_t         weight_scale_index9;
+
    Int_t           mc_id;
    Int_t           mc_f1;
    Int_t           mc_f2;
@@ -69,6 +80,7 @@ class Tree {
    Float_t         mc_scale;
    Float_t         mc_ptHat;
    Float_t         mc_weight;
+   Float_t         mc_weight_originalValue;
    vector<float>       *mc_pdfweights;
    vector<std::string> *mc_pdfweightIds;
 
@@ -377,6 +389,7 @@ class Tree {
    //vector<int>     *jet_genParton_status;
    vector<int>     *jet_genParton_id;
    vector<float>   *jet_pileupJetId;
+   vector<float>   *jet_Unc;
    
    Int_t gen_n;
    std::vector<float> *gen_pt;
@@ -883,14 +896,26 @@ class Tree {
    TBranch        *b_pv_z;   //!
    TBranch        *b_pv_zError;   //!
    
+   /*
    TBranch        *b_weight_originalXWGTUP;
    TBranch        *b_weight_scale_muF0p5;
    TBranch        *b_weight_scale_muF2;
    TBranch        *b_weight_scale_muR0p5;
    TBranch        *b_weight_scale_muR2;
    TBranch        *b_weight_scale_muR2muF2;
-   TBranch        *b_weight_scale_muR0p5muF0p5;
+   TBranch        *b_weight_scale_muR0p5muF0p5;*/
+   
+    TBranch       *b_weight_scale_index2;
+    TBranch       *b_weight_scale_index3;
+    TBranch       *b_weight_scale_index4;
+    TBranch       *b_weight_scale_index5;
+    TBranch       *b_weight_scale_index6;
+    TBranch       *b_weight_scale_index7;
+    TBranch       *b_weight_scale_index8;
+    TBranch       *b_weight_scale_index9;
+
    TBranch        *b_mc_weight;   //!
+   TBranch        *b_mc_weight_originalValue;   //!
    TBranch        *b_mc_id;   //!
    TBranch        *b_mc_f1;   //!
    TBranch        *b_mc_f2;   //!
@@ -1207,6 +1232,7 @@ class Tree {
    //TBranch      *b_jet_genParton_status; //!
    TBranch        *b_jet_genParton_id; //!
    TBranch        *b_jet_pileupJetId;   //!
+   TBranch        *b_jet_Unc;   //!
    
    TBranch        *b_gen_n;
    TBranch        *b_gen_pt;

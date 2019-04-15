@@ -173,7 +173,7 @@ void TauExt::init()
    gen_dr = -100;
 }
 
-void TauExt::sel()
+void TauExt::sel(bool DEBUG)
 {
    bool pass_pt  = ( pt > 20. );
    bool pass_eta = ( fabs(eta) < 2.3 );
@@ -217,14 +217,11 @@ void TauExt::sel()
 		  pass_byLooseIsolationMVArun2v1DBdR03oldDMwLT );
 		  
 		  
-		  
-     for(int d=0;d<evdebug->size();d++)
-     {		       
-	double evId = ntP->ev_id;
-	if( evId == evdebug->at(d) )
+
+	if(DEBUG)
 	  {
 	     std::cout << "------------------------------" << std::endl;
-	     std::cout << "Event #" << std::setprecision(12) << evId << std::endl;
+	     std::cout << "Event #" << std::setprecision(12) << ntP->ev_id << std::endl;
 	     std::cout << "  Tau #" << ID << std::endl;
 	     std::cout << "  pt = " << pt << std::endl;
 	     std::cout << "  eta = " << eta << std::endl;
@@ -237,6 +234,5 @@ void TauExt::sel()
 	     std::cout << "  isFakeableTTH = " << isFakeableTTH << std::endl;
 	     std::cout << "  isLooseTTH = " << isLooseTTH << std::endl;
 	  }		  
-     }	
 }
 
