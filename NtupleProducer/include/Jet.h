@@ -7,108 +7,38 @@
 
 class Jet : public Base
 {
-    public:
+ public:
 
-        Jet();
-        virtual ~Jet();
+   Jet();
+   virtual ~Jet();
 
-        static bool sortPtPredicate(Jet lhs, Jet rhs) {return (lhs.pt() > rhs.pt());};
+   bool isLooseBTag;
+   bool isMediumBTag;
+   bool isTightBTag;
 
-        int   ID()       {return _ID;};
+   float CSVv2; //Also add other btaggers ?
+   float DeepCSVbtag; // <-> (jet_DeepCSVProbb + jet_DeepCSVProbbb)
 
-        bool  sel();
+   float jet_partonFlavour  ;
+   float jet_hadronFlavour  ;
+   float qgtag;
+   float pileupJetId;
 
-        // kinematics
-        float E()        {return _E;};
-        float pt()       {return _pt;};
-        float eta()      {return _eta;};
-        float phi()      {return _phi;};
-        float m()        {return _m;};
+   float JER_corr;
+   float JER_corr_up;
+   float JER_corr_down;
 
-        bool  isTight()  {return _isTight;};
-        bool  isLoose()  {return _isLoose;};
+   float pt_JES_up;
+   float pt_JES_down;
+   float pt_JER_up;
+   float pt_JER_down;
+   
+   float E_JES_up;
+   float E_JES_down;
+   float E_JER_up;
+   float E_JER_down;
 
-        int   ntrk()     {return _ntrk;};
-
-        float CSVv2()    {return _CSVv2;};
-
-        float jet_partonFlavour() {return _jet_partonFlavour  ;};
-        float jet_hadronFlavour() {return _jet_hadronFlavour  ;};
-
-        float jet_genJet_pt()     {return  _jet_genJet_pt    ;};
-	float jet_genJet_E()      {return  _jet_genJet_E   ;};
-        /*float jet_genJet_eta()    {return  _jet_genJet_eta ;};
-          float jet_genJet_phi()    {return  _jet_genJet_phi ;};
-          float jet_genJet_m()      {return  _jet_genJet_m   ;};
-          float jet_genJet_E()      {return  _jet_genJet_E   ;};
-          float jet_genJet_status() {return  _jet_genJet_status ;};
-          float jet_genJet_id()     {return  _jet_genJet_id  ;};*/
-
-        float jet_genParton_pt()     {return  _jet_genParton_pt     ;};
-	float jet_genParton_E()      {return  _jet_genParton_E      ;};
-        /*float jet_genParton_eta()    {return  _jet_genParton_eta    ;};
-          float jet_genParton_phi()    {return  _jet_genParton_phi    ;};
-          float jet_genParton_m()      {return  _jet_genParton_m      ;};
-          float jet_genParton_E()      {return  _jet_genParton_E      ;};
-          float jet_genParton_status() {return  _jet_genParton_status ;};*/
-          float jet_genParton_id()     {return  _jet_genParton_id     ;};
-
-	float JES_uncert()	{return _JES_uncert;}
-	float pt_JER()		{return _pt_JER;}
-	float pt_JER_down()	{return _pt_JER_down;}
-	float pt_JER_up()	{return _pt_JER_up;}
-
-        void  read(bool isdata);
-        void  init();
-	void  setJESUncertainty(float JES_uncert);
-        void  JECUncertainty();
-    
-    protected:
-
-        int _ID;
-
-        float _E;
-        float _pt;
-        float _eta;
-        float _phi;
-        float _m;
-
-        bool _isTight;
-        bool _isLoose;
-
-        int _ntrk;
-
-        float _CSVv2;
-
-
-        float _jet_partonFlavour  ;
-        float _jet_hadronFlavour  ;
-
-        float _jet_genJet_pt      ;
-	float _jet_genJet_E       ;
-        /*float _jet_genJet_eta     ;
-          float _jet_genJet_phi     ;
-          float _jet_genJet_m       ;
-          float _jet_genJet_E       ;
-          float _jet_genJet_status  ;
-          float _jet_genJet_id      ;*/
-
-        float _jet_genParton_pt     ; 
-	float _jet_genParton_E      ;
-        /*float _jet_genParton_eta    ;
-          float _jet_genParton_phi    ;
-          float _jet_genParton_m      ;
-          float _jet_genParton_E      ;
-          float _jet_genParton_status ;*/
-        float _jet_genParton_id     ;
-
-        float _JES_uncert; // to be used with pt(1+/-uncert), E(1+/-uncert)
-	
-        float _pt_JER;
-        float _pt_JER_down;
-        float _pt_JER_up;
-        
-        ClassDef(Jet,1)
+   ClassDef(Jet,1)
 };
 
 #endif

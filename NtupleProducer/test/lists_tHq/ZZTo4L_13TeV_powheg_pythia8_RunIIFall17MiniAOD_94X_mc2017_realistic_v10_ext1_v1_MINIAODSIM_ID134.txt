@@ -1,0 +1,8 @@
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/tHq2017_v1/ZZTo4L_13TeV_powheg_pythia8/RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM/181217_181523/0001/output_1073.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/tHq2017_v1/ZZTo4L_13TeV_powheg_pythia8/RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM/181217_181523/0001/output_1074.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/tHq2017_v1/ZZTo4L_13TeV_powheg_pythia8/RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM/181217_181523/0001/output_1075.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/tHq2017_v1/ZZTo4L_13TeV_powheg_pythia8/RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM/181217_181523/0001/output_1076.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/tHq2017_v1/ZZTo4L_13TeV_powheg_pythia8/RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM/181217_181523/0001/output_1077.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/tHq2017_v1/ZZTo4L_13TeV_powheg_pythia8/RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM/181217_181523/0001/output_1078.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/tHq2017_v1/ZZTo4L_13TeV_powheg_pythia8/RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM/181217_181523/0001/output_1079.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/tHq2017_v1/ZZTo4L_13TeV_powheg_pythia8/RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM/181217_181523/0001/output_1080.root

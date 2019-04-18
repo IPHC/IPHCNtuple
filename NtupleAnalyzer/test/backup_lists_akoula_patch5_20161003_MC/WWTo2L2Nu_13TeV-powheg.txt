@@ -1,3 +1,0 @@
-/opt/sbg/scratch1/cms/lebihan/Ntuples_akoula_patch5_20160307/toymc/WWTo2L2Nu_13TeV-powheg/WWTo2L2Nu_13TeV-powheg_ID0_0.root
-/opt/sbg/scratch1/cms/lebihan/Ntuples_akoula_patch5_20160307/toymc/WWTo2L2Nu_13TeV-powheg/WWTo2L2Nu_13TeV-powheg_ID1_0.root
-/opt/sbg/scratch1/cms/lebihan/Ntuples_akoula_patch5_20160307/toymc/WWTo2L2Nu_13TeV-powheg/WWTo2L2Nu_13TeV-powheg_ID2_0.root

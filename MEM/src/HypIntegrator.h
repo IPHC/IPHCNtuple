@@ -132,7 +132,7 @@ void HypIntegrator::SetupIntegrationHypothesis(int kMode, int kCat, int nPoints)
 
   nPointsCatHyp = nPoints;
   if (meIntegrator->iNleptons==3){
-    if (kMode!=kMEM_TTW_TopAntitopDecay && kMode!=kMEM_TTbar_TopAntitopFullyLepDecay){
+    if (kMode!=kMEM_TTW_TopAntitopDecay && kMode!=kMEM_TTbar_TopAntitopFullyLepDecay && kMode!=kMEM_TLLJ_TopLepDecay){
       if (kCat==kCat_3l_1b_2j || kCat==kCat_3l_2b_1j) nPointsCatHyp *= 10;
       if (kCat==kCat_3l_1b_1j || kCat==kCat_3l_2b_0j) nPointsCatHyp *= 50;
     }

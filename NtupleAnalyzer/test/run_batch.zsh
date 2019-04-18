@@ -1,15 +1,17 @@
 #!/bin/env zsh
 
-# don't forget /opt/sbg/scratch1/cms
+version="test" #output subdir
+#version="ttH2017" #output subdir
+#version="tHq2017" #output subdir
 
-
-echo "Don't forget to update the lumi and the maximum number of events to run on in this script if needed !"
+echo ""
+#Don't forget to update the lumi and the xsec table
 
 isdata=0
 doSystCombine=0
-lumi=2320
+lumi=41500
 
-cp /tmp/x509up_u6155 /home-pbs/lebihan/someone/proxy/.
+cp /tmp/x509up_u8066 /home-pbs/ntonon/proxy
 
 jName=${1}
 if [[ ${jName} == "" ]]; then
@@ -17,26 +19,34 @@ if [[ ${jName} == "" ]]; then
   exit 1
 fi
 
-que="sbg_local"
+#que="cms_local_long" #180h
+#que="cms_local" #72h
+que="cms_local_mdm" #4h #use this one
+#que="cms_local_short" #few reserved slots, fast, <1h jobs only. TESTING ONLY
 
 export HOME=$(pwd)
 
-dout="/home-pbs/lebihan/someone/clean/ttH/NtupleAnalyzer/test/"
-dout_f="/opt/sbg/scratch1/cms/lebihan/toto/"
+dout="/home-pbs/ntonon/tHq/IPHCNtuple_2017/CMSSW_9_4_3/src/IPHCNtuple/NtupleAnalyzer/test" #Current dir.
+dout_f="/opt/sbg/scratch1/cms/ntonon/Analyzer_ntuples_tHq" #tmp output dir
 
 runName="toy_${jName}"
 logName="log_${jName}"
 
 rm -rf ${dout_f}/${runName}
-mkdir ${dout_f}/${runName}
+#mkdir ${dout_f} #Changed -- done by job
+#mkdir ${dout_f}/${runName} #Changed -- done by job
+
 rm -rf ${logName}
 mkdir ${logName}
 
+#NEW : copy executable 'Analyzer' into dedicated logdir of jobs <-> can then modify the code without affecting the ongoing jobs
+cp ../Analyzer ${logName}
+
 nmax=-1
 
-fxsec="table_MC_Akoula-patch7_20160601.txt"
+fxsec="table_MC_tHqAnalysis.txt"
 
-fdir=$(ls -d lists*)
+fdir=$(ls -d lists_tHq)
 
 echo $fdir
 
@@ -50,23 +60,22 @@ echo $flist | while read line
 do
   jidx=0
   sample=$(echo $line | sed 's%.txt%%g')
-  dataset=$(echo $sample | sed 's%_ID..*%%g')
+  dataset=$(echo $sample | sed 's%__ID..*%%g')
   if [[ ! -d ${runName}/${dataset} ]]; then
-    mkdir ${dout_f}/${runName}/${dataset}
+    #mkdir ${dout_f}/${runName}/${dataset} #CHANGED
   fi
-  linexsec=$(grep $dataset $fxsec)
+  linexsec=$(grep -m 1 $dataset $fxsec) #grep -m 1 <-> only first occurence
   nowe=$(echo $linexsec | awk '{print $3}')
   xsec=$(echo $linexsec | awk '{printf $2}')
+  
   if [[ $nowe == "" ]]; then
     nowe=1
   fi
   if [[ $xsec == "" ]]; then
     xsec=1
   fi
-  fl=$(echo $sample | cut -c1-1)
-  fl2=$(echo $sample | cut -c1-11)
   datamc=""
-  if [[ $fl == "J" ]]; then
+  if [[ $sample == *Run2017* ]]; then
     isdata=1
     doSystCombine=0
     datamc="DATA"
@@ -78,17 +87,23 @@ do
     nmax=${nmax}
   fi
   
+    
+  #isdata=1
   
   fout=`echo ${runName}/${dataset}/${line}_${jidx} | sed 's%.txt%%g'`
   lout=`echo ${line}_${jidx} | sed 's%.txt%%g'`
   #fout=$(echo ${runName}/${dataset}/${line}_${jidx} | sed 's%.txt%%g')
   #lout=$(echo ${line}_${jidx} | sed 's%.txt%%g')
 
-  echo "${dataset}: $nowe $xsec $lumi"
+  echo "* ${dataset} :"
+  echo "- nowe = $nowe"
+  echo "- xsec = $xsec" 
+  echo "- lumi = $lumi"
+  echo "- isdata = " ${isdata}
   #echo "${fpath}${line}"
  
   qsub -N ${dir} -q ${que} -o ${logName}/${sample}.log -j oe single_batch_job.sh \
--v dout=${dout},line2=${fpath}${line},dout_f=${dout_f},fout=${fout},nowe=${nowe},xsec=${xsec},lumi=${lumi},isdata=${isdata},doSystCombine=${doSystCombine},dataset=${dataset},nmax=${nmax}
+-v dout=${dout},line2=${fpath}${line},dout_f=${dout_f},fout=${fout},nowe=${nowe},xsec=${xsec},lumi=${lumi},isdata=${isdata},doSystCombine=${doSystCombine},dataset=${dataset},nmax=${nmax},version=${version},logName=${logName},runName=${runName}
 done
 
 echo "going to sleep 2700 s (45 mn)"

@@ -1,7 +1,0 @@
-DoubleEG
-DoubleMuon
-MET
-MuonEG
-SingleElectron
-SingleMuon
-Tau

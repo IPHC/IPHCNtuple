@@ -1,3 +1,0 @@
-/opt/sbg/scratch1/cms/lebihan/trees_Analyzer_akoula_patch2_01022016_pbs/toyMC10/WW_DoubleScattering_13TeV-pythia8/WW_DoubleScattering_13TeV-pythia8_ID0_0.root
-/opt/sbg/scratch1/cms/lebihan/trees_Analyzer_akoula_patch2_01022016_pbs/toyMC10/WW_DoubleScattering_13TeV-pythia8/WW_DoubleScattering_13TeV-pythia8_ID1_0.root
-/opt/sbg/scratch1/cms/lebihan/trees_Analyzer_akoula_patch2_01022016_pbs/toyMC10/WW_DoubleScattering_13TeV-pythia8/WW_DoubleScattering_13TeV-pythia8_ID2_0.root

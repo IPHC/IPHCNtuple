@@ -1,3 +1,0 @@
-/opt/sbg/scratch1/cms/nchanon/ntuplesProd_763/toytoy_763_new//WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8/WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8_ID0_0.root
-/opt/sbg/scratch1/cms/nchanon/ntuplesProd_763/toytoy_763_new//WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8/WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8_ID1_0.root
-/opt/sbg/scratch1/cms/nchanon/ntuplesProd_763/toytoy_763_new//WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8/WZTo3LNu_TuneCUETP8M1_13TeV-powheg-pythia8_ID2_0.root

@@ -1,0 +1,190 @@
+#NB : for tHq2017 analysis, changing  the way we compute weights : instead of reading swe from here (and doing weight=lumi*xsec/swe), we read the swe
+#directly from histograms (use NTProd macro to produce histo)
+
+#====================================
+#NB : in case of redundant string in 2 dataset names (e.g. : "dataset" and "dataset_other"), place the shortest one first. Because using "grep -m 1" to select 1rst occurence
+#tHq xsec : 0.7927 * 0.324 (BR) = 0.2568 ! Because the THQ sample has leptonically-decaying tops, while THW is inclusive -- see tHq2016 and https://twiki.cern.ch/twiki/bin/viewauth/CMS/SingleTopHiggsGeneration13TeV#tHq
+#====================================
+
+
+#SIGNALS
+#====================================
+THQ_4f_Hincl_13TeV_madgraph_pythia8      		 	0.2568	      	3361686 #kT=-1 only, leptonic top
+THQ_ctcvcp_4f_Hincl_13TeV_madgraph_pythia8			0.7927		9865010 #All couplings, inclusive top decay #0.07096 for SM
+
+THW_5f_Hincl_13TeV_madgraph_pythia8				0.1472		1439996 #kt=-1, tmp 
+THW_ctcvcp_5f_Hincl_13TeV_madgraph_pythia8			0.1472		4714331 #0.01561 for SM
+
+ttHJetToNonbb_M125_TuneCP5_13TeV_amcatnloFXFX_madspin_pythia8	0.212		3286498
+ttHToNonbb_M125_TuneCP5_13TeV-powheg-pythia8			0.212		7522972
+ttH_M125_TuneCP5_13TeV-powheg-pythia8				0.5071		9540346
+
+#FCNC -- NB : for TT, since merging top+antitop and rescaling at later stage, make sure that each sample amounts to only half of xsec !
+ST_FCNC-TH_Tleptonic_HToWWZZtautau_eta_hct-MadGraph5-pythia8		1	3938944
+ST_FCNC-TH_Tleptonic_HToWWZZtautau_eta_hut-MadGraph5-pythia8		1	3819820
+TT_FCNC-TtoHJ_aTleptonic_HToWWZZtautau_eta_hct-MadGraph5-pythia8	0.5	909639
+TT_FCNC-TtoHJ_aTleptonic_HToWWZZtautau_eta_hut-MadGraph5-pythia8	0.5	982780
+TT_FCNC-aTtoHJ_Tleptonic_HToWWZZtautau_eta_hct-MadGraph5-pythia8	0.5	1006914
+TT_FCNC-aTtoHJ_Tleptonic_HToWWZZtautau_eta_hut-MadGraph5-pythia8	0.5	954770
+
+#VLQ
+TprimeBToTH_M-600_LH_TuneCP5_13TeV-madgraph-pythia8		0.1764		298544
+TprimeBToTH_M-650_LH_TuneCP5_13TeV-madgraph-pythia8		0.1213		298514
+TprimeBToTH_M-700_LH_TuneCP5_13TeV-madgraph-pythia8		0.0886		287382
+TprimeBToTH_M-800_LH_TuneCP5_13TeV-madgraph-pythia8		0.0459		298076
+TprimeBToTH_M-900_LH_TuneCP5_13TeV-madgraph-pythia8		0.0251		297678
+TprimeBToTH_M-1000_LH_TuneCP5_13TeV-madgraph-pythia8		0.0145		297554
+TprimeBToTH_M-1100_LH_TuneCP5_13TeV-madgraph-pythia8		0.00867		297288
+TprimeBToTH_M-1200_LH_TuneCP5_13TeV-madgraph-pythia8		0.00536		297032
+#====================================
+
+
+#MAIN BACKGROUNDS
+#====================================
+TTWJetsToLNu_TuneCP5_PSweights_13TeV-amcatnloFXFX-madspin-pythia8	0.2043		2678775
+ttWJets_TuneCP5_13TeV_madgraphMLM_pythia8				0.6105		5193684
+
+TTZToLL_M-1to10_TuneCP5_13TeV-amcatnlo-pythia8			0.05324		131210
+TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8			0.2529		3570720
+ttZJets_TuneCP5_13TeV_madgraphMLM_pythia8			0.765		9035833
+
+WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8			5.063 		6738866 #NB : AN/approval quote 4.4296 // XSDB page quotes 5.052 // BUT ttH use 5.063!!
+
+tZq_ll_4f_ckm_NLO_TuneCP5_PSweights_13TeV-amcatnlo-pythia8	0.0758		3452414		
+
+ZZTo2L2Nu_13TeV_powheg_pythia8					0.564		8279307
+
+ZZTo4L_13TeV_powheg_pythia8											1.256		6890129 #v2
+ZZTo4L_13TeV_powheg_pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v2_MINIAODSIM				1.256		6890129 #v2
+ZZTo4L_13TeV_powheg_pythia8_RunIIFall17MiniAODv2_PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14_v1		1.256		xxx 	#newPMX version
+#====================================
+
+
+#MINOR BACKGROUNDS
+#====================================
+TGJets_leptonDecays_TuneCP5_PSweights_13TeV-amcatnlo-pythia8	1.018		1278406
+
+TTGJets_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8		3.697		1805186
+
+WZZ_TuneCP5_13TeV-amcatnlo-pythia8				0.05565		219660
+
+ZZZ_TuneCP5_13TeV-amcatnlo-pythia8				0.01398		213514
+
+WWW_4F_TuneCP5_13TeV-amcatnlo-pythia8				0.2086		210490		
+
+WWZ_4F_TuneCP5_13TeV-amcatnlo-pythia8				0.1651		221622
+
+TTTT_TuneCP5_13TeV-amcatnlo-pythia8				0.008213	371504
+
+TTWW_TuneCP5_13TeV-madgraph-pythia8				0.007834	199010
+
+TTWH_TuneCP5_13TeV-madgraph-pythia8				0.00114		198982
+
+TTTW_TuneCP5_13TeV-madgraph-pythia8				0.0007273	199704
+
+GluGluHToZZTo4L_M125_13TeV_powheg2_JHUGenV7011_pythia8		0.01212		924562
+
+WpWpJJ_EWK-QCD_TuneCP5_13TeV-madgraph-pythia8			0.03711		148394
+
+WW_DoubleScattering_13TeV-pythia8_TuneCP5			1.921		1000000
+
+WZG_TuneCP5_13TeV-amcatnlo-pythia8				0.04345		837172
+
+ST_tWll_5f_LO_TuneCP5_PSweights_13TeV-madgraph-pythia8		0.01123		927720
+ST_tWll_5f_LO_TuneCP5_PSweights_13TeV_madgraph_pythia8_Fall17	0.01123		12498
+
+VHToNonbb_M125_13TeV_amcatnloFXFX_madspin_pythia8		0.9561		451414
+VHToNonbb_M125_13TeV_amcatnloFXFX_madspin_pythia8_Fall17	0.9561		98527
+
+#obsolete
+W3JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v3_MINIAODSIM 		1162.3 		19614165
+W4JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v1_MINIAODSIM			634.6		11255609
+
+#newer versions -- (don't read nowe here anymore)
+W1JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8			9503.9		xxx
+W2JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8			3258.5		xxx
+W3JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAODv2_PU2017_12Apr2018_94X_mc2017_realistic_v14_v1_MINIAODSIM		1162.3 		xxx
+W4JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAODv2_PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14_v2_MINIAODSIM	634.6		xxx
+#====================================
+
+
+
+
+#TTbar, DY
+#====================================
+DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8		15810		37781273
+
+#Merge LO+LO_ext
+DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_RECOSIMstep_94X_mc2017_realistic_v10_v1_MINIAODSIM		5765.4		48099551
+DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_RECOSIMstep_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM	5765.4		48671981
+
+#Merge fxfx+fxfx_ext
+DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v1_MINIAODSIM		5765.4		18245119
+DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM	5765.4		126007947
+
+#(don't read nowe here anymore)
+DY1JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM	878	xxx
+DY1JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v1_MINIAODSIM		878	xxx
+DY2JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM	307	xxx
+DY2JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v1_MINIAODSIM		307	xxx
+DY3JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v2_MINIAODSIM		112	xxx
+DY3JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v11_ext1_v1_MINIAODSIM	112	xxx
+DY4JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8									44.2	xxx
+
+DYJetsToLL_M-4to50_HT-100to200_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v1_MINIAODSIM		202.8	8721821
+DYJetsToLL_M-4to50_HT-100to200_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM		202.8	xxx
+DYJetsToLL_M-4to50_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v1_MINIAODSIM		53.7	xxx
+DYJetsToLL_M-4to50_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM		53.7	xxx
+DYJetsToLL_M-4to50_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v2_MINIAODSIM		5.66	xxx
+DYJetsToLL_M-4to50_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM		5.66	xxx
+DYJetsToLL_M-4to50_HT-600toInf_TuneCP5_13TeV-madgraphMLM-pythia8									1.852	xxx
+
+
+TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8				88.29		8634992
+TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8		88.29		68594592
+
+TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8			365.34		40829323	
+TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8		365.34		110480538
+
+TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8			831.76		57330267
+
+TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8			87.3		28349068
+TTJets_SingleLeptFromT_TuneCP5_13TeV-madgraphMLM-pythia8	182.18		61528630
+TTJets_SingleLeptFromTbar_TuneCP5_13TeV-madgraphMLM-pythia8	182.18		56643562
+
+#====================================
+
+
+
+
+
+#Obsolete, not used, ...
+#---------------------------------------------------
+#---------------------------------------------------
+#---------------------------------------------------
+TTWJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8		0.2043		2630518 #not used ?
+
+WWTo2L2Nu_NNPDF31_TuneCP5_13TeV-powheg-pythia8			12.2		1710656
+WWTo2L2Nu_DoubleScattering_13TeV-herwigpp			0.1743		1000000
+
+WGToLNuG_TuneCP5_13TeV-madgraphMLM-pythia8			xxx		6282853		
+
+TTToHadronic_TuneCP5_13TeV-powheg-pythia8			377.96		42330800
+TTToHadronic_TuneCP5_PSweights_13TeV-powheg-pythia8		377.96		128129834
+
+ST_s-channel_4f_leptonDecays_TuneCP5_13TeV-amcatnlo-pythia8			3.36		5910707
+ST_s-channel_4f_leptonDecays_TuneCP5_PSweights_13TeV-amcatnlo-pythia8		3.36		6046100
+		
+ST_t-channel_top_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8	136.02		5819035
+ST_t-channel_antitop_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8	80.95		3878150
+
+ST_tW_top_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8			35.85		7499888	
+ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8			35.85		3891190
+
+#----------------------------------------------
+#WJets	61526.7
+#ZG
+#THQ_PRIVATE_PROD      		0.07096	      	123798
+
+#Use that ?? 149K events... ttH using private prod ?
+/WpWpJJ_EWK-QCD_TuneCP5_13TeV-madgraph-pythia8/RunIIFall17MiniAODv2-PU2017_12Apr2018_94X_mc2017_realistic_v14-v1/MINIAODSIM

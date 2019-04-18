@@ -1,3 +1,0 @@
-/opt/sbg/scratch1/cms/lebihan/trees_Analyzer_akoula_patch4_20160225/toyMC/tZq_ll_4f_13TeV-amcatnlo-pythia8_TuneCUETP8M1/tZq_ll_4f_13TeV-amcatnlo-pythia8_TuneCUETP8M1_ID0_0.root
-/opt/sbg/scratch1/cms/lebihan/trees_Analyzer_akoula_patch4_20160225/toyMC/tZq_ll_4f_13TeV-amcatnlo-pythia8_TuneCUETP8M1/tZq_ll_4f_13TeV-amcatnlo-pythia8_TuneCUETP8M1_ID1_0.root
-/opt/sbg/scratch1/cms/lebihan/trees_Analyzer_akoula_patch4_20160225/toyMC/tZq_ll_4f_13TeV-amcatnlo-pythia8_TuneCUETP8M1/tZq_ll_4f_13TeV-amcatnlo-pythia8_TuneCUETP8M1_ID2_0.root

@@ -1,1 +1,0 @@
-/opt/sbg/scratch1/cms/lebihan/Ntuples_akoula_patch5_20160307/toymc/WpWpJJ_EWK-QCD_TuneCUETP8M1_13TeV-madgraph-pythia8/WpWpJJ_EWK-QCD_TuneCUETP8M1_13TeV-madgraph-pythia8_ID0_0.root

@@ -1,2 +1,0 @@
-/opt/sbg/scratch1/cms/nchanon/ntuplesProd_763/toytoy_763_new//ZZ_TuneCUETP8M1_13TeV-pythia8/ZZ_TuneCUETP8M1_13TeV-pythia8_ID0_0.root
-/opt/sbg/scratch1/cms/nchanon/ntuplesProd_763/toytoy_763_new//ZZ_TuneCUETP8M1_13TeV-pythia8/ZZ_TuneCUETP8M1_13TeV-pythia8_ID1_0.root

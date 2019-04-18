@@ -2,22 +2,29 @@
 #define NTUPLEPRODUCER_H
 
 #include "Tree.h"
-#include "Event.h"
-#include "Electron.h"
-#include "Muon.h"
-#include "Tau.h"
-#include "Jet.h"
-#include "Truth.h"
-#include "GenJet.h"
-#include "TriggerObj.h"
+#include "EventExt.h"
+#include "ElectronExt.h"
+#include "MuonExt.h"
+#include "TauExt.h"
+#include "JetExt.h"
+#include "TruthExt.h"
+#include "GenJetExt.h"
+#include "TriggerObjExt.h"
 #include "Ntuple.h"
+#include "Sync.h"
+
+
 // JES
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 
-extern Tree             *ntP;
-extern TChain           *ch;
-extern Ntuple           *nt;
-extern std::vector<int> *evdebug;
+//JER
+#include "JetMETCorrections/Modules/interface/JetResolution.h"
+#include "TRandom3.h"
+
+extern Tree *ntP;
+extern TChain *ch;
+extern Ntuple *nt;
+extern Sync *sc;
 
 #endif

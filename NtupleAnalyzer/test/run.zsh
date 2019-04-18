@@ -2,38 +2,31 @@
 
 cdir=$(pwd)/../
 NtupleDir=$(pwd)/../../NtupleProducer/
-KinFitDir=$(pwd)/../../../KinFit/
-export LD_LIBRARY_PATH=${cdir}:${NtupleDir}:${KinFitDir}:${NtupleDir}/obj:$LD_LIBRARY_PATH
-
-# tools: plot, tran
+export LD_LIBRARY_PATH=${cdir}:${NtupleDir}:${NtupleDir}/obj:$LD_LIBRARY_PATH
 
 ./../Analyzer \
---file test.txt \
+--file input.txt \
 --tree Nt \
---outfile ./output_ttH_MC \
---nmax 10000 \
+--outfile ./output_tHq_MC \
+--nmax -1  \
 --isdata 0 \
---doSystCombine 1 \
+--doSystCombine 0 \
+--lumi 41500 \
 --nowe 1 \
---xsec 1   \
---lumi 1 \
+--xsec 0.7927 \
+--dataset THQ_ctcvcp_4f_Hincl_13TeV_madgraph_pythia8 \
+#--dataset ttHJetToNonbb_M125_TuneCP5_13TeV_amcatnloFXFX_madspin_pythia8 \
 
-#./../Analyzer \
-#--file backup_lists_akoula_patch5_20161003_MC/ttHToNonbb_M125_13TeV_powheg_pythia8.txt \
-#--tree Nt \
-#--outfile ./output_ttH_MC \
-#--nmax 10000 \
-#--isdata 0 \
-#--nowe 1 \
-#--xsec 1   \
-#--lumi 1 \
+#====================================
+#====================================
+#THQ_ctcvcp
+#xsec = 0.7927
+#nowe = 9865010
 
-#./../Analyzer \
-#--file input.txt \
-#--tree Nt \
-#--outfile ./output \
-#--nmax -1 \
-#--isdata 0 \
-#--nowe 1 \
-#--xsec 1 \
-#--lumi 1 \
+#TTWJets
+#xsec = 0.2043
+#nowe = 2678775
+
+#ST_tWll
+#xsec = 0.01123
+#nowe = 927720

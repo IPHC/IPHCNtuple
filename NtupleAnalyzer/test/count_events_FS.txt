@@ -1,0 +1,3 @@
+** Sample : THQ_Hincl_13TeV-madgraph-pythia8_TuneCUETP8M1
+ ----> nentries = 2868 / SUM OF WEIGHTS = 7.56381
+

@@ -1,2 +1,0 @@
-/opt/sbg/scratch1/cms/nchanon/ntuplesProd_763/toytoy_763_new//THW_Hincl_13TeV-madgraph-pythia8_TuneCUETP8M1/THW_Hincl_13TeV-madgraph-pythia8_TuneCUETP8M1_ID0_0.root
-/opt/sbg/scratch1/cms/nchanon/ntuplesProd_763/toytoy_763_new//THW_Hincl_13TeV-madgraph-pythia8_TuneCUETP8M1/THW_Hincl_13TeV-madgraph-pythia8_TuneCUETP8M1_ID1_0.root

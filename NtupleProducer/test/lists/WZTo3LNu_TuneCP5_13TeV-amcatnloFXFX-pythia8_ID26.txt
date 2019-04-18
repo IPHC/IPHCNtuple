@@ -1,0 +1,4 @@
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/tHq2017_v1/WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v2_MINIAODSIM/181217_122722/0000/output_96.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/tHq2017_v1/WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v2_MINIAODSIM/181217_122722/0000/output_97.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/tHq2017_v1/WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v2_MINIAODSIM/181217_122722/0000/output_98.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/tHq2017_v1/WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8/RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v2_MINIAODSIM/181217_122722/0000/output_99.root

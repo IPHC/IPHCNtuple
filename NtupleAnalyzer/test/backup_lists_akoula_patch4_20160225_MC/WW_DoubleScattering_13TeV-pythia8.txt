@@ -1,2 +1,0 @@
-/opt/sbg/scratch1/cms/lebihan/trees_Analyzer_akoula_patch4_20160225/toyMC/WW_DoubleScattering_13TeV-pythia8/WW_DoubleScattering_13TeV-pythia8_ID0_0.root
-/opt/sbg/scratch1/cms/lebihan/trees_Analyzer_akoula_patch4_20160225/toyMC/WW_DoubleScattering_13TeV-pythia8/WW_DoubleScattering_13TeV-pythia8_ID1_0.root

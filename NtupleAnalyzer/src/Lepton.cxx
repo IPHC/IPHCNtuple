@@ -2,19 +2,34 @@
 
 Lepton::Lepton()
 {
-    _pt         =  0;
-    _eta        =  0;
-    _phi        =  0;
-    _E          =  0;
+    pt                 = 0.;
+    conept                 = 0.;
+    //ptCor              = 0.;
+    //ptUnc              = 0.;
+    eta                = 0.;
+    phi                = 0.;
+    E                  = 0.;
 
-    _p4.SetPtEtaPhiM(0,0,0,0);
+    p4.SetPtEtaPhiM(0,0,0,0);
 
-    _id         =  0;
+    id                 =  0;
 
-    _idx        = -1;
-    _isElectron =  0;
+    idx                = -1;
+    
+    isFakeableTTH      = false;
+    isLooseTTH		= false;
+    isTightTTH         = false;
 
-    _charge     =  0;
+    lepMVA         = 0.;
+    
+    passTightCharge    = false;
+    cutEventSel        = false;
+
+    charge             =  0;
+    
+    hasMCMatch		= 0;
+    hasChargeMCMatch	= 0;
+    hasPhotonMCMatch	= 0;
 }
 
 Lepton::~Lepton()

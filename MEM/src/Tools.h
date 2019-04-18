@@ -88,16 +88,16 @@ void FillWeightVectors(Permutations Perm, std::vector<double>* MEAllWeights, std
 
   cout << "FillWeightVectors" << endl;
 
-  for (unsigned int i=0; i<Perm.resMEM_all.size(); i++)
-  if (Perm.resMEM_all.at(i).weight>0){
-    (*MEAllWeights).push_back(Perm.resMEM_all.at(i).weight);
-    (*MEAllWeights_log).push_back(log(Perm.resMEM_all.at(i).weight));
+  for (unsigned int i=0; i<Perm.resMEM_all.size(); i++) {
+    if (Perm.resMEM_all.at(i).weight>0){
+      (*MEAllWeights).push_back(Perm.resMEM_all.at(i).weight);
+      (*MEAllWeights_log).push_back(log(Perm.resMEM_all.at(i).weight));
+    }
+    else{
+      (*MEAllWeights).push_back(1e-300);
+      (*MEAllWeights_log).push_back(log(1e-300));
+    }
   }
-  else{
-    (*MEAllWeights).push_back(1e-300);
-    (*MEAllWeights_log).push_back(log(1e-300));
-  }
-
   return;
 }
 

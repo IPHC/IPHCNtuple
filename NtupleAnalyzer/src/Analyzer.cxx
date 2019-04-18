@@ -1,7 +1,10 @@
-#include "../include/Hist.h"
-#include "../include/TTbarDileptonAnalysis.h"
-#include "../include/TTbarHiggsMultileptonAnalysis.h"
-#include "../include/TTbarHiggsTFAnalysis.h"
+//#include "../include/Hist.h"
+//#include "../include/TTbarDileptonAnalysis.h"
+//#include "../include/TTbarHiggsMultileptonAnalysis.h"
+//#include "../include/TTbarHiggsTFAnalysis.h"
+//#include "../include/TTbarHiggsBTagEff.h"
+
+#include "../include/tHqMultileponAnalysis.h"
 
 #include "TChain.h"
 
@@ -66,32 +69,11 @@ int main(int argc, char *argv[])
     std::cout << "--doSystCombine=" << doSystCombine  << std::endl;
     std::cout << "--dataset=" << dataset  << std::endl;
 
-    TChain *thetree = 0;
-
-    // TTH Transfer Function analysis
-
-    // TTbarHiggsTFAnalysis *TTHTFanalysis = new TTbarHiggsTFAnalysis(fname,thetree,"TTbarHiggs",stream);
-    // TTHTFanalysis->createHistograms();
-    // TTHTFanalysis->Loop();
-    // TTHTFanalysis->writeHistograms();
-
-    // TTH Trigger Studies
-
-    // TTbar...
-
-    // TTH Charge Flip Determination
-
-    // TTbar...
-
-    // TTH Fake Rate Determination
-
-    // TTbar...
-
-    //TTH MEM analysis
-    TTbarHiggsMultileptonAnalysis *TTHanalysis = new TTbarHiggsMultileptonAnalysis(fname,thetree,dataset,stream,outfile,isdata,doSystCombine,xsec,lumi,nowe,nmax);
-    // TTHanalysis->InitLHCO(1,1); // to print LHCO files
-    TTHanalysis->createHistograms();
-    TTHanalysis->Loop();
-    TTHanalysis->writeHistograms();
-
+    
+    //tHq analysis
+    tHqMultileponAnalysis* tHqAnalysis = new tHqMultileponAnalysis(fname,dataset,stream,outfile,isdata,doSystCombine,xsec,lumi,nowe,nmax);
+        
+    tHqAnalysis->Loop();
+        
+    delete tHqAnalysis;
 }

@@ -13,52 +13,69 @@ class Lepton
 
         Lepton();
         virtual ~Lepton();
+	
+	float           pt;
+	float           conept;
+        //float           ptCor;
+        //float           ptUnc;
+        float           eta;
+        float           phi;
+        float           E;
 
-        float pt() {return _pt;};
-        float eta() {return _eta;};
-        float phi() {return _phi;};
-        float E() {return _E;};
+        TLorentzVector  p4;
+	
+	int id;
+        int             idx;
 
-        TLorentzVector p4() {return _p4;};
+        bool            isFakeableTTH;
+	bool            isLooseTTH;
+        bool            isTightTTH;
+        float           lepMVA;
 
-        int id() {return _id;};
+        bool            cutEventSel;
+	bool            passTightCharge;
+        bool            noLostHits;
 
-        int idx() {return _idx;};
-        bool isElectron() {return _isElectron;};
+        int             charge;
+	bool		hasMCMatch;
+	bool		hasChargeMCMatch;
+	bool		hasPhotonMCMatch;
+	
 
-        int charge() {return _charge;};
-
-        template <class T> void setLepton(T *lep, int idx, bool isE)
+        template <class T> void setLepton(T *lep, int idx, bool isE, bool isMu)
         {
-            _pt = lep->pt();
-            _eta = lep->eta();
-            _phi = lep->phi();
-            _E = lep->E();
+            pt                 = lep->pt;
+	    conept                 = lep->conept;
+            //ptCor              = lep->ptCor();
+            //ptUnc              = lep->ptUnc();
+            eta                = lep->eta;
+            phi                = lep->phi;
+            E                  = lep->E;
 
-            _p4.SetPtEtaPhiE(_pt,_eta,_phi,_E);
+            //p4.SetPtEtaPhiE(ptUnc,eta,phi,E);
+	    p4.SetPtEtaPhiE(pt,eta,phi,E); //FIXME -- ptUnc ?
 
-            _id = lep->id();
+            idx                = idx;
 
-            _idx = idx;
-            _isElectron = isE;
-            _charge = lep->charge();
+            charge             = lep->charge;
+
+    	    isFakeableTTH      = lep->isFakeableTTH;
+	    isLooseTTH = lep->isLooseTTH;
+	    
+            //if(isE || isMu) {_isLooseTTH = lep->isLooseTTH;}
+	    //else {_isLooseTTH = true;} //isLooseTTH not implemented for tau
+	    
+	    passTightCharge    = lep->tightCharge;
+	    isTightTTH         = lep->isTightTTH;
+            lepMVA         = lep->lepMVA;
+	    
+	    id = lep->id;
+	    
+	    hasMCMatch = lep->hasMCMatch;
+	    hasChargeMCMatch = lep->hasChargeMCMatch;
+	    if(isE) {hasPhotonMCMatch = lep->hasPhotonMCMatch;} //For ele only
         }
-
-    protected:
-
-        float _pt;
-        float _eta;
-        float _phi;
-        float _E;
-
-        int _id;
-
-        TLorentzVector _p4;
-
-        int _idx;
-        bool _isElectron;
-
-        int _charge;
+	
 };
 
 #endif

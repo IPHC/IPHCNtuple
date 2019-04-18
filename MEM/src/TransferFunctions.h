@@ -361,15 +361,19 @@ double TransferFunctions::ComputeTFProductJetBjetMet(int jetTFmode) const {
     }
   }
   else if (iTF == kTFHistoBnonB_GausRecoil || iTF == kTFHistoBnonBmET || iTF == kTFHistoBnonBratiomET){
-    if (jetTFmode==1){
+    if (jetTFmode>=1){ //bug fix : previously was not computed in Hlnujj 2lss case... (jetTFmode==1 only was checked)
       if (MeasuredVarForTF.doJet1TF) weightTF_Jet1 = ComputeSingleTF_Histo("Jet", ComputedVarForTF.Jet1_E, MeasuredVarForTF.Jet1_E, MeasuredVarForTF.Jet1_Eta);
       else if (TMath::Abs(ComputedVarForTF.Jet1_Eta)<2.4 && (ComputedVarForTF.Jet1_E / TMath::CosH(ComputedVarForTF.Jet1_Eta))>25) weightTF_Jet1 = 0;
+    }
+    if (jetTFmode>=2) {
       if (MeasuredVarForTF.doJet2TF) weightTF_Jet2 = ComputeSingleTF_Histo("Jet", ComputedVarForTF.Jet2_E, MeasuredVarForTF.Jet2_E, MeasuredVarForTF.Jet2_Eta);
       else if (TMath::Abs(ComputedVarForTF.Jet2_Eta)<2.4 && (ComputedVarForTF.Jet2_E / TMath::CosH(ComputedVarForTF.Jet2_Eta))>25) weightTF_Jet2 = 0;
     }
-    if (jetTFmode==2) {
+    if (jetTFmode>=3) {
       if (MeasuredVarForTF.doJet3TF) weightTF_Jet3 = ComputeSingleTF_Histo("Jet", ComputedVarForTF.Jet3_E, MeasuredVarForTF.Jet3_E, MeasuredVarForTF.Jet3_Eta);
       else if (TMath::Abs(ComputedVarForTF.Jet3_Eta)<2.4 && (ComputedVarForTF.Jet3_E / TMath::CosH(ComputedVarForTF.Jet3_Eta))>25) weightTF_Jet3 = 0;
+    }
+    if (jetTFmode>=4) {
       if (MeasuredVarForTF.doJet4TF) weightTF_Jet4 = ComputeSingleTF_Histo("Jet", ComputedVarForTF.Jet4_E, MeasuredVarForTF.Jet4_E, MeasuredVarForTF.Jet4_Eta);
       else if (TMath::Abs(ComputedVarForTF.Jet4_Eta)<2.4 && (ComputedVarForTF.Jet4_E / TMath::CosH(ComputedVarForTF.Jet4_Eta))>25) weightTF_Jet4 = 0;
     }

@@ -1,0 +1,3 @@
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/tHq2017_v1/SingleElectron/Run2017F_17Nov2017_v1_MINIAOD/181223_104113/0002/output_2923.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/tHq2017_v1/SingleElectron/Run2017F_17Nov2017_v1_MINIAOD/181223_104113/0002/output_2924.root
+root://sbgse1.in2p3.fr//dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/FlatTree/tHq2017_v1/SingleElectron/Run2017F_17Nov2017_v1_MINIAOD/181223_104113/0002/output_2925.root

@@ -1,2 +1,0 @@
-/opt/sbg/scratch1/cms/lebihan/trees_Analyzer_akoula_patch4_20160225/toyMC/ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_ID0_0.root
-/opt/sbg/scratch1/cms/lebihan/trees_Analyzer_akoula_patch4_20160225/toyMC/ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1/ST_s-channel_4f_leptonDecays_13TeV-amcatnlo-pythia8_TuneCUETP8M1_ID1_0.root

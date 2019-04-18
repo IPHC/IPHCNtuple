@@ -1,4 +1,0 @@
-/opt/sbg/scratch1/cms/lebihan/Ntuples_akoula_patch5_20160307/toymc/tZq_ll_4f_13TeV-amcatnlo-pythia8_TuneCUETP8M1/tZq_ll_4f_13TeV-amcatnlo-pythia8_TuneCUETP8M1_ID0_0.root
-/opt/sbg/scratch1/cms/lebihan/Ntuples_akoula_patch5_20160307/toymc/tZq_ll_4f_13TeV-amcatnlo-pythia8_TuneCUETP8M1/tZq_ll_4f_13TeV-amcatnlo-pythia8_TuneCUETP8M1_ID1_0.root
-/opt/sbg/scratch1/cms/lebihan/Ntuples_akoula_patch5_20160307/toymc/tZq_ll_4f_13TeV-amcatnlo-pythia8_TuneCUETP8M1/tZq_ll_4f_13TeV-amcatnlo-pythia8_TuneCUETP8M1_ID2_0.root
-/opt/sbg/scratch1/cms/lebihan/Ntuples_akoula_patch5_20160307/toymc/tZq_ll_4f_13TeV-amcatnlo-pythia8_TuneCUETP8M1/tZq_ll_4f_13TeV-amcatnlo-pythia8_TuneCUETP8M1_ID3_0.root

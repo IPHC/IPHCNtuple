@@ -1,9 +1,9 @@
 #!/bin/bash
 
 
-model=sm_ckm
-suffix="ppttlmvljj"
-Name="TTWMJJ"
+model=sm_no_b_mass
+suffix="pptllq"
+Name="TLLQ"
 
 ProcDir=PROC_SA_CPP_${model}_DECAY_${suffix}
 echo Generating code for ${ProcDir} with MakeFile name ${Name}
@@ -79,8 +79,10 @@ echo
 echo Add to the MEPhaseSpace constructor:
 for dir in `cat l`
 do
+  echo MGcard = MadgraphDir + \"/${ProcDir}/Cards/param_card.dat\"\;
   echo process_${dir} = new CPPProcess_${dir}\(\)\;
-  echo process_${dir}-\>initProc\(\"/afs/cern.ch/work/c/chanon/MEM/Madgraph/${ProcDir}/Cards/param_card.dat\"\)\;
+  echo process_${dir}-\>initProc\(MGcard.c_str\(\)\)\;
+#  echo process_${dir}-\>initProc\(\"/afs/cern.ch/work/c/chanon/MEM/Madgraph/${ProcDir}/Cards/param_card.dat\"\)\;
   echo "if (verbosity>=1) cout" \<\< \"${Name} Process nexternal=\" \<\< process_${dir}-\>nexternal \<\< endl\;
   echo
 done

@@ -1,10 +1,10 @@
 #!/bin/sh
 
-export X509_USER_PROXY=/home-pbs/lebihan/someone/proxy/x509up_u6155
+export X509_USER_PROXY=/home-pbs/ntonon/proxy/x509up_u8066
 
 source /cvmfs/cms.cern.ch/cmsset_default.sh
-cd /home-pbs/lebihan/someone/CMSSW_7_6_3/src
-export SCRAM_ARCH=slc6_amd64_gcc493
+cd /home-pbs/ntonon/tHq/IPHCNtuple_2017/CMSSW_9_4_3/src/
+export SCRAM_ARCH=slc6_amd64_gcc630
 eval `scramv1 runtime -sh`
 cd -
 
@@ -18,7 +18,19 @@ xsec=${xsec}
 dout=${dout}
 dout_f=${dout_f}
 sample=${sample}
+dataset=${dataset}
+sync=${sync}
+version=${version}
 
 
-echo "Executing .././NtupleProducer --file ${line2} --outfile ${dout_f}${fout} --isdata ${isdata} --noe ${noe} --xsec ${xsec} --nmax ${nmax}"
-${dout}/./NtupleProducer --file ${line2} --outfile ${dout_f}${fout} --isdata ${isdata} --noe ${noe} --xsec ${xsec} --nmax ${nmax} --tree FlatTree/tree
+#Printing result of "env" command, to get infos on machine used by job, etc.
+env
+
+echo "Executing .././NtupleProducer --file ${line2} --outfile ${dout_f}/${fout} --isdata ${isdata} --noe ${noe} --xsec ${xsec} --nmax ${nmax}"
+
+#Run the job
+${dout}/./NtupleProducer --file ${line2} --outfile ${dout_f}/${fout} --isdata ${isdata} --noe ${noe} --xsec ${xsec} --nmax ${nmax} --tree FlatTree/tree --sync ${sync}
+
+#Move output file to from scratch1 to grid, via script (args : output filename, and destination)
+echo "Will move file [${dout_f}/${fout}] to [/dpm/in2p3.fr/home/cms/phedex/store/user/ntonon/NtupleProducer/${version}/${dataset}/.]"
+${dout}/./Move_File_ToGrid.sh ${dout_f}/${fout}.root ${dataset} ${version}

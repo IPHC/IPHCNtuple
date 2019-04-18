@@ -1,0 +1,9 @@
+wget https://raw.githubusercontent.com/cms-ttH/ttH-13TeVMultiLeptons/master/simpleweights/reconstruction_bdt_weights/weights/TMVAClassification_BDTG.weights_factorized_bLoose.xml
+mv TMVAClassification_BDTG.weights_factorized_bLoose.xml weights_factorized_bLoose.xml
+
+wget https://raw.githubusercontent.com/cms-ttH/ttH-13TeVMultiLeptons/master/simpleweights/reconstruction_bdt_weights/weights/TMVAClassification_BDTG.weights_factorized_bTight.xml
+mv TMVAClassification_BDTG.weights_factorized_bTight.xml weights_factorized_bTight.xml
+
+wget https://raw.githubusercontent.com/cms-ttH/ttH-13TeVMultiLeptons/master/simpleweights/reconstruction_bdt_weights/weights/TMVAClassification_BDTG.weights_factorized_inclusive.xml
+mv TMVAClassification_BDTG.weights_factorized_inclusive.xml weights_factorized_inclusive.xml
+

@@ -1,1 +1,0 @@
-/opt/sbg/scratch1/cms/lebihan/Ntuples_akoula_patch5_20160307/toymc/TTWJetsToQQ_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8/TTWJetsToQQ_TuneCUETP8M1_13TeV-amcatnloFXFX-madspin-pythia8_ID0_0.root

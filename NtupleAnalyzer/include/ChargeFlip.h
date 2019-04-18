@@ -4,8 +4,7 @@
 
 void fillQFhistos(TFile *fileQF);
 
-double get_QF_wgt_2l( std::vector<double> leptonsPts,
-                      std::vector<double> leptonsEtas);
+double get_QF_weight( std::vector<double> leptonsPts, std::vector<double> leptonsEtas);
 
 TH2D* h_QF_wgt;
 
