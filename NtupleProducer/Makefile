@@ -3,7 +3,7 @@ CMSINC      = -I$(CMSSW_BASE)/src
 #EGAMLIB      = -L$(CMSSW_BASE)/lib/slc6_amd64_gcc481 -lEgammaAnalysisElectronTools
 #FORMLIB      = -L$(CMSSW_BASE)/lib/slc6_amd64_gcc481 -lEgammaAnalysisElectronTools
 
-JETLIBS     = -L$(CMSSW_RELEASE_BASE)/lib/slc6_amd64_gcc630 -lCondFormatsJetMETObjects -lJetMETCorrectionsModules -lFWCoreMessageLogger
+JETLIBS     = -L$(CMSSW_RELEASE_BASE)/lib/slc6_amd64_gcc700 -lCondFormatsJetMETObjects -lJetMETCorrectionsModules -lFWCoreMessageLogger
 JETINC      = -I$(CMSSW_RELEASE_BASE)/src
 
 BOOSTSYS       = $(shell scram tool tag boost BOOST_BASE)
@@ -51,9 +51,10 @@ OBJS          = obj/Tree.o obj/Base.o obj/Helper.o \
 		
 LIB           = libNtuple.so
 
-MERGEHIST = test/Get_Merged_Histograms_From_FlatTrees.exe
+#MERGEHIST = test/Get_Merged_Histograms_From_FlatTrees.exe
 
-all: 	      $(LIB) $(EXE) $(MERGEHIST)
+#all: 	      $(LIB) $(EXE) $(MERGEHIST)
+all: 	      $(LIB) $(EXE)
 
 $(LIB):	      $(INC) $(SRC)
 	      @echo "####### Generating dictionary"
@@ -64,8 +65,8 @@ $(LIB):	      $(INC) $(SRC)
 	      @$(CXX) $(SOFLAGS) $(CXXFLAGS) $(ROOTLIBS) $(INCLUDE_FLAGS) -I. $(SRC) \
 	      obj/NtupleProducerDict.cxx $(LDLIBS) -o $(LIB) $(ROOTLIBS) 
 	      
-	      #@echo  "####### Removing generated dictionary"
-	      #@rm -f obj/NtupleProducerDict.cxx obj/NtupleProducerDict.h
+	      @echo  "####### Removing generated dictionary"
+	      @rm -f obj/NtupleProducerDict.cxx obj/NtupleProducerDict.h
 
 $(EXE):	      $(LIB) src/NtupleProducer.cxx include/NtupleProducer.h
 	      @echo "####### Building object file for executable"
@@ -74,16 +75,17 @@ $(EXE):	      $(LIB) src/NtupleProducer.cxx include/NtupleProducer.h
 	      @$(CXX) $(CXXFLAGS) obj/NtupleProducer.o -o $(EXE) $(LDLIBS) $(LIB)
 
 
-$(MERGEHIST):	src/Get_Merged_Histograms_From_FlatTrees.cxx
-		@echo ""
-		@echo "###################################"
-		@echo "-- Creating executable $(MERGEHIST) --"
-		@$(CXX) $(CXXFLAGS) $(GLIBS) src/Get_Merged_Histograms_From_FlatTrees.cxx -o $@
-		@echo "-- Done --"
-		@echo "###################################"
-		@echo ""
+#$(MERGEHIST):	src/Get_Merged_Histograms_From_FlatTrees.cxx
+#		@echo ""
+#		@echo "###################################"
+#		@echo "-- Creating executable $(MERGEHIST) --"
+#		@$(CXX) $(CXXFLAGS) $(GLIBS) src/Get_Merged_Histograms_From_FlatTrees.cxx -o $@
+#		@echo "-- Done --"
+#		@echo "###################################"
+#		@echo ""
 
 
 
 clean:
-	      @rm -f $(OBJS) $(EXE) obj/NtupleProducerDict_rdict.pcm obj/NtupleProducerDict.cxx obj/NtupleProducerDict.h obj/*.o $(LIB)  $(MERGEHIST)
+#	      @rm -f $(OBJS) $(EXE) obj/NtupleProducerDict_rdict.pcm obj/NtupleProducerDict.cxx obj/NtupleProducerDict.h obj/*.o $(LIB)  $(MERGEHIST)
+		@rm -f $(OBJS) $(EXE) obj/NtupleProducerDict_rdict.pcm obj/NtupleProducerDict.cxx obj/NtupleProducerDict.h obj/*.o $(LIB)
