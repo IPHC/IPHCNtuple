@@ -118,6 +118,8 @@ int main(int argc, char *argv[])
    }*/
    //==========================
 
+   evdebugid.push_back(2376257);
+   
    int nlep = 0;
    int njet = 0;
 
@@ -167,14 +169,14 @@ int main(int argc, char *argv[])
 	//Only keep events to debug -- disactivate if not debugging specific events //FIXME
 	bool is_debug_event = false;
 //-------------------
-	/*
+	
 	//cout<<"Event id = "<<ev.id<<endl;
 	for(int k = 0; k < evdebugid.size(); k++)
 	{
 		if(ev.id == evdebugid.at(k)) {is_debug_event = true;} //match ID
-		if(evdebuglumi.size() > 0 && ev.lumi != evdebuglumi.at(k)) {is_debug_event = false;} //also match lumi
+//		if(evdebuglumi.size() > 0 && ev.lumi != evdebuglumi.at(k)) {is_debug_event = false;} //also match lumi
 	}
-	if(!is_debug_event && evdebugid.size() > 0) {continue;} //only debug
+/*	if(!is_debug_event && evdebugid.size() > 0) {continue;} //only debug
 	else if(evdebugid.size() > 0) {cout<<endl<<endl<<endl<<endl<<setprecision(12)<<"== Run/Lumi/Event "<<ev.run<<" / "<<ev.lumi<<" / "<<ev.id<<" =="<<endl;}
 	*/
 //-------------------
