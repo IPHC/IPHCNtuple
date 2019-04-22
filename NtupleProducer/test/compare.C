@@ -14,24 +14,20 @@
 //   std::string treeName = "syncTree_1l2tau_Fake";
 //   std::string treeName = "syncTree_ttZctrl_Fake";
 
-//   std::string varName = "ele1_pt";
+   std::string varName = "mu1_pt";
 //   std::string varName = "ele1_isfakeablesel";
 //   std::string varName = "tau1_byMediumIsolationMVArun2v1DBdR03oldDMwLT";
 //   std::string varName = "isGenMatched";
 //   std::string varName = "";
 //   std::string varName = "MHT";
-   std::string varName = "jet3_pt";
+//   std::string varName = "jet3_pt";
 
-   TFile *f1 = TFile::Open("output_sync.root");
+   TFile *f1 = TFile::Open("tHq_syncTree_Object.root");
    TTree *tr1 = (TTree*)f1->Get(treeName.c_str());
    tr1->SetBranchAddress(varName.c_str(),&v1);
    tr1->SetBranchAddress("nEvent",&nEvent1);
 
-   TFile *f2 = TFile::Open("sync_Tallinn_v29.root");
-//   TFile *f2 = TFile::Open("IHEP_EvtSync_V8.root");
-//   TFile *f2 = TFile::Open("IHEP_ttHsyncV11.root");
-//   TFile *f2 = TFile::Open("syncNtuple_event_ttH_tautau_v3.root");
-//   TFile *f2 = TFile::Open("syncNtuple_event_cornell_v12.root");
+   TFile *f2 = TFile::Open("IHEP_ttHsync_2016_V4.root");
    TTree *tr2 = (TTree*)f2->Get(treeName.c_str());
    tr2->SetBranchAddress(varName.c_str(),&v2);
    tr2->SetBranchAddress("nEvent",&nEvent2);
@@ -74,7 +70,7 @@
 
 //	if( i2 > 10 ) break;
 
-	if( nEvent2 != 14140553 ) continue;
+//	if( nEvent2 != 14140553 ) continue;
 	
 	bool found = 0;
 	
@@ -94,6 +90,6 @@
 	     std::cout << "I reject " << nEvent2 << ": " << v2 << std::endl;
 	  }
      }
-   
+
    gApplication->Terminate();
 }
