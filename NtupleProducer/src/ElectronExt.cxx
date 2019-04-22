@@ -16,10 +16,14 @@ void ElectronExt::read(bool isdata)
 {
    ID                                = idx;
 
-   E_preCorr                        = ntP->el_E->at(idx); //before smearing (preCorr)
-   E 	                            = ntP->el_E_postCorr->at(idx);
-   pt_preCorr                       = ntP->el_pt->at(idx); //before smearing (preCorr)     
-   pt 	 			    = ntP->el_pt_postCorr->at(idx);
+   E_preCorr                        = ntP->el_ecalTrkEnergyPreCorr->at(idx);
+   E 	                            = ntP->el_ecalTrkEnergyPostCorr->at(idx);
+   pt_preCorr                       = ntP->el_pt->at(idx);
+   
+   float smearCorr = E / E_preCorr;
+   float pt_postCorr = pt_preCorr * smearCorr;
+   
+   pt 	 			    = pt_postCorr;
   
    eta	                            = ntP->el_eta->at(idx);
    phi	                            = ntP->el_phi->at(idx);

@@ -101,8 +101,8 @@ void Tree::Init(TChain *ch)
    el_PFRelIso04 = 0;
    el_conept = 0;
    el_ooEmooP = 0;
-   el_E_postCorr = 0;
-   el_pt_postCorr = 0;
+   el_ecalTrkEnergyPreCorr = 0;
+   el_ecalTrkEnergyPostCorr = 0;
    
    el_id = 0;
    el_charge = 0;
@@ -904,8 +904,8 @@ void Tree::Init(TChain *ch)
    fChain->SetBranchAddress("el_PFRelIso04", &el_PFRelIso04, &b_el_PFRelIso04);
    fChain->SetBranchAddress("el_conept", &el_conept, &b_el_conept);
    fChain->SetBranchAddress("el_ooEmooP", &el_ooEmooP, &b_el_ooEmooP);
-   fChain->SetBranchAddress("el_E_postCorr", &el_E_postCorr, &b_el_E_postCorr);
-   fChain->SetBranchAddress("el_pt_postCorr", &el_pt_postCorr, &b_el_pt_postCorr);   
+   fChain->SetBranchAddress("el_ecalTrkEnergyPreCorr", &el_ecalTrkEnergyPreCorr, &b_el_ecalTrkEnergyPreCorr);
+   fChain->SetBranchAddress("el_ecalTrkEnergyPostCorr", &el_ecalTrkEnergyPostCorr, &b_el_ecalTrkEnergyPostCorr);   
    fChain->SetBranchAddress("el_id", &el_id, &b_el_id);
    fChain->SetBranchAddress("el_charge", &el_charge, &b_el_charge);
    fChain->SetBranchAddress("el_neutralHadronIso", &el_neutralHadronIso, &b_el_neutralHadronIso);

@@ -15,6 +15,8 @@ class Jet : public Base
    bool isLooseBTag;
    bool isMediumBTag;
    bool isTightBTag;
+   
+   bool isLooseFwdTTH;
 
    float CSVv2; //Also add other btaggers ?
    float DeepCSVbtag; // <-> (jet_DeepCSVProbb + jet_DeepCSVProbbb)

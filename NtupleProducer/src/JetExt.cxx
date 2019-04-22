@@ -61,6 +61,7 @@ void JetExt::init()
 
    tightJetID = 0;
    isLooseTTH = 0;
+   isLooseFwdTTH = 0;
    isSoftLooseTTH = 0;
 
    ntrk           = -100;
@@ -108,7 +109,9 @@ void JetExt::sel(int sync, bool DEBUG)
    bool pass_pt = (pt > 25.);
 
    bool pass_eta = false;
-
+   bool pass_eta_fwd = (fabs(eta) > 2.4 && fabs(eta) < 5.0);
+   bool pass_pt_fwd = (fabs(eta) <= 2.7 || fabs(eta) >= 3.0 || (fabs(eta) > 2.7 && fabs(eta) < 3.0 && pt > 60.));
+   
    if(sync == 0)
    {
 	 pass_pt = pass_pt || pt_JES_up > 25. || pt_JER_up > 25.; //Also keep jets with variations >25 GeV, for systematics
@@ -206,7 +209,12 @@ void JetExt::sel(int sync, bool DEBUG)
 		  pass_lepOverlap &&
 		  pass_tauOverlap
 		);
-		
+
+   isLooseFwdTTH = ( isLooseTTH &&
+		     pass_eta_fwd &&
+		     pass_pt_fwd
+		);
+   
    //NEW -- similar as "isLooseTTH" sel, but for jets with pT between 15 and 25 => Save nof soft jets, for FCNC input variable
    isSoftLooseTTH = ( pt > 15 && pt < 25 &&
 		  pass_eta &&

@@ -106,6 +106,7 @@ void Sync::createBranch(TTree *tr)
    tr->Branch("n_mvasel_ele",&n_mvasel_ele,"n_mvasel_ele/I");
    tr->Branch("n_presel_tau",&n_presel_tau,"n_presel_tau/I");
    tr->Branch("n_presel_jet",&n_presel_jet,"n_presel_jet/I");
+   tr->Branch("n_presel_jetFwd",&n_presel_jetFwd,"n_presel_jetFwd/I");
 
    tr->Branch("mu1_pt",&mu1_pt,"mu1_pt/F");
    tr->Branch("mu1_conept",&mu1_conept,"mu1_conept/F");
@@ -397,6 +398,7 @@ void Sync::initVar()
    n_mvasel_ele = -9999;
    n_presel_tau = -9999;
    n_presel_jet = -9999;
+   n_presel_jetFwd = -9999;
 
    mu1_pt = -9999;
    mu1_conept = -9999;
@@ -677,7 +679,8 @@ void Sync::initVar()
 /**
  * Compute variables / fill collections needed for selections
  */
-void Sync::get(Ntuple *nt,int npresel_el,int npresel_mu,int npresel_tau,int npresel_jet,int nfakeable_el,int nfakeable_mu, int nbl)
+void Sync::get(Ntuple *nt,int npresel_el,int npresel_mu,int npresel_tau,int npresel_jet,int npresel_jetFwd,
+	       int nfakeable_el,int nfakeable_mu, int nbl)
 {
 	// NB : this vector containing "ttH jets" also accounts for jets passing pt cut only for JES variation
     //Therefore it should not be used for nominal categorization
@@ -700,6 +703,7 @@ void Sync::get(Ntuple *nt,int npresel_el,int npresel_mu,int npresel_tau,int npre
    n_mvasel_ele = -9999;
    n_presel_tau = npresel_tau;
    n_presel_jet = npresel_jet;
+   n_presel_jetFwd = npresel_jetFwd;
    nBJetLoose = nbl;
 
    //CHANGED -- sort by conePt (leptons) & pT (jets) the original collections themselves, so that we get ordered object for object sync

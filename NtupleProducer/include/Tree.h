@@ -115,8 +115,8 @@ class Tree {
    vector<float>   *el_PFRelIso04;
    vector<float>   *el_conept;
    vector<float>   *el_ooEmooP;
-   vector<float>   *el_E_postCorr;
-   vector<float>   *el_pt_postCorr;
+   vector<float>   *el_ecalTrkEnergyPreCorr;
+   vector<float>   *el_ecalTrkEnergyPostCorr;
    
    vector<int>     *el_id;
    vector<int>     *el_charge;
@@ -957,8 +957,8 @@ class Tree {
    TBranch        *b_el_PFRelIso04;
    TBranch        *b_el_conept;   //!
    TBranch        *b_el_ooEmooP;   //!
-   TBranch        *b_el_E_postCorr;   //!
-   TBranch        *b_el_pt_postCorr;   //!
+   TBranch        *b_el_ecalTrkEnergyPreCorr;   //!
+   TBranch        *b_el_ecalTrkEnergyPostCorr;   //!
    
    TBranch        *b_el_id;   //!
    TBranch        *b_el_charge;   //!

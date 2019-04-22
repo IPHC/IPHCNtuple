@@ -49,7 +49,7 @@ int main(int argc, char *argv[])
 	if( ! strcmp(argv[i],"--sync") ) sync = atoi(argv[i+1]);
      }
 
-   std::string cmssw = std::string(getenv("CMSSW_BASE"));
+   std::string cmssw = "/storage_mnt/storage/user/kskovpen/analysis/Multilepton/CMSSW_10_2_13";
 
    const char *fname = fname_str;
    const char *stream = stream_str;
@@ -125,6 +125,7 @@ int main(int argc, char *argv[])
    int n_presel_el  = 0;
    int n_presel_tau = 0;
    int n_presel_jet = 0;
+   int n_presel_jetFwd = 0;
 
    //-- JES //Ask for "Total" source of uncert.
    JetCorrectionUncertainty* jesTotal = 0;
@@ -261,6 +262,7 @@ int main(int argc, char *argv[])
 	  }
 
         int n_jet_evt = 0;
+	int n_jetFwd_evt = 0;
 	int nBL = 0;
 	
         // jets
@@ -339,8 +341,9 @@ int main(int argc, char *argv[])
 	if( n_mu_evt > 0 ) n_presel_mu++;
 	if( n_tau_evt > 0 ) n_presel_tau++;
 	if( n_jet_evt > 0 ) n_presel_jet++;
+	if( n_jetFwd_evt > 0 ) n_presel_jetFwd++;
 	
-	sc->get(nt,n_el_evt,n_mu_evt,n_tau_evt,n_jet_evt,n_el_fakeable_evt,n_mu_fakeable_evt, nBL);
+	sc->get(nt,n_el_evt,n_mu_evt,n_tau_evt,n_jet_evt,n_jetFwd_evt,n_el_fakeable_evt,n_mu_fakeable_evt, nBL);
 
 	bool pass = sc->fill(nt,&ev, is_debug_event);
 
@@ -357,6 +360,7 @@ int main(int argc, char *argv[])
 	std::cout << "n_presel_el = " << n_presel_el  << std::endl;
 	std::cout << "n_presel_tau = " << n_presel_tau << std::endl;
 	std::cout << "n_presel_jet = " << n_presel_jet << std::endl;
+	std::cout << "n_presel_jetFwd = " << n_presel_jetFwd << std::endl;
      }
 
    delete nt;

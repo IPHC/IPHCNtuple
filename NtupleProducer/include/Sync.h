@@ -27,7 +27,8 @@ class Sync
    
    void setBranchAddress();
    void initVar();
-   void get(Ntuple *nt,int npresel_el,int npresel_mu,int npresel_tau,int npresel_jet,int nfakeable_el,int nfakeable_mu,int nBL);
+   void get(Ntuple *nt,int npresel_el,int npresel_mu,int npresel_tau,int npresel_jet,int npresel_jetFwd,
+	    int nfakeable_el,int nfakeable_mu,int nBL);
    bool fill(Ntuple *nt,EventExt *ev, bool=false);
    
    TFile*  m_file;
@@ -50,6 +51,7 @@ class Sync
    int n_mvasel_ele;
    int n_presel_tau;
    int n_presel_jet;
+   int n_presel_jetFwd;
    
    float mu1_pt;
    float mu1_conept;
