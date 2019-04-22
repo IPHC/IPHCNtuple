@@ -45,6 +45,7 @@ class MuonExt : public Muon
    float lepMVA_jetPtRatio;
    float lepMVA_jetBTagCSV;
    float lepMVA_jetBTagDeepCSV;
+   float lepMVA_jetBTagDeepFlavour;
    float lepMVA_sip3d;
    float lepMVA_dxy;
    float lepMVA_dz;

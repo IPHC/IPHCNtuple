@@ -48,6 +48,7 @@ void MuonExt::read(bool isdata)
    lepMVA_jetPtRatio              = ntP->mu_lepMVA_jetPtRatio->at(idx);
    lepMVA_jetBTagCSV              = ntP->mu_lepMVA_jetBTagCSV->at(idx);
    lepMVA_jetBTagDeepCSV          = ntP->mu_lepMVA_jetBTagDeepCSV->at(idx);
+   lepMVA_jetBTagDeepFlavour      = ntP->mu_lepMVA_jetBTagDeepFlavour->at(idx);
    lepMVA_sip3d                   = ntP->mu_lepMVA_sip3d->at(idx);
    lepMVA_dxy                     = ntP->mu_lepMVA_dxy->at(idx);
    lepMVA_dz                      = ntP->mu_lepMVA_dz->at(idx);
@@ -119,6 +120,7 @@ void MuonExt::init()
    lepMVA_jetPtRatio           = -100.;
    lepMVA_jetBTagCSV           = -100.;
    lepMVA_jetBTagDeepCSV       = -100.;
+   lepMVA_jetBTagDeepFlavour   = -100.;
    lepMVA_sip3d                = -100.;
    lepMVA_dxy                  = -100.;
    lepMVA_dz                   = -100.;
