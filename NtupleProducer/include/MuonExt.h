@@ -12,10 +12,10 @@ class MuonExt : public Muon
    MuonExt();
    virtual ~MuonExt();
    
-   void sel(bool=false);
+   void sel(bool=false,int year=2016);
    void read(bool isdata);
    void init();
-   float getEffArea(float eta);
+   float getEffArea(float eta,int year);
    
    int ID;
    

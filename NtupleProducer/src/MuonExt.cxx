@@ -142,7 +142,7 @@ void MuonExt::init()
    gen_dr = -100;
 }
 
-void MuonExt::sel(bool DEBUG)
+void MuonExt::sel(bool DEBUG,int year)
 {
    bool pass_pt      = ( pt > 5 );
    bool pass_eta     = ( fabs(eta) < 2.4 );
@@ -152,7 +152,7 @@ void MuonExt::sel(bool DEBUG)
    bool pass_SIP     = ( fabs(sip3d) < 8 );
    bool pass_isLoose = ( isLoose );
 
-   float EffArea = getEffArea(eta);
+   float EffArea = getEffArea(eta,year);
    
    //Changed definition, ttH uses "deltaBeta" for Muons and "rhoArea" correction for electrons -- see : https://github.com/peruzzim/cmg-cmssw/blob/heppy_94X_dev_ttH/PhysicsTools/Heppy/python/analyzers/objects/LeptonAnalyzer.py#L331
    //isoR04 = (pt > 0.) ? (ntP->mu_pfIso04_sumChargedHadronPt->at(idx) + std::max( 0.0, double(ntP->mu_pfIso04_sumNeutralHadronEt->at(idx)+ntP->mu_pfIso04_sumPhotonEt->at(idx) - ntP->mu_pfIso04_sumPUPt->at(idx) / 2. )))/pt : -9999;
@@ -220,7 +220,7 @@ void MuonExt::sel(bool DEBUG)
  	}		  
 }
 
-float MuonExt::getEffArea(float eta)
+float MuonExt::getEffArea(float eta,int year)
 {   
    float ea = -1;
    

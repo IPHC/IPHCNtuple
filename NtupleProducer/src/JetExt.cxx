@@ -123,7 +123,7 @@ void JetExt::init()
    E_JER_down         = 0.;
 }
 
-void JetExt::sel(int sync, bool DEBUG)
+void JetExt::sel(int sync, bool DEBUG, int year)
 {
    bool pass_pt = (pt > 25.);
 

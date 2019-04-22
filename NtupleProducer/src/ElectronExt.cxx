@@ -191,7 +191,7 @@ void ElectronExt::init()
    gen_dr = -100;
 }
 
-void ElectronExt::sel(bool DEBUG)
+void ElectronExt::sel(bool DEBUG,int year)
 {   
    bool isLoose = false;
 
@@ -208,7 +208,7 @@ void ElectronExt::sel(bool DEBUG)
 	else isLoose = ( mvaNoIso > -0.7179265933023059 );
      }   
    
-   float EffArea = getEffArea(superCluster_eta);
+   float EffArea = getEffArea(superCluster_eta,year);
    
    //CHANGED -- was using cone size of 0.3 instead of 0.4 ==> Need to call different variables, and rescale effArea
    //isoR04 = (pt > 0.) ? (ntP->el_chargedHadronIso->at(idx) + std::max( 0.0, double(ntP->el_neutralHadronIso->at(idx)+ntP->el_photonIso->at(idx) - ntP->ev_rho*EffArea )))/pt : -9999;
@@ -318,7 +318,7 @@ void ElectronExt::sel(bool DEBUG)
 
 
 //EffArea values for DR=0.3, rescaled for DR=0.4 (also done in FlatTreePeroducer.cc -- for electrons, different for muons)
-float ElectronExt::getEffArea(float eta)
+float ElectronExt::getEffArea(float eta,int year)
 {   
    float ea = -1;
    

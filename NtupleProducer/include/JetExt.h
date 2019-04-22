@@ -12,7 +12,7 @@ class JetExt : public Jet
    JetExt();
    virtual ~JetExt();
 
-   void  sel(int sync, bool=false);
+   void  sel(int sync, bool=false, int year=2016);
    void  read(bool isdata);
    void  init();
    void  setJESUncertainty(bool isdata, float unc);

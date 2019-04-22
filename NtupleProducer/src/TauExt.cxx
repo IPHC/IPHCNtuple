@@ -173,7 +173,7 @@ void TauExt::init()
    gen_dr = -100;
 }
 
-void TauExt::sel(bool DEBUG)
+void TauExt::sel(bool DEBUG,int year)
 {
    bool pass_pt  = ( pt > 20. );
    bool pass_eta = ( fabs(eta) < 2.3 );

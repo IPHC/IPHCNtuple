@@ -20,7 +20,7 @@ unsigned int idx;
 
 int main(int argc, char *argv[])
 {
-   if( argc < 6 )
+   if( argc < 7 )
      {
 	std::cout << "NtupleProducer usage:" << std::endl;
 	std::cout << "--file: input filename" << std::endl;
@@ -28,6 +28,7 @@ int main(int argc, char *argv[])
 	std::cout << "--tree: TTree name" << std::endl;
 	std::cout << "--nmax: max number of events" << std::endl;
 	std::cout << "--isdata: data or MC ?" << std::endl;
+	std::cout << "--year: 2016, 2017 or 2018" << std::endl;
 	std::cout << "--sync: produce sync ntuple (1-object,2-event)" << std::endl;
 	exit(1);
      }
@@ -38,6 +39,7 @@ int main(int argc, char *argv[])
    int nmax = -1;
    bool isdata = 0;
    int sync = 0;
+   int year = 0;
 
    for(int i=0;i<argc;i++)
      {
@@ -46,6 +48,7 @@ int main(int argc, char *argv[])
         if( ! strcmp(argv[i],"--tree") ) stream_str = argv[i+1];
         if( ! strcmp(argv[i],"--nmax") ) nmax = atoi(argv[i+1]);
         if( ! strcmp(argv[i],"--isdata") ) isdata = (bool) atoi(argv[i+1]);
+	if( ! strcmp(argv[i],"--year") ) year = atoi(argv[i+1]);
 	if( ! strcmp(argv[i],"--sync") ) sync = atoi(argv[i+1]);
      }
 
@@ -60,6 +63,7 @@ int main(int argc, char *argv[])
    std::cout << "--tree="   << stream     << std::endl;
    std::cout << "--nmax="   << nmax       << std::endl;
    std::cout << "--isdata=" << isdata     << std::endl;
+   std::cout << "--year="   << year     << std::endl;
    std::cout << "--sync="   << sync       << std::endl;
 
    Tree tree(0,const_cast<char*>(fname),stream);
@@ -190,7 +194,7 @@ int main(int argc, char *argv[])
 
 	     mu.init();
 	     mu.read(isdata);
-	     mu.sel(is_debug_event);
+	     mu.sel(is_debug_event,year);
 
 	     if( mu.isLooseTTH )
 	       {
@@ -218,7 +222,7 @@ int main(int argc, char *argv[])
 
 	     el.init();
 	     el.read(isdata);
-	     el.sel(is_debug_event);
+	     el.sel(is_debug_event,year);
 
 	     if( el.isLooseTTH  )
 	       {
@@ -245,7 +249,7 @@ int main(int argc, char *argv[])
 
 	     tau.init();
 	     tau.read(isdata);
-	     tau.sel(is_debug_event);
+	     tau.sel(is_debug_event,year);
 
 	      if( tau.isLooseTTH )
 	      {
@@ -305,7 +309,7 @@ int main(int argc, char *argv[])
             jet.setJESUncertainty(isdata, jes_unc); //Fill pt_jes_up & pt_jes_down
          }
 
-	 jet.sel(sync, is_debug_event);
+	 jet.sel(sync, is_debug_event, year);
 
 	 if( jet.isLooseTTH )
 	 {
