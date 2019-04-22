@@ -312,9 +312,10 @@ int main(int argc, char *argv[])
 	 	nt->NtJetLooseExt->push_back(jet);
 		n_jet_evt++;
 
-		if(jet.isLooseBTag) {nBL++;}
+		if(jet.isLooseBTag) nBL++;
+	        if(jet.isLooseFwdTTH) n_jetFwd_evt++;
 	 }
-	 else if(jet.isSoftLooseTTH) {nt->NtJetLooseSoftExt->push_back(jet);}
+	 else if(jet.isSoftLooseTTH) nt->NtJetLooseSoftExt->push_back(jet);
 	}
 
 
