@@ -157,6 +157,7 @@ class Tree {
    vector<float>   *el_lepMVA_jetPtRatio;
    vector<float>   *el_lepMVA_jetBTagCSV;
    vector<float>   *el_lepMVA_jetBTagDeepCSV;
+   vector<float>   *el_lepMVA_jetBTagDeepFlavour;
    vector<float>   *el_lepMVA_sip3d;
    vector<float>   *el_lepMVA_dxy;
    vector<float>   *el_lepMVA_dz;
@@ -261,6 +262,7 @@ class Tree {
    vector<float>   *mu_lepMVA_jetPtRatio;
    vector<float>   *mu_lepMVA_jetBTagCSV;
    vector<float>   *mu_lepMVA_jetBTagDeepCSV;
+   vector<float>   *mu_lepMVA_jetBTagDeepFlavour;
    vector<float>   *mu_lepMVA_sip3d;
    vector<float>   *mu_lepMVA_dxy;
    vector<float>   *mu_lepMVA_dz;

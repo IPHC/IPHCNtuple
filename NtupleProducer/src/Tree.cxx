@@ -143,6 +143,7 @@ void Tree::Init(TChain *ch)
    el_lepMVA_jetPtRatio = 0;
    el_lepMVA_jetBTagCSV = 0;
    el_lepMVA_jetBTagDeepCSV = 0;
+   el_lepMVA_jetBTagDeepFlavour = 0;
    el_lepMVA_sip3d = 0;
    el_lepMVA_dxy = 0;
    el_lepMVA_dz = 0;
@@ -246,6 +247,7 @@ void Tree::Init(TChain *ch)
    mu_lepMVA_jetPtRatio = 0;
    mu_lepMVA_jetBTagCSV = 0;
    mu_lepMVA_jetBTagDeepCSV = 0;
+   mu_lepMVA_jetBTagDeepFlavour = 0;
    mu_lepMVA_sip3d = 0;
    mu_lepMVA_dxy = 0;
    mu_lepMVA_dz = 0;
@@ -945,6 +947,7 @@ void Tree::Init(TChain *ch)
    fChain->SetBranchAddress("el_lepMVA_jetPtRatio", &el_lepMVA_jetPtRatio, &b_el_lepMVA_jetPtRatio);
    fChain->SetBranchAddress("el_lepMVA_jetBTagCSV", &el_lepMVA_jetBTagCSV, &b_el_lepMVA_jetBTagCSV);
    fChain->SetBranchAddress("el_lepMVA_jetBTagDeepCSV", &el_lepMVA_jetBTagDeepCSV, &b_el_lepMVA_jetBTagDeepCSV);
+   fChain->SetBranchAddress("el_lepMVA_jetBTagDeepFlavour", &el_lepMVA_jetBTagDeepFlavour, &b_el_lepMVA_jetBTagDeepFlavour);
    fChain->SetBranchAddress("el_lepMVA_sip3d", &el_lepMVA_sip3d, &b_el_lepMVA_sip3d);
    fChain->SetBranchAddress("el_lepMVA_dxy", &el_lepMVA_dxy, &b_el_lepMVA_dxy);
    fChain->SetBranchAddress("el_lepMVA_dz", &el_lepMVA_dz, &b_el_lepMVA_dz);
@@ -1049,6 +1052,7 @@ void Tree::Init(TChain *ch)
    fChain->SetBranchAddress("mu_lepMVA_jetPtRatio", &mu_lepMVA_jetPtRatio, &b_mu_lepMVA_jetPtRatio);
    fChain->SetBranchAddress("mu_lepMVA_jetBTagCSV", &mu_lepMVA_jetBTagCSV, &b_mu_lepMVA_jetBTagCSV);
    fChain->SetBranchAddress("mu_lepMVA_jetBTagDeepCSV", &mu_lepMVA_jetBTagDeepCSV, &b_mu_lepMVA_jetBTagDeepCSV);
+   fChain->SetBranchAddress("mu_lepMVA_jetBTagDeepFlavour", &mu_lepMVA_jetBTagDeepFlavour, &b_mu_lepMVA_jetBTagDeepFlavour);
    fChain->SetBranchAddress("mu_lepMVA_sip3d", &mu_lepMVA_sip3d, &b_mu_lepMVA_sip3d);
    fChain->SetBranchAddress("mu_lepMVA_dxy", &mu_lepMVA_dxy, &b_mu_lepMVA_dxy);
    fChain->SetBranchAddress("mu_lepMVA_dz", &mu_lepMVA_dz, &b_mu_lepMVA_dz);
