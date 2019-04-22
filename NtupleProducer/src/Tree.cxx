@@ -350,6 +350,12 @@ void Tree::Init(TChain *ch)
    jet_DeepCSVProbbb = 0;
    jet_DeepCSVProbc = 0;
    jet_DeepCSVProbcc = 0;
+   jet_DeepFlavourProbb = 0;
+   jet_DeepFlavourProbbb = 0;
+   jet_DeepFlavourProblepb = 0;
+   jet_DeepFlavourProbc = 0;
+   jet_DeepFlavourProbuds = 0;
+   jet_DeepFlavourProbg = 0;
    jet_tightJetID = 0;
    jet_partonFlavour = 0;
    jet_hadronFlavour = 0;
@@ -1157,6 +1163,12 @@ void Tree::Init(TChain *ch)
    fChain->SetBranchAddress("jet_DeepCSVProbbb", &jet_DeepCSVProbbb, &b_jet_DeepCSVProbbb);
    fChain->SetBranchAddress("jet_DeepCSVProbc", &jet_DeepCSVProbc, &b_jet_DeepCSVProbc);
    fChain->SetBranchAddress("jet_DeepCSVProbcc", &jet_DeepCSVProbcc, &b_jet_DeepCSVProbcc);
+   fChain->SetBranchAddress("jet_DeepFlavourProbb", &jet_DeepFlavourProbb, &b_jet_DeepFlavourProbb);
+   fChain->SetBranchAddress("jet_DeepFlavourProbbb", &jet_DeepFlavourProbbb, &b_jet_DeepFlavourProbbb);
+   fChain->SetBranchAddress("jet_DeepFlavourProblepb", &jet_DeepFlavourProblepb, &b_jet_DeepFlavourProblepb);
+   fChain->SetBranchAddress("jet_DeepFlavourProbc", &jet_DeepFlavourProbc, &b_jet_DeepFlavourProbc);
+   fChain->SetBranchAddress("jet_DeepFlavourProbuds", &jet_DeepFlavourProbuds, &b_jet_DeepFlavourProbuds);
+   fChain->SetBranchAddress("jet_DeepFlavourProbg", &jet_DeepFlavourProbg, &b_jet_DeepFlavourProbg);
    fChain->SetBranchAddress("jet_tightJetID", &jet_tightJetID, &b_jet_tightJetID);
    fChain->SetBranchAddress("jet_partonFlavour", &jet_partonFlavour, &b_jet_partonFlavour);
    fChain->SetBranchAddress("jet_hadronFlavour", &jet_hadronFlavour, &b_jet_hadronFlavour);

@@ -18,8 +18,9 @@ class Jet : public Base
    
    bool isLooseFwdTTH;
 
-   float CSVv2; //Also add other btaggers ?
-   float DeepCSVbtag; // <-> (jet_DeepCSVProbb + jet_DeepCSVProbbb)
+   float CSVv2;
+   float DeepCSVbtag;
+   float DeepFlavourbtag;
 
    float jet_partonFlavour  ;
    float jet_hadronFlavour  ;

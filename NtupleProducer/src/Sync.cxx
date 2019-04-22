@@ -735,7 +735,8 @@ void Sync::get(Ntuple *nt,int npresel_el,int npresel_mu,int npresel_tau,int npre
 	mu1_jetPtRel               = mu.lepMVA_jetPtRelv2;
 	mu1_jetPtRatio             = mu.lepMVA_jetPtRatio;
 //	mu1_jetCSV                 = mu.lepMVA_jetBTagCSV;
-	mu1_jetCSV                 = mu.lepMVA_jetBTagDeepCSV;
+//	mu1_jetCSV                 = mu.lepMVA_jetBTagDeepCSV;
+	mu1_jetCSV                 = mu.lepMVA_jetBTagDeepFlavour;
 	mu1_sip3D                  = fabs(mu.sip3d);
 	mu1_dxy                    = mu.dxy;
 	mu1_dxyAbs                 = fabs(mu.dxy);
@@ -768,7 +769,8 @@ void Sync::get(Ntuple *nt,int npresel_el,int npresel_mu,int npresel_tau,int npre
 	mu2_jetPtRel               = mu.lepMVA_jetPtRelv2;
 	mu2_jetPtRatio             = mu.lepMVA_jetPtRatio;
 //	mu2_jetCSV                 = mu.lepMVA_jetBTagCSV;
-	mu2_jetCSV                 = mu.lepMVA_jetBTagDeepCSV;
+//	mu2_jetCSV                 = mu.lepMVA_jetBTagDeepCSV;
+	mu2_jetCSV                 = mu.lepMVA_jetBTagDeepFlavour;
 	mu2_sip3D                  = fabs(mu.sip3d);
 	mu2_dxy                    = mu.dxy;
 	mu2_dxyAbs                 = fabs(mu.dxy);
@@ -804,7 +806,8 @@ void Sync::get(Ntuple *nt,int npresel_el,int npresel_mu,int npresel_tau,int npre
 	ele1_jetPtRel               = ele.lepMVA_jetPtRelv2;
 	ele1_jetPtRatio             = ele.lepMVA_jetPtRatio;
 //	ele1_jetCSV                 = ele.lepMVA_jetBTagCSV;
-	ele1_jetCSV                 = ele.lepMVA_jetBTagDeepCSV;
+//	ele1_jetCSV                 = ele.lepMVA_jetBTagDeepCSV;
+	ele1_jetCSV                 = ele.lepMVA_jetBTagDeepFlavour;
 	ele1_sip3D                  = fabs(ele.sip3d);
 	ele1_dxy                    = ele.dxy;
 	ele1_dxyAbs                 = fabs(ele.dxy);
@@ -844,7 +847,8 @@ void Sync::get(Ntuple *nt,int npresel_el,int npresel_mu,int npresel_tau,int npre
 	ele2_jetPtRel               = ele.lepMVA_jetPtRelv2;
 	ele2_jetPtRatio             = ele.lepMVA_jetPtRatio;
 //	ele2_jetCSV                 = ele.lepMVA_jetBTagCSV;
-	ele2_jetCSV                 = ele.lepMVA_jetBTagDeepCSV;
+//	ele2_jetCSV                 = ele.lepMVA_jetBTagDeepCSV;
+	ele2_jetCSV                 = ele.lepMVA_jetBTagDeepFlavour;
 	ele2_sip3D                  = fabs(ele.sip3d);
 	ele2_dxy                    = ele.dxy;
 	ele2_dxyAbs                 = fabs(ele.dxy);
@@ -943,7 +947,7 @@ void Sync::get(Ntuple *nt,int npresel_el,int npresel_mu,int npresel_tau,int npre
 	jet1_eta   = jet.eta;
 	jet1_phi   = jet.phi;
 	jet1_E     = jet.E;
-	jet1_CSV   = jet.deepCSVb+jet.deepCSVbb;
+	jet1_CSV   = jet.DeepFlavourbtag;
      }
 
    if( nJet > 1 )
@@ -954,7 +958,7 @@ void Sync::get(Ntuple *nt,int npresel_el,int npresel_mu,int npresel_tau,int npre
 	jet2_eta   = jet.eta;
 	jet2_phi   = jet.phi;
 	jet2_E     = jet.E;
-	jet2_CSV   = jet.deepCSVb+jet.deepCSVbb;
+	jet2_CSV   = jet.DeepFlavourbtag;
      }
 
    if( nJet > 2 )
@@ -965,7 +969,7 @@ void Sync::get(Ntuple *nt,int npresel_el,int npresel_mu,int npresel_tau,int npre
 	jet3_eta   = jet.eta;
 	jet3_phi   = jet.phi;
 	jet3_E     = jet.E;
-	jet3_CSV   = jet.deepCSVb+jet.deepCSVbb;
+	jet3_CSV   = jet.DeepFlavourbtag;
      }
 
    if( nJet > 3 )
@@ -976,7 +980,7 @@ void Sync::get(Ntuple *nt,int npresel_el,int npresel_mu,int npresel_tau,int npre
 	jet4_eta   = jet.eta;
 	jet4_phi   = jet.phi;
 	jet4_E     = jet.E;
-	jet4_CSV   = jet.deepCSVb+jet.deepCSVbb;
+	jet4_CSV   = jet.DeepFlavourbtag;
      }
 
    TLorentzVector tmp;

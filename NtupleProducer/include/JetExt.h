@@ -26,7 +26,6 @@ class JetExt : public Jet
    
    int ntrk;
    
-   //float CSVv2; //Declared in Jet.h (-> available in output files)
    float cMVAv2;
    float deepCSV;
    float deepCSVudsg;
@@ -34,6 +33,13 @@ class JetExt : public Jet
    float deepCSVbb;
    float deepCSVc;
    float deepCSVcc;
+
+   float deepFlavourb;
+   float deepFlavourbb;
+   float deepFlavourlepb;
+   float deepFlavourc;
+   float deepFlavouruds;
+   float deepFlavourg;
    
    float jet_genJet_pt      ;
    float jet_genJet_E       ;

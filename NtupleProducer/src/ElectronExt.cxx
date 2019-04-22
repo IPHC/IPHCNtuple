@@ -57,6 +57,7 @@ void ElectronExt::read(bool isdata)
    lepMVA_jetPtRatio                 = ntP->el_lepMVA_jetPtRatio->at(idx);
    lepMVA_jetBTagCSV                 = ntP->el_lepMVA_jetBTagCSV->at(idx);
    lepMVA_jetBTagDeepCSV             = ntP->el_lepMVA_jetBTagDeepCSV->at(idx);
+   lepMVA_jetBTagDeepFlavour         = ntP->el_lepMVA_jetBTagDeepFlavour->at(idx);
    lepMVA_sip3d                      = ntP->el_lepMVA_sip3d->at(idx);
    lepMVA_dxy                        = ntP->el_lepMVA_dxy->at(idx);
    lepMVA_dz                         = ntP->el_lepMVA_dz->at(idx);
@@ -146,6 +147,7 @@ void ElectronExt::init()
    lepMVA_jetPtRatio              = -100.;
    lepMVA_jetBTagCSV              = -100.;
    lepMVA_jetBTagDeepCSV          = -100.;
+   lepMVA_jetBTagDeepFlavour      = -100.;
    lepMVA_sip3d                   = -100.;
    lepMVA_dxy                     = -100.;
    lepMVA_dz                      = -100.;

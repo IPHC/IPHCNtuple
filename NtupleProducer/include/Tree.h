@@ -365,6 +365,12 @@ class Tree {
    vector<float>   *jet_DeepCSVProbbb;
    vector<float>   *jet_DeepCSVProbc;
    vector<float>   *jet_DeepCSVProbcc;
+   vector<float>   *jet_DeepFlavourProbb;
+   vector<float>   *jet_DeepFlavourProbbb;
+   vector<float>   *jet_DeepFlavourProblepb;
+   vector<float>   *jet_DeepFlavourProbc;
+   vector<float>   *jet_DeepFlavourProbuds;
+   vector<float>   *jet_DeepFlavourProbg;
    vector<bool>    *jet_tightJetID;
    vector<int>     *jet_partonFlavour;
    vector<int>     *jet_hadronFlavour;
@@ -1001,6 +1007,7 @@ class Tree {
    TBranch        *b_el_lepMVA_jetPtRatio;
    TBranch        *b_el_lepMVA_jetBTagCSV;
    TBranch        *b_el_lepMVA_jetBTagDeepCSV;
+   TBranch        *b_el_lepMVA_jetBTagDeepFlavour;
    TBranch        *b_el_lepMVA_sip3d;
    TBranch        *b_el_lepMVA_dxy;
    TBranch        *b_el_lepMVA_dz;
@@ -1105,6 +1112,7 @@ class Tree {
    TBranch        *b_mu_lepMVA_jetPtRatio;
    TBranch        *b_mu_lepMVA_jetBTagCSV;
    TBranch        *b_mu_lepMVA_jetBTagDeepCSV;
+   TBranch        *b_mu_lepMVA_jetBTagDeepFlavour;
    TBranch        *b_mu_lepMVA_sip3d;
    TBranch        *b_mu_lepMVA_dxy;
    TBranch        *b_mu_lepMVA_dz;
@@ -1208,6 +1216,12 @@ class Tree {
    TBranch        *b_jet_DeepCSVProbbb;
    TBranch        *b_jet_DeepCSVProbc;
    TBranch        *b_jet_DeepCSVProbcc;
+   TBranch        *b_jet_DeepFlavourProbb;
+   TBranch        *b_jet_DeepFlavourProbbb;
+   TBranch        *b_jet_DeepFlavourProblepb;
+   TBranch        *b_jet_DeepFlavourProbc;
+   TBranch        *b_jet_DeepFlavourProbuds;
+   TBranch        *b_jet_DeepFlavourProbg;
    TBranch        *b_jet_tightJetID;
    TBranch        *b_jet_partonFlavour;   //!
    TBranch        *b_jet_hadronFlavour;   //!

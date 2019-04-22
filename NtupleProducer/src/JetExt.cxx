@@ -29,14 +29,24 @@ void JetExt::read(bool isdata)
    ntrk           = ntP->jet_ntrk->at(idx);
    CSVv2          = ntP->jet_CSVv2->at(idx);
    cMVAv2         = ntP->jet_cMVAv2->at(idx);
+
    deepCSVudsg    = ntP->jet_DeepCSVProbudsg->at(idx);
    deepCSVb       = ntP->jet_DeepCSVProbb->at(idx);
    deepCSVbb      = ntP->jet_DeepCSVProbbb->at(idx);
    deepCSVc       = ntP->jet_DeepCSVProbc->at(idx);
    deepCSVcc      = ntP->jet_DeepCSVProbcc->at(idx);
 
-   DeepCSVbtag	  = ntP->jet_DeepCSVProbb->at(idx) + ntP->jet_DeepCSVProbbb->at(idx);
+   DeepCSVbtag	  = deepCSVb + deepCSVbb;
 
+   deepFlavourb       = ntP->jet_DeepFlavourProbb->at(idx);
+   deepFlavourbb      = ntP->jet_DeepFlavourProbbb->at(idx);
+   deepFlavourlepb    = ntP->jet_DeepFlavourProblepb->at(idx);
+   deepFlavourc       = ntP->jet_DeepFlavourProbc->at(idx);
+   deepFlavouruds     = ntP->jet_DeepFlavourProbuds->at(idx);
+   deepFlavourg       = ntP->jet_DeepFlavourProbg->at(idx);
+
+   DeepFlavourbtag    = deepFlavourb + deepFlavourbb + deepFlavourlepb;
+   
    if( !isdata )
      {
         jet_partonFlavour    = ntP->jet_partonFlavour->at(idx);
@@ -74,9 +84,18 @@ void JetExt::init()
    deepCSVbb      = -100.;
    deepCSVc       = -100.;
    deepCSVcc      = -100.;
-
+   
    DeepCSVbtag    = -100;
 
+   deepFlavourb      = -100.;
+   deepFlavourbb     = -100.;
+   deepFlavourlepb   = -100.;
+   deepFlavourc      = -100.;
+   deepFlavouruds    = -100.;
+   deepFlavourg      = -100.;
+   
+   DeepFlavourbtag    = -100;
+   
    isLooseBTag = 0;
    isMediumBTag = 0;
    isTightBTag = 0;
@@ -223,9 +242,9 @@ void JetExt::sel(int sync, bool DEBUG)
 		  pass_tauOverlap
 		);
 
-   isLooseBTag  =  (deepCSVb+deepCSVbb > 0.1522);
-   isMediumBTag =  (deepCSVb+deepCSVbb > 0.4941);
-   isTightBTag  =  (deepCSVb+deepCSVbb > 0.8001);
+   isLooseBTag  =  (DeepFlavourbtag > 0.1522);
+   isMediumBTag =  (DeepFlavourbtag > 0.4941);
+   isTightBTag  =  (DeepFlavourbtag > 0.8001);
 
 
 	  if(DEBUG)
