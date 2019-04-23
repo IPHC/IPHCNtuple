@@ -224,11 +224,22 @@ float MuonExt::getEffArea(float eta,int year)
 {   
    float ea = -1;
    
-   if(fabs(eta) < 0.8)      ea = 0.0566;
-   else if(fabs(eta) < 1.3) ea = 0.0562;
-   else if(fabs(eta) < 2.0) ea = 0.0363;
-   else if(fabs(eta) < 2.2) ea = 0.0119;
-   else                     ea = 0.0064;
+   if( year == 2016 )
+     {	
+	if(fabs(eta) < 0.8)      ea = 0.0735;
+	else if(fabs(eta) < 1.3) ea = 0.0619;
+	else if(fabs(eta) < 2.0) ea = 0.0465;
+	else if(fabs(eta) < 2.2) ea = 0.0433;
+	else                     ea = 0.0577;
+     }
+   else if( year == 2017 || year == 2018 )
+     {	
+	if(fabs(eta) < 0.8)      ea = 0.0566;
+	else if(fabs(eta) < 1.3) ea = 0.0562;
+	else if(fabs(eta) < 2.0) ea = 0.0363;
+	else if(fabs(eta) < 2.2) ea = 0.0119;
+	else                     ea = 0.0064;
+     }   
    
    return ea;
 }

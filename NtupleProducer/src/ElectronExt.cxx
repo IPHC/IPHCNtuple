@@ -321,15 +321,27 @@ void ElectronExt::sel(bool DEBUG,int year)
 float ElectronExt::getEffArea(float eta,int year)
 {   
    float ea = -1;
-   
-   //CHANGED values from 92X to 94X -- from : https://github.com/cms-sw/cmssw/blob/CMSSW_10_4_X/RecoEgamma/ElectronIdentification/data/Fall17/effAreaElectrons_cone03_pfNeuHadronsAndPhotons_94X.txt
-   if(fabs(eta) < 1.0)        ea = 0.1440;
-   else if(fabs(eta) < 1.479) ea = 0.1562;
-   else if(fabs(eta) < 2.0)   ea = 0.1032;
-   else if(fabs(eta) < 2.2)   ea = 0.0859;
-   else if(fabs(eta) < 2.3)   ea = 0.1116;
-   else if(fabs(eta) < 2.4)   ea = 0.1321;
-   else                       ea = 0.1654;
+
+   if( year == 2016 )
+     {
+	if(fabs(eta) < 1.0)        ea = 0.1752;
+	else if(fabs(eta) < 1.479) ea = 0.1862;
+	else if(fabs(eta) < 2.0)   ea = 0.1411;
+	else if(fabs(eta) < 2.2)   ea = 0.1534;
+	else if(fabs(eta) < 2.3)   ea = 0.1903;
+	else if(fabs(eta) < 2.4)   ea = 0.2243;
+	else                       ea = 0.2687;		
+     }
+   else if( year == 2017 || year == 2018 )
+     {	   
+	if(fabs(eta) < 1.0)        ea = 0.1566;
+	else if(fabs(eta) < 1.479) ea = 0.1626;
+	else if(fabs(eta) < 2.0)   ea = 0.1073;
+	else if(fabs(eta) < 2.2)   ea = 0.0854;
+	else if(fabs(eta) < 2.3)   ea = 0.1051;
+	else if(fabs(eta) < 2.4)   ea = 0.1204;
+	else                       ea = 0.1524;
+     }   
    
    //Warning: EAs not computed for cone DR=0.4, use the values for DR=0.3 scaled by 16/9 instead
    //NB : dr=0.4 only used for PFRelIso04 ? other variables use dr=0.3 ?
