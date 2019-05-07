@@ -40,8 +40,8 @@ void EventExt::read(bool isdata)
    
    if( !isdata )
      {
-     	/*
         weight_originalXWGTUP = ntP->weight_originalXWGTUP;
+     	/*
         weight_scale_muF0p5 = ntP->weight_scale_muF0p5;
         weight_scale_muF2   = ntP->weight_scale_muF2;
         weight_scale_muR0p5 = ntP->weight_scale_muR0p5;
@@ -65,7 +65,12 @@ void EventExt::read(bool isdata)
 	//if(mc_pu_trueNumInt <=0) {std::cout<<"mc_pu_trueNumInt = "<<mc_pu_trueNumInt<<std::endl;} //FIXME
 
         pdf_weights = *ntP->mc_pdfweights;   
-        pdf_ids = *ntP->mc_pdfweightIds;    
+        pdf_ids = *ntP->mc_pdfweightIds;  
+	
+	//Swap up/down, because up<down
+   	prefiringWeight = ntP->prefiringWeight;
+   	prefiringWeightUp = ntP->prefiringWeightDown;
+   	prefiringWeightDown = ntP->prefiringWeightUp;  
      }
 
    bool e1_trig = 0;
@@ -115,6 +120,34 @@ void EventExt::read(bool isdata)
 	     if( !eem_trig && (tpath.find("HLT_Mu8_DiEle12_CaloIdL_TrackIdL_v") != std::string::npos) ) {eem_trig=1;};
 	     if( !emm_trig && (tpath.find("HLT_DiMu9_Ele9_CaloIdL_TrackIdL_DZ_v") != std::string::npos) ) {emm_trig=1;};
 	     if( !mmm_trig && (tpath.find("HLT_TripleMu_12_10_5_v") != std::string::npos) ) {mmm_trig=1;};
+
+	    	    
+	    //-- same list as in tHq 2017 AN
+	    /*
+	    if( !e1_trig && (tpath.find("HLT_Ele32_WPTight_Gsf_v") != std::string::npos) ) {e1_trig=1;}
+	     if( !e2_trig && (tpath.find("HLT_Ele35_WPTight_Gsf_v") != std::string::npos) ) {e2_trig=1;}
+	     if( !m1_trig && (tpath.find("HLT_IsoMu24_v") != std::string::npos || tpath.find("HLT_IsoMu24_eta2p1_v") != std::string::npos) ) {m1_trig=1;} //!
+	     if( !m2_trig && (tpath.find("HLT_IsoMu27_v") != std::string::npos) ) {m2_trig=1;}
+
+	     if( !ee_trig  && (tpath.find("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v") != std::string::npos) ) {ee_trig=1;};
+	     if( !ee2_trig && (tpath.find("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v") != std::string::npos) ) {ee2_trig=1;};
+	     
+	     if( !em_trig  && (tpath.find("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v") != std::string::npos || tpath.find("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v") != std::string::npos) ) {em_trig=1;}; //!
+	     if( !em2_trig && (tpath.find("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v") != std::string::npos) ) {em2_trig=1;};
+	     if( !em3_trig && (tpath.find("HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v") != std::string::npos) ) {em3_trig=1;};
+	     
+	     if( !mm_trig  && (tpath.find("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v") != std::string::npos) ) {mm_trig=1;};
+	     if( !mm2_trig && (tpath.find("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8_v") != std::string::npos || tpath.find("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass8_v") !=
+	     std::string::npos || tpath.find("HLT_Mu19_TrkIsoVVL_Mu9_TrkIsoVVL_DZ_Mass3p8_v") != std::string::npos || tpath.find("HLT_Mu19_TrkIsoVVL_Mu9_TrkIsoVVL_DZ_Mass8_v") !=
+	     std::string::npos) ) {mm2_trig=1;}; //!
+
+	     if( !eee_trig && (tpath.find("HLT_Ele16_Ele12_Ele8_CaloIdL_TrackIdL_v") != std::string::npos) ) {eee_trig=1;};
+	     if( !eem_trig && (tpath.find("HLT_Mu8_DiEle12_CaloIdL_TrackIdL_v") != std::string::npos || tpath.find("HLT_Mu8_DiEle12_CaloIdL_TrackIdL_DZ_v") != std::string::npos) ) {eem_trig=1;}; //!
+	     if( !emm_trig && (tpath.find("HLT_DiMu9_Ele9_CaloIdL_TrackIdL_DZ_v") != std::string::npos) ) {emm_trig=1;};
+	     if( !mmm_trig && (tpath.find("HLT_TripleMu_12_10_5_v") != std::string::npos || tpath.find("HLT_TripleMu_10_5_5_DZ_v") != std::string::npos ||
+	     tpath.find("HLT_TripleMu_5_3_3_Mass3p8to60_DCA_v") != std::string::npos || tpath.find("HLT_TripleMu_5_3_3_Mass3p8to60_DZ_v") != std::string::npos) ) {mmm_trig=1;}; //!
+	     */
+	     
 	  }
      }   
 
@@ -165,8 +198,12 @@ void EventExt::init()
    metNoHF_phi           = -1000;
    metNoHF_sumet         = -1000; 
    
-   /*
+   prefiringWeight = 1;
+   prefiringWeightUp = 1;
+   prefiringWeightDown = 1;
+   
    weight_originalXWGTUP   = -1000;
+   /*
    weight_scale_muF0p5   = -1000;
    weight_scale_muF2     = -1000;
    weight_scale_muR0p5   = -1000;

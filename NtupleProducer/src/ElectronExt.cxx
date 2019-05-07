@@ -17,9 +17,11 @@ void ElectronExt::read(bool isdata)
    ID                                = idx;
 
    E_preCorr                        = ntP->el_E->at(idx); //before smearing (preCorr)
-   E 	                            = ntP->el_E_postCorr->at(idx);
+   //E 	                            = ntP->el_E_postCorr->at(idx);
+   E 	                            = ntP->el_E->at(idx); //FIXME -- REMOVED ELECTRON PT SMEARING -- TESTING
    pt_preCorr                       = ntP->el_pt->at(idx); //before smearing (preCorr)     
-   pt 	 			    = ntP->el_pt_postCorr->at(idx);
+   //pt 	 			    = ntP->el_pt_postCorr->at(idx);
+   pt 	 			    = ntP->el_pt->at(idx); //FIXME -- REMOVED ELECTRON PT SMEARING -- TESTING
   
    eta	                            = ntP->el_eta->at(idx);
    phi	                            = ntP->el_phi->at(idx);
@@ -223,7 +225,8 @@ void ElectronExt::sel(bool DEBUG)
    for(int im=0;im<nMuonLoose;im++)
      {
         float dr = GetDeltaR(eta,phi,nt->NtMuonLooseExt->at(im).eta,nt->NtMuonLooseExt->at(im).phi);
-        if( dr < 0.3 ) passMuOverlap = 0; //CHANGED from 0.05 (agreed in ttH meeting)
+        //if( dr < 0.3 ) passMuOverlap = 0; //CHANGED from 0.05 (agreed in ttH meeting)
+        if( dr < 0.05 ) passMuOverlap = 0; //FIXME -- SET ELECTRON CONE SIZE BACK TO 0.05 -- TESTING!!
      }
    
    isLooseTTH = ( pass_pt          &&

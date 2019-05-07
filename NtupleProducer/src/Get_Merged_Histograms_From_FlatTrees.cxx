@@ -1083,22 +1083,19 @@ int main(int argc, char *argv[])
 //--------------------------------------------
 //Un-comment all the samples for which you want to get/merge/store histograms
     vector<TString> v_process;
-    // v_process.push_back("THQ_ctcvcp_4f_Hincl_13TeV_madgraph_pythia8");
-    // v_process.push_back("THW_ctcvcp_5f_Hincl_13TeV_madgraph_pythia8");
-	// v_process.push_back("THQ_4f_Hincl_13TeV_madgraph_pythia8");
-	// v_process.push_back("THW_5f_Hincl_13TeV_madgraph_pythia8");
+	// v_process.push_back("THQ_ctcvcp_4f_Hincl_13TeV_madgraph_pythia8");
+	// v_process.push_back("THW_ctcvcp_5f_Hincl_13TeV_madgraph_pythia8");
+    // v_process.push_back("TTH_4f_ctcvcp_TuneCP5_13TeV_madgraph_pythia8");
 	// v_process.push_back("ttHJetToNonbb_M125_TuneCP5_13TeV_amcatnloFXFX_madspin_pythia8");
-    // v_process.push_back("ttHToNonbb_M125_TuneCP5_13TeV-powheg-pythia8");
-    // v_process.push_back("ttH_M125_TuneCP5_13TeV-powheg-pythia8");
+	// v_process.push_back("ttH_M125_TuneCP5_13TeV-powheg-pythia8");
     // v_process.push_back("TTWJetsToLNu_TuneCP5_PSweights_13TeV-amcatnloFXFX-madspin-pythia8");
-    // v_process.push_back("TTWJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8");
     // v_process.push_back("ttWJets_TuneCP5_13TeV_madgraphMLM_pythia8");
     // v_process.push_back("TTZToLL_M-1to10_TuneCP5_13TeV-amcatnlo-pythia8");
     // v_process.push_back("TTZToLLNuNu_M-10_TuneCP5_13TeV-amcatnlo-pythia8");
     // v_process.push_back("ttZJets_TuneCP5_13TeV_madgraphMLM_pythia8");
     // v_process.push_back("WZTo3LNu_TuneCP5_13TeV-amcatnloFXFX-pythia8");
 	// v_process.push_back("tZq_ll_4f_ckm_NLO_TuneCP5_PSweights_13TeV-amcatnlo-pythia8");
-    // v_process.push_back("ZZTo2L2Nu_13TeV_powheg_pythia8");
+	// v_process.push_back("ST_tWll_5f_LO_TuneCP5_PSweights_13TeV-madgraph-pythia8");
     // v_process.push_back("ZZTo4L_13TeV_powheg_pythia8");
     // v_process.push_back("TGJets_leptonDecays_TuneCP5_PSweights_13TeV-amcatnlo-pythia8");
 	// v_process.push_back("TTGJets_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8");
@@ -1112,23 +1109,15 @@ int main(int argc, char *argv[])
     // v_process.push_back("TTTW_TuneCP5_13TeV-madgraph-pythia8");
     // v_process.push_back("GluGluHToZZTo4L_M125_13TeV_powheg2_JHUGenV7011_pythia8");
     // v_process.push_back("WpWpJJ_EWK-QCD_TuneCP5_13TeV-madgraph-pythia8");
-    // v_process.push_back("WW_DoubleScattering_13TeV-pythia8_TuneCP5");
-    // v_process.push_back("WZG_TuneCP5_13TeV-amcatnlo-pythia8");
+	// v_process.push_back("WZG_TuneCP5_13TeV-amcatnlo-pythia8");
+    // v_process.push_back("VHToNonbb_M125_13TeV_amcatnloFXFX_madspin_pythia8");
+	// v_process.push_back("WW_DoubleScattering_13TeV-pythia8_TuneCP5");
+
+    //GammaConv, DY, MC Fakes
 	// v_process.push_back("W1JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8");
 	// v_process.push_back("W2JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8");
     // v_process.push_back("W3JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8");
     // v_process.push_back("W4JetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8");
-    // v_process.push_back("ST_tWll_5f_LO_TuneCP5_PSweights_13TeV-madgraph-pythia8");
-    // v_process.push_back("ST_tWll_5f_LO_TuneCP5_PSweights_13TeV_madgraph_pythia8_Fall17");
-	// v_process.push_back("ST_tW_top_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8");
-	// v_process.push_back("ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8");
-    // v_process.push_back("VHToNonbb_M125_13TeV_amcatnloFXFX_madspin_pythia8");
-    // v_process.push_back("VHToNonbb_M125_13TeV_amcatnloFXFX_madspin_pythia8_Fall17");
-    // v_process.push_back("DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8");
-    // v_process.push_back("DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_RECOSIMstep_94X_mc2017_realistic_v10_v1_MINIAODSIM");
-    // v_process.push_back("DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_RECOSIMstep_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM");
-    // v_process.push_back("DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v1_MINIAODSIM");
-    // v_process.push_back("DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM");
     // v_process.push_back("TTTo2L2Nu_TuneCP5_13TeV-powheg-pythia8");
     // v_process.push_back("TTTo2L2Nu_TuneCP5_PSweights_13TeV-powheg-pythia8");
     // v_process.push_back("TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8");
@@ -1137,8 +1126,17 @@ int main(int argc, char *argv[])
     // v_process.push_back("TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8");
     // v_process.push_back("TTJets_SingleLeptFromT_TuneCP5_13TeV-madgraphMLM-pythia8");
     // v_process.push_back("TTJets_SingleLeptFromTbar_TuneCP5_13TeV-madgraphMLM-pythia8");
-    // v_process.push_back("WGToLNuG_TuneCP5_13TeV-madgraphMLM-pythia8");
-    // v_process.push_back("WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8");
+	// v_process.push_back("DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8");
+	// v_process.push_back("DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8");
+	// v_process.push_back("DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8");
+	// v_process.push_back("DY1JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8");
+	// v_process.push_back("DY2JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8");
+	// v_process.push_back("DY3JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8");
+	// v_process.push_back("DY4JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8");
+	// v_process.push_back("DYJetsToLL_M-4to50_HT-100to200_TuneCP5_13TeV-madgraphMLM-pythia8");
+    // v_process.push_back("DYJetsToLL_M-4to50_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8");
+    // v_process.push_back("DYJetsToLL_M-4to50_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8");
+    // v_process.push_back("DYJetsToLL_M-4to50_HT-600toInf_TuneCP5_13TeV-madgraphMLM-pythia8");
 
     // v_process.push_back("ST_FCNC-TH_Tleptonic_HToWWZZtautau_eta_hct-MadGraph5-pythia8");
     // v_process.push_back("ST_FCNC-TH_Tleptonic_HToWWZZtautau_eta_hut-MadGraph5-pythia8");
@@ -1146,6 +1144,42 @@ int main(int argc, char *argv[])
     // v_process.push_back("TT_FCNC-TtoHJ_aTleptonic_HToWWZZtautau_eta_hut-MadGraph5-pythia8");
     // v_process.push_back("TT_FCNC-aTtoHJ_Tleptonic_HToWWZZtautau_eta_hct-MadGraph5-pythia8");
     // v_process.push_back("TT_FCNC-aTtoHJ_Tleptonic_HToWWZZtautau_eta_hut-MadGraph5-pythia8");
+
+    // v_process.push_back("ST_s-channel_4f_leptonDecays_TuneCP5_PSweights_13TeV-amcatnlo-pythia8");
+    // v_process.push_back("ST_t-channel_top_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8");
+    // v_process.push_back("ST_t-channel_antitop_4f_inclusiveDecays_TuneCP5_13TeV-powhegV2-madspin-pythia8");
+
+//--------------------------------------------
+    //--- Obsolete ?
+	// v_process.push_back("ttHToNonbb_M125_TuneCP5_13TeV-powheg-pythia8"); --
+    // v_process.push_back("TTWJetsToLNu_TuneCP5_13TeV-amcatnloFXFX-madspin-pythia8"); --
+    // v_process.push_back("WGToLNuG_TuneCP5_13TeV-madgraphMLM-pythia8"); --
+    // v_process.push_back("WJetsToLNu_TuneCP5_13TeV-madgraphMLM-pythia8"); --
+    // v_process.push_back("ST_tWll_5f_LO_TuneCP5_PSweights_13TeV_madgraph_pythia8_Fall17"); --
+    // v_process.push_back("ST_tW_top_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8"); --
+    // v_process.push_back("ST_tW_antitop_5f_inclusiveDecays_TuneCP5_13TeV-powheg-pythia8"); --
+    // v_process.push_back("VHToNonbb_M125_13TeV_amcatnloFXFX_madspin_pythia8_Fall17"); --
+
+	// v_process.push_back("DYJetsToLL_M-10to50_TuneCP5_13TeV-madgraphMLM-pythia8");
+	// v_process.push_back("DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_RECOSIMstep_94X_mc2017_realistic_v10_v1_MINIAODSIM");
+	// v_process.push_back("DYJetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_RECOSIMstep_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM");
+	// v_process.push_back("DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v1_MINIAODSIM");
+	// v_process.push_back("DYJetsToLL_M-50_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM");
+
+	// v_process.push_back("DY1JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v1_MINIAODSIM");
+	// v_process.push_back("DY1JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM");
+	// v_process.push_back("DY2JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v1_MINIAODSIM");
+	// v_process.push_back("DY2JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM");
+	// v_process.push_back("DY3JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v2_MINIAODSIM");
+	// v_process.push_back("DY3JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v11_ext1_v1_MINIAODSIM");
+	// v_process.push_back("DY4JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8");
+	// v_process.push_back("DYJetsToLL_M-4to50_HT-100to200_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v1_MINIAODSIM");
+	// v_process.push_back("DYJetsToLL_M-4to50_HT-100to200_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM");
+	// v_process.push_back("DYJetsToLL_M-4to50_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v1_MINIAODSIM");
+	// v_process.push_back("DYJetsToLL_M-4to50_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM");
+	// v_process.push_back("DYJetsToLL_M-4to50_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v2_MINIAODSIM");
+	// v_process.push_back("DYJetsToLL_M-4to50_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM");
+	// v_process.push_back("DYJetsToLL_M-4to50_HT-600toInf_TuneCP5_13TeV-madgraphMLM-pythia8");
 
     // v_process.push_back("TprimeBToTH_M-1000_LH_TuneCP5_13TeV-madgraph-pythia8");
     // v_process.push_back("TprimeBToTH_M-1100_LH_TuneCP5_13TeV-madgraph-pythia8");
@@ -1156,20 +1190,6 @@ int main(int argc, char *argv[])
     // v_process.push_back("TprimeBToTH_M-800_LH_TuneCP5_13TeV-madgraph-pythia8");
     // v_process.push_back("TprimeBToTH_M-900_LH_TuneCP5_13TeV-madgraph-pythia8");
 
-    // v_process.push_back("DY1JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v1_MINIAODSIM");
-    // v_process.push_back("DY1JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM");
-    // v_process.push_back("DY2JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v1_MINIAODSIM");
-    // v_process.push_back("DY2JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM");
-    // v_process.push_back("DY3JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v2_MINIAODSIM");
-    // v_process.push_back("DY3JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v11_ext1_v1_MINIAODSIM");
-    // v_process.push_back("DY4JetsToLL_M-50_TuneCP5_13TeV-madgraphMLM-pythia8");
-    // v_process.push_back("DYJetsToLL_M-4to50_HT-100to200_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v1_MINIAODSIM");
-    // v_process.push_back("DYJetsToLL_M-4to50_HT-100to200_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM");
-    // v_process.push_back("DYJetsToLL_M-4to50_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v1_MINIAODSIM");
-    // v_process.push_back("DYJetsToLL_M-4to50_HT-200to400_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM");
-    // v_process.push_back("DYJetsToLL_M-4to50_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_v2_MINIAODSIM");
-    // v_process.push_back("DYJetsToLL_M-4to50_HT-400to600_TuneCP5_13TeV-madgraphMLM-pythia8_RunIIFall17MiniAOD_94X_mc2017_realistic_v10_ext1_v1_MINIAODSIM");
-    // v_process.push_back("DYJetsToLL_M-4to50_HT-600toInf_TuneCP5_13TeV-madgraphMLM-pythia8");
 
 //--------------------------------------------
 //--------------------------------------------
@@ -1184,7 +1204,7 @@ int main(int argc, char *argv[])
     // Get_PU_Distribution_before_presel(v_process);
 
 //This function reads/merges/stores several kinds of histos at once -- NEEDED TO COMPUTE EVENT WEIGHTS, ...
-	// Get_Merged_Histograms_From_FlatTrees(v_process);
+	Get_Merged_Histograms_From_FlatTrees(v_process);
 
 //Get sums of weights for *all* LHE indices -- needed for PDF sets, scales, etc.
     // Get_SumOfWeights_LHEweights(v_process);

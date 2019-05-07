@@ -36,7 +36,7 @@ void JetExt::read(bool isdata)
    deepCSVcc      = ntP->jet_DeepCSVProbcc->at(idx);
 
    DeepCSVbtag	  = ntP->jet_DeepCSVProbb->at(idx) + ntP->jet_DeepCSVProbbb->at(idx);
-
+   
    if( !isdata )
      {
         jet_partonFlavour    = ntP->jet_partonFlavour->at(idx);
@@ -174,7 +174,11 @@ void JetExt::sel(int sync, bool DEBUG)
 	*/
 
         float dr = GetDeltaR(eta,phi,elmuFakeable->at(il).eta,elmuFakeable->at(il).phi);
-        if( dr < 0.4 ) pass_lepOverlap = 0;
+        if( dr < 0.4 ) 
+	{
+		pass_lepOverlap = 0;
+		//cout<<"Overlap with lepton "<<il<<" (eta = "<<elmuFakeable->at(il).eta<<", phi = "<<elmuFakeable->at(il).phi<<")"<<endl;
+	}
      }
 
    for(int it=0;it<nTau;it++)
@@ -229,18 +233,21 @@ void JetExt::sel(int sync, bool DEBUG)
 	     std::cout << "  eta = " << eta << std::endl;
 	     std::cout << "  phi = " << phi << std::endl;
 	     std::cout << "  pt_JES_up = " << pt_JES_up << std::endl;
+	     std::cout << "  pt_JES_down = " << pt_JES_down << std::endl;
 	     std::cout << "  isLooseTTH = " << isLooseTTH << std::endl;
 	     std::cout << "  pass_pt = " << pass_pt << std::endl;
 	     std::cout << "  pass_eta = " << pass_eta << std::endl;
+	     std::cout << "  deepCSVb+deepCSVbb = " << deepCSVb+deepCSVbb << std::endl;
 	     std::cout << "  isLooseBTag = " << isLooseBTag << std::endl;
 	     std::cout << "  isMediumBTag = " << isMediumBTag << std::endl;
+	     std::cout << "  jet_hadronFlavour = " << jet_hadronFlavour << std::endl;
 	     std::cout << "  tightJetID = " << tightJetID << std::endl;
 	     std::cout << "  (( jet_neutralEmEnergyFraction = " <<
 	     ntP->jet_neutralEmEnergyFraction->at(idx) << std::endl;
 	     std::cout << "  pass_lepOverlap = " << pass_lepOverlap << std::endl;
 	     std::cout << "  pass_tauOverlap = " << pass_tauOverlap << std::endl;
 	  }
-     
+
      return;
 }
 
@@ -381,8 +388,8 @@ void JetExt::apply_JER_smearing(bool isdata, float JER_res, float JER_sf, float 
     E_JER_down = E * JER_corr_down;
 
     //Correct jet pt/E by JER correcting factor
-    pt*= JER_corr;
-    E*= JER_corr;
+    //pt*= JER_corr;
+    //E*= JER_corr;
 
     return;
 }
@@ -391,7 +398,7 @@ void JetExt::setJESUncertainty(bool isdata, float unc)
 {
     bool debug = false;
      
-    if(isdata) {pt_JES_up = pt; pt_JES_down = pt;}
+    if(isdata) {pt_JES_up = pt; pt_JES_down = pt; E_JES_up = E; E_JES_down = E; return;}
 
     pt_JES_up = pt * (1+fabs(unc));
     pt_JES_down = pt * (1-fabs(unc));
@@ -406,3 +413,4 @@ void JetExt::setJESUncertainty(bool isdata, float unc)
     
     return;
 }
+

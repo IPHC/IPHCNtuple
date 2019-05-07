@@ -54,8 +54,8 @@ class Tree {
    Float_t         pv_z;
    Float_t         pv_zError;
    
-   /*
    Float_t         weight_originalXWGTUP;
+   /*
    Float_t         weight_scale_muF0p5;
    Float_t         weight_scale_muF2;
    Float_t         weight_scale_muR0p5;
@@ -71,6 +71,10 @@ class Tree {
    Float_t         weight_scale_index7;
    Float_t         weight_scale_index8;
    Float_t         weight_scale_index9;
+
+   Float_t         prefiringWeight;
+   Float_t         prefiringWeightUp;
+   Float_t         prefiringWeightDown;
 
    Int_t           mc_id;
    Int_t           mc_f1;
@@ -368,7 +372,7 @@ class Tree {
    vector<int>     *jet_hadronFlavour;
    vector<float>   *jet_neutralHadronEnergy;
    vector<float>   *jet_neutralEmEnergy;
-   vector<float>   *jet_neutralEmEnergyFraction; //CHANGED -- for debug
+   vector<float>   *jet_neutralEmEnergyFraction; 
    vector<float>   *jet_chargedHadronEnergy;
    vector<float>   *jet_chargedEmEnergy;
    vector<float>   *jet_electronEnergy;
@@ -390,6 +394,10 @@ class Tree {
    vector<int>     *jet_genParton_id;
    vector<float>   *jet_pileupJetId;
    vector<float>   *jet_Unc;
+   vector<float>   *jet_jecFactorUncorrected;
+   vector<float>   *jet_jecFactorL1FastJet;
+   vector<float>   *jet_jecFactorL2Relative;
+   vector<float>   *jet_jecFactorL3Absolute;
    
    Int_t gen_n;
    std::vector<float> *gen_pt;
@@ -896,8 +904,8 @@ class Tree {
    TBranch        *b_pv_z;   //!
    TBranch        *b_pv_zError;   //!
    
-   /*
    TBranch        *b_weight_originalXWGTUP;
+   /*
    TBranch        *b_weight_scale_muF0p5;
    TBranch        *b_weight_scale_muF2;
    TBranch        *b_weight_scale_muR0p5;
@@ -913,6 +921,10 @@ class Tree {
     TBranch       *b_weight_scale_index7;
     TBranch       *b_weight_scale_index8;
     TBranch       *b_weight_scale_index9;
+
+    TBranch       *b_prefiringWeight;
+    TBranch       *b_prefiringWeightUp;
+    TBranch       *b_prefiringWeightDown;
 
    TBranch        *b_mc_weight;   //!
    TBranch        *b_mc_weight_originalValue;   //!
@@ -1233,6 +1245,13 @@ class Tree {
    TBranch        *b_jet_genParton_id; //!
    TBranch        *b_jet_pileupJetId;   //!
    TBranch        *b_jet_Unc;   //!
+   TBranch        *b_jet_prefiringWeight;   //!
+   TBranch        *b_jet_prefiringWeightUp;   //!
+   TBranch        *b_jet_prefiringWeightDown;   //!
+   TBranch        *b_jet_jecFactorUncorrected;   //!
+   TBranch        *b_jet_jecFactorL1FastJet;   //!
+   TBranch        *b_jet_jecFactorL2Relative;   //!
+   TBranch        *b_jet_jecFactorL3Absolute;   //!
    
    TBranch        *b_gen_n;
    TBranch        *b_gen_pt;

@@ -73,6 +73,15 @@ void Tree::Init(TChain *ch)
    pv_z = 0;
    pv_zError = 0;
    
+   weight_scale_index2 = 0;
+   weight_scale_index3 = 0;
+   weight_scale_index4 = 0;
+   weight_scale_index5 = 0;
+   weight_scale_index6 = 0;
+   weight_scale_index7 = 0;
+   weight_scale_index8 = 0;
+   weight_scale_index9 = 0;
+   
    mc_pdfweights = 0;
    mc_pdfweightIds = 0;
    
@@ -83,6 +92,10 @@ void Tree::Init(TChain *ch)
    mc_pu_sumpT_highpT = 0;
    mc_pu_ntrks_lowpT = 0;
    mc_pu_ntrks_highpT = 0;
+   
+   prefiringWeight = 0;
+   prefiringWeightUp = 0;
+   prefiringWeightDown = 0;
    
    el_pt = 0;
    el_eta = 0;
@@ -375,6 +388,10 @@ void Tree::Init(TChain *ch)
    jet_genParton_id = 0;
    jet_pileupJetId = 0;
    jet_Unc = 0;
+   jet_jecFactorUncorrected = 0;
+   jet_jecFactorL1FastJet = 0;
+   jet_jecFactorL2Relative = 0;
+   jet_jecFactorL3Absolute = 0;
    
    genJet_n = 0;
    genJet_pt = 0;
@@ -843,8 +860,8 @@ void Tree::Init(TChain *ch)
    fChain->SetBranchAddress("pv_z", &pv_z, &b_pv_z);
    fChain->SetBranchAddress("pv_zError", &pv_zError, &b_pv_zError);
    
-   /*
    fChain->SetBranchAddress("weight_originalXWGTUP", &weight_originalXWGTUP, &b_weight_originalXWGTUP);
+   /*
    fChain->SetBranchAddress("weight_scale_muF0p5", &weight_scale_muF0p5, &b_weight_scale_muF0p5);
    fChain->SetBranchAddress("weight_scale_muF2",   &weight_scale_muF2,   &b_weight_scale_muF2  );
    fChain->SetBranchAddress("weight_scale_muR0p5", &weight_scale_muR0p5, &b_weight_scale_muR0p5);
@@ -860,6 +877,10 @@ void Tree::Init(TChain *ch)
    fChain->SetBranchAddress("weight_scale_index7",   &weight_scale_index7,   &b_weight_scale_index7);
    fChain->SetBranchAddress("weight_scale_index8",   &weight_scale_index8,   &b_weight_scale_index8);
    fChain->SetBranchAddress("weight_scale_index9",   &weight_scale_index9,   &b_weight_scale_index9);
+
+   fChain->SetBranchAddress("prefiringWeight",   &prefiringWeight,   &b_prefiringWeight);
+   fChain->SetBranchAddress("prefiringWeightUp",   &prefiringWeightUp,   &b_prefiringWeightUp);
+   fChain->SetBranchAddress("prefiringWeightDown",   &prefiringWeightDown,   &b_prefiringWeightDown);
    
    fChain->SetBranchAddress("mc_id", &mc_id, &b_mc_id);
    fChain->SetBranchAddress("mc_f1", &mc_f1, &b_mc_f1);
@@ -1175,7 +1196,10 @@ void Tree::Init(TChain *ch)
    //fChain->SetBranchAddress("jet_genJet_status", &jet_genJet_status, &b_jet_genJet_status);
    //fChain->SetBranchAddress("jet_genJet_id", &jet_genJet_id, &b_jet_genJet_id);
    fChain->SetBranchAddress("jet_pileupJetId", &jet_pileupJetId, &b_jet_pileupJetId);
-   fChain->SetBranchAddress("jet_Unc", &jet_Unc, &b_jet_Unc);
+   fChain->SetBranchAddress("jet_jecFactorUncorrected", &jet_jecFactorUncorrected, &b_jet_jecFactorUncorrected);
+   fChain->SetBranchAddress("jet_jecFactorL1FastJet", &jet_jecFactorL1FastJet, &b_jet_jecFactorL1FastJet);
+   fChain->SetBranchAddress("jet_jecFactorL2Relative", &jet_jecFactorL2Relative, &b_jet_jecFactorL2Relative);
+   fChain->SetBranchAddress("jet_jecFactorL3Absolute", &jet_jecFactorL3Absolute, &b_jet_jecFactorL3Absolute);
    
    if( fChain->GetBranch("gen_n") ) fChain->SetBranchAddress("gen_n", &gen_n, &b_gen_n);
    if( fChain->GetBranch("gen_pt") ) fChain->SetBranchAddress("gen_pt", &gen_pt, &b_gen_pt);

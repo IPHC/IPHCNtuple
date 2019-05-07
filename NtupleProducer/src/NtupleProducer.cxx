@@ -99,7 +99,8 @@ int main(int argc, char *argv[])
 //-- DEBUG : here, can read a list of event ids directly from a file, and then look specifically for them
 //===============================
    std::vector<int> evdebugid;
-   std::vector<int> evdebuglumi;
+   std::vector<int> evdebuglumi; 
+   
    /*
    ifstream file_in("/home-pbs/ntonon/tHq/IPHCNtuple_2017/CMSSW_9_4_3/src/IPHCNtuple/NtupleProducer/test/sync/input_3l_SR_METinTH_noTriggerMatch_tH_only_not_in_tHq.txt");  
    //if (file_in.is_open()) {std::cout <<"!"<<file_in.rdbuf();}
@@ -115,7 +116,15 @@ int main(int argc, char *argv[])
 	evdebugid.push_back(ev_id);
 	evdebugid.push_back(lumi);
 	std::cout<<"DEBUG Ev ID = "<<ev_id<<std::endl;
-   }*/
+   }
+   
+   //3l JES up
+   evdebugid.push_back(18842909);
+   evdebugid.push_back(16434251);
+   evdebugid.push_back(15257647);
+   evdebugid.push_back(16797010);
+   */
+
    //==========================
 
    int nlep = 0;
@@ -129,8 +138,10 @@ int main(int argc, char *argv[])
    //-- JES //Ask for "Total" source of uncert.
    JetCorrectionUncertainty* jesTotal = 0;
    std::string jecFilesPath = cmssw+"/src/IPHCNtuple/NtupleProducer/data/jecFiles/";
-   std::string jecMC = jecFilesPath+"Fall17_17Nov2017_V32_MC/Fall17_17Nov2017_V32_MC_UncertaintySources_AK4PFchs.txt";
-   std::string jecData = jecFilesPath+"Fall17_17Nov2017F_V32_DATA/Fall17_17Nov2017F_V32_DATA_UncertaintySources_AK4PFchs.txt";
+   //std::string jecMC = jecFilesPath+"Fall17_17Nov2017_V32_MC/Fall17_17Nov2017_V32_MC_UncertaintySources_AK4PFchs.txt";
+   //std::string jecData = jecFilesPath+"Fall17_17Nov2017F_V32_DATA/Fall17_17Nov2017F_V32_DATA_UncertaintySources_AK4PFchs.txt";
+   std::string jecMC = jecFilesPath+"Fall17_17Nov2017_V8_MC/Fall17_17Nov2017_V8_MC_UncertaintySources_AK4PFchs.txt"; //-- old JEC
+   std::string jecData = jecFilesPath+"Fall17_17Nov2017F_V6_DATA/Fall17_17Nov2017F_V6_DATA_UncertaintySources_AK4PFchs.txt";
    if(!isdata) {jesTotal = new JetCorrectionUncertainty(*(new JetCorrectorParameters(jecMC.c_str(), "Total")));}
    else {jesTotal = new JetCorrectionUncertainty(*(new JetCorrectorParameters(jecData.c_str(), "Total")));}
 
@@ -163,7 +174,7 @@ int main(int argc, char *argv[])
         ev.init();
         ev.read(isdata);
 	
-	//Only keep events to debug -- disactivate if not debugging specific events //FIXME
+	//Only keep events to debug -- disactivate if not debugging specific events
 	bool is_debug_event = false;
 //-------------------
 	/*
@@ -286,7 +297,7 @@ int main(int argc, char *argv[])
 
             if(sync == 0) //Don't apply JER for sync
             {
-               jet.apply_JER_smearing(isdata, JER_res, JER_sf, JER_sf_up, JER_sf_down); //Fill JER variables and apply JER SF
+               jet.apply_JER_smearing(isdata, JER_res, JER_sf, JER_sf_up, JER_sf_down); //Fill JER variables and apply JER SF 
             }
          }
 
@@ -349,6 +360,8 @@ int main(int argc, char *argv[])
 	nt->fill();
 
 	if( pass ) nt->write();
+	
+	//if(ev.is_2lSS_SR) {cout<<"ID "<<ev.id<<endl;}
      }
 
    if( sync )

@@ -36,6 +36,10 @@ class Event : public Base
    float weight_scale_index8;
    float weight_scale_index9;
    
+   float prefiringWeight;
+   float prefiringWeightUp;
+   float prefiringWeightDown;
+   
    std::vector<float> pdf_weights;
    std::vector<std::string> pdf_ids;
    

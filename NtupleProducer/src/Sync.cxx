@@ -1211,9 +1211,12 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
     int nJetLooseBM_total = 0;
     for(int ij=0;ij<nJetLoose_total;ij++)
     {
-        if( fabs(nt->NtJetLooseExt->at(ij).eta) < 2.4) {nJetLooseCentral_total++;}
-        if( nt->NtJetLooseExt->at(ij).isMediumBTag ) {nJetLooseBL_total++;}
-        if( nt->NtJetLooseExt->at(ij).isLooseBTag ) {nJetLooseBM_total++;}
+        if( fabs(nt->NtJetLooseExt->at(ij).eta) < 2.4)
+		{
+			nJetLooseCentral_total++;
+			if( nt->NtJetLooseExt->at(ij).isMediumBTag ) {nJetLooseBM_total++;}
+			if( nt->NtJetLooseExt->at(ij).isLooseBTag ) {nJetLooseBL_total++;}
+		}
     }
 
 //Modified jet vector (to decide the categorization)
@@ -1223,8 +1226,19 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 	int nJetLooseBM_ttHsel = 0;
 	for(int ij=0;ij<nJetLoose_ttHsel;ij++)
     {
-        if(NtJetLooseExt_ttHselections->at(ij).isMediumBTag) {nJetLooseBM_ttHsel++;}
-        if(NtJetLooseExt_ttHselections->at(ij).isLooseBTag) {nJetLooseBL_ttHsel++;}
+		if( fabs(NtJetLooseExt_ttHselections->at(ij).eta) < 2.4)
+		{
+			if(NtJetLooseExt_ttHselections->at(ij).isMediumBTag) {nJetLooseBM_ttHsel++;}
+			if(NtJetLooseExt_ttHselections->at(ij).isLooseBTag) {nJetLooseBL_ttHsel++;}
+		}
+    }
+
+    if(DEBUG)
+    {
+        cout<<"nJetLoose_total "<<nJetLoose_total<<endl;
+        cout<<"nJetLooseCentral_total "<<nJetLooseCentral_total<<endl;
+        cout<<"nJetLooseBL_total "<<nJetLooseBL_total<<endl;
+        cout<<"nJetLooseBM_total "<<nJetLooseBM_total<<endl;
     }
 //--------------------------------------------
 
