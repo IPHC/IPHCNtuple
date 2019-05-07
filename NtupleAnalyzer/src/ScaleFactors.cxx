@@ -126,7 +126,8 @@ ScaleFactors::ScaleFactors(TString samplename, bool debug_pileup)
 //--------------------------------------------
     path_dir = "/home-pbs/ntonon/tHq/IPHCNtuple_2017/CMSSW_9_4_3/src/IPHCNtuple/NtupleAnalyzer/test/weights_2017/btag_SF/";
 
-    TString btag_csv_filename = "DeepCSV_94XSF_V3_B_F.csv";
+    // TString btag_csv_filename = "DeepCSV_94XSF_V3_B_F.csv";
+    TString btag_csv_filename = "DeepCSV_94XSF_V4_B_F.csv";
 
     const string& tagger_type = "deepcsv";
     const string& inputCSVfile = (const string&) path_dir.Data() + btag_csv_filename.Data();
@@ -579,7 +580,7 @@ float ScaleFactors::Get_Pileup_SF(int nPU, TString var)
 {
     // cout<<BOLD(FYEL("--- Entering : Compute_PU_Weight()"))<<endl;
 
-    if(nPU==99) {return 1;} //Fix binning issue (I stopped at 98)
+    if(nPU>=99) {return 1;} //Fix binning issue (I stopped at 98)
 
     if(nPU < 0 || nPU >= my_pileup.v_PU_weights_Nom.size())
     {

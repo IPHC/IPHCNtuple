@@ -194,7 +194,7 @@ void Get_SumWeight_FlatTree(TString path_ft, int nfiles)
    }
 
    // file_out<<path_ft<<" / nfiles = "<<nfiles<<" / sum_hweight = "<<setprecision(10)<<sum_hweight<<" / sum_hcount = "<<setprecision(10)<<sum_hcount<<endl<<endl;
-	cout<<FMAG(" "<<path_ft<<" / nfiles = "<<nfiles<<" / sum_hweight = "<<setprecision(10)<<sum_hweight<<" ")<<endl<<endl;
+	cout<<FMAG(" "<<path_ft<<" / nfiles = "<<nfiles<<" / sum_hweight = "<<setprecision(10)<<sum_hweight<<" (Total nof unweighted entries = "<<sum_hcount<<")")<<endl<<endl;
 
    return;
 }

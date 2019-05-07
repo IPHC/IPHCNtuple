@@ -120,7 +120,8 @@ class tHqMultileponAnalysis
 		// int Ele_To_Lepton_Matching(int);
 		// int Ele_To_Gamma_Matching(int);
 		void Dump_EventInfo_Synchro(std::ofstream&);
-		int Check_If_Save_Event(bool);
+		bool Check_If_Save_Event(bool, TString); //was int
+        void Set_AllBooleans_Region_toFalse(TString);
 		void Apply_ScaleFactors(int, int);
 		void Compute_Weight_ScaleSyst();
 		void Fill_Overlap_Histo();
@@ -131,6 +132,7 @@ class tHqMultileponAnalysis
 		void Get_Mapping_LHE_PDF();
 		void Read_LHE_ScaleVariations();
 		void Get_PDFset_Weights();
+        TString Get_List_PassedCategories(bool);
 
 		//TESTING
 		void Modify_DefaultCategories_Orthogonal(TString);
@@ -198,8 +200,9 @@ class tHqMultileponAnalysis
 		//NB -- input vars (tHq2016, ttH2017) are declared in SignalExtraction.h !
 
 		//Additional vars
-		bool pass_Zveto;
-		bool pass_Zveto_ee;
+		bool pass_Zveto10;
+		bool pass_Zveto15;
+		bool pass_Zveto10_ee;
 		bool pass_cleanup;
 		float nSFOS;
 		double mllll;
@@ -240,11 +243,13 @@ class tHqMultileponAnalysis
         Char_t is_tHq_4l;
         Char_t is_tHq_4l_SR;
         Char_t is_tHq_ZZctrl_SR;
-		Char_t is_tHqFCNC_2lSS_SR;
+        Char_t is_tHqFCNC_2lSS_SR;
+        Char_t is_tHqFCNC_2lSS_Training;
 		Char_t is_tHqFCNC_2lSS_Fake;
 		Char_t is_tHqFCNC_2lSS_Flip;
 		Char_t is_tHqFCNC_2lSS_GammaConv;
-		Char_t is_tHqFCNC_3l_SR;
+        Char_t is_tHqFCNC_3l_SR;
+        Char_t is_tHqFCNC_3l_Training;
 		Char_t is_tHqFCNC_3l_Fake;
 		Char_t is_tHqFCNC_3l_GammaConv;
 
@@ -435,6 +440,7 @@ class tHqMultileponAnalysis
 
         Float_t mc_weight_originalValue; //'true' mc weight, can different from +/-1 (new)
         Float_t weight; //=> weight = real_gen_weight * xsec * lumi / swe_real
+        Float_t weight_noSF; //Want to store value of weight before applying any SF
 
         //FakeRate weights
         Float_t weightfake; //store nominal FR weight separately
@@ -654,6 +660,8 @@ class tHqMultileponAnalysis
 		// class HadTopKinFit; // forward declaration
 		HadTopKinFit* kinFit_;
 		Float_t resHTT;
+
+        Float_t prefiringWeight, prefiringWeightUp, prefiringWeightDown;
 };
 
 #endif
