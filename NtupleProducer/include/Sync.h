@@ -67,6 +67,8 @@ class Sync
    float mu1_jetPtRel;
    float mu1_jetPtRatio;
    float mu1_jetCSV;
+   float mu1_jetDeepCSV;
+   float mu1_jetDeepJet;
    float mu1_sip3D;
    float mu1_dxy;
    float mu1_dxyAbs;
@@ -92,6 +94,8 @@ class Sync
    float mu2_jetPtRel;
    float mu2_jetPtRatio;
    float mu2_jetCSV;
+   float mu2_jetDeepCSV;
+   float mu2_jetDeepJet;
    float mu2_sip3D;
    float mu2_dxy;
    float mu2_dxyAbs;
@@ -118,6 +122,8 @@ class Sync
    float ele1_jetPtRel;
    float ele1_jetPtRatio;
    float ele1_jetCSV;
+   float ele1_jetDeepCSV;
+   float ele1_jetDeepJet;
    float ele1_sip3D;
    float ele1_dxy;
    float ele1_dxyAbs;
@@ -150,6 +156,8 @@ class Sync
    float ele2_jetPtRel;
    float ele2_jetPtRatio;
    float ele2_jetCSV;
+   float ele2_jetDeepCSV;
+   float ele2_jetDeepJet;
    float ele2_sip3D;
    float ele2_dxy;
    float ele2_dxyAbs;

@@ -103,8 +103,9 @@ class Tree {
    vector<float>   *el_phi;
    vector<float>   *el_m;
    vector<float>   *el_E;
-   vector<float>   *el_looseCBId;
-   vector<float>   *el_mediumCBId;
+   vector<bool>    *el_looseCBId;
+   vector<bool>    *el_mediumCBId;
+   vector<bool>    *el_NoIsoLooseMVAId;
    vector<int>     *el_numberOfLostHits;
    vector<float>   *el_gsfTrack_PV_dxy;
    vector<float>   *el_gsfTrack_PV_dz;
@@ -372,6 +373,7 @@ class Tree {
    vector<float>   *jet_DeepFlavourProbuds;
    vector<float>   *jet_DeepFlavourProbg;
    vector<bool>    *jet_tightJetID;
+   vector<bool>    *jet_looseJetID;
    vector<int>     *jet_partonFlavour;
    vector<int>     *jet_hadronFlavour;
    vector<float>   *jet_neutralHadronEnergy;
@@ -955,6 +957,7 @@ class Tree {
    TBranch        *b_el_E;   //!
    TBranch        *b_el_looseCBId;   //!
    TBranch        *b_el_mediumCBId;   //!
+   TBranch        *b_el_NoIsoLooseMVAId;   //!
    TBranch        *b_el_numberOfLostHits;   //!
    TBranch        *b_el_gsfTrack_PV_dxy;
    TBranch        *b_el_gsfTrack_PV_dz;
@@ -1223,6 +1226,7 @@ class Tree {
    TBranch        *b_jet_DeepFlavourProbuds;
    TBranch        *b_jet_DeepFlavourProbg;
    TBranch        *b_jet_tightJetID;
+   TBranch        *b_jet_looseJetID;
    TBranch        *b_jet_partonFlavour;   //!
    TBranch        *b_jet_hadronFlavour;   //!
    TBranch        *b_jet_neutralHadronEnergy;   //!

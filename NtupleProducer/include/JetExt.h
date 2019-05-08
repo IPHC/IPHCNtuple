@@ -23,6 +23,7 @@ class JetExt : public Jet
       
    bool isTight;
    bool tightJetID;
+   bool looseJetID;
    
    int ntrk;
    

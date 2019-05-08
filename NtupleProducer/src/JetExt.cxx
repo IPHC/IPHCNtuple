@@ -25,6 +25,7 @@ void JetExt::read(bool isdata)
    pileupJetId = ntP->jet_pileupJetId->at(idx);
 
    tightJetID    = ntP->jet_tightJetID->at(idx);
+   looseJetID    = ntP->jet_looseJetID->at(idx);
 
    ntrk           = ntP->jet_ntrk->at(idx);
    CSVv2          = ntP->jet_CSVv2->at(idx);
@@ -70,6 +71,7 @@ void JetExt::init()
    pileupJetId = -100.;
 
    tightJetID = 0;
+   looseJetID = 0;
    isLooseTTH = 0;
    isLooseFwdTTH = 0;
    isSoftLooseTTH = 0;
@@ -144,6 +146,8 @@ void JetExt::sel(int sync, bool DEBUG, int year)
    }
 
    bool pass_tightJetID = (tightJetID);
+   bool pass_looseJetID = (looseJetID);
+   bool pass_JetID = ((year == 2016 && looseJetID) || (year != 2016 && tightJetID));
 
    bool pass_lepOverlap = 1;
    bool pass_tauOverlap = 1;
@@ -224,20 +228,23 @@ void JetExt::sel(int sync, bool DEBUG, int year)
 
    isLooseTTH = ( pass_pt &&
 		  pass_eta &&
-		  pass_tightJetID &&
+		  pass_JetID &&
 		  pass_lepOverlap &&
 		  pass_tauOverlap
 		);
 
-   isLooseFwdTTH = ( isLooseTTH &&
+   isLooseFwdTTH = ( pass_pt &&
+		     pass_pt_fwd &&
 		     pass_eta_fwd &&
-		     pass_pt_fwd
+		     pass_JetID &&
+		     pass_lepOverlap &&
+		     pass_tauOverlap
 		);
    
    //NEW -- similar as "isLooseTTH" sel, but for jets with pT between 15 and 25 => Save nof soft jets, for FCNC input variable
    isSoftLooseTTH = ( pt > 15 && pt < 25 &&
 		  pass_eta &&
-		  pass_tightJetID &&
+		  pass_JetID &&
 		  pass_lepOverlap &&
 		  pass_tauOverlap
 		);
@@ -261,7 +268,7 @@ void JetExt::sel(int sync, bool DEBUG, int year)
 	     std::cout << "  pass_eta = " << pass_eta << std::endl;
 	     std::cout << "  isLooseBTag = " << isLooseBTag << std::endl;
 	     std::cout << "  isMediumBTag = " << isMediumBTag << std::endl;
-	     std::cout << "  tightJetID = " << tightJetID << std::endl;
+	     std::cout << "  JetID = " << pass_JetID << std::endl;
 	     std::cout << "  (( jet_neutralEmEnergyFraction = " <<
 	     ntP->jet_neutralEmEnergyFraction->at(idx) << std::endl;
 	     std::cout << "  pass_lepOverlap = " << pass_lepOverlap << std::endl;

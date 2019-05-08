@@ -18,7 +18,7 @@
 #include "CondFormats/JetMETObjects/interface/JetCorrectorParameters.h"
 #include "CondFormats/JetMETObjects/interface/JetCorrectionUncertainty.h"
 
-//JER
+// JER
 #include "JetMETCorrections/Modules/interface/JetResolution.h"
 #include "TRandom3.h"
 

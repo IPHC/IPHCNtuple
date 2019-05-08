@@ -7,6 +7,7 @@ export LD_LIBRARY_PATH=${cdir}:${cdir}/obj:$LD_LIBRARY_PATH
 --file input.txt \
 --outfile output \
 --tree FlatTree/tree \
---nmax 20000 \
+--nmax -1 \
 --isdata 0 \
---sync 0
+--year 2016 \
+--sync 1

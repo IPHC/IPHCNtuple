@@ -122,6 +122,8 @@ void Sync::createBranch(TTree *tr)
    tr->Branch("mu1_jetPtRel",&mu1_jetPtRel,"mu1_jetPtRel/F");
    tr->Branch("mu1_jetPtRatio",&mu1_jetPtRatio,"mu1_jetPtRatio/F");
    tr->Branch("mu1_jetCSV",&mu1_jetCSV,"mu1_jetCSV/F");
+   tr->Branch("mu1_jetDeepCSV",&mu1_jetDeepCSV,"mu1_jetDeepCSV/F");
+   tr->Branch("mu1_jetDeepJet",&mu1_jetDeepJet,"mu1_jetDeepJet/F");
    tr->Branch("mu1_sip3D",&mu1_sip3D,"mu1_sip3D/F");
    tr->Branch("mu1_dxy",&mu1_dxy,"mu1_dxy/F");
    tr->Branch("mu1_dxyAbs",&mu1_dxyAbs,"mu1_dxyAbs/F");
@@ -147,6 +149,8 @@ void Sync::createBranch(TTree *tr)
    tr->Branch("mu2_jetPtRel",&mu2_jetPtRel,"mu2_jetPtRel/F");
    tr->Branch("mu2_jetPtRatio",&mu2_jetPtRatio,"mu2_jetPtRatio/F");
    tr->Branch("mu2_jetCSV",&mu2_jetCSV,"mu2_jetCSV/F");
+   tr->Branch("mu2_jetDeepCSV",&mu2_jetDeepCSV,"mu2_jetDeepCSV/F");
+   tr->Branch("mu2_jetDeepJet",&mu2_jetDeepJet,"mu2_jetDeepJet/F");
    tr->Branch("mu2_sip3D",&mu2_sip3D,"mu2_sip3D/F");
    tr->Branch("mu2_dxy",&mu2_dxy,"mu2_dxy/F");
    tr->Branch("mu2_dxyAbs",&mu2_dxyAbs,"mu2_dxyAbs/F");
@@ -172,6 +176,8 @@ void Sync::createBranch(TTree *tr)
    tr->Branch("ele1_jetPtRel",&ele1_jetPtRel,"ele1_jetPtRel/F");
    tr->Branch("ele1_jetPtRatio",&ele1_jetPtRatio,"ele1_jetPtRatio/F");
    tr->Branch("ele1_jetCSV",&ele1_jetCSV,"ele1_jetCSV/F");
+   tr->Branch("ele1_jetDeepCSV",&ele1_jetDeepCSV,"ele1_jetDeepCSV/F");
+   tr->Branch("ele1_jetDeepJet",&ele1_jetDeepJet,"ele1_jetDeepJet/F");
    tr->Branch("ele1_sip3D",&ele1_sip3D,"ele1_sip3D/F");
    tr->Branch("ele1_dxy",&ele1_dxy,"ele1_dxy/F");
    tr->Branch("ele1_dxyAbs",&ele1_dxyAbs,"ele1_dxyAbs/F");
@@ -203,6 +209,8 @@ void Sync::createBranch(TTree *tr)
    tr->Branch("ele2_jetPtRel",&ele2_jetPtRel,"ele2_jetPtRel/F");
    tr->Branch("ele2_jetPtRatio",&ele2_jetPtRatio,"ele2_jetPtRatio/F");
    tr->Branch("ele2_jetCSV",&ele2_jetCSV,"ele2_jetCSV/F");
+   tr->Branch("ele2_jetDeepCSV",&ele2_jetDeepCSV,"ele2_jetDeepCSV/F");
+   tr->Branch("ele2_jetDeepJet",&ele2_jetDeepJet,"ele2_jetDeepJet/F");
    tr->Branch("ele2_sip3D",&ele2_sip3D,"ele2_sip3D/F");
    tr->Branch("ele2_dxy",&ele2_dxy,"ele2_dxy/F");
    tr->Branch("ele2_dxyAbs",&ele2_dxyAbs,"ele2_dxyAbs/F");
@@ -414,6 +422,8 @@ void Sync::initVar()
    mu1_jetPtRel = -9999;
    mu1_jetPtRatio = -9999;
    mu1_jetCSV = -9999;
+   mu1_jetDeepCSV = -9999;
+   mu1_jetDeepJet = -9999;
    mu1_sip3D = -9999;
    mu1_dxy = -9999;
    mu1_dxyAbs = -9999;
@@ -439,6 +449,8 @@ void Sync::initVar()
    mu2_jetPtRel = -9999;
    mu2_jetPtRatio = -9999;
    mu2_jetCSV = -9999;
+   mu2_jetDeepCSV = -9999;
+   mu2_jetDeepJet = -9999;
    mu2_sip3D = -9999;
    mu2_dxy = -9999;
    mu2_dxyAbs = -9999;
@@ -464,6 +476,8 @@ void Sync::initVar()
    ele1_jetPtRel = -9999;
    ele1_jetPtRatio = -9999;
    ele1_jetCSV = -9999;
+   ele1_jetDeepCSV = -9999;
+   ele1_jetDeepJet = -9999;
    ele1_sip3D = -9999;
    ele1_dxy = -9999;
    ele1_dxyAbs = -9999;
@@ -495,6 +509,8 @@ void Sync::initVar()
    ele2_jetPtRel = -9999;
    ele2_jetPtRatio = -9999;
    ele2_jetCSV = -9999;
+   ele2_jetDeepCSV = -9999;
+   ele2_jetDeepJet = -9999;
    ele2_sip3D = -9999;
    ele2_dxy = -9999;
    ele2_dxyAbs = -9999;
@@ -734,9 +750,9 @@ void Sync::get(Ntuple *nt,int npresel_el,int npresel_mu,int npresel_tau,int npre
 	mu1_jetNDauChargedMVASel   = mu.lepMVA_jetNDauChargedMVASel;
 	mu1_jetPtRel               = mu.lepMVA_jetPtRelv2;
 	mu1_jetPtRatio             = mu.lepMVA_jetPtRatio;
-//	mu1_jetCSV                 = mu.lepMVA_jetBTagCSV;
-//	mu1_jetCSV                 = mu.lepMVA_jetBTagDeepCSV;
-	mu1_jetCSV                 = mu.lepMVA_jetBTagDeepFlavour;
+	mu1_jetCSV                 = mu.lepMVA_jetBTagCSV;
+	mu1_jetDeepCSV             = mu.lepMVA_jetBTagDeepCSV;
+	mu1_jetDeepJet             = mu.lepMVA_jetBTagDeepFlavour;
 	mu1_sip3D                  = fabs(mu.sip3d);
 	mu1_dxy                    = mu.dxy;
 	mu1_dxyAbs                 = fabs(mu.dxy);
@@ -768,9 +784,9 @@ void Sync::get(Ntuple *nt,int npresel_el,int npresel_mu,int npresel_tau,int npre
 	mu2_jetNDauChargedMVASel   = mu.lepMVA_jetNDauChargedMVASel;
 	mu2_jetPtRel               = mu.lepMVA_jetPtRelv2;
 	mu2_jetPtRatio             = mu.lepMVA_jetPtRatio;
-//	mu2_jetCSV                 = mu.lepMVA_jetBTagCSV;
-//	mu2_jetCSV                 = mu.lepMVA_jetBTagDeepCSV;
-	mu2_jetCSV                 = mu.lepMVA_jetBTagDeepFlavour;
+	mu2_jetCSV                 = mu.lepMVA_jetBTagCSV;
+	mu2_jetDeepCSV             = mu.lepMVA_jetBTagDeepCSV;
+	mu2_jetDeepJet             = mu.lepMVA_jetBTagDeepFlavour;
 	mu2_sip3D                  = fabs(mu.sip3d);
 	mu2_dxy                    = mu.dxy;
 	mu2_dxyAbs                 = fabs(mu.dxy);
@@ -805,9 +821,9 @@ void Sync::get(Ntuple *nt,int npresel_el,int npresel_mu,int npresel_tau,int npre
 	ele1_jetNDauChargedMVASel   = ele.lepMVA_jetNDauChargedMVASel;
 	ele1_jetPtRel               = ele.lepMVA_jetPtRelv2;
 	ele1_jetPtRatio             = ele.lepMVA_jetPtRatio;
-//	ele1_jetCSV                 = ele.lepMVA_jetBTagCSV;
-//	ele1_jetCSV                 = ele.lepMVA_jetBTagDeepCSV;
-	ele1_jetCSV                 = ele.lepMVA_jetBTagDeepFlavour;
+	ele1_jetCSV                 = ele.lepMVA_jetBTagCSV;
+	ele1_jetDeepCSV             = ele.lepMVA_jetBTagDeepCSV;
+	ele1_jetDeepJet             = ele.lepMVA_jetBTagDeepFlavour;
 	ele1_sip3D                  = fabs(ele.sip3d);
 	ele1_dxy                    = ele.dxy;
 	ele1_dxyAbs                 = fabs(ele.dxy);
@@ -846,9 +862,9 @@ void Sync::get(Ntuple *nt,int npresel_el,int npresel_mu,int npresel_tau,int npre
 	ele2_jetNDauChargedMVASel   = ele.lepMVA_jetNDauChargedMVASel;
 	ele2_jetPtRel               = ele.lepMVA_jetPtRelv2;
 	ele2_jetPtRatio             = ele.lepMVA_jetPtRatio;
-//	ele2_jetCSV                 = ele.lepMVA_jetBTagCSV;
-//	ele2_jetCSV                 = ele.lepMVA_jetBTagDeepCSV;
-	ele2_jetCSV                 = ele.lepMVA_jetBTagDeepFlavour;
+	ele2_jetCSV                 = ele.lepMVA_jetBTagCSV;
+	ele2_jetDeepCSV             = ele.lepMVA_jetBTagDeepCSV;
+	ele2_jetDeepJet             = ele.lepMVA_jetBTagDeepFlavour;
 	ele2_sip3D                  = fabs(ele.sip3d);
 	ele2_dxy                    = ele.dxy;
 	ele2_dxyAbs                 = fabs(ele.dxy);

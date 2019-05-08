@@ -91,6 +91,7 @@ void Tree::Init(TChain *ch)
    el_E = 0;
    el_looseCBId = 0;
    el_mediumCBId = 0;
+   el_NoIsoLooseMVAId = 0;
    el_numberOfLostHits = 0;
    el_gsfTrack_PV_dxy = 0;
    el_gsfTrack_PV_dz = 0;
@@ -357,6 +358,7 @@ void Tree::Init(TChain *ch)
    jet_DeepFlavourProbuds = 0;
    jet_DeepFlavourProbg = 0;
    jet_tightJetID = 0;
+   jet_looseJetID = 0;
    jet_partonFlavour = 0;
    jet_hadronFlavour = 0;
    jet_neutralHadronEnergy = 0;
@@ -902,6 +904,7 @@ void Tree::Init(TChain *ch)
    fChain->SetBranchAddress("el_E", &el_E, &b_el_E);
    fChain->SetBranchAddress("el_looseCBId", &el_looseCBId, &b_el_looseCBId);
    fChain->SetBranchAddress("el_mediumCBId", &el_mediumCBId, &b_el_mediumCBId);
+   fChain->SetBranchAddress("el_NoIsoLooseMVAId", &el_NoIsoLooseMVAId, &b_el_NoIsoLooseMVAId);
    fChain->SetBranchAddress("el_numberOfLostHits", &el_numberOfLostHits, &b_el_numberOfLostHits);
    fChain->SetBranchAddress("el_gsfTrack_PV_dxy", &el_gsfTrack_PV_dxy, &b_el_gsfTrack_PV_dxy);
    fChain->SetBranchAddress("el_gsfTrack_PV_dz", &el_gsfTrack_PV_dz, &b_el_gsfTrack_PV_dz);
@@ -1170,6 +1173,7 @@ void Tree::Init(TChain *ch)
    fChain->SetBranchAddress("jet_DeepFlavourProbuds", &jet_DeepFlavourProbuds, &b_jet_DeepFlavourProbuds);
    fChain->SetBranchAddress("jet_DeepFlavourProbg", &jet_DeepFlavourProbg, &b_jet_DeepFlavourProbg);
    fChain->SetBranchAddress("jet_tightJetID", &jet_tightJetID, &b_jet_tightJetID);
+   fChain->SetBranchAddress("jet_looseJetID", &jet_looseJetID, &b_jet_looseJetID);
    fChain->SetBranchAddress("jet_partonFlavour", &jet_partonFlavour, &b_jet_partonFlavour);
    fChain->SetBranchAddress("jet_hadronFlavour", &jet_hadronFlavour, &b_jet_hadronFlavour);
    fChain->SetBranchAddress("jet_neutralHadronEnergy", &jet_neutralHadronEnergy, &b_jet_neutralHadronEnergy);

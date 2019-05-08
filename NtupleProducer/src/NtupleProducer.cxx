@@ -122,7 +122,7 @@ int main(int argc, char *argv[])
    }*/
    //==========================
 
-   evdebugid.push_back(2376257);
+   evdebugid.push_back(1694534);
    
    int nlep = 0;
    int njet = 0;
@@ -153,7 +153,7 @@ int main(int argc, char *argv[])
       JER_resolution = new JME::JetResolution(resolution_file);
       JER_scalefactor = new JME::JetResolutionScaleFactor(jer_sf_file);
    }
-
+   
    for(Long64_t i=0;i<nentries;i++)
      {
 	if( i > nmax && nmax >= 0 ) break;
@@ -184,6 +184,11 @@ int main(int argc, char *argv[])
 	else if(evdebugid.size() > 0) {cout<<endl<<endl<<endl<<endl<<setprecision(12)<<"== Run/Lumi/Event "<<ev.run<<" / "<<ev.lumi<<" / "<<ev.id<<" =="<<endl;}
 	*/
 //-------------------
+	
+	if( is_debug_event )
+	  {
+	     std::cout << "Event " << ev.id << std::endl;
+	  }	
 	
         int n_mu_evt = 0, n_mu_fakeable_evt = 0;
 
@@ -317,9 +322,13 @@ int main(int argc, char *argv[])
 		n_jet_evt++;
 
 		if(jet.isLooseBTag) nBL++;
-	        if(jet.isLooseFwdTTH) n_jetFwd_evt++;
 	 }
-	 else if(jet.isSoftLooseTTH) nt->NtJetLooseSoftExt->push_back(jet);
+//	   else if(jet.isSoftLooseTTH) nt->NtJetLooseSoftExt->push_back(jet);
+	   else if ( jet.isLooseFwdTTH )
+	 {
+		n_jetFwd_evt++;
+	 }	   
+
 	}
 
 

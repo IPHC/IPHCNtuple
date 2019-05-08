@@ -38,7 +38,8 @@ void ElectronExt::read(bool isdata)
    ip3d	                            = ntP->el_ip3d->at(idx);
    ip3dErr	                        = ntP->el_ip3dErr->at(idx);
    
-   isLoose	                        = ntP->el_looseCBId->at(idx);
+//   isLoose	                        = ntP->el_looseCBId->at(idx);
+   isLoose	                        = ntP->el_NoIsoLooseMVAId->at(idx);
    isMedium                          = ntP->el_mediumCBId->at(idx);
    passCV	                        = ntP->el_passConversionVeto->at(idx);
    isGsfCtfScPixChargeConsistent     = ntP->el_isGsfCtfScPixChargeConsistent->at(idx);
@@ -193,9 +194,9 @@ void ElectronExt::init()
 
 void ElectronExt::sel(bool DEBUG,int year)
 {   
-   bool isLoose = false;
+//   bool isLoose = false;
 
-   if( pt <= 10. )
+/*   if( pt <= 10. )
      {
 	if( fabs(eta) < 0.8 ) isLoose = ( mvaNoIso > -0.13285867293779202 );
 	else if( fabs(eta) < 1.479 ) isLoose = ( mvaNoIso > -0.31765300958836074 );
@@ -206,7 +207,7 @@ void ElectronExt::sel(bool DEBUG,int year)
 	if( fabs(eta) < 0.8 ) isLoose = ( mvaNoIso > -0.856871961305474 );
 	else if( fabs(eta) < 1.479 ) isLoose = ( mvaNoIso > -0.8107642141584835 );
 	else isLoose = ( mvaNoIso > -0.7179265933023059 );
-     }   
+     }*/
    
    float EffArea = getEffArea(superCluster_eta,year);
    

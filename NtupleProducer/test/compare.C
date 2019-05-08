@@ -43,7 +43,7 @@
    tr1->SetBranchAddress("n_presel_jet",&n_presel_jet_1);
    tr1->SetBranchAddress("nEvent",&nEvent_1);
 
-   TFile *f2 = TFile::Open("IHEP_ttHsync_2016_V4.root");
+   TFile *f2 = TFile::Open("IHEP_ttHsync_2016_V5.root");
    TTree *tr2 = (TTree*)f2->Get(treeName.c_str());
    tr2->SetBranchAddress(varName_muon.c_str(),&v_muon_2);
    tr2->SetBranchAddress(varName_elec.c_str(),&v_elec_2);
