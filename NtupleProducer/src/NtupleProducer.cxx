@@ -122,7 +122,8 @@ int main(int argc, char *argv[])
    }*/
    //==========================
 
-   evdebugid.push_back(1694534);
+   evdebugid.push_back(144579);
+//   evdebugid.push_back(1694460);
    
    int nlep = 0;
    int njet = 0;
@@ -168,7 +169,7 @@ int main(int argc, char *argv[])
 	sc->initVar();
 
         ev.init();
-        ev.read(isdata);
+        ev.read(isdata,year);
 	
 	//Only keep events to debug -- disactivate if not debugging specific events //FIXME
 	bool is_debug_event = false;

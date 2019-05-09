@@ -39,6 +39,14 @@ class Event : public Base
    std::vector<float> pdf_weights;
    std::vector<std::string> pdf_ids;
    
+   bool is_0l2tau;
+   bool is_0l2tau_SR_Data;
+   bool is_0l2tau_SR;
+   bool is_0l2tau_Fake;
+   bool is_1l1tau;
+   bool is_1l1tau_SR_Data;
+   bool is_1l1tau_SR;
+   bool is_1l1tau_Fake;
    bool is_1l2tau;
    bool is_1l2tau_SR_Data;
    bool is_1l2tau_SR;
@@ -55,6 +63,10 @@ class Event : public Base
    bool is_2lSS1tau_Fake;
    bool is_2lSS1tau_Flip_Data;
    bool is_2lSS1tau_Flip;
+   bool is_2lOS1tau;
+   bool is_2lOS1tau_SR_Data;
+   bool is_2lOS1tau_SR;
+   bool is_2lOS1tau_Fake;
    bool is_2l2tau;
    bool is_2l2tau_SR_Data;
    bool is_2l2tau_SR;
@@ -85,8 +97,10 @@ class Event : public Base
    bool is_WZctrl_SR_Data;
    bool is_WZctrl_SR;
    bool is_WZctrl_Fake;
+   bool is_ZZctrl;
    bool is_ZZctrl_SR_Data;
    bool is_ZZctrl_SR;
+   bool is_ZZctrl_Fake;
    bool is_2lSS_Training;
    bool is_3l_Training;
    bool is_2lSS_LooseSel;
@@ -109,9 +123,11 @@ class Event : public Base
    float metcov11;
    
    bool trig_e;
-   bool trig_etau;
+   bool trig_et;
    bool trig_m;
-   bool trig_mtau;
+   bool trig_mt;
+   
+   bool trig_tt;
    
    bool trig_ee;
    bool trig_em;

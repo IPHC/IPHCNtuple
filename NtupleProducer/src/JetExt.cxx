@@ -249,10 +249,24 @@ void JetExt::sel(int sync, bool DEBUG, int year)
 		  pass_tauOverlap
 		);
 
-   isLooseBTag  =  (DeepFlavourbtag > 0.1522);
-   isMediumBTag =  (DeepFlavourbtag > 0.4941);
-   isTightBTag  =  (DeepFlavourbtag > 0.8001);
-
+   if( year == 2016 )
+     {	
+	isLooseBTag  =  (DeepFlavourbtag > 0.0614);
+	isMediumBTag =  (DeepFlavourbtag > 0.3093);
+	isTightBTag  =  (DeepFlavourbtag > 0.7221);
+     }
+   else if( year == 2017 )
+     {
+	isLooseBTag  =  (DeepFlavourbtag > 0.0521);
+	isMediumBTag =  (DeepFlavourbtag > 0.3033);
+	isTightBTag  =  (DeepFlavourbtag > 0.7489);
+     }   
+   else
+     {
+	isLooseBTag  =  (DeepFlavourbtag > 0.0494);
+	isMediumBTag =  (DeepFlavourbtag > 0.2770);
+	isTightBTag  =  (DeepFlavourbtag > 0.7264);
+     }   
 
 	  if(DEBUG)
 	  {
@@ -266,6 +280,7 @@ void JetExt::sel(int sync, bool DEBUG, int year)
 	     std::cout << "  isLooseTTH = " << isLooseTTH << std::endl;
 	     std::cout << "  pass_pt = " << pass_pt << std::endl;
 	     std::cout << "  pass_eta = " << pass_eta << std::endl;
+	     std::cout << "  DeepFlavourbtag = " << DeepFlavourbtag << std::endl;
 	     std::cout << "  isLooseBTag = " << isLooseBTag << std::endl;
 	     std::cout << "  isMediumBTag = " << isMediumBTag << std::endl;
 	     std::cout << "  JetID = " << pass_JetID << std::endl;

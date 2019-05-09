@@ -1,7 +1,7 @@
 {
    gROOT->SetBatch();
 
-   TFile *f1 = TFile::Open("output_sync.root");
+   TFile *f1 = TFile::Open("tHq_syncTree_Selection.root");
    
    TTree *syncTree_2lSS_SR = (TTree*)f1->Get("syncTree_2lSS_SR");
    TTree *syncTree_2lSS_Fake = (TTree*)f1->Get("syncTree_2lSS_Fake");

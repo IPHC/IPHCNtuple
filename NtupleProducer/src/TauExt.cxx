@@ -233,6 +233,7 @@ void TauExt::sel(bool DEBUG,int year)
 	     std::cout << "  pass_muOverlap = " << pass_muOverlap << std::endl;
 	     std::cout << "  isFakeableTTH = " << isFakeableTTH << std::endl;
 	     std::cout << "  isLooseTTH = " << isLooseTTH << std::endl;
+	     std::cout << "  hasMCMatch = " << hasMCMatch << std::endl;
 	  }		  
 }
 

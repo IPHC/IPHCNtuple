@@ -36,9 +36,6 @@ class Sync
    //This is a copy of the original jet vector, BUT with only the jets having strictly pT>25 && eta<2.4
    //Vector used for precategorization in Sync.cxx ; original vector is the one ultimately written in the output
    std::vector<JetExt>* NtJetLooseExt_ttHselections;
-
-
-   // https://gitlab.cern.ch/ttH_leptons/doc/blob/master/2017/taus/sync/vars.md
    
    Int_t nEvent;
    int ls;
@@ -79,6 +76,7 @@ class Sync
    float mu1_dpt_div_pt;
    int mu1_isfakeablesel;
    int mu1_ismvasel;
+   int mu1_isGenMatched;
 
    float mu2_pt;
    float mu2_conept;
@@ -106,6 +104,7 @@ class Sync
    float mu2_dpt_div_pt;
    int mu2_isfakeablesel;
    int mu2_ismvasel;
+   int mu2_isGenMatched;
    
    float ele1_pt;
    float ele1_ptUnc;
@@ -140,6 +139,7 @@ class Sync
    float ele1_OoEminusOoP;
    int ele1_isfakeablesel;
    int ele1_ismvasel;
+   int ele1_isGenMatched;
 
    float ele2_pt;
    float ele2_ptUnc;
@@ -174,6 +174,7 @@ class Sync
    float ele2_OoEminusOoP;
    int ele2_isfakeablesel;
    int ele2_ismvasel;
+   int ele2_isGenMatched;
 
    float tau1_pt;
    float tau1_eta;
@@ -203,6 +204,7 @@ class Sync
    float tau1_againstElectronLooseMVA6;
    float tau1_againstElectronMediumMVA6;
    float tau1_againstElectronTightMVA6;
+   int tau1_isGenMatched;
    
    float tau2_pt;
    float tau2_eta;
@@ -231,7 +233,8 @@ class Sync
    float tau2_againstElectronVLooseMVA6;
    float tau2_againstElectronLooseMVA6;
    float tau2_againstElectronMediumMVA6;
-   float tau2_againstElectronTightMVA6;   
+   float tau2_againstElectronTightMVA6;
+   int tau2_isGenMatched;
    
    float jet1_pt;
    float jet1_eta;
@@ -341,6 +344,10 @@ class Sync
  private:
      
    TTree*  m_tree;
+   TTree*  m_tree_0l2tau_SR;
+   TTree*  m_tree_0l2tau_Fake;
+   TTree*  m_tree_1l1tau_SR;
+   TTree*  m_tree_1l1tau_Fake;
    TTree*  m_tree_1l2tau_SR;
    TTree*  m_tree_1l2tau_Fake;
    TTree*  m_tree_2lSS_SR;
@@ -349,6 +356,8 @@ class Sync
    TTree*  m_tree_2lSS1tau_SR;
    TTree*  m_tree_2lSS1tau_Fake;
    TTree*  m_tree_2lSS1tau_Flip;
+   TTree*  m_tree_2lOS1tau_SR;
+   TTree*  m_tree_2lOS1tau_Fake;
    TTree*  m_tree_2l2tau_SR;
    TTree*  m_tree_2l2tau_Fake;
    TTree*  m_tree_3l_SR;
@@ -365,6 +374,7 @@ class Sync
    TTree*  m_tree_WZctrl_SR;
    TTree*  m_tree_WZctrl_Fake;
    TTree*  m_tree_ZZctrl_SR;
+   TTree*  m_tree_ZZctrl_Fake;
    
    TH2F*  m_hist_overlap;
    

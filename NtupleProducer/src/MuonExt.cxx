@@ -220,6 +220,7 @@ void MuonExt::sel(bool DEBUG,int year)
 	     std::cout << "  pass_lepMVA = " << pass_lepMVA << std::endl;
 	     std::cout << "  isMedium = " << isMedium << std::endl;
 	     std::cout << "  isTightTTH = " << isTightTTH << std::endl;
+	     std::cout << "  hasMCMatch = " << hasMCMatch << std::endl;
  	}		  
 }
 
