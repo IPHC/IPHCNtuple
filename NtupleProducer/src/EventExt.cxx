@@ -157,6 +157,7 @@ void EventExt::read(bool isdata,int year)
 	     else if( year == 2017 )
 	       { 		  
 		  if( !e1_trig && (tpath.find("HLT_Ele35_WPTight_Gsf_v") != std::string::npos) ) {e1_trig=1;}
+		  if( !e2_trig && (tpath.find("HLT_Ele32_WPTight_Gsf_v") != std::string::npos) ) {e2_trig=1;}
 		  if( !m1_trig && (tpath.find("HLT_IsoMu24_v") != std::string::npos) ) {m1_trig=1;}
 		  if( !m2_trig && (tpath.find("HLT_IsoMu27_v") != std::string::npos) ) {m2_trig=1;}
 		  
@@ -177,8 +178,7 @@ void EventExt::read(bool isdata,int year)
 		  if( !tt4_trig  && (tpath.find("HLT_DoubleTightChargedIsoPFTau40_Trk1_eta2p1_Reg_v") != std::string::npos) ) {tt4_trig=1;};
 		  
 		  if( !eee1_trig && (tpath.find("HLT_Ele16_Ele12_Ele8_CaloIdL_TrackIdL_v") != std::string::npos) ) {eee1_trig=1;};
-		  if( !eem1_trig && (tpath.find("HLT_Mu8_DiEle12_CaloIdL_TrackIdL_DZ_v") != std::string::npos) ) {eem1_trig=1;};
-		  if( !eem2_trig && (tpath.find("HLT_Mu8_DiEle12_CaloIdL_TrackIdL_v") != std::string::npos) ) {eem2_trig=1;};
+		  if( !eem1_trig && (tpath.find("HLT_Mu8_DiEle12_CaloIdL_TrackIdL_v") != std::string::npos) ) {eem1_trig=1;};
 		  if( !emm1_trig && (tpath.find("HLT_DiMu9_Ele9_CaloIdL_TrackIdL_DZ_v") != std::string::npos) ) {emm1_trig=1;};
 		  if( !mmm1_trig && (tpath.find("HLT_TripleMu_12_10_5_v") != std::string::npos) ) {mmm1_trig=1;};
 	       }	     
@@ -255,7 +255,7 @@ void EventExt::read(bool isdata,int year)
      {	
 	if( isdata )
 	  {	     
-	     trig_e = (e1_trig);
+	     trig_e = (e1_trig || e2_trig);
 	     trig_et = (et1_trig);
 	     trig_m = (m1_trig || m2_trig);
 	     trig_mt = (mt1_trig);
@@ -273,7 +273,7 @@ void EventExt::read(bool isdata,int year)
 	  }
 	else
 	  {
-	     trig_e = (e1_trig);
+	     trig_e = (e1_trig || e2_trig);
 	     trig_et = (et1_trig);
 	     trig_m = (m1_trig || m2_trig);
 	     trig_mt = (mt1_trig);
@@ -285,7 +285,7 @@ void EventExt::read(bool isdata,int year)
 	     trig_tt = (tt1_trig || tt2_trig || tt3_trig || tt4_trig);
 	     
 	     trig_eee = (eee1_trig);
-	     trig_eem = (eem2_trig);
+	     trig_eem = (eem1_trig);
 	     trig_emm = (emm1_trig);
 	     trig_mmm = (mmm1_trig);
 	  }	
