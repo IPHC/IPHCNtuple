@@ -35,6 +35,7 @@ class Ntuple
    std::vector<Tau>*           NtTauLoose;
    std::vector<Tau>*           NtTauMedium;
    std::vector<Jet>*           NtJetLoose;
+   std::vector<Jet>*           NtJetLooseFwd;
    std::vector<Jet>*           NtJetLooseSoft;
    std::vector<Truth>*         NtTruth;
    std::vector<GenJet>*        NtGenJet;
@@ -51,6 +52,7 @@ class Ntuple
    std::vector<TauExt>*           NtTauLooseExt;
    std::vector<TauExt>*           NtTauMediumExt;
    std::vector<JetExt>*           NtJetLooseExt;
+   std::vector<JetExt>*           NtJetLooseFwdExt;
    std::vector<JetExt>*           NtJetLooseSoftExt;
    std::vector<TruthExt>*         NtTruthExt;
    std::vector<GenJetExt>*        NtGenJetExt;

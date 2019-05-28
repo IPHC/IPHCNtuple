@@ -241,24 +241,56 @@ class Sync
    float jet1_phi;
    float jet1_E;
    float jet1_CSV;
+   float jet1_DeepCSV;
+   float jet1_DeepJet;
+   float jet1_QGdiscr;
 
    float jet2_pt;
    float jet2_eta;
    float jet2_phi;
    float jet2_E;
    float jet2_CSV;
+   float jet2_DeepCSV;
+   float jet2_DeepJet;
+   float jet2_QGdiscr;
 
    float jet3_pt;
    float jet3_eta;
    float jet3_phi;
    float jet3_E;
    float jet3_CSV;
+   float jet3_DeepCSV;
+   float jet3_DeepJet;
+   float jet3_QGdiscr;
 
    float jet4_pt;
    float jet4_eta;
    float jet4_phi;
    float jet4_E;
    float jet4_CSV;
+   float jet4_DeepCSV;
+   float jet4_DeepJet;
+   float jet4_QGdiscr;
+
+   float jetFwd1_pt;
+   float jetFwd1_eta;
+   float jetFwd1_phi;
+   float jetFwd1_E;
+
+   float jetFwd2_pt;
+   float jetFwd2_eta;
+   float jetFwd2_phi;
+   float jetFwd2_E;
+
+   float jetFwd3_pt;
+   float jetFwd3_eta;
+   float jetFwd3_phi;
+   float jetFwd3_E;
+
+   float jetFwd4_pt;
+   float jetFwd4_eta;
+   float jetFwd4_phi;
+   float jetFwd4_E;
    
    float PFMET;
    float PFMETphi;
@@ -340,6 +372,9 @@ class Sync
    float Integral_ttbar;
    float integration_type;
    float memOutput_LR;
+   
+   int is_tH_like_and_not_ttH_like;
+   int is_ttH_like;
    
  private:
      

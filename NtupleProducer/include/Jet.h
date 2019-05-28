@@ -21,10 +21,10 @@ class Jet : public Base
    float CSVv2;
    float DeepCSVbtag;
    float DeepFlavourbtag;
+   float QGdiscr;
 
    float jet_partonFlavour  ;
    float jet_hadronFlavour  ;
-   float qgtag;
    float pileupJetId;
 
    float JER_corr;

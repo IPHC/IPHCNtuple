@@ -131,21 +131,15 @@ void EventExt::read(bool isdata,int year)
 		  if( !m5_trig && (tpath.find("HLT_IsoMu24_v") != std::string::npos) ) {m5_trig=1;}
 		  if( !m6_trig && (tpath.find("HLT_IsoTkMu24_v") != std::string::npos) ) {m6_trig=1;}
 		  
-		  if( !ee1_trig && (tpath.find("HLT_Ele17_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v") != std::string::npos) ) {ee1_trig=1;};
-		  if( !ee2_trig && (tpath.find("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v") != std::string::npos) ) {ee2_trig=1;};
-		  if( !em1_trig && (tpath.find("HLT_Mu8_TrkIsoVVL_Ele17_CaloIdL_TrackIdL_IsoVL_v") != std::string::npos) ) {em1_trig=1;};
+		  if( !ee1_trig && (tpath.find("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v") != std::string::npos) ) {ee1_trig=1;};
+		  if( !em1_trig && (tpath.find("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v") != std::string::npos) ) {em1_trig=1;};
 		  if( !em2_trig && (tpath.find("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v") != std::string::npos) ) {em2_trig=1;};
-		  if( !em3_trig && (tpath.find("HLT_Mu17_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v") != std::string::npos) ) {em3_trig=1;};
-		  if( !em4_trig && (tpath.find("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v") != std::string::npos) ) {em4_trig=1;};
-		  if( !em5_trig && (tpath.find("HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_v") != std::string::npos) ) {em5_trig=1;};
-		  if( !em6_trig && (tpath.find("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_v") != std::string::npos) ) {em6_trig=1;};
-		  if( !em7_trig && (tpath.find("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v") != std::string::npos) ) {em7_trig=1;};
-		  if( !mm1_trig && (tpath.find("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v") != std::string::npos) ) {mm1_trig=1;};
-		  if( !mm2_trig && (tpath.find("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v") != std::string::npos) ) {mm2_trig=1;};
-		  if( !mm3_trig && (tpath.find("HLT_TkMu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v") != std::string::npos) ) {mm3_trig=1;};
-		  if( !mm4_trig && (tpath.find("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v") != std::string::npos) ) {mm4_trig=1;};
-		  if( !mm5_trig && (tpath.find("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v") != std::string::npos) ) {mm5_trig=1;};
-		  if( !mm6_trig && (tpath.find("HLT_TkMu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v") != std::string::npos) ) {mm6_trig=1;};
+		  if( !em3_trig && (tpath.find("HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_v") != std::string::npos) ) {em3_trig=1;};
+		  if( !em4_trig && (tpath.find("HLT_Mu23_TrkIsoVVL_Ele8_CaloIdL_TrackIdL_IsoVL_DZ_v") != std::string::npos) ) {em4_trig=1;};
+		  if( !mm1_trig && (tpath.find("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_v") != std::string::npos) ) {mm1_trig=1;};
+		  if( !mm2_trig && (tpath.find("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v") != std::string::npos) ) {mm2_trig=1;};
+		  if( !mm3_trig && (tpath.find("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_v") != std::string::npos) ) {mm3_trig=1;};
+		  if( !mm4_trig && (tpath.find("HLT_Mu17_TrkIsoVVL_TkMu8_TrkIsoVVL_DZ_v") != std::string::npos) ) {mm4_trig=1;};
 		  
 		  if( !et1_trig  && (tpath.find("HLT_Ele24_eta2p1_WPLoose_Gsf_LooseIsoPFTau20_v") != std::string::npos) ) {et1_trig=1;};
 		  if( !et2_trig  && (tpath.find("HLT_Ele24_eta2p1_WPLoose_Gsf_LooseIsoPFTau20_SingleL1_v") != std::string::npos) ) {et2_trig=1;};
@@ -227,9 +221,9 @@ void EventExt::read(bool isdata,int year)
 	     trig_m = (m1_trig || m2_trig || m3_trig || m4_trig || m5_trig || m6_trig);
 	     trig_mt = (mt1_trig);
 	     
-	     trig_ee = (ee1_trig || ee2_trig);
-	     trig_em = (em1_trig || em2_trig || em3_trig || em4_trig || em5_trig);
-	     trig_mm = (mm1_trig || mm2_trig || mm3_trig);
+	     trig_ee = (ee1_trig);
+	     trig_em = (em1_trig || em2_trig || em3_trig || em4_trig);
+	     trig_mm = (mm1_trig || mm2_trig || mm3_trig || mm4_trig);
 	     
 	     trig_tt = (tt1_trig || tt2_trig);
 	     
@@ -245,9 +239,9 @@ void EventExt::read(bool isdata,int year)
 	     trig_m = (m1_trig || m2_trig || m3_trig || m4_trig || m5_trig || m6_trig);
 	     trig_mt = (mt1_trig);
 	     
-	     trig_ee = (ee1_trig || ee2_trig);
-	     trig_em = (em1_trig || em3_trig || em5_trig || em6_trig || em7_trig);
-	     trig_mm = (mm4_trig || mm5_trig || mm6_trig);
+	     trig_ee = (ee1_trig);
+	     trig_em = (em1_trig || em2_trig || em3_trig || em4_trig);
+	     trig_mm = (mm1_trig || mm2_trig || mm3_trig || mm4_trig);
 	     
 	     trig_tt = (tt1_trig || tt2_trig);
 	     
@@ -428,11 +422,23 @@ void EventExt::init()
    is_1l2tau_SR          = 0;
    is_1l2tau_Fake        = 0;
    is_2lSS               = 0;
+   is_2lSS_ttH           = 0;
+   is_2lSS_tHq           = 0;
    is_2lSS_SR_Data       = 0;
+   is_2lSS_SR_Data_ttH   = 0;
+   is_2lSS_SR_Data_tHq   = 0;
    is_2lSS_SR            = 0;
+   is_2lSS_SR_ttH        = 0;
+   is_2lSS_SR_tHq        = 0;
    is_2lSS_Fake          = 0;
+   is_2lSS_Fake_ttH      = 0;
+   is_2lSS_Fake_tHq      = 0;
    is_2lSS_Flip_Data     = 0;
+   is_2lSS_Flip_Data_ttH = 0;
+   is_2lSS_Flip_Data_tHq = 0;
    is_2lSS_Flip          = 0;
+   is_2lSS_Flip_ttH      = 0;
+   is_2lSS_Flip_tHq      = 0;
    is_2lSS1tau           = 0;
    is_2lSS1tau_SR_Data   = 0;
    is_2lSS1tau_SR        = 0;

@@ -122,8 +122,7 @@ int main(int argc, char *argv[])
    }*/
    //==========================
 
-   evdebugid.push_back(144579);
-//   evdebugid.push_back(1694460);
+   evdebugid.push_back(1665341);
    
    int nlep = 0;
    int njet = 0;
@@ -327,6 +326,7 @@ int main(int argc, char *argv[])
 //	   else if(jet.isSoftLooseTTH) nt->NtJetLooseSoftExt->push_back(jet);
 	   else if ( jet.isLooseFwdTTH )
 	 {
+	        nt->NtJetLooseFwdExt->push_back(jet);
 		n_jetFwd_evt++;
 	 }	   
 

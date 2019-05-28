@@ -21,7 +21,7 @@ void JetExt::read(bool isdata)
    eta        = ntP->jet_eta->at(idx);
    phi        = ntP->jet_phi->at(idx);
    m          = ntP->jet_m->at(idx);
-   qgtag      = ntP->jet_qgtag->at(idx);
+   QGdiscr    = ntP->jet_qgtag->at(idx);
    pileupJetId = ntP->jet_pileupJetId->at(idx);
 
    tightJetID    = ntP->jet_tightJetID->at(idx);
@@ -67,7 +67,7 @@ void JetExt::init()
    eta     = -100.;
    phi     = -100.;
    m       = -100.;
-   qgtag      = -100.;
+   QGdiscr      = -100.;
    pileupJetId = -100.;
 
    tightJetID = 0;
@@ -278,6 +278,7 @@ void JetExt::sel(int sync, bool DEBUG, int year)
 	     std::cout << "  phi = " << phi << std::endl;
 	     std::cout << "  pt_JES_up = " << pt_JES_up << std::endl;
 	     std::cout << "  isLooseTTH = " << isLooseTTH << std::endl;
+	     std::cout << "  isLooseFwdTTH = " << isLooseFwdTTH << std::endl;
 	     std::cout << "  pass_pt = " << pass_pt << std::endl;
 	     std::cout << "  pass_eta = " << pass_eta << std::endl;
 	     std::cout << "  DeepFlavourbtag = " << DeepFlavourbtag << std::endl;

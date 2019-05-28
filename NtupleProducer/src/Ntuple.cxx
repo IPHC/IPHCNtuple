@@ -32,6 +32,7 @@ void Ntuple::setBranchAddress()
    m_tree->Branch("TauLoose",          "std::vector<Tau>",         (NtTauLoose),32000,1);
    m_tree->Branch("TauMedium",         "std::vector<Tau>",         (NtTauMedium),32000,1);
    m_tree->Branch("JetLoose",          "std::vector<Jet>",         (NtJetLoose),32000,1);
+   m_tree->Branch("JetLooseFwd",       "std::vector<Jet>",         (NtJetLooseFwd),32000,1);
    m_tree->Branch("JetLooseSoft",      "std::vector<Jet>",         (NtJetLooseSoft),32000,1);
    m_tree->Branch("Truth",             "std::vector<Truth>",       (NtTruth),32000,1);
    m_tree->Branch("GenJet",            "std::vector<GenJet>",      (NtGenJet),32000,1);
@@ -51,6 +52,7 @@ void Ntuple::createVar()
    NtTauLoose           = new std::vector<Tau>;
    NtTauMedium          = new std::vector<Tau>;
    NtJetLoose           = new std::vector<Jet>;
+   NtJetLooseFwd        = new std::vector<Jet>;
    NtJetLooseSoft       = new std::vector<Jet>;
    NtTruth              = new std::vector<Truth>;
    NtGenJet             = new std::vector<GenJet>; 
@@ -67,6 +69,7 @@ void Ntuple::createVar()
    NtTauLooseExt           = new std::vector<TauExt>;
    NtTauMediumExt          = new std::vector<TauExt>;
    NtJetLooseExt           = new std::vector<JetExt>;
+   NtJetLooseFwdExt        = new std::vector<JetExt>;
    NtJetLooseSoftExt       = new std::vector<JetExt>;
    NtTruthExt              = new std::vector<TruthExt>;
    NtGenJetExt             = new std::vector<GenJetExt>; 
@@ -86,6 +89,7 @@ void Ntuple::clearVar()
    NtTauLoose->clear();
    NtTauMedium->clear();
    NtJetLoose->clear();
+   NtJetLooseFwd->clear();
    NtJetLooseSoft->clear();
    NtTruth->clear();
    NtGenJet->clear(); 
@@ -102,6 +106,7 @@ void Ntuple::clearVar()
    NtTauLooseExt->clear();
    NtTauMediumExt->clear();
    NtJetLooseExt->clear();
+   NtJetLooseFwdExt->clear();
    NtJetLooseSoftExt->clear();
    NtTruthExt->clear();
    NtGenJetExt->clear(); 
@@ -179,7 +184,13 @@ void Ntuple::convert()
 	Jet* jet = dynamic_cast<Jet*>(&(NtJetLooseExt->at(i)));
 	NtJetLoose->push_back(*jet);
      }
-     
+
+   for(int i=0;i<NtJetLooseFwdExt->size();i++)
+     {
+	Jet* jet = dynamic_cast<Jet*>(&(NtJetLooseFwdExt->at(i)));
+	NtJetLooseFwd->push_back(*jet);
+     }
+   
      for(int i=0;i<NtJetLooseSoftExt->size();i++)
      {
 	Jet* jet = dynamic_cast<Jet*>(&(NtJetLooseSoftExt->at(i)));

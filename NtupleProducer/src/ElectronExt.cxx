@@ -301,6 +301,7 @@ void ElectronExt::sel(bool DEBUG,int year)
 	     std::cout << " lepMVA = " << lepMVA << std::endl;
 	     std::cout << " lepMVA_jetPtRatio = " << lepMVA_jetPtRatio << std::endl;
 	     std::cout << " lepMVA_jetBTagDeepCSV = " << lepMVA_jetBTagDeepCSV << std::endl;
+	     std::cout << " lepMVA_jetBTagDeepFlavour = " << lepMVA_jetBTagDeepFlavour << std::endl;
 	     std::cout << " lepMVA_mvaId = " << lepMVA_mvaId << std::endl;
 	     std::cout << " isGsfCtfScPixChargeConsistent = " << isGsfCtfScPixChargeConsistent << std::endl;
 	     std::cout << " isGsfScPixChargeConsistent = " << isGsfScPixChargeConsistent << std::endl;
