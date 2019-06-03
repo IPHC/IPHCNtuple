@@ -11,7 +11,7 @@ EventExt::~EventExt()
 {
 }
 
-void EventExt::read(bool isdata,int year)
+void EventExt::read(bool isdata,int year,bool debug)
 {
    id               = ntP->ev_id;
    
@@ -212,6 +212,38 @@ void EventExt::read(bool isdata,int year)
 	  }
      }   
 
+   if( debug )
+     {
+	std::cout << "pass e1_trig = " << e1_trig << std::endl;
+	std::cout << "pass e2_trig = " << e2_trig << std::endl;
+	std::cout << "pass e3_trig = " << e3_trig << std::endl;
+	std::cout << "pass m1_trig = " << m1_trig << std::endl;
+	std::cout << "pass m2_trig = " << m2_trig << std::endl;
+	std::cout << "pass m3_trig = " << m3_trig << std::endl;
+	std::cout << "pass m4_trig = " << m4_trig << std::endl;
+	std::cout << "pass m5_trig = " << m5_trig << std::endl;
+	std::cout << "pass m6_trig = " << m6_trig << std::endl;		       
+	std::cout << "pass ee1_trig = " << ee1_trig << std::endl;
+	std::cout << "pass em1_trig = " << em1_trig << std::endl;
+	std::cout << "pass em2_trig = " << em2_trig << std::endl;
+	std::cout << "pass em3_trig = " << em3_trig << std::endl;
+	std::cout << "pass em4_trig = " << em4_trig << std::endl;
+	std::cout << "pass mm1_trig = " << mm1_trig << std::endl;
+	std::cout << "pass mm2_trig = " << mm2_trig << std::endl;
+	std::cout << "pass mm3_trig = " << mm3_trig << std::endl;
+	std::cout << "pass mm4_trig = " << mm4_trig << std::endl;
+	std::cout << "pass et1_trig = " << et1_trig << std::endl;
+	std::cout << "pass et2_trig = " << et2_trig << std::endl;
+	std::cout << "pass et3_trig = " << et3_trig << std::endl;
+	std::cout << "pass mt1_trig = " << mt1_trig << std::endl;
+	std::cout << "pass tt1_trig = " << tt1_trig << std::endl;
+	std::cout << "pass tt2_trig = " << tt2_trig << std::endl;
+	std::cout << "pass eee1_trig = " << eee1_trig << std::endl;
+	std::cout << "pass eem1_trig = " << eem1_trig << std::endl;
+	std::cout << "pass emm1_trig = " << emm1_trig << std::endl;
+	std::cout << "pass mmm1_trig = " << mmm1_trig << std::endl;
+     }		  
+   
    if( year == 2016 )
      {	
 	if( isdata )

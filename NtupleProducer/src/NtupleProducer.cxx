@@ -122,7 +122,9 @@ int main(int argc, char *argv[])
    }*/
    //==========================
 
-   evdebugid.push_back(1665341);
+   evdebugid.push_back(2548080);
+   evdebugid.push_back(2798872);
+   evdebugid.push_back(1542634);
    
    int nlep = 0;
    int njet = 0;
@@ -166,9 +168,6 @@ int main(int argc, char *argv[])
 	
 	nt->clearVar();
 	sc->initVar();
-
-        ev.init();
-        ev.read(isdata,year);
 	
 	//Only keep events to debug -- disactivate if not debugging specific events //FIXME
 	bool is_debug_event = false;
@@ -189,6 +188,9 @@ int main(int argc, char *argv[])
 	  {
 	     std::cout << "Event " << ev.id << std::endl;
 	  }	
+
+        ev.init();
+        ev.read(isdata,year,is_debug_event);
 	
         int n_mu_evt = 0, n_mu_fakeable_evt = 0;
 

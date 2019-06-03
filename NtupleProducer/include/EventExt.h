@@ -11,7 +11,7 @@ class EventExt : public Event
    EventExt();
    virtual ~EventExt();
    
-   void read(bool isdata,int year);
+   void read(bool isdata,int year,bool=false);
    void init();
    
    float rho;
