@@ -102,8 +102,8 @@ int main(int argc, char *argv[])
 
 //-- DEBUG : here, can read a list of event ids directly from a file, and then look specifically for them
 //===============================
-   std::vector<int> evdebugid;
-   std::vector<int> evdebuglumi;
+   std::vector<long int> evdebugid;
+   std::vector<long int> evdebuglumi;
    /*
    ifstream file_in("/home-pbs/ntonon/tHq/IPHCNtuple_2017/CMSSW_9_4_3/src/IPHCNtuple/NtupleProducer/test/sync/input_3l_SR_METinTH_noTriggerMatch_tH_only_not_in_tHq.txt");  
    //if (file_in.is_open()) {std::cout <<"!"<<file_in.rdbuf();}
@@ -122,9 +122,7 @@ int main(int argc, char *argv[])
    }*/
    //==========================
 
-   evdebugid.push_back(2548080);
-   evdebugid.push_back(2798872);
-   evdebugid.push_back(1542634);
+   evdebugid.push_back(2376294);
    
    int nlep = 0;
    int njet = 0;
@@ -172,11 +170,23 @@ int main(int argc, char *argv[])
 	//Only keep events to debug -- disactivate if not debugging specific events //FIXME
 	bool is_debug_event = false;
 //-------------------
+        ev.init();
+	
+	if( is_debug_event )
+	  {
+	     std::cout << "Event " << ev.id << std::endl;
+	  }	
+        ev.read(isdata,year,is_debug_event);
+
+	if( is_debug_event )
+	  {
+	     std::cout << "Event " << ev.id << std::endl;
+	  }	
 	
 	//cout<<"Event id = "<<ev.id<<endl;
 	for(int k = 0; k < evdebugid.size(); k++)
 	{
-		if(ev.id == evdebugid.at(k)) {is_debug_event = true;} //match ID
+	   if(ev.id == evdebugid.at(k)) {is_debug_event = true;} //match ID
 //		if(evdebuglumi.size() > 0 && ev.lumi != evdebuglumi.at(k)) {is_debug_event = false;} //also match lumi
 	}
 /*	if(!is_debug_event && evdebugid.size() > 0) {continue;} //only debug
@@ -184,16 +194,8 @@ int main(int argc, char *argv[])
 	*/
 //-------------------
 	
-	if( is_debug_event )
-	  {
-	     std::cout << "Event " << ev.id << std::endl;
-	  }	
-
-        ev.init();
-        ev.read(isdata,year,is_debug_event);
-	
         int n_mu_evt = 0, n_mu_fakeable_evt = 0;
-
+	
         // muons
         for(int j=0;j<ntP->mu_n;j++)
 	  {
