@@ -19,6 +19,8 @@ class ElectronExt : public Electron
    
    int     ID;
    
+   int     matchedJetId;
+   
    int     fakeType;
    
    float   E_preCorr;

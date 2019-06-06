@@ -121,8 +121,10 @@ int main(int argc, char *argv[])
 	std::cout<<"DEBUG Ev ID = "<<ev_id<<std::endl;
    }*/
    //==========================
-
-   evdebugid.push_back(2376294);
+   
+   evdebugid.push_back(758197);
+   evdebugid.push_back(3210208);
+   evdebugid.push_back(3268546);
    
    int nlep = 0;
    int njet = 0;

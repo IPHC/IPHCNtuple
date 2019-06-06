@@ -151,6 +151,7 @@ class Tree {
    vector<float>   *el_pfIso_sumNeutralHadronEt;
    vector<float>   *el_pfIso_sumPhotonEt;
    vector<float>   *el_pfIso_sumPUPt;
+   vector<int>     *el_matchedJetId;
    vector<float>   *el_lepMVA;
    vector<float>   *el_lepMVA_miniRelIsoCharged;
    vector<float>   *el_lepMVA_miniRelIsoNeutral;
@@ -256,6 +257,7 @@ class Tree {
    vector<float>   *mu_pfIso04_sumNeutralHadronEt;
    vector<float>   *mu_pfIso04_sumPhotonEt;
    vector<float>   *mu_pfIso04_sumPUPt;
+   vector<int>     *mu_matchedJetId;
    vector<float>   *mu_lepMVA;
    vector<float>   *mu_lepMVA_miniRelIsoCharged;
    vector<float>   *mu_lepMVA_miniRelIsoNeutral;
@@ -338,6 +340,7 @@ class Tree {
    vector<float>   *tau_pfEssential_dxy;
    vector<float>   *tau_pfEssential_dxy_error;
    vector<float>   *tau_pfEssential_dxy_Sig;
+   vector<int>     *tau_matchedJetId;
 
    vector<int>     *tau_hasMCMatch;
    vector<int>     *tau_hasChargeMCMatch;
@@ -1033,6 +1036,7 @@ class Tree {
    TBranch        *b_el_ecalEnergy;
    TBranch        *b_el_eSuperClusterOverP;
    TBranch        *b_el_trackMomentumError;
+   TBranch        *b_el_matchedJetId;
 
    TBranch        *b_el_hasMCMatch;
    TBranch        *b_el_hasChargeMCMatch;
@@ -1108,6 +1112,7 @@ class Tree {
    TBranch        *b_mu_pfIso04_sumNeutralHadronEt;   //!
    TBranch        *b_mu_pfIso04_sumPhotonEt;   //!
    TBranch        *b_mu_pfIso04_sumPUPt;   //!
+   TBranch        *b_mu_matchedJetId;   //!
    TBranch        *b_mu_lepMVA;   //!
    TBranch        *b_mu_lepMVA_miniRelIsoCharged;
    TBranch        *b_mu_lepMVA_miniRelIsoNeutral;
@@ -1191,6 +1196,7 @@ class Tree {
    TBranch   *b_tau_pfEssential_dxy;
    TBranch   *b_tau_pfEssential_dxy_error;
    TBranch   *b_tau_pfEssential_dxy_Sig;
+   TBranch   *b_tau_matchedJetId;
 
    TBranch        *b_tau_hasMCMatch;
    TBranch        *b_tau_hasChargeMCMatch;

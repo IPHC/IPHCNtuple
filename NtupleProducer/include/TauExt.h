@@ -18,6 +18,8 @@ class TauExt : public Tau
    
    int   ID;
    
+   int   matchedJetId;
+   
    int   fakeType;
    
    float ptCor;

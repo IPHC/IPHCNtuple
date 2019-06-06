@@ -167,6 +167,8 @@ void Tree::Init(TChain *ch)
    el_ecalEnergy = 0;
    el_eSuperClusterOverP = 0;
    el_trackMomentumError = 0;
+   
+   el_matchedJetId = 0;
 
    el_hasMCMatch = 0;
    el_hasChargeMCMatch = 0;
@@ -257,6 +259,8 @@ void Tree::Init(TChain *ch)
    mu_lepMVA_jetNDauChargedMVASel = 0;        
    mu_innerTrack_pt = 0;
    mu_innerTrack_ptError = 0;
+   
+   mu_matchedJetId = 0;
 
    mu_hasMCMatch = 0;
    mu_hasChargeMCMatch = 0;
@@ -324,6 +328,8 @@ void Tree::Init(TChain *ch)
    tau_pfEssential_dxy = 0;
    tau_pfEssential_dxy_error = 0;
    tau_pfEssential_dxy_Sig = 0;
+   
+   tau_matchedJetId = 0;
 
    tau_hasMCMatch = 0;
    tau_hasChargeMCMatch = 0;
@@ -949,6 +955,7 @@ void Tree::Init(TChain *ch)
    fChain->SetBranchAddress("el_pfIso_sumNeutralHadronEt", &el_pfIso_sumNeutralHadronEt, &b_el_pfIso_sumNeutralHadronEt);
    fChain->SetBranchAddress("el_pfIso_sumPhotonEt", &el_pfIso_sumPhotonEt, &b_el_pfIso_sumPhotonEt);
    fChain->SetBranchAddress("el_pfIso_sumPUPt", &el_pfIso_sumPUPt, &b_el_pfIso_sumPUPt);
+   fChain->SetBranchAddress("el_matchedJetId", &el_matchedJetId, &b_el_matchedJetId);
    fChain->SetBranchAddress("el_lepMVA", &el_lepMVA, &b_el_lepMVA);
    fChain->SetBranchAddress("el_lepMVA_miniRelIsoCharged", &el_lepMVA_miniRelIsoCharged, &b_el_lepMVA_miniRelIsoCharged);
    fChain->SetBranchAddress("el_lepMVA_miniRelIsoNeutral", &el_lepMVA_miniRelIsoNeutral, &b_el_lepMVA_miniRelIsoNeutral);
@@ -1054,6 +1061,7 @@ void Tree::Init(TChain *ch)
    fChain->SetBranchAddress("mu_pfIso04_sumNeutralHadronEt", &mu_pfIso04_sumNeutralHadronEt, &b_mu_pfIso04_sumNeutralHadronEt);
    fChain->SetBranchAddress("mu_pfIso04_sumPhotonEt", &mu_pfIso04_sumPhotonEt, &b_mu_pfIso04_sumPhotonEt);
    fChain->SetBranchAddress("mu_pfIso04_sumPUPt", &mu_pfIso04_sumPUPt, &b_mu_pfIso04_sumPUPt);
+   fChain->SetBranchAddress("mu_matchedJetId", &mu_matchedJetId, &b_mu_matchedJetId);
    fChain->SetBranchAddress("mu_lepMVA", &mu_lepMVA, &b_mu_lepMVA);
    fChain->SetBranchAddress("mu_lepMVA_miniRelIsoCharged", &mu_lepMVA_miniRelIsoCharged, &b_mu_lepMVA_miniRelIsoCharged);
    fChain->SetBranchAddress("mu_lepMVA_miniRelIsoNeutral", &mu_lepMVA_miniRelIsoNeutral, &b_mu_lepMVA_miniRelIsoNeutral);
@@ -1138,6 +1146,7 @@ void Tree::Init(TChain *ch)
    fChain->SetBranchAddress("tau_pfEssential_dxy", &tau_pfEssential_dxy, &b_tau_pfEssential_dxy);
    fChain->SetBranchAddress("tau_pfEssential_dxy_error", &tau_pfEssential_dxy_error, &b_tau_pfEssential_dxy_error);
    fChain->SetBranchAddress("tau_pfEssential_dxy_Sig", &tau_pfEssential_dxy_Sig, &b_tau_pfEssential_dxy_Sig);
+   fChain->SetBranchAddress("tau_matchedJetId", &tau_matchedJetId, &b_tau_matchedJetId);
 
    fChain->SetBranchAddress("tau_hasMCMatch", &tau_hasMCMatch, &b_tau_hasMCMatch);
    fChain->SetBranchAddress("tau_hasChargeMCMatch", &tau_hasChargeMCMatch, &b_tau_hasChargeMCMatch);

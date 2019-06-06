@@ -16,6 +16,8 @@ void TauExt::read(bool isdata)
 {
    ID = idx;
    
+   matchedJetId = ntP->tau_matchedJetId->at(idx);
+   
    E      = ntP->tau_E->at(idx);
    pt     = ntP->tau_pt->at(idx);
    ptCor  = ntP->tau_pt->at(idx);
@@ -92,6 +94,8 @@ void TauExt::read(bool isdata)
 
 void TauExt::init()
 {  
+   matchedJetId = -100;
+   
    E        = -100;
    pt       = -100;
    ptUnc    = -100;

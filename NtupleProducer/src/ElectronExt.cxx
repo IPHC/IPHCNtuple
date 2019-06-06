@@ -16,6 +16,8 @@ void ElectronExt::read(bool isdata)
 {
    ID                                = idx;
 
+   matchedJetId                      = ntP->el_matchedJetId->at(idx);
+   
    E_preCorr                        = ntP->el_ecalTrkEnergyPreCorr->at(idx);
    E 	                            = ntP->el_ecalTrkEnergyPostCorr->at(idx);
    pt_preCorr                       = ntP->el_pt->at(idx);
@@ -101,6 +103,8 @@ void ElectronExt::read(bool isdata)
 
 void ElectronExt::init()
 {   
+   matchedJetId                   = -100;
+   
    E                              = -100.;
    pt                             = -100.;
    pt_preCorr                     = -100.;

@@ -15,6 +15,9 @@ MuonExt::~MuonExt()
 void MuonExt::read(bool isdata)
 {
    ID                             = idx;
+   
+   matchedJetId                   = ntP->mu_matchedJetId->at(idx);
+   
    E                              = ntP->mu_E->at(idx);
    pt                             = ntP->mu_pt->at(idx);
    ptUnc                          = ntP->mu_pt->at(idx);
@@ -78,6 +81,8 @@ void MuonExt::read(bool isdata)
 void MuonExt::init()
 {
    fakeType          = -100.;
+   
+   matchedJetId      = -100;
    
    E                 = -100.;
    pt                = -100.;
