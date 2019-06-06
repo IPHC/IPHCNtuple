@@ -44,6 +44,7 @@ class Base : public Helper
    int   charge;
    bool  tightCharge;
    float lepMVA;
+   int matchedJetId;
    
    ClassDef(Base,1)
 };

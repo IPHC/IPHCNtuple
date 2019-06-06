@@ -19,8 +19,6 @@ class MuonExt : public Muon
    
    int ID;
    
-   int matchedJetId;
-   
    int fakeType;
    
    float ptCor;
