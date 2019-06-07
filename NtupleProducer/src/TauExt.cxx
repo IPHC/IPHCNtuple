@@ -15,7 +15,7 @@ TauExt::~TauExt()
 void TauExt::read(bool isdata)
 {
    ID = idx;
-   
+
    matchedJetId = ntP->tau_matchedJetId->at(idx);
    
    E      = ntP->tau_E->at(idx);

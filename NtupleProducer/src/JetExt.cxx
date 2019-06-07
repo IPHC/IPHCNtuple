@@ -218,7 +218,7 @@ void JetExt::sel(int sync, bool DEBUG, int year)
 
 
         float dr = GetDeltaR(eta,phi,nt->NtTauFakeableExt->at(it).eta,nt->NtTauFakeableExt->at(it).phi);
-        if( dr < 0.4 && ID == elmuFakeable->at(it).matchedJetId ) pass_tauOverlap = 0;
+        if( dr < 0.4 && ID == nt->NtTauFakeableExt->at(it).matchedJetId ) pass_tauOverlap = 0;
      }
 
    delete elmuFakeable;
