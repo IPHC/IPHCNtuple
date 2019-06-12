@@ -1658,7 +1658,7 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 
 		  bool pass_tight = (elmuFakeable->at(0).isTightTTH && nLepTight == 1);
 		  bool pass_tau_id = (nt->NtTauFakeableExt->at(0).isMediumTTH && nTauMedium == 1);
-		  bool pass_id = (elmuFakeable->at(0).isTightTTH && nt->NtTauFakeableExt->at(0).isMediumTTH);
+		  bool pass_id = (elmuFakeable->at(0).isTightTTH);
 
 		  bool pass_truth = (elmuFakeable->at(0).hasMCMatch && nt->NtTauFakeableExt->at(0).hasMCMatch);
 
@@ -1671,7 +1671,7 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 
 		  pass_1l1tau_SR = (pass_1l1tau_SR_Data && pass_truth);
 
-		  pass_1l1tau_Fake = (pass_1l1tau && !pass_id && pass_truth);
+		  pass_1l1tau_Fake = (pass_1l1tau && ((!pass_id && pass_tau_id) || (!(nt->NtTauFakeableExt->at(0).isMediumTTH) && pass_id && nLepTight == 1)) && pass_truth);
 
 		  if(DEBUG)
 		    {
