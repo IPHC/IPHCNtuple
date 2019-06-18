@@ -98,6 +98,8 @@ TMVA::Reader* Book_THQ2017_MVAReader(std::string basePath, std::string weightFil
       reader->AddVariable("LepGood_charge[iLepFO_Recl[0]]+LepGood_charge[iLepFO_Recl[1]]", &lepCharge);
       reader->AddVariable("dEtaFwdJet2BJet", &dEtaFwdJet2BJet);
       reader->AddVariable("fwdJetPt25", &FwdJetPt);
+      reader->AddVariable("BDThttTT_eventReco_mvaValue", &resHTT);
+      reader->AddVariable("sumJetsPt", &sum_jetPt);
   }
   else if(nLep == 3)
   {
@@ -120,7 +122,6 @@ TMVA::Reader* Book_THQ2017_MVAReader(std::string basePath, std::string weightFil
   reader->AddSpectator("iLepFO_Recl[0]", &dummy);
   reader->AddSpectator("iLepFO_Recl[1]", &dummy);
   reader->AddSpectator("iLepFO_Recl[2]", &dummy);
-
 
   reader->BookMVA("BDTG method", basePath+"/"+weightFileName);
 
@@ -220,7 +221,7 @@ TMVA::Reader* Book_resHTT_MVAReader(std::string weightPath)
 
 
 
-void Load_MVA(std::string analysis_type)
+void Load_MVA(TString analysis_type)
 {
     // std::cout << "Temporarily redirecting stdout to avoid huge TMVA dump when loading MVA readers..." << std::endl;
     // std::stringstream tmpBuffer;
@@ -242,7 +243,7 @@ void Load_MVA(std::string analysis_type)
       mva_2lss_tt  = Book_TTH_MVAReader(NtupleAnalyzerMVAPath, "2lss_ttbar_BDTG.weights.xml", "ttbar", 2);
       mva_2lss_ttV = Book_TTH_MVAReader(NtupleAnalyzerMVAPath, "2lss_ttV_BDTG.weights.xml", "ttV", 2);
     }
-    else {cout<<"Error ! Wrong analysis_type value : "<<analysis_type<<endl;}
+    else if(analysis_type != "FCNC") {cout<<"Error ! Wrong analysis_type value : "<<analysis_type<<endl;}
 
     // std::string HJTagger_weight_path = "/home-pbs/ntonon/tHq/IPHCNtuple_2017/CMSSW_9_4_3/src/IPHCNtuple/NtupleAnalyzer/test/weights_2017/Taggers/Hj_deepcsv_BDTG_2017.weights.xml";
     std::string HJTagger_weight_path = "/home-pbs/ntonon/tHq/IPHCNtuple_2017/CMSSW_9_4_3/src/IPHCNtuple/NtupleAnalyzer/test/weights_2017/Taggers/Hj_2017_configA_dcsv_BDTG.weights.xml";

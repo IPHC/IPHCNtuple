@@ -17,6 +17,7 @@ class TruthExt : public Truth
    void coup();
    void init();
    void Determine_Higgs_Decay(int&, int&);
+   void Determine_Top_Decay();
 
  protected:
     

@@ -119,35 +119,7 @@ void EventExt::read(bool isdata)
 	     if( !eee_trig && (tpath.find("HLT_Ele16_Ele12_Ele8_CaloIdL_TrackIdL_v") != std::string::npos) ) {eee_trig=1;};
 	     if( !eem_trig && (tpath.find("HLT_Mu8_DiEle12_CaloIdL_TrackIdL_v") != std::string::npos) ) {eem_trig=1;};
 	     if( !emm_trig && (tpath.find("HLT_DiMu9_Ele9_CaloIdL_TrackIdL_DZ_v") != std::string::npos) ) {emm_trig=1;};
-	     if( !mmm_trig && (tpath.find("HLT_TripleMu_12_10_5_v") != std::string::npos) ) {mmm_trig=1;};
-
-	    	    
-	    //-- same list as in tHq 2017 AN
-	    /*
-	    if( !e1_trig && (tpath.find("HLT_Ele32_WPTight_Gsf_v") != std::string::npos) ) {e1_trig=1;}
-	     if( !e2_trig && (tpath.find("HLT_Ele35_WPTight_Gsf_v") != std::string::npos) ) {e2_trig=1;}
-	     if( !m1_trig && (tpath.find("HLT_IsoMu24_v") != std::string::npos || tpath.find("HLT_IsoMu24_eta2p1_v") != std::string::npos) ) {m1_trig=1;} //!
-	     if( !m2_trig && (tpath.find("HLT_IsoMu27_v") != std::string::npos) ) {m2_trig=1;}
-
-	     if( !ee_trig  && (tpath.find("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_v") != std::string::npos) ) {ee_trig=1;};
-	     if( !ee2_trig && (tpath.find("HLT_Ele23_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v") != std::string::npos) ) {ee2_trig=1;};
-	     
-	     if( !em_trig  && (tpath.find("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_v") != std::string::npos || tpath.find("HLT_Mu8_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v") != std::string::npos) ) {em_trig=1;}; //!
-	     if( !em2_trig && (tpath.find("HLT_Mu23_TrkIsoVVL_Ele12_CaloIdL_TrackIdL_IsoVL_DZ_v") != std::string::npos) ) {em2_trig=1;};
-	     if( !em3_trig && (tpath.find("HLT_Mu12_TrkIsoVVL_Ele23_CaloIdL_TrackIdL_IsoVL_DZ_v") != std::string::npos) ) {em3_trig=1;};
-	     
-	     if( !mm_trig  && (tpath.find("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_v") != std::string::npos) ) {mm_trig=1;};
-	     if( !mm2_trig && (tpath.find("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass3p8_v") != std::string::npos || tpath.find("HLT_Mu17_TrkIsoVVL_Mu8_TrkIsoVVL_DZ_Mass8_v") !=
-	     std::string::npos || tpath.find("HLT_Mu19_TrkIsoVVL_Mu9_TrkIsoVVL_DZ_Mass3p8_v") != std::string::npos || tpath.find("HLT_Mu19_TrkIsoVVL_Mu9_TrkIsoVVL_DZ_Mass8_v") !=
-	     std::string::npos) ) {mm2_trig=1;}; //!
-
-	     if( !eee_trig && (tpath.find("HLT_Ele16_Ele12_Ele8_CaloIdL_TrackIdL_v") != std::string::npos) ) {eee_trig=1;};
-	     if( !eem_trig && (tpath.find("HLT_Mu8_DiEle12_CaloIdL_TrackIdL_v") != std::string::npos || tpath.find("HLT_Mu8_DiEle12_CaloIdL_TrackIdL_DZ_v") != std::string::npos) ) {eem_trig=1;}; //!
-	     if( !emm_trig && (tpath.find("HLT_DiMu9_Ele9_CaloIdL_TrackIdL_DZ_v") != std::string::npos) ) {emm_trig=1;};
-	     if( !mmm_trig && (tpath.find("HLT_TripleMu_12_10_5_v") != std::string::npos || tpath.find("HLT_TripleMu_10_5_5_DZ_v") != std::string::npos ||
-	     tpath.find("HLT_TripleMu_5_3_3_Mass3p8to60_DCA_v") != std::string::npos || tpath.find("HLT_TripleMu_5_3_3_Mass3p8to60_DZ_v") != std::string::npos) ) {mmm_trig=1;}; //!
-	     */
-	     
+	     if( !mmm_trig && (tpath.find("HLT_TripleMu_12_10_5_v") != std::string::npos) ) {mmm_trig=1;};	     
 	  }
      }   
 

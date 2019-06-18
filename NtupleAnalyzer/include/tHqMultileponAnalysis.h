@@ -72,17 +72,21 @@ class tHqMultileponAnalysis
         tHqMultileponAnalysis(TString inputFileName, TString sampleName, TString treeName, TString outputFileName, bool isdata, bool doSystCombine, float xsec, float lumi, int nowe, int nmax); //Constructor
         ~tHqMultileponAnalysis(); //Destructor
 
-        //-- ttH basic selections
+        //-- Basic selections (tHq/ttH)
 		bool ThreeLeptonSelection_THQ3l(int evt);
         bool TwoLeptonSelection_THQ2lSSl(int evt);
         bool FourLeptonSelection_THQ4l(int evt);
 
-		//-- ttH regions
+		//-- Subdivide into regions (tHq/ttH)
         bool ThreeLeptonSelection_THQ3l_Regions(int evt);
 		bool TwoLeptonSelection_THQ2lSS_Regions(int evt);
         bool FourLeptonSelection_THQ4l_Regions(int evt);
 		bool TwoLeptonSelection_THQ2lSS_TrainingSelection(int evt);
-		bool ThreeLeptonSelection_THQ3l_TrainingSelection(int evt);
+        bool ThreeLeptonSelection_THQ3l_TrainingSelection(int evt);
+
+        //New : dedicated function to try and get closer from ATLAS-tH-FCNC selections
+        bool ThreeLeptonSelection_THQ3l_ATLAS_FCNC_Selection(int evt);
+        bool TwoLeptonSelection_THQ2lSS_ATLAS_FCNC_Selection(int evt);
 
 		void InitFiles();
 		void InitCollections();
@@ -120,7 +124,7 @@ class tHqMultileponAnalysis
 		// int Ele_To_Lepton_Matching(int);
 		// int Ele_To_Gamma_Matching(int);
 		void Dump_EventInfo_Synchro(std::ofstream&);
-		bool Check_If_Save_Event(bool, TString); //was int
+		bool Check_If_Save_Event(TString, TString, bool&); //was int
         void Set_AllBooleans_Region_toFalse(TString);
 		void Apply_ScaleFactors(int, int);
 		void Compute_Weight_ScaleSyst();
@@ -132,7 +136,7 @@ class tHqMultileponAnalysis
 		void Get_Mapping_LHE_PDF();
 		void Read_LHE_ScaleVariations();
 		void Get_PDFset_Weights();
-        TString Get_List_PassedCategories(bool);
+        TString Get_List_PassedCategories(TString);
 
 		//TESTING
 		void Modify_DefaultCategories_Orthogonal(TString);
@@ -243,8 +247,14 @@ class tHqMultileponAnalysis
         Char_t is_tHq_4l;
         Char_t is_tHq_4l_SR;
         Char_t is_tHq_ZZctrl_SR;
-        Char_t is_tHqFCNC_2lSS_SR;
+        Char_t is_tHq_Zctrl_SR;
+        Char_t is_tHq_Zctrl_Fake;
+        Char_t is_tHq_Zctrl_GammaConv;
+
+
+		//FCNC selections -- following tHq/ttH
         Char_t is_tHqFCNC_2lSS_Training;
+		Char_t is_tHqFCNC_2lSS_SR;
 		Char_t is_tHqFCNC_2lSS_Fake;
 		Char_t is_tHqFCNC_2lSS_Flip;
 		Char_t is_tHqFCNC_2lSS_GammaConv;
@@ -252,6 +262,26 @@ class tHqMultileponAnalysis
         Char_t is_tHqFCNC_3l_Training;
 		Char_t is_tHqFCNC_3l_Fake;
 		Char_t is_tHqFCNC_3l_GammaConv;
+
+        Char_t is_tHqFCNC_Zctrl_SR;
+        Char_t is_tHqFCNC_Zctrl_Fake;
+        Char_t is_tHqFCNC_Zctrl_GammaConv;
+
+		// Char_t is_tHqFCNC_Fakectrl_SR;
+		// Char_t is_tHqFCNC_Fakectrl_Fake; //add in compute_FR
+		// Char_t is_tHqFCNC_Fakectrl_Flip;
+		// Char_t is_tHqFCNC_Fakectrl_GammaConv;
+
+		//FCNC selections following ATLAS tH FCNC multilepton selections
+        Char_t is_tHqFCNC_ATLAS_2lSS_Training;
+        Char_t is_tHqFCNC_ATLAS_3l_Training;
+		Char_t is_tHqFCNC_ATLAS_2lSS_SR;
+		Char_t is_tHqFCNC_ATLAS_2lSS_Fake;
+		Char_t is_tHqFCNC_ATLAS_2lSS_Flip;
+		Char_t is_tHqFCNC_ATLAS_2lSS_GammaConv;
+        Char_t is_tHqFCNC_ATLAS_3l_SR;
+		Char_t is_tHqFCNC_ATLAS_3l_Fake;
+		Char_t is_tHqFCNC_ATLAS_3l_GammaConv;
 
         //tHq 2017 bis : follows exactly ttH2017 cuts, except jet cuts and metLD => To sync with ttH2017, compare, etc.
         Char_t is_tHqbis_2lSS_SR;
@@ -391,7 +421,7 @@ class tHqMultileponAnalysis
         Float_t dPhijj_max; //Max dPhi between any 2 jets
         Float_t m3l; //Invariant mass of all fakeable leptons (2 or 3)
         Float_t dPhiLepLep_max; //Max. dPhi between any 2 leptons
-        Float_t sum_jetPt; //Sum of the pt of all jets
+        // Float_t sum_jetPt; //Sum of the pt of all jets //declared in SignalExtraction code
 
         //These variables are filled in the testing function 'Compute_Top_W_variables()'
         // == !! May be bugged !! ==
@@ -422,10 +452,11 @@ class tHqMultileponAnalysis
 		Float_t min_dr_lep_bjet; //Min. dR between any lepton and any bjet
 		Float_t min_dr_lep_lightjet; //Min. dR between any lepton and any light jet
 		Float_t lW_asym; //Charge asymmetry of the lepton (not part of OS pair) having min dR with hardest bjet
-		Float_t ratio_lep3pt_closestJetPt; //Ratio of pt of softest lepton and pt of closest jet (any jet)
+        Float_t ratio_lep3pt_closestJetPt; //Ratio of pt of softest lepton and pt of closest jet (any jet)
+        Float_t dR_lep3_closestJetPt; //...
 		Float_t dPhiLepLep_hardestOS; //dPhi between the 2 leptons in 2lSS, and b/w the 2 leptons forming hardest OS pair in 3l
 		Float_t jet1_pt, jet2_pt, jet3_pt, jet4_pt; //pt of the 4 leading jets -- INCLUDE SOFT JETS WITH PT > 15
-
+		Float_t mll_01, mll_02, mll_12;
 
 // #    # ###### #  ####  #    # #####
 // #    # #      # #    # #    #   #
@@ -659,7 +690,7 @@ class tHqMultileponAnalysis
 		//NEW -- Kin fit for resHTT
 		// class HadTopKinFit; // forward declaration
 		HadTopKinFit* kinFit_;
-		Float_t resHTT;
+		// Float_t resHTT; //declared in SignalExtraction code
 
         Float_t prefiringWeight, prefiringWeightUp, prefiringWeightDown;
 };

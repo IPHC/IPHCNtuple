@@ -50,6 +50,8 @@ Float_t minDRll;
 Float_t lepCharge;
 Float_t dEtaFwdJet2BJet;
 Float_t FwdJetPt; //For tHq2017
+Float_t resHTT; //For tHq2017
+Float_t sum_jetPt; //For tHq2017
 
 
 //ttH2017 vars
@@ -90,16 +92,16 @@ TMVA::Reader* mva_resHTT;
 // Function definitions
 bool Check_File_Existence(const TString&);
 
+TMVA::Reader* Book_THQ2016_MVAReader(std::string basePath, std::string weightFileName, int nLep);
+
+TMVA::Reader* Book_THQ2017_MVAReader(std::string basePath, std::string weightFileName, int nLep);
+
 TMVA::Reader* Book_TTH_MVAReader(std::string basePath, std::string weightFileName, std::string BDTtype, int nLep);
 
 TMVA::Reader* Book_HJTagger_MVAReader(std::string);
 
 TMVA::Reader* Book_resHTT_MVAReader(std::string);
 
-TMVA::Reader* Book_THQ2016_MVAReader(std::string basePath, std::string weightFileName, int nLep);
-
-TMVA::Reader* Book_THQ2017_MVAReader(std::string basePath, std::string weightFileName, int nLep);
-
-void Load_MVA(std::string analysis_type);
+void Load_MVA(TString);
 
 #endif

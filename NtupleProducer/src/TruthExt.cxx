@@ -1425,6 +1425,8 @@ void TruthExt::readMultiLepton()
     //cout<<"H daughter 1 = "<<higgs_daughter_id1<<", 2 = "<<higgs_daughter_id2<<endl;
     
     //higgs_daughter_id = Determine_Higgs_Decay();
+    
+    //Determine_Top_Decay();
 }
 
 void TruthExt::init()
@@ -1597,5 +1599,67 @@ void TruthExt::Determine_Higgs_Decay(int& higgs_daughter_id1, int& higgs_daughte
     }
 
     if(debug) {cout<<"Decay not found !"<<endl;}
+    return;
+}
+
+
+//Tmp debug func : want to ensure there are top -> tau decays
+void TruthExt::Determine_Top_Decay()
+{   
+    //if(debug) {cout<<endl<<endl<<"* Event has ntP->gen_n = "<<ntP->gen_n<<" gen particles"<<endl;}
+    
+    for(int itruth=0; itruth<ntP->gen_n; itruth++)
+    {
+        //cout<<"GenPart "<<itruth<<" / ID : "<<ntP->gen_id->at(itruth)<<endl;
+
+        if(abs(ntP->gen_id->at(itruth)) == 6) //Top found
+        {
+	    //cout<<endl<<"Found a Top !"<<endl;
+	
+	    int index_decaying_top = itruth;
+	    
+	    //Must make sure that the daughter of the top is not again a top
+	    int n_tries = 0;
+	    while(ntP->gen_daughter_index->at(index_decaying_top).size()==1 && fabs(ntP->gen_id->at(ntP->gen_daughter_index->at(index_decaying_top).at(0)))==6 && n_tries < 20)
+	    {
+	    	index_decaying_top = ntP->gen_daughter_index->at(index_decaying_top).at(0);
+		n_tries++; //few events stuck in this loop to find the proper "decaying" top ?
+	    }
+	    	    
+	    //cout<<"---------"<<endl;
+	    	    
+	    int index_Wtop = -1;
+	    for(int iW=0; iW<ntP->gen_daughter_index->at(index_decaying_top).size(); iW++)
+	    {
+	    	//cout<<"* idaughter = "<<iW<<", index = "<<ntP->gen_daughter_index->at(index_decaying_top).at(iW)<<", ID = "<<ntP->gen_id->at(ntP->gen_daughter_index->at(index_decaying_top).at(iW))<<endl;
+		
+	    	if( fabs(ntP->gen_id->at(ntP->gen_daughter_index->at(index_decaying_top).at(iW))) == 24) {index_Wtop = ntP->gen_daughter_index->at(index_decaying_top).at(iW);} 
+	    }
+	    
+	    if(index_Wtop != -1)
+	    {
+	    	//Must make sure that the daughter of the W is not again a W
+	    	n_tries = 0;
+	    	while(ntP->gen_daughter_index->at(index_Wtop).size()==1 && fabs(ntP->gen_id->at(ntP->gen_daughter_index->at(index_Wtop).at(0)))==24 && n_tries < 20)
+	    	{
+	    		index_Wtop = ntP->gen_daughter_index->at(index_Wtop).at(0);
+			n_tries++; //few events stuck in this loop to find the proper "decaying" W ?
+	 	}
+	    
+            	//cout<<endl<<"== Found W boson (index "<<index_Wtop<<") from top decay"<<endl;
+	   	//cout<<ntP->gen_daughter_index->at(index_Wtop).size()<<" daughters"<<endl;
+	    	//cout<<"Daughters IDs are :"<<endl;
+	    	for(int idaughter=0; idaughter<ntP->gen_daughter_index->at(index_Wtop).size(); idaughter++)
+	    	{
+	    		//cout<<"* idaughter = "<<idaughter<<", index = "<<ntP->gen_daughter_index->at(index_Wtop).at(idaughter)<<", ID = "<<ntP->gen_id->at(ntP->gen_daughter_index->at(index_Wtop).at(idaughter))<<endl;
+    		    	
+			//if( fabs(ntP->gen_id->at(ntP->gen_daughter_index->at(index_Wtop).at(idaughter))) == 11) {cout<<"ELE FOUND !"<<endl; return;} 
+			//if( fabs(ntP->gen_id->at(ntP->gen_daughter_index->at(index_Wtop).at(idaughter))) == 13) {cout<<"MUON FOUND !"<<endl; return;} 
+			if( fabs(ntP->gen_id->at(ntP->gen_daughter_index->at(index_Wtop).at(idaughter))) == 15) {cout<<"TAU FOUND !"<<endl; return;} 
+		}
+	    }
+	}
+    }    
+    
     return;
 }

@@ -1123,6 +1123,7 @@ int main(int argc, char *argv[])
     // v_process.push_back("TTToSemiLeptonic_TuneCP5_13TeV-powheg-pythia8");
     // v_process.push_back("TTToSemiLeptonic_TuneCP5_PSweights_13TeV-powheg-pythia8");
     // v_process.push_back("TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8");
+    v_process.push_back("TTJets_TuneCP5_13TeV-amcatnloFXFX-pythia8_RunIIFall17MiniAODv2_PU2017_12Apr2018_new_pmx_94X_mc2017_realistic_v14_v1_MINIAODSIM");
     // v_process.push_back("TTJets_DiLept_TuneCP5_13TeV-madgraphMLM-pythia8");
     // v_process.push_back("TTJets_SingleLeptFromT_TuneCP5_13TeV-madgraphMLM-pythia8");
     // v_process.push_back("TTJets_SingleLeptFromTbar_TuneCP5_13TeV-madgraphMLM-pythia8");
