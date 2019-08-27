@@ -2287,7 +2287,7 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 		bool pass_charge = (lep_charge_sum == 0);
 		bool pass_njet = (nJetLoose_ttHsel >= 2 && (nJetLooseBL_ttHsel >= 2 || nJetLooseBM_ttHsel >= 1));
 		bool pass_njet_ZZ = (nJetLoose_ttHsel >= 2 && nJetLooseBL_ttHsel <= 1 && nJetLooseBM_ttHsel == 0);
-		bool pass_mllll = (mllll_min > 140);
+		bool pass_mllll = !(nSFOS > 1 && mllll_min < 140);
 		
 		bool pass_tight = (elmuFakeable->at(0).isTightTTH && elmuFakeable->at(1).isTightTTH && elmuFakeable->at(2).isTightTTH && elmuFakeable->at(3).isTightTTH);
 		bool pass_truth = (elmuFakeable->at(0).hasMCMatch && elmuFakeable->at(1).hasMCMatch && elmuFakeable->at(2).hasMCMatch && elmuFakeable->at(3).hasMCMatch);

@@ -42,6 +42,7 @@ void ElectronExt::read(bool isdata)
    
 //   isLoose	                        = ntP->el_looseCBId->at(idx);
    isLoose	                        = ntP->el_NoIsoLooseMVAId->at(idx);
+   isLoose80	                        = ntP->el_NoIso80MVAId->at(idx);
    isMedium                          = ntP->el_mediumCBId->at(idx);
    passCV	                        = ntP->el_passConversionVeto->at(idx);
    isGsfCtfScPixChargeConsistent     = ntP->el_isGsfCtfScPixChargeConsistent->at(idx);
@@ -58,6 +59,7 @@ void ElectronExt::read(bool isdata)
    lepMVA_miniRelIsoNeutral          = ntP->el_lepMVA_miniRelIsoNeutral->at(idx);
    lepMVA_jetPtRelv2                 = ntP->el_lepMVA_jetPtRelv2->at(idx);
    lepMVA_jetPtRatio                 = ntP->el_lepMVA_jetPtRatio->at(idx);
+   jetRelIso                         = ntP->el_jetRelIso->at(idx);
    lepMVA_jetBTagCSV                 = ntP->el_lepMVA_jetBTagCSV->at(idx);
    lepMVA_jetBTagDeepCSV             = ntP->el_lepMVA_jetBTagDeepCSV->at(idx);
    lepMVA_jetBTagDeepFlavour         = ntP->el_lepMVA_jetBTagDeepFlavour->at(idx);
@@ -150,6 +152,7 @@ void ElectronExt::init()
    lepMVA_miniRelIsoNeutral       = -100.;
    lepMVA_jetPtRelv2              = -100.;
    lepMVA_jetPtRatio              = -100.;
+   jetRelIso                      = -100.;
    lepMVA_jetBTagCSV              = -100.;
    lepMVA_jetBTagDeepCSV          = -100.;
    lepMVA_jetBTagDeepFlavour      = -100.;
@@ -227,6 +230,7 @@ void ElectronExt::sel(bool DEBUG,int year)
    bool pass_miniIso  = ( miniIso < 0.4 );
    bool pass_SIP      = ( fabs(sip3d) < 8 );
    bool pass_isLoose  = ( isLoose );
+   bool pass_isLoose80  = ( isLoose80 );
    bool pass_losthits = ( nlosthits < 2 );
    
    bool passMuOverlap = 1;
@@ -247,17 +251,21 @@ void ElectronExt::sel(bool DEBUG,int year)
 		  pass_losthits    &&
 		  passMuOverlap   );
 
-   bool pass_fakeable_lepMVA = 0;
+   bool pass_fakeable_lepMVA = 1;
    bool pass_conept = ( conept > 10. );
-   bool pass_lepMVA = ( lepMVA >= 0.90 );
+   bool pass_lepMVA = ( lepMVA >= 0.80 );
+   bool pass_clJet = 1;
    
-   if( pass_lepMVA )
-     {	
-	if( lepMVA_jetBTagDeepCSV < 0.4941 ) pass_fakeable_lepMVA = 1;
-     }   
-   else
-     {	
-	if( lepMVA_jetPtRatio > 0.6 && lepMVA_jetBTagDeepCSV < 0.07 && lepMVA_mvaId > 0.5 ) pass_fakeable_lepMVA = 1;
+   if( year == 2016 )
+     if( lepMVA_jetBTagDeepFlavour > 0.3093 ) pass_clJet = 0;
+   if( year == 2017 )
+     if( lepMVA_jetBTagDeepFlavour > 0.3033 ) pass_clJet = 0;
+   if( year == 2018 )
+     if( lepMVA_jetBTagDeepFlavour > 0.2770 ) pass_clJet = 0;
+   
+   if( lepMVA < 0.80 )
+     {
+	if( !(jetRelIso < 0.7 && pass_isLoose80) ) pass_fakeable_lepMVA = 0;
      }   
    
    bool pass_sc = 0;
@@ -278,6 +286,7 @@ void ElectronExt::sel(bool DEBUG,int year)
 		     pass_nlosthits &&
 		     passCV &&
 		     pass_fakeable_lepMVA &&
+		     pass_clJet &&
 		     pass_conept );
    
    isTightTTH = ( isFakeableTTH &&
@@ -304,6 +313,7 @@ void ElectronExt::sel(bool DEBUG,int year)
 	     std::cout << " mvaNoIso = " << mvaNoIso << std::endl;
 	     std::cout << " lepMVA = " << lepMVA << std::endl;
 	     std::cout << " lepMVA_jetPtRatio = " << lepMVA_jetPtRatio << std::endl;
+	     std::cout << " jetRelIso = " << jetRelIso << std::endl;
 	     std::cout << " lepMVA_jetBTagDeepCSV = " << lepMVA_jetBTagDeepCSV << std::endl;
 	     std::cout << " lepMVA_jetBTagDeepFlavour = " << lepMVA_jetBTagDeepFlavour << std::endl;
 	     std::cout << " lepMVA_mvaId = " << lepMVA_mvaId << std::endl;
@@ -315,6 +325,7 @@ void ElectronExt::sel(bool DEBUG,int year)
      	     std::cout << " nlosthits = " << nlosthits << std::endl;
      	     std::cout << " passCV = " << passCV << std::endl;
 	     std::cout << " pass_fakeable_lepMVA = " << pass_fakeable_lepMVA << std::endl;
+	     std::cout << " pass_clJet = " << pass_clJet << std::endl;
 	     std::cout << " pass_conept = " << pass_conept << std::endl;
 	     std::cout << " isFakeableTTH = " << isFakeableTTH << std::endl<<std::endl;
 	     std::cout << " pass_lepMVA = " << pass_lepMVA << std::endl;

@@ -57,8 +57,8 @@ class TauExt : public Tau
    float pfEssential_dxy_error;
    float pfEssential_dxy_Sig;
 
-   float decayModeFinding;
-   float decayModeFindingNewDMs;
+   bool decayModeFinding;
+   bool decayModeFindingNewDMs;
    bool byLooseCombinedIsolationDeltaBetaCorr3Hits;
    bool byMediumCombinedIsolationDeltaBetaCorr3Hits;
    bool byTightCombinedIsolationDeltaBetaCorr3Hits;

@@ -122,9 +122,8 @@ int main(int argc, char *argv[])
    }*/
    //==========================
    
-   evdebugid.push_back(758197);
-   evdebugid.push_back(3210208);
-   evdebugid.push_back(3268546);
+   evdebugid.push_back(46846);
+   evdebugid.push_back(46844);
    
    int nlep = 0;
    int njet = 0;

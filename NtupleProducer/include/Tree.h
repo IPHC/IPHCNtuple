@@ -106,6 +106,7 @@ class Tree {
    vector<bool>    *el_looseCBId;
    vector<bool>    *el_mediumCBId;
    vector<bool>    *el_NoIsoLooseMVAId;
+   vector<bool>    *el_NoIso80MVAId;
    vector<int>     *el_numberOfLostHits;
    vector<float>   *el_gsfTrack_PV_dxy;
    vector<float>   *el_gsfTrack_PV_dz;
@@ -157,6 +158,7 @@ class Tree {
    vector<float>   *el_lepMVA_miniRelIsoNeutral;
    vector<float>   *el_lepMVA_jetPtRelv2;
    vector<float>   *el_lepMVA_jetPtRatio;
+   vector<float>   *el_jetRelIso;
    vector<float>   *el_lepMVA_jetBTagCSV;
    vector<float>   *el_lepMVA_jetBTagDeepCSV;
    vector<float>   *el_lepMVA_jetBTagDeepFlavour;
@@ -263,6 +265,7 @@ class Tree {
    vector<float>   *mu_lepMVA_miniRelIsoNeutral;
    vector<float>   *mu_lepMVA_jetPtRelv2;
    vector<float>   *mu_lepMVA_jetPtRatio;
+   vector<float>   *mu_jetRelIso;
    vector<float>   *mu_lepMVA_jetBTagCSV;
    vector<float>   *mu_lepMVA_jetBTagDeepCSV;
    vector<float>   *mu_lepMVA_jetBTagDeepFlavour;
@@ -301,29 +304,29 @@ class Tree {
    vector<bool>    *tau_hasLeadChargedHadrCand;
    vector<float>   *tau_leadingTrackPt;
    vector<float>   *tau_leadingTrackCharge;
-   vector<float>   *tau_decayModeFinding;
+   vector<bool>    *tau_decayModeFinding;
 //   vector<float>   *tau_decayModeFindingOldDMs;
-   vector<float>   *tau_decayModeFindingNewDMs;
-   vector<float>   *tau_byLooseCombinedIsolationDeltaBetaCorr3Hits;
-   vector<float>   *tau_byMediumCombinedIsolationDeltaBetaCorr3Hits;
-   vector<float>   *tau_byTightCombinedIsolationDeltaBetaCorr3Hits;
-   vector<float>   *tau_againstElectronVLooseMVA6;
-   vector<float>   *tau_againstElectronLooseMVA6;
-   vector<float>   *tau_againstElectronMediumMVA6;
-   vector<float>   *tau_againstElectronTightMVA6;
+   vector<bool>    *tau_decayModeFindingNewDMs;
+   vector<bool>    *tau_byLooseCombinedIsolationDeltaBetaCorr3Hits;
+   vector<bool>    *tau_byMediumCombinedIsolationDeltaBetaCorr3Hits;
+   vector<bool>    *tau_byTightCombinedIsolationDeltaBetaCorr3Hits;
+   vector<bool>    *tau_againstElectronVLooseMVA6;
+   vector<bool>    *tau_againstElectronLooseMVA6;
+   vector<bool>    *tau_againstElectronMediumMVA6;
+   vector<bool>    *tau_againstElectronTightMVA6;
 
-   vector<float>   *tau_byVLooseIsolationMVArun2v1DBdR03oldDMwLT;
-   vector<float>   *tau_byLooseIsolationMVArun2v1DBdR03oldDMwLT;
-   vector<float>   *tau_byMediumIsolationMVArun2v1DBdR03oldDMwLT;
-   vector<float>   *tau_byTightIsolationMVArun2v1DBdR03oldDMwLT;
-   vector<float>   *tau_byVTightIsolationMVArun2v1DBdR03oldDMwLT;
+   vector<bool>    *tau_byVLooseIsolationMVArun2v1DBdR03oldDMwLT;
+   vector<bool>    *tau_byLooseIsolationMVArun2v1DBdR03oldDMwLT;
+   vector<bool>    *tau_byMediumIsolationMVArun2v1DBdR03oldDMwLT;
+   vector<bool>    *tau_byTightIsolationMVArun2v1DBdR03oldDMwLT;
+   vector<bool>    *tau_byVTightIsolationMVArun2v1DBdR03oldDMwLT;
    
-   vector<float>   *tau_byCombinedIsolationDeltaBetaCorrRaw3Hits;
+   vector<bool>    *tau_byCombinedIsolationDeltaBetaCorrRaw3Hits;
    vector<float>   *tau_chargedIsoPtSum;
    vector<float>   *tau_neutralIsoPtSum;
    vector<float>   *tau_puCorrPtSum;
-   vector<float>   *tau_againstMuonLoose3;
-   vector<float>   *tau_againstMuonTight3;
+   vector<bool>    *tau_againstMuonLoose3;
+   vector<bool>    *tau_againstMuonTight3;
    vector<float>   *tau_pfEssential_jet_pt;
    vector<float>   *tau_pfEssential_jet_eta;
    vector<float>   *tau_pfEssential_jet_phi;
@@ -961,6 +964,7 @@ class Tree {
    TBranch        *b_el_looseCBId;   //!
    TBranch        *b_el_mediumCBId;   //!
    TBranch        *b_el_NoIsoLooseMVAId;   //!
+   TBranch        *b_el_NoIso80MVAId;   //!
    TBranch        *b_el_numberOfLostHits;   //!
    TBranch        *b_el_gsfTrack_PV_dxy;
    TBranch        *b_el_gsfTrack_PV_dz;
@@ -1011,6 +1015,7 @@ class Tree {
    TBranch        *b_el_lepMVA_miniRelIsoNeutral;
    TBranch        *b_el_lepMVA_jetPtRelv2;
    TBranch        *b_el_lepMVA_jetPtRatio;
+   TBranch        *b_el_jetRelIso;
    TBranch        *b_el_lepMVA_jetBTagCSV;
    TBranch        *b_el_lepMVA_jetBTagDeepCSV;
    TBranch        *b_el_lepMVA_jetBTagDeepFlavour;
@@ -1118,6 +1123,7 @@ class Tree {
    TBranch        *b_mu_lepMVA_miniRelIsoNeutral;
    TBranch        *b_mu_lepMVA_jetPtRelv2;
    TBranch        *b_mu_lepMVA_jetPtRatio;
+   TBranch        *b_mu_jetRelIso;
    TBranch        *b_mu_lepMVA_jetBTagCSV;
    TBranch        *b_mu_lepMVA_jetBTagDeepCSV;
    TBranch        *b_mu_lepMVA_jetBTagDeepFlavour;

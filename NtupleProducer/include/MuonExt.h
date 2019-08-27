@@ -16,6 +16,7 @@ class MuonExt : public Muon
    void read(bool isdata);
    void init();
    float getEffArea(float eta,int year);
+   float smoothBFlav(float jetpt,float ptmin,float ptmax,int year);
    
    int ID;
    
@@ -43,6 +44,7 @@ class MuonExt : public Muon
    float lepMVA_miniRelIsoNeutral;
    float lepMVA_jetPtRelv2;
    float lepMVA_jetPtRatio;
+   float jetRelIso;
    float lepMVA_jetBTagCSV;
    float lepMVA_jetBTagDeepCSV;
    float lepMVA_jetBTagDeepFlavour;

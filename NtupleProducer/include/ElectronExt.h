@@ -27,6 +27,7 @@ class ElectronExt : public Electron
    bool    isLooseCBId;
    bool    isMediumCBId;
    bool    isLoose;
+   bool    isLoose80;
    bool    isMedium;
    bool    isTight;
    bool    isLooseMVA;
@@ -51,6 +52,7 @@ class ElectronExt : public Electron
    float lepMVA_miniRelIsoNeutral;
    float lepMVA_jetPtRelv2;
    float lepMVA_jetPtRatio;
+   float jetRelIso;
    float lepMVA_jetBTagCSV;
    float lepMVA_jetBTagDeepCSV;
    float lepMVA_jetBTagDeepFlavour;

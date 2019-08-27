@@ -49,6 +49,7 @@ void MuonExt::read(bool isdata)
    lepMVA_miniRelIsoNeutral       = ntP->mu_lepMVA_miniRelIsoNeutral->at(idx);
    lepMVA_jetPtRelv2              = ntP->mu_lepMVA_jetPtRelv2->at(idx);
    lepMVA_jetPtRatio              = ntP->mu_lepMVA_jetPtRatio->at(idx);
+   jetRelIso                      = ntP->mu_jetRelIso->at(idx);
    lepMVA_jetBTagCSV              = ntP->mu_lepMVA_jetBTagCSV->at(idx);
    lepMVA_jetBTagDeepCSV          = ntP->mu_lepMVA_jetBTagDeepCSV->at(idx);
    lepMVA_jetBTagDeepFlavour      = ntP->mu_lepMVA_jetBTagDeepFlavour->at(idx);
@@ -123,6 +124,7 @@ void MuonExt::init()
    lepMVA_miniRelIsoNeutral    = -100.;
    lepMVA_jetPtRelv2           = -100.;
    lepMVA_jetPtRatio           = -100.;
+   jetRelIso                   = -100.;
    lepMVA_jetBTagCSV           = -100.;
    lepMVA_jetBTagDeepCSV       = -100.;
    lepMVA_jetBTagDeepFlavour   = -100.;
@@ -157,6 +159,15 @@ void MuonExt::sel(bool DEBUG,int year)
    bool pass_SIP     = ( fabs(sip3d) < 8 );
    bool pass_isLoose = ( isLoose );
 
+   bool pass_clJet = 1;
+   
+   if( year == 2016 )
+     if( lepMVA_jetBTagDeepFlavour > 0.3093 ) pass_clJet = 0;
+   if( year == 2017 )
+     if( lepMVA_jetBTagDeepFlavour > 0.3033 ) pass_clJet = 0;
+   if( year == 2018 )
+     if( lepMVA_jetBTagDeepFlavour > 0.2770 ) pass_clJet = 0;
+   
    float EffArea = getEffArea(eta,year);
    
    //Changed definition, ttH uses "deltaBeta" for Muons and "rhoArea" correction for electrons -- see : https://github.com/peruzzim/cmg-cmssw/blob/heppy_94X_dev_ttH/PhysicsTools/Heppy/python/analyzers/objects/LeptonAnalyzer.py#L331
@@ -169,18 +180,17 @@ void MuonExt::sel(bool DEBUG,int year)
 		  pass_dz      &&
 		  pass_miniIso &&
 		  pass_SIP     &&
+		  pass_clJet   &&
 		  pass_isLoose );
    
-   bool pass_fakeable_lepMVA = 0;
-   bool pass_lepMVA = ( lepMVA >= 0.90 );
+   bool pass_fakeable_lepMVA = 1;
+   bool pass_lepMVA = ( lepMVA >= 0.85 );
    
-   if( pass_lepMVA )
-     {	
-	if( lepMVA_jetBTagDeepCSV < 0.4941 ) pass_fakeable_lepMVA = 1;
-     }  
-   else
-     {	
-	if( lepMVA_jetPtRatio > 0.6 && lepMVA_jetBTagDeepCSV < 0.07 && lepMVA_mvaId > 0.3 ) pass_fakeable_lepMVA = 1;
+   if( lepMVA < 0.85 )
+     {
+	float jetpt = 0.9*pt*(1.+jetRelIso);
+	bool pass_jetSel = (lepMVA_jetBTagDeepFlavour < smoothBFlav(jetpt,20.,45.,year));
+	if( !(jetRelIso < 0.5 && pass_jetSel) ) pass_fakeable_lepMVA = 0;
      }   
    
    bool pass_conept = ( conept > 10. );
@@ -213,6 +223,7 @@ void MuonExt::sel(bool DEBUG,int year)
 	     std::cout << "  miniIsoNeutral = " << lepMVA_miniRelIsoNeutral << std::endl;
 	     std::cout << "  sip3d = " << sip3d << std::endl;
 	     std::cout << "  lepMVA_jetPtRatio = " << lepMVA_jetPtRatio << std::endl;
+	     std::cout << "  jetRelIso = " << jetRelIso << std::endl;
 	     std::cout << "  lepMVA = " << lepMVA << std::endl;
 	     std::cout << "  lepMVA_jetBTagDeepCSV = " << lepMVA_jetBTagDeepCSV << std::endl;
 	     std::cout << "  lepMVA_mvaId = " << lepMVA_mvaId << std::endl;
@@ -220,6 +231,7 @@ void MuonExt::sel(bool DEBUG,int year)
 	     std::cout << "  isLoose = " << isLoose << std::endl;
 	     std::cout << "  isLooseTTH = " << isLooseTTH << std::endl << std::endl;
 	     std::cout << "  pass_fakeable_lepMVA = " << pass_fakeable_lepMVA << std::endl;
+	     std::cout << "  pass_clJet = " << pass_clJet << std::endl;
 	     std::cout << "  pass_conept = " << pass_conept << std::endl;
 	     std::cout << "  = isFakeableTTH = " << isFakeableTTH << std::endl << std::endl;
 	     std::cout << "  pass_lepMVA = " << pass_lepMVA << std::endl;
@@ -253,4 +265,14 @@ float MuonExt::getEffArea(float eta,int year)
    ea*=16./9.;
    
    return ea;
+}
+
+float MuonExt::smoothBFlav(float jetpt,float ptmin,float ptmax,int year)
+{   
+   float wploose[3] = {0.0614, 0.0521, 0.0494};
+   float wpmedium[3] = {0.3093, 0.3033, 0.2770};
+   
+   float x = std::min(std::max(0.f, jetpt - ptmin)/(ptmax-ptmin), 1.f);
+   
+   return x*wploose[year-2016] + (1-x)*wpmedium[year-2016]; 
 }
