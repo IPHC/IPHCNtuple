@@ -254,18 +254,21 @@ void ElectronExt::sel(bool DEBUG,int year)
    bool pass_fakeable_lepMVA = 1;
    bool pass_conept = ( conept > 10. );
    bool pass_lepMVA = ( lepMVA >= 0.80 );
+
    bool pass_clJet = 1;
-   
-   if( year == 2016 )
-     if( lepMVA_jetBTagDeepFlavour > 0.3093 ) pass_clJet = 0;
-   if( year == 2017 )
-     if( lepMVA_jetBTagDeepFlavour > 0.3033 ) pass_clJet = 0;
-   if( year == 2018 )
-     if( lepMVA_jetBTagDeepFlavour > 0.2770 ) pass_clJet = 0;
    
    if( lepMVA < 0.80 )
      {
 	if( !(jetRelIso < 0.7 && pass_isLoose80) ) pass_fakeable_lepMVA = 0;
+     }
+   else
+     {
+	if( year == 2016 )
+	  if( lepMVA_jetBTagDeepFlavour > 0.3093 ) pass_clJet = 0;
+	if( year == 2017 )
+	  if( lepMVA_jetBTagDeepFlavour > 0.3033 ) pass_clJet = 0;
+	if( year == 2018 )
+	  if( lepMVA_jetBTagDeepFlavour > 0.2770 ) pass_clJet = 0;
      }   
    
    bool pass_sc = 0;

@@ -158,15 +158,6 @@ void MuonExt::sel(bool DEBUG,int year)
    bool pass_miniIso = ( iso < 0.4 );
    bool pass_SIP     = ( fabs(sip3d) < 8 );
    bool pass_isLoose = ( isLoose );
-
-   bool pass_clJet = 1;
-   
-   if( year == 2016 )
-     if( lepMVA_jetBTagDeepFlavour > 0.3093 ) pass_clJet = 0;
-   if( year == 2017 )
-     if( lepMVA_jetBTagDeepFlavour > 0.3033 ) pass_clJet = 0;
-   if( year == 2018 )
-     if( lepMVA_jetBTagDeepFlavour > 0.2770 ) pass_clJet = 0;
    
    float EffArea = getEffArea(eta,year);
    
@@ -180,23 +171,37 @@ void MuonExt::sel(bool DEBUG,int year)
 		  pass_dz      &&
 		  pass_miniIso &&
 		  pass_SIP     &&
-		  pass_clJet   &&
 		  pass_isLoose );
    
    bool pass_fakeable_lepMVA = 1;
    bool pass_lepMVA = ( lepMVA >= 0.85 );
+   bool pass_jetSel = 1;
+   float btagCut = -777;
+
+   bool pass_clJet = 1;
    
    if( lepMVA < 0.85 )
      {
 	float jetpt = 0.9*pt*(1.+jetRelIso);
-	bool pass_jetSel = (lepMVA_jetBTagDeepFlavour < smoothBFlav(jetpt,20.,45.,year));
+	btagCut = smoothBFlav(jetpt,20.,45.,year);
+	pass_jetSel = (lepMVA_jetBTagDeepFlavour < btagCut);
 	if( !(jetRelIso < 0.5 && pass_jetSel) ) pass_fakeable_lepMVA = 0;
+     }
+   else
+     {
+	if( year == 2016 )
+	  if( lepMVA_jetBTagDeepFlavour > 0.3093 ) pass_clJet = 0;
+	if( year == 2017 )
+	  if( lepMVA_jetBTagDeepFlavour > 0.3033 ) pass_clJet = 0;
+	if( year == 2018 )
+	  if( lepMVA_jetBTagDeepFlavour > 0.2770 ) pass_clJet = 0;
      }   
    
    bool pass_conept = ( conept > 10. );
    
    isFakeableTTH = ( isLooseTTH &&
 		     pass_fakeable_lepMVA &&
+		     pass_clJet &&
 		     pass_conept );
    
    isTightTTH = ( isFakeableTTH && 
@@ -218,6 +223,7 @@ void MuonExt::sel(bool DEBUG,int year)
 	     std::cout << "  dz = " << dz << std::endl;
 	     std::cout << "  iso = " << iso << std::endl;
 	     std::cout << "  isoR04 = " << isoR04 << std::endl;
+	     std::cout << "  btagCut = " << btagCut << std::endl;
 	     std::cout << "  miniIsoCharged = " << lepMVA_miniRelIsoCharged << std::endl;
 	     std::cout << "  mu_pfIso04_sumChargedHadronPt = " << ntP->mu_pfIso04_sumChargedHadronPt->at(idx)/pt << std::endl;
 	     std::cout << "  miniIsoNeutral = " << lepMVA_miniRelIsoNeutral << std::endl;
@@ -225,7 +231,7 @@ void MuonExt::sel(bool DEBUG,int year)
 	     std::cout << "  lepMVA_jetPtRatio = " << lepMVA_jetPtRatio << std::endl;
 	     std::cout << "  jetRelIso = " << jetRelIso << std::endl;
 	     std::cout << "  lepMVA = " << lepMVA << std::endl;
-	     std::cout << "  lepMVA_jetBTagDeepCSV = " << lepMVA_jetBTagDeepCSV << std::endl;
+	     std::cout << "  lepMVA_jetBTagDeepFlavour = " << lepMVA_jetBTagDeepFlavour << std::endl;
 	     std::cout << "  lepMVA_mvaId = " << lepMVA_mvaId << std::endl;
 	     std::cout << "  PFRelIso04 = " << PFRelIso04 << std::endl;
 	     std::cout << "  isLoose = " << isLoose << std::endl;
