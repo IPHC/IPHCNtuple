@@ -37,6 +37,7 @@ void Sync::Init()
 	m_tree_0l2tau_Fake = new TTree("syncTree_0l2tau_Fake","Sync Ntuple");
 	m_tree_1l1tau_SR = new TTree("syncTree_1l1tau_SR","Sync Ntuple");
 	m_tree_1l1tau_Fake = new TTree("syncTree_1l1tau_Fake","Sync Ntuple");
+	m_tree_1l1tau_Flip = new TTree("syncTree_1l1tau_Flip","Sync Ntuple");
 	m_tree_1l2tau_SR = new TTree("syncTree_1l2tau_SR","Sync Ntuple");
 	m_tree_1l2tau_Fake = new TTree("syncTree_1l2tau_Fake","Sync Ntuple");
 	m_tree_2lSS_SR = new TTree("syncTree_2lSS_SR","Sync Ntuple");
@@ -64,7 +65,7 @@ void Sync::Init()
 	m_tree_WZctrl_Fake = new TTree("syncTree_WZctrl_Fake","Sync Ntuple");
 	m_tree_ZZctrl_SR = new TTree("syncTree_ZZctrl_SR","Sync Ntuple");
 	m_tree_ZZctrl_Fake = new TTree("syncTree_ZZctrl_Fake","Sync Ntuple");
-	m_hist_overlap = new TH2F("overlap","overlap",49,0.,49.,49,0.,49.);
+	m_hist_overlap = new TH2F("overlap","overlap",50,0.,50.,50,0.,50.);
      }
 }
 
@@ -77,6 +78,7 @@ void Sync::setBranchAddress()
 	createBranch(m_tree_0l2tau_Fake);
 	createBranch(m_tree_1l1tau_SR);
 	createBranch(m_tree_1l1tau_Fake);
+	createBranch(m_tree_1l1tau_Flip);
 	createBranch(m_tree_1l2tau_SR);
 	createBranch(m_tree_1l2tau_Fake);
 	createBranch(m_tree_2lSS_SR);
@@ -1414,6 +1416,7 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 	
 	float mll_min = 10E+10;
 	float mll_z_min = 10E+10;
+	float mee_z_min = 10E+10;
 	float mllll_min = 10E+10;
 	for(int il=0;il<nLepLoose;il++)
 	  {
@@ -1439,10 +1442,11 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 			bool SFOS = (((elmuLoose->at(il).iElec >= 0 && elmuLoose->at(ill).iElec >= 0) ||
 			(elmuLoose->at(il).iMuon >= 0 && elmuLoose->at(ill).iMuon >= 0)) &&
 			elmuLoose->at(il).charge*elmuLoose->at(ill).charge < 0);
-
-//			if(!SFOS) {continue;} //only check for second pair of SFOS and mll_z if first pair is SFOS
+		   
+		        bool SFee = (elmuLoose->at(il).iElec >= 0 && elmuLoose->at(ill).iElec >= 0);
 		   
 			if(mll_z < mll_z_min && SFOS) mll_z_min = mll_z;
+		        if(mll_z < mee_z_min && SFee) mee_z_min = mll_z;
 
 		   for(int illl=ill+1;illl<nLepLoose;illl++)
 		    {
@@ -1498,6 +1502,7 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 	
 	bool pass_mll = (mll_min > 12.);
 	bool pass_Z_veto = (mll_z_min > 10.);
+	bool pass_Zee_veto = (mee_z_min > 10.);
 
 
     int nSFOS = 0; //Fakeable lepetons
@@ -1645,6 +1650,7 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 	bool pass_1l1tau_SR_Data = 0;
 	bool pass_1l1tau_SR = 0;
 	bool pass_1l1tau_Fake = 0;
+	bool pass_1l1tau_Flip = 0;
 	  {
 	     bool pass_nlep = (nLepFakeable > 0 && nTauFakeable >= 1);
 	     if( pass_nlep )
@@ -1660,7 +1666,7 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 		  bool pass_tau_id = (nt->NtTauFakeableExt->at(0).isMediumTTH && nTauMedium == 1);
 		  bool pass_id = (elmuFakeable->at(0).isTightTTH);
 
-		  bool pass_truth = (elmuFakeable->at(0).hasMCMatch && nt->NtTauFakeableExt->at(0).hasMCMatch);
+		  bool pass_truth = (elmuFakeable->at(0).hasChargeMCMatch && nt->NtTauFakeableExt->at(0).hasChargeMCMatch);
 
 		  bool pass_os = (nt->NtTauFakeableExt->at(0).charge*elmuFakeable->at(0).charge < 0);
 
@@ -1672,6 +1678,8 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 		  pass_1l1tau_SR = (pass_1l1tau_SR_Data && pass_truth);
 
 		  pass_1l1tau_Fake = (pass_1l1tau && ((!pass_id && pass_tau_id) || (!(nt->NtTauFakeableExt->at(0).isMediumTTH) && pass_id && nLepTight == 1)) && pass_truth);
+		  
+		  pass_1l1tau_Flip = (pass_1l1tau_SR_Data && !(pass_truth));
 
 		  if(DEBUG)
 		    {
@@ -1689,6 +1697,8 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 		       std::cout << "  && pass_tau_id = " << pass_tau_id << std::endl;
 		       std::cout << "  && pass_truth = " << pass_truth << std::endl;
 		       std::cout << "  = pass_1l1tau_SR = " << pass_1l1tau_SR << std::endl;
+		       std::cout << "  && !pass_truth = " << !pass_truth << std::endl;
+		       std::cout << "  = pass_1l1tau_Flip = " << pass_1l1tau_Flip << std::endl;
 		       std::cout << "  && !pass_tight = " << !pass_tight << std::endl;
 		       std::cout << "  && pass_os = " << pass_os << std::endl;
 		       std::cout << "  = pass_1l1tau_Fake = " << pass_1l1tau_Fake << std::endl;
@@ -1739,8 +1749,8 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 		  bool pass_tight_charge = (elmuFakeable->at(0).tightCharge && elmuFakeable->at(1).tightCharge);
 		  bool pass_tau_veto = (nTauLoose == 0);
 		  bool pass_lepTight = (nLepTight <= 2);
-		  bool pass_metLD = (metLD > 30);
-		  if( !(elmuFakeable->at(0).iElec >= 0) || !(elmuFakeable->at(1).iElec >= 0) ) pass_metLD = 1;
+		  bool pass_metLD = (pass_Zee_veto && metLD > 30);
+		  if( !(elmuFakeable->at(0).iElec >= 0) || !(elmuFakeable->at(1).iElec >= 0) ) pass_metLD = (pass_Z_veto);
   		  bool pass_has_elec = (elmuFakeable->at(0).iElec >= 0 || elmuFakeable->at(1).iElec >= 0);
 
 		  bool pass_tight = (elmuFakeable->at(0).isTightTTH && elmuFakeable->at(1).isTightTTH);
@@ -1765,7 +1775,7 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 		  is_ttH_like = pass_njet_ttH;
 		  
 //		  pass_2lSS = (pass_trig && pass_lepTight && pass_fakeable_pt && pass_tight_charge && pass_mll && pass_tau_veto && pass_mee && pass_metLD);
-		  pass_2lSS = (pass_trig && pass_lepTight && pass_fakeable_pt && pass_tight_charge && pass_mll && pass_tau_veto && pass_Z_veto && pass_metLD);
+		  pass_2lSS = (pass_trig && pass_lepTight && pass_fakeable_pt && pass_tight_charge && pass_mll && pass_tau_veto && pass_metLD);
 		  pass_2lSS_ttH = pass_2lSS && pass_njet_ttH;
 		  pass_2lSS_tHq = pass_2lSS && pass_njet_tHq;
 
@@ -1879,21 +1889,35 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 	  }
 
 	bool pass_2lSS1tau = 0;
+	bool pass_2lSS1tau_ttH = 0;
+	bool pass_2lSS1tau_tHq = 0;
 	bool pass_2lSS1tau_SR_Data = 0;
+	bool pass_2lSS1tau_SR_Data_ttH = 0;
+	bool pass_2lSS1tau_SR_Data_tHq = 0;
 	bool pass_2lSS1tau_SR = 0;
+	bool pass_2lSS1tau_SR_ttH = 0;
+	bool pass_2lSS1tau_SR_tHq = 0;
 	bool pass_2lSS1tau_Fake = 0;
+	bool pass_2lSS1tau_Fake_ttH = 0;
+	bool pass_2lSS1tau_Fake_tHq = 0;
 	bool pass_2lSS1tau_Flip_Data = 0;
+	bool pass_2lSS1tau_Flip_Data_ttH = 0;
+	bool pass_2lSS1tau_Flip_Data_tHq = 0;
 	bool pass_2lSS1tau_Flip = 0;
+	bool pass_2lSS1tau_Flip_ttH = 0;
+	bool pass_2lSS1tau_Flip_tHq = 0;
 	  {
 	     bool pass_nlep = (nLepFakeable > 1 && nLepTight <= 2 && nTauFakeable >= 1);
 	     if( pass_nlep )
 	       {
-		  bool pass_trig = (trig_e || trig_et || trig_m || trig_mt || trig_ee || trig_mm || trig_em);
+		  bool pass_trig = (trig_e || trig_m || trig_ee || trig_mm || trig_em);
 		  bool pass_fakeable_pt = (elmuFakeable->at(0).conept > 25.);
 		  pass_fakeable_pt = pass_fakeable_pt && ((elmuFakeable->at(1).iMuon >= 0) ? (elmuFakeable->at(1).conept > 10.) : (elmuFakeable->at(1).conept > 15.));
 		  bool pass_tight_charge = (elmuFakeable->at(0).tightCharge && elmuFakeable->at(1).tightCharge);
 		  bool pass_tau = (nt->NtTauFakeableExt->at(0).isLooseTTH);
 		  bool pass_njet = (nJetLoose_ttHsel >= 3 && (nJetLooseBL_ttHsel >= 2 || nJetLooseBM_ttHsel >= 1));
+		  bool pass_njet_ttH = (nJetLoose_ttHsel >= 3 && (nJetLooseBL_ttHsel >= 2 || nJetLooseBM_ttHsel >= 1));
+		  bool pass_njet_tHq = (nJetLooseBM_ttHsel >= 1 && nLightJet >= 1);
 		  bool pass_metLD = (metLD > 30.);
 		  if( !(elmuFakeable->at(0).iElec >= 0) || !(elmuFakeable->at(1).iElec >= 0) ) pass_metLD = 1;
 
@@ -1906,22 +1930,34 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 		    (elmuFakeable->at(1).iElec >= 0 && elmuFakeable->at(1).charge*nt->NtTauFakeableExt->at(0).charge > 0);
 		  bool pass_truth = (elmuFakeable->at(0).hasMCMatch && elmuFakeable->at(1).hasMCMatch);
 
-		  pass_2lSS1tau = (pass_trig && pass_fakeable_pt && pass_tight_charge && pass_mll && pass_tau_tight && pass_Z_veto && pass_metLD && pass_njet);
+		  pass_2lSS1tau = (pass_trig && pass_fakeable_pt && pass_tight_charge && pass_mll && pass_tau_tight && pass_Z_veto && pass_metLD);
+		  pass_2lSS1tau_ttH = pass_2lSS1tau && pass_njet_ttH;
+		  pass_2lSS1tau_tHq = pass_2lSS1tau && pass_njet_tHq;
 
 		  pass_2lSS1tau_SR_Data = (pass_2lSS1tau &&
 					   pass_tight && pass_ss && pass_tau && pass_os_tau);
+		  pass_2lSS1tau_SR_Data_ttH = pass_2lSS1tau_SR_Data && pass_njet_ttH;
+		  pass_2lSS1tau_SR_Data_tHq = pass_2lSS1tau_SR_Data && pass_njet_tHq;
 
 		  pass_2lSS1tau_SR = (pass_2lSS1tau_SR_Data && pass_truth);
+		  pass_2lSS1tau_SR_ttH = pass_2lSS1tau_SR && pass_njet_ttH;
+		  pass_2lSS1tau_SR_tHq = pass_2lSS1tau_SR && pass_njet_tHq;
 
 		  pass_2lSS1tau_Fake = (pass_2lSS1tau &&
 					pass_ss && !pass_tight && pass_tau && pass_os_tau && pass_truth);
+		  pass_2lSS1tau_Fake_ttH = pass_2lSS1tau_Fake && pass_njet_ttH;
+		  pass_2lSS1tau_Fake_tHq = pass_2lSS1tau_Fake && pass_njet_tHq;
 
 		  bool pass_has_elec = (elmuFakeable->at(0).iElec >= 0 || elmuFakeable->at(1).iElec >= 0);
 
 		  pass_2lSS1tau_Flip_Data = (pass_2lSS1tau &&
 					     pass_has_elec && !pass_ss && pass_tight && pass_tau && pass_ss_tau);
+		  pass_2lSS1tau_Flip_Data_ttH = pass_2lSS1tau_Flip_Data && pass_njet_ttH;
+		  pass_2lSS1tau_Flip_Data_tHq = pass_2lSS1tau_Flip_Data && pass_njet_tHq;
 
 		  pass_2lSS1tau_Flip = (pass_2lSS1tau_Flip_Data && pass_truth);
+		  pass_2lSS1tau_Flip_ttH = pass_2lSS1tau_Flip && pass_njet_ttH;
+		  pass_2lSS1tau_Flip_tHq = pass_2lSS1tau_Flip && pass_njet_tHq;
 
 
 		       if(DEBUG)
@@ -1944,11 +1980,15 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 			    std::cout << "  && pass_os_tau = " << pass_os_tau << std::endl;
 			    std::cout << "  && pass_truth = " << pass_truth << std::endl;
 			    std::cout << "  = pass_2lSS1tau_SR = " << pass_2lSS1tau_SR << std::endl;
+			    std::cout << "  = pass_2lSS1tau_SR_ttH = " << pass_2lSS1tau_SR_ttH << std::endl;
+			    std::cout << "  = pass_2lSS1tau_SR_tHq = " << pass_2lSS1tau_SR_tHq << std::endl;
 			    std::cout << "  && pass_ss = " << pass_ss << std::endl;
 			    std::cout << "  && !pass_tight = " << !pass_tight << std::endl;
 			    std::cout << "  && pass_tau = " << pass_tau << std::endl;
 			    std::cout << "  && pass_os_tau = " << pass_os_tau << std::endl;
 			    std::cout << "  = pass_2lSS1tau_Fake = " << pass_2lSS1tau_Fake << std::endl;
+			    std::cout << "  = pass_2lSS1tau_Fake_ttH = " << pass_2lSS1tau_Fake_ttH << std::endl;
+			    std::cout << "  = pass_2lSS1tau_Fake_tHq = " << pass_2lSS1tau_Fake_tHq << std::endl;
 			    std::cout << "  && pass_has_elec = " << pass_has_elec << std::endl;
 			    std::cout << "  && !pass_ss = " << !pass_ss << std::endl;
 			    std::cout << "  && pass_tight = " << pass_tight << std::endl;
@@ -1956,6 +1996,8 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 			    std::cout << "  && pass_ss_tau = " << pass_ss_tau << std::endl;
 			    std::cout << "  && pass_truth = " << pass_truth << std::endl;
 			    std::cout << "  = pass_2lSS1tau_Flip = " << pass_2lSS1tau_Flip << std::endl;
+			    std::cout << "  = pass_2lSS1tau_Flip_ttH = " << pass_2lSS1tau_Flip_ttH << std::endl;
+			    std::cout << "  = pass_2lSS1tau_Flip_tHq = " << pass_2lSS1tau_Flip_tHq << std::endl;
 			 }
 	       }
 	  }
@@ -1968,14 +2010,16 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 	     bool pass_nlep = (nLepFakeable > 1 && nTauFakeable >= 1);
 	     if( pass_nlep )
 	       {
-		  bool pass_trig = (trig_ee || trig_e || trig_mm || trig_m || trig_em || trig_et || trig_mt);
+		  bool pass_trig = (trig_ee || trig_e || trig_mm || trig_m || trig_em);
 		  bool pass_fakeable_pt = (elmuFakeable->at(0).conept > 25.);
 		  pass_fakeable_pt = pass_fakeable_pt && ((elmuFakeable->at(1).iMuon >= 0) ? (elmuFakeable->at(1).conept > 10.) : (elmuFakeable->at(1).conept > 15.));
 		  bool pass_tight_charge = (elmuFakeable->at(0).tightCharge && elmuFakeable->at(1).tightCharge);
 		  bool pass_njet = (nJetLoose_ttHsel >= 3 && (nJetLooseBL_ttHsel >= 2 || nJetLooseBM_ttHsel >= 1));
 		  bool pass_metLD = (metLD > 30.);
+		  if( !((elmuFakeable->at(0).iElec >= 0 && elmuFakeable->at(1).iElec >= 0) || 
+			(elmuFakeable->at(0).iMuon >= 0 && elmuFakeable->at(1).iMuon >= 0)) ) pass_metLD = 1;
 
-		  bool pass_tight = (elmuFakeable->at(0).isTightTTH && elmuFakeable->at(1).isTightTTH && nLepTight == 2);
+		  bool pass_tight = (elmuFakeable->at(0).isTightTTH && elmuFakeable->at(1).isTightTTH && nLepTight <= 2);
 		  bool pass_tau_pt = (nt->NtTauFakeableExt->at(0).pt >= 40.);
 		  bool pass_tau_tight = (nt->NtTauFakeableExt->at(0).isLooseTTH && nTauLoose == 1);
 		  bool pass_id = (nt->NtTauFakeableExt->at(0).isLooseTTH && elmuFakeable->at(0).isTightTTH && elmuFakeable->at(1).isTightTTH);
@@ -2031,7 +2075,7 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 	     bool pass_nlep = (nLepFakeable >= 2 && nTauFakeable >= 2);
 	     if( pass_nlep )
 	       {
-		  bool pass_trig = (trig_e || trig_et || trig_m || trig_mt || trig_ee || trig_mm || trig_em || trig_tt);
+		  bool pass_trig = (trig_e || trig_m || trig_ee || trig_mm || trig_em);
 		  bool pass_fakeable_pt = (elmuFakeable->at(0).conept > 25. && elmuFakeable->at(1).conept > 10.);
 		  if( elmuFakeable->at(1).iElec >= 0 ) pass_fakeable_pt = pass_fakeable_pt && (elmuFakeable->at(1).conept > 15.);
 		  bool pass_metLD = (((metLD > 30 && nSFOS == 0) || (metLD > 45 && nSFOS > 0)) || nJetLoose_ttHsel >= 4);
@@ -2222,14 +2266,14 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 	     bool pass_nlep = (nLepFakeable > 2 && nTauFakeable >= 1);
 	     if( pass_nlep )
 	       {
-		  bool pass_trig = (trig_e || trig_et || trig_m || trig_mt || trig_ee || trig_mm || trig_em || trig_eee || trig_eem || trig_emm || trig_mmm);
+		  bool pass_trig = (trig_e || trig_m || trig_ee || trig_mm || trig_em || trig_eee || trig_eem || trig_emm || trig_mmm);
 		  bool pass_fakeable_pt = (elmuFakeable->at(0).conept > 20. && elmuFakeable->at(1).conept > 10. && elmuFakeable->at(2).conept > 10.);
 		  bool pass_metLD = (((metLD > 30 && nSFOS == 0) || (metLD > 45 && nSFOS > 0)) || nJetLoose_ttHsel >= 4);
 		  int lep_charge_sum = elmuFakeable->at(0).charge+elmuFakeable->at(1).charge+elmuFakeable->at(2).charge+nt->NtTauFakeableExt->at(0).charge;
 		  bool pass_charge = (lep_charge_sum == 0);
 		  bool pass_njet = (nJetLoose_ttHsel >= 2 && (nJetLooseBL_ttHsel >= 2 || nJetLooseBM_ttHsel >= 1));
 
-		  bool pass_tight = (elmuFakeable->at(0).isTightTTH && elmuFakeable->at(1).isTightTTH && elmuFakeable->at(2).isTightTTH);
+		  bool pass_tight = (elmuFakeable->at(0).isTightTTH && elmuFakeable->at(1).isTightTTH && elmuFakeable->at(2).isTightTTH && nLepTight <= 3);
 		  bool pass_tau_tight = (nTauLoose >= 1);
 		  bool pass_truth = (elmuFakeable->at(0).hasMCMatch && elmuFakeable->at(1).hasMCMatch && elmuFakeable->at(2).hasMCMatch);
 
@@ -2344,6 +2388,7 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 	ev->is_1l1tau_SR_Data = pass_1l1tau_SR_Data;
 	ev->is_1l1tau_SR = pass_1l1tau_SR;
 	ev->is_1l1tau_Fake = pass_1l1tau_Fake;
+	ev->is_1l1tau_Flip = pass_1l1tau_Flip;
 	ev->is_1l2tau = pass_1l2tau;
 	ev->is_1l2tau_SR_Data = pass_1l2tau_SR_Data;
 	ev->is_1l2tau_SR = pass_1l2tau_SR;
@@ -2365,11 +2410,23 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 	ev->is_2lSS_Flip_ttH = pass_2lSS_Flip_ttH;
 	ev->is_2lSS_Flip_tHq = pass_2lSS_Flip_tHq;
 	ev->is_2lSS1tau = pass_2lSS1tau;
+	ev->is_2lSS1tau_ttH = pass_2lSS1tau_ttH;
+	ev->is_2lSS1tau_tHq = pass_2lSS1tau_tHq;
 	ev->is_2lSS1tau_SR_Data = pass_2lSS1tau_SR_Data;
+	ev->is_2lSS1tau_SR_Data_ttH = pass_2lSS1tau_SR_Data_ttH;
+	ev->is_2lSS1tau_SR_Data_tHq = pass_2lSS1tau_SR_Data_tHq;
 	ev->is_2lSS1tau_SR = pass_2lSS1tau_SR;
+	ev->is_2lSS1tau_SR_ttH = pass_2lSS1tau_SR_ttH;
+	ev->is_2lSS1tau_SR_tHq = pass_2lSS1tau_SR_tHq;
 	ev->is_2lSS1tau_Fake = pass_2lSS1tau_Fake;
+	ev->is_2lSS1tau_Fake_ttH = pass_2lSS1tau_Fake_ttH;
+	ev->is_2lSS1tau_Fake_tHq = pass_2lSS1tau_Fake_tHq;
 	ev->is_2lSS1tau_Flip_Data = pass_2lSS1tau_Flip_Data;
+	ev->is_2lSS1tau_Flip_Data_ttH = pass_2lSS1tau_Flip_Data_ttH;
+	ev->is_2lSS1tau_Flip_Data_tHq = pass_2lSS1tau_Flip_Data_tHq;
 	ev->is_2lSS1tau_Flip = pass_2lSS1tau_Flip;
+	ev->is_2lSS1tau_Flip_ttH = pass_2lSS1tau_Flip_ttH;
+	ev->is_2lSS1tau_Flip_tHq = pass_2lSS1tau_Flip_tHq;
 	ev->is_2lOS1tau = pass_2lOS1tau;
 	ev->is_2lOS1tau_SR_Data = pass_2lOS1tau_SR_Data;
 	ev->is_2lOS1tau_SR = pass_2lOS1tau_SR;
@@ -2419,13 +2476,14 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 	     if( pass_0l2tau_Fake ) m_tree_0l2tau_Fake->Fill();
 	     if( pass_1l1tau_SR ) m_tree_1l1tau_SR->Fill();
 	     if( pass_1l1tau_Fake ) m_tree_1l1tau_Fake->Fill();
+	     if( pass_1l1tau_Flip ) m_tree_1l1tau_Flip->Fill();
 	     if( pass_1l2tau_SR ) m_tree_1l2tau_SR->Fill();
 	     if( pass_1l2tau_Fake ) m_tree_1l2tau_Fake->Fill();
 	     if( pass_2lSS_SR_ttH || pass_2lSS_SR_tHq ) m_tree_2lSS_SR->Fill();
 	     if( pass_2lSS_Fake_ttH || pass_2lSS_Fake_tHq ) m_tree_2lSS_Fake->Fill();
 	     if( pass_2lSS_Flip_ttH || pass_2lSS_Flip_tHq ) m_tree_2lSS_Flip->Fill();
-	     if( pass_2lSS1tau_SR ) m_tree_2lSS1tau_SR->Fill();
-	     if( pass_2lSS1tau_Fake ) m_tree_2lSS1tau_Fake->Fill();
+	     if( pass_2lSS1tau_SR_ttH || pass_2lSS1tau_SR_tHq ) m_tree_2lSS1tau_SR->Fill();
+	     if( pass_2lSS1tau_Fake_ttH || pass_2lSS1tau_Fake_tHq ) m_tree_2lSS1tau_Fake->Fill();
 	     if( pass_2lSS1tau_Flip ) m_tree_2lSS1tau_Flip->Fill();
 	     if( pass_2lOS1tau_SR ) m_tree_2lOS1tau_SR->Fill();
 	     if( pass_2lOS1tau_Fake ) m_tree_2lOS1tau_Fake->Fill();
@@ -2462,6 +2520,7 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 	pass_cat.push_back(pass_1l1tau);           name_cat.push_back("1l1tau");
 	pass_cat.push_back(pass_1l1tau_SR);        name_cat.push_back("1l1tau_SR");
 	pass_cat.push_back(pass_1l1tau_Fake);      name_cat.push_back("1l1tau_Fake");
+	pass_cat.push_back(pass_1l1tau_Flip);      name_cat.push_back("1l1tau_Flip");
 	pass_cat.push_back(pass_1l2tau);           name_cat.push_back("1l2tau");
 	pass_cat.push_back(pass_1l2tau_SR);        name_cat.push_back("1l2tau_SR");
 	pass_cat.push_back(pass_1l2tau_Fake);      name_cat.push_back("1l2tau_Fake");

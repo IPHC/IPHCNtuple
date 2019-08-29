@@ -383,6 +383,7 @@ class Sync
    TTree*  m_tree_0l2tau_Fake;
    TTree*  m_tree_1l1tau_SR;
    TTree*  m_tree_1l1tau_Fake;
+   TTree*  m_tree_1l1tau_Flip;
    TTree*  m_tree_1l2tau_SR;
    TTree*  m_tree_1l2tau_Fake;
    TTree*  m_tree_2lSS_SR;
