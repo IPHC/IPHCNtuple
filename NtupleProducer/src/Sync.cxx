@@ -1662,7 +1662,9 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 		  bool pass_tau_pt = (nt->NtTauFakeableExt->at(0).pt > 30.);
 		  bool pass_njet = (nJetLoose_ttHsel >= 4 && (nJetLooseBL_ttHsel >= 2 || nJetLooseBM_ttHsel >= 1));
 
+		  bool pass_pretight = (nLepTight <= 1);
 		  bool pass_tight = (elmuFakeable->at(0).isTightTTH && nLepTight == 1);
+		  bool pass_pretautight = (nTauMedium <= 1);
 		  bool pass_tau_id = (nt->NtTauFakeableExt->at(0).isMediumTTH && nTauMedium == 1);
 		  bool pass_id = (elmuFakeable->at(0).isTightTTH);
 
@@ -1670,15 +1672,15 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 
 		  bool pass_os = (nt->NtTauFakeableExt->at(0).charge*elmuFakeable->at(0).charge < 0);
 
-		  pass_1l1tau = (pass_trig && pass_fakeable_pt && pass_fakeable_eta && pass_tau_pt && pass_njet && pass_mll);
+		  pass_1l1tau = (pass_trig && pass_fakeable_pt && pass_fakeable_eta && pass_tau_pt && pass_njet && pass_mll && pass_pretight && pass_pretautight);
 
 		  pass_1l1tau_SR_Data = (pass_1l1tau &&
 					 pass_tight && pass_tau_id);
 
 		  pass_1l1tau_SR = (pass_1l1tau_SR_Data && pass_truth);
 
-		  pass_1l1tau_Fake = (pass_1l1tau && ((!pass_id && pass_tau_id) || (!(nt->NtTauFakeableExt->at(0).isMediumTTH) && pass_id && nLepTight == 1)) && pass_truth);
-		  
+		  pass_1l1tau_Fake = (pass_1l1tau && (!(elmuFakeable->at(0).isTightTTH) || !(nt->NtTauFakeableExt->at(0).isMediumTTH)));
+
 		  pass_1l1tau_Flip = (pass_1l1tau_SR_Data && !(pass_truth));
 
 		  if(DEBUG)
@@ -1749,9 +1751,14 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 		  bool pass_tight_charge = (elmuFakeable->at(0).tightCharge && elmuFakeable->at(1).tightCharge);
 		  bool pass_tau_veto = (nTauLoose == 0);
 		  bool pass_lepTight = (nLepTight <= 2);
-		  bool pass_metLD = (pass_Zee_veto && metLD > 30);
-		  if( !(elmuFakeable->at(0).iElec >= 0) || !(elmuFakeable->at(1).iElec >= 0) ) pass_metLD = (pass_Z_veto);
+//		  bool pass_metLD = (pass_Zee_veto && metLD > 30);
+//		  if( !(elmuFakeable->at(0).iElec >= 0) || !(elmuFakeable->at(1).iElec >= 0) ) pass_metLD = (pass_Z_veto);
   		  bool pass_has_elec = (elmuFakeable->at(0).iElec >= 0 || elmuFakeable->at(1).iElec >= 0);
+		  bool pass_both_elec = (elmuFakeable->at(0).iElec >= 0 && elmuFakeable->at(1).iElec >= 0);
+		  bool pass_metLD = 1;
+//		  if( pass_both_elec ) pass_metLD = (pass_Zee_veto && metLD > 30);
+		  if( pass_both_elec ) pass_metLD = (pass_mee && metLD > 30);
+		  pass_metLD = pass_metLD && pass_Z_veto;
 
 		  bool pass_tight = (elmuFakeable->at(0).isTightTTH && elmuFakeable->at(1).isTightTTH);
 		  bool pass_ss = (elmuFakeable->at(0).charge*elmuFakeable->at(1).charge > 0);
@@ -1836,6 +1843,8 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 				std::cout << "  metLD = " << metLD << std::endl;
 			    std::cout << "  pass_tau_veto = " << pass_tau_veto << std::endl;
 			    std::cout << "  pass_mee = " << pass_mee << std::endl;
+//			    std::cout << "  pass_Zee_veto = " << pass_Zee_veto << std::endl;
+			    std::cout << "  pass_Z_veto = " << pass_Z_veto << std::endl;
 			    std::cout << "  pass_metLD = " << pass_metLD << std::endl;
 			    std::cout << "  pass_njet_ttH = " << pass_njet_ttH << std::endl;
 			    std::cout << "  pass_njet_tHq = " << pass_njet_tHq << std::endl;
@@ -1928,7 +1937,7 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 		    (elmuFakeable->at(1).charge*nt->NtTauFakeableExt->at(0).charge < 0);
 		  bool pass_ss_tau = (elmuFakeable->at(0).iElec >= 0 && elmuFakeable->at(0).charge*nt->NtTauFakeableExt->at(0).charge > 0) ||
 		    (elmuFakeable->at(1).iElec >= 0 && elmuFakeable->at(1).charge*nt->NtTauFakeableExt->at(0).charge > 0);
-		  bool pass_truth = (elmuFakeable->at(0).hasMCMatch && elmuFakeable->at(1).hasMCMatch);
+		  bool pass_truth = (elmuFakeable->at(0).hasChargeMCMatch && elmuFakeable->at(1).hasChargeMCMatch);
 
 		  pass_2lSS1tau = (pass_trig && pass_fakeable_pt && pass_tight_charge && pass_mll && pass_tau_tight && pass_Z_veto && pass_metLD);
 		  pass_2lSS1tau_ttH = pass_2lSS1tau && pass_njet_ttH;
@@ -2026,9 +2035,10 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 		  bool pass_tau = (nTauMedium <= 1);
 
 		  bool pass_os = (elmuFakeable->at(0).charge*elmuFakeable->at(1).charge < 0);
-		  bool pass_truth = (elmuFakeable->at(0).hasMCMatch && elmuFakeable->at(1).hasMCMatch && nt->NtTauFakeableExt->at(0).hasMCMatch);
+		  bool pass_truth = (elmuFakeable->at(0).hasChargeMCMatch && elmuFakeable->at(1).hasChargeMCMatch && nt->NtTauFakeableExt->at(0).hasChargeMCMatch);
 
-		  pass_2lOS1tau = (pass_trig && pass_fakeable_pt && pass_tau_pt && pass_mll && pass_Z_veto && pass_metLD && pass_njet);
+//		  pass_2lOS1tau = (pass_trig && pass_fakeable_pt && pass_tau_pt && pass_mll && pass_Z_veto && pass_metLD && pass_njet);
+		  pass_2lOS1tau = (pass_trig && pass_fakeable_pt && pass_mll && pass_Z_veto && pass_metLD && pass_njet);
 
 		  pass_2lOS1tau_SR_Data = (pass_2lOS1tau &&
 					   pass_os && pass_tight && pass_tau_tight);
@@ -2044,7 +2054,7 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 		       std::cout << "Category 2lOS1tau" << std::endl;
 		       std::cout << "  pass_trig = " << pass_trig << std::endl;
 		       std::cout << "  pass_fakeable_pt = " << pass_fakeable_pt << std::endl;
-		       std::cout << "  pass_tau_pt = " << pass_tau_pt << std::endl;
+//		       std::cout << "  pass_tau_pt = " << pass_tau_pt << std::endl;
 		       std::cout << "  pass_tight_charge = " << pass_tight_charge << std::endl;
 		       std::cout << "  pass_mll = " << pass_mll << std::endl;
 		       std::cout << "  mll_min = " << mll_min << std::endl;
@@ -2172,10 +2182,8 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 //		  is_tH_like_and_not_ttH_like = pass_njet_tHq && !pass_njet_ttH;
 		  is_tH_like_and_not_ttH_like = pass_njet_tHq;
 		  
-		  pass_njet_ttH = pass_njet_ttH && pass_metLD;
-		  
 		  is_ttH_like = pass_njet_ttH;
-		  
+
 		  pass_3l = (pass_trig && pass_fakeable_pt && pass_mll && pass_Z_veto && pass_tau_veto && pass_charge && pass_mllll && pass_nlep);
 		  pass_3l_ttH = pass_3l && pass_njet_ttH;
 		  pass_3l_tHq = pass_3l && pass_njet_tHq;
