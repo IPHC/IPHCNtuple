@@ -45,6 +45,15 @@ class Base : public Helper
    bool  tightCharge;
    float lepMVA;
    int matchedJetId;
+
+   float gen_pt;
+   float gen_eta;
+   float gen_phi;
+   float gen_m;
+   float gen_E;
+   int gen_status;
+   int gen_id;
+   float gen_dr;
    
    ClassDef(Base,1)
 };

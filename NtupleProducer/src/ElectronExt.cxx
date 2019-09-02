@@ -86,8 +86,8 @@ void ElectronExt::read(bool isdata)
 
    if( !isdata ) 
    {
-	hasMCMatch = ntP->el_hasMCMatch->at(idx);
-	hasChargeMCMatch = ntP->el_hasChargeMCMatch->at(idx);
+	hasMCMatch = ntP->el_hasMCMatch->at(idx) && !(ntP->el_hasPhotonMCMatch->at(idx));
+        hasChargeMCMatch = (ntP->el_gen_id->at(idx) == id);
 	hasPhotonMCMatch = ntP->el_hasPhotonMCMatch->at(idx);
 	gen_pt = ntP->el_gen_pt->at(idx);
 	gen_eta = ntP->el_gen_eta->at(idx);
@@ -96,8 +96,16 @@ void ElectronExt::read(bool isdata)
 	gen_E = ntP->el_gen_E->at(idx);
 	gen_status = ntP->el_gen_status->at(idx);
 	gen_id = ntP->el_gen_id->at(idx);
-	gen_charge = ntP->el_gen_charge->at(idx);
 	gen_dr = ntP->el_gen_dr->at(idx);
+
+	genConv_pt = ntP->el_genConv_pt->at(idx);
+	genConv_eta = ntP->el_genConv_eta->at(idx);
+	genConv_phi = ntP->el_genConv_phi->at(idx);
+	genConv_m = ntP->el_genConv_m->at(idx);
+	genConv_E = ntP->el_genConv_E->at(idx);
+	genConv_status = ntP->el_genConv_status->at(idx);
+	genConv_id = ntP->el_genConv_id->at(idx);
+	genConv_dr = ntP->el_genConv_dr->at(idx);
    } 
    
    PFRelIso04 = ntP->el_PFRelIso04->at(idx);
@@ -195,8 +203,16 @@ void ElectronExt::init()
    gen_E = -100;
    gen_status = -100;
    gen_id = -100;
-   gen_charge = -100;
    gen_dr = -100;
+
+   genConv_pt = -100;
+   genConv_eta = -100;
+   genConv_phi = -100;
+   genConv_m = -100;
+   genConv_E = -100;
+   genConv_status = -100;
+   genConv_id = -100;
+   genConv_dr = -100;
 }
 
 void ElectronExt::sel(bool DEBUG,int year)
@@ -334,6 +350,7 @@ void ElectronExt::sel(bool DEBUG,int year)
 	     std::cout << " pass_lepMVA = " << pass_lepMVA << std::endl;
 	     std::cout << " isTightTTH = " << isTightTTH << std::endl;
 	     std::cout << " hasMCMatch = " << hasMCMatch << std::endl;
+	     std::cout << " hasChargeMCMatch = " << hasChargeMCMatch << std::endl;
 	  }		  
 }
 

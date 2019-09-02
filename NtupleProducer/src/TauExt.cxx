@@ -78,17 +78,26 @@ void TauExt::read(bool isdata)
 
    if( !isdata ) 
    {
-	hasMCMatch = ntP->tau_hasMCMatch->at(idx);
-	hasChargeMCMatch = ntP->tau_hasChargeMCMatch->at(idx);
-	gen_pt = ntP->tau_gen_pt->at(idx);
-	gen_eta = ntP->tau_gen_eta->at(idx);
-	gen_phi = ntP->tau_gen_phi->at(idx);
-	gen_m = ntP->tau_gen_m->at(idx);
-	gen_E = ntP->tau_gen_E->at(idx);
-	gen_status = ntP->tau_gen_status->at(idx);
-	gen_id = ntP->tau_gen_id->at(idx);
-	gen_charge = ntP->tau_gen_charge->at(idx);
-	gen_dr = ntP->tau_gen_dr->at(idx);
+      hasMCMatch = ntP->tau_hasMCMatch->at(idx);
+      gen_pt = ntP->tau_gen_pt->at(idx);
+      gen_eta = ntP->tau_gen_eta->at(idx);
+      gen_phi = ntP->tau_gen_phi->at(idx);
+      gen_m = ntP->tau_gen_m->at(idx);
+      gen_E = ntP->tau_gen_E->at(idx);
+      gen_status = ntP->tau_gen_status->at(idx);
+      gen_id = ntP->tau_gen_id->at(idx);
+      gen_dr = ntP->tau_gen_dr->at(idx);
+      
+      hasMCMatchTau = ntP->tau_hasMCMatchTau->at(idx);
+      hasChargeMCMatch = (ntP->tau_genTau_id->at(idx) == id);
+      genTau_pt = ntP->tau_genTau_pt->at(idx);
+      genTau_eta = ntP->tau_genTau_eta->at(idx);
+      genTau_phi = ntP->tau_genTau_phi->at(idx);
+      genTau_m = ntP->tau_genTau_m->at(idx);
+      genTau_E = ntP->tau_genTau_E->at(idx);
+      genTau_status = ntP->tau_genTau_status->at(idx);
+      genTau_id = ntP->tau_genTau_id->at(idx);
+      genTau_dr = ntP->tau_genTau_dr->at(idx);
    }  
 }
 
@@ -164,8 +173,6 @@ void TauExt::init()
    pfEssential_dxy_Sig         = -1.;
 
    hasMCMatch = false;
-   hasChargeMCMatch = false;
-   hasPhotonMCMatch = false;
    gen_pt = -100;
    gen_eta = -100;
    gen_phi = -100;
@@ -173,8 +180,18 @@ void TauExt::init()
    gen_E = -100;
    gen_status = -100;
    gen_id = -100;
-   gen_charge = -100;
    gen_dr = -100;
+
+   hasMCMatchTau = false;
+   hasChargeMCMatch = false;
+   genTau_pt = -100;
+   genTau_eta = -100;
+   genTau_phi = -100;
+   genTau_m = -100;
+   genTau_E = -100;
+   genTau_status = -100;
+   genTau_id = -100;
+   genTau_dr = -100;
 }
 
 void TauExt::sel(bool DEBUG,int year)
@@ -204,6 +221,50 @@ void TauExt::sel(bool DEBUG,int year)
         float dr = GetDeltaR(eta,phi,nt->NtElectronLooseExt->at(iEl).eta,nt->NtElectronLooseExt->at(iEl).phi);
         if( dr < 0.3 ) pass_elOverlap = 0;
      }  
+
+   bool passMatch = 1;
+   if( hasMCMatch )
+     {	
+	passMatch = 0;
+	std::vector<Base> *elmuFakeable = new std::vector<Base>;
+	int nElectron = nt->NtElectronFakeableExt->size();
+	for(int ie=0;ie<nElectron;ie++ )
+	  {
+	     Base lep = nt->NtElectronFakeableExt->at(ie);
+	     lep.iElec = ie;
+	     if( lep.hasMCMatch ) elmuFakeable->push_back(lep);
+	  }
+	int nMuon = nt->NtMuonFakeableExt->size();
+	for(int im=0;im<nMuon;im++ )
+	  {
+	     Base lep = nt->NtMuonFakeableExt->at(im);
+	     lep.iMuon = im;
+	     if( lep.hasMCMatch ) elmuFakeable->push_back(lep);
+	  }
+	std::sort(elmuFakeable->begin(),elmuFakeable->end(),sort_by_conept());
+
+	bool found = 0;
+	int nLep = elmuFakeable->size();
+	for(int il=0;il<nLep;il++)
+	  {
+	     float ptl = elmuFakeable->at(il).gen_pt;
+	     float etal = elmuFakeable->at(il).gen_eta;
+	     float phil = elmuFakeable->at(il).gen_phi;
+
+	     if( GetDeltaR(eta,phi,etal,phil) > genTau_dr ) continue;
+	     
+	     if( fabs(ptl-gen_pt) > 10E-6 && fabs(etal-gen_eta) > 10E-6 )
+	       {		  
+		  found = 1;
+		  break;
+	       }	     
+	  }
+	
+	if( !found ) passMatch = 1;
+	else passMatch = 0;
+     }
+   
+   hasMCMatchTau = hasMCMatchTau && passMatch;
    
    isFakeableTTH = ( pass_pt &&
 		     pass_eta &&
@@ -238,6 +299,8 @@ void TauExt::sel(bool DEBUG,int year)
 	     std::cout << "  isFakeableTTH = " << isFakeableTTH << std::endl;
 	     std::cout << "  isLooseTTH = " << isLooseTTH << std::endl;
 	     std::cout << "  hasMCMatch = " << hasMCMatch << std::endl;
+	     std::cout << "  hasMCMatchTau = " << hasMCMatchTau << std::endl;
+	     std::cout << "  hasChargeMCMatch = " << hasChargeMCMatch << std::endl;
 	  }		  
 }
 

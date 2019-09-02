@@ -85,16 +85,15 @@ class ElectronExt : public Electron
    
    bool passMuOverlap;
    bool passConditions;
-
-   float gen_pt;
-   float gen_eta;
-   float gen_phi;
-   float gen_m;
-   float gen_E;
-   int gen_status;
-   int gen_id;
-   int gen_charge;
-   float gen_dr;
+   
+   float genConv_pt;
+   float genConv_eta;
+   float genConv_phi;
+   float genConv_m;
+   float genConv_E;
+   int genConv_status;
+   int genConv_id;
+   float genConv_dr;
    
    ClassDef(ElectronExt,1)
 };

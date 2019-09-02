@@ -185,9 +185,7 @@ class Tree {
    vector<float>   *el_eSuperClusterOverP;
    vector<float>   *el_trackMomentumError;
 
-   vector<int>     *el_hasMCMatch;
-   vector<int>     *el_hasChargeMCMatch;
-   vector<int>     *el_hasPhotonMCMatch;
+   vector<bool>    *el_hasMCMatch;
    vector<float>   *el_gen_pt;
    vector<float>   *el_gen_eta;
    vector<float>   *el_gen_phi;
@@ -195,8 +193,17 @@ class Tree {
    vector<float>   *el_gen_E;
    vector<int>     *el_gen_status;
    vector<int>     *el_gen_id;
-   vector<int>     *el_gen_charge;
    vector<float>   *el_gen_dr;
+   
+   vector<bool>    *el_hasPhotonMCMatch;
+   vector<float>   *el_genConv_pt;
+   vector<float>   *el_genConv_eta;
+   vector<float>   *el_genConv_phi;
+   vector<float>   *el_genConv_m;
+   vector<float>   *el_genConv_E;
+   vector<int>     *el_genConv_status;
+   vector<int>     *el_genConv_id;
+   vector<float>   *el_genConv_dr;
    
    Int_t           mu_n;
    vector<float>   *mu_pt;
@@ -278,8 +285,7 @@ class Tree {
    vector<float>   *mu_innerTrack_pt;
    vector<float>   *mu_innerTrack_ptError;
 
-   vector<int>     *mu_hasMCMatch;
-   vector<int>     *mu_hasChargeMCMatch;
+   vector<bool>     *mu_hasMCMatch;
    vector<float>   *mu_gen_pt;
    vector<float>   *mu_gen_eta;
    vector<float>   *mu_gen_phi;
@@ -287,7 +293,6 @@ class Tree {
    vector<float>   *mu_gen_E;
    vector<int>     *mu_gen_status;
    vector<int>     *mu_gen_id;
-   vector<int>     *mu_gen_charge;
    vector<float>   *mu_gen_dr;
    
    Int_t           tau_n;
@@ -345,8 +350,7 @@ class Tree {
    vector<float>   *tau_pfEssential_dxy_Sig;
    vector<int>     *tau_matchedJetId;
 
-   vector<int>     *tau_hasMCMatch;
-   vector<int>     *tau_hasChargeMCMatch;
+   vector<bool>     *tau_hasMCMatch;
    vector<float>   *tau_gen_pt;
    vector<float>   *tau_gen_eta;
    vector<float>   *tau_gen_phi;
@@ -354,8 +358,17 @@ class Tree {
    vector<float>   *tau_gen_E;
    vector<int>     *tau_gen_status;
    vector<int>     *tau_gen_id;
-   vector<int>     *tau_gen_charge;
    vector<float>   *tau_gen_dr;
+
+   vector<bool>     *tau_hasMCMatchTau;
+   vector<float>   *tau_genTau_pt;
+   vector<float>   *tau_genTau_eta;
+   vector<float>   *tau_genTau_phi;
+   vector<float>   *tau_genTau_m;
+   vector<float>   *tau_genTau_E;
+   vector<int>     *tau_genTau_status;
+   vector<int>     *tau_genTau_id;
+   vector<float>   *tau_genTau_dr;
    
    Int_t           jet_n;
    vector<float>   *jet_pt;
@@ -1044,8 +1057,6 @@ class Tree {
    TBranch        *b_el_matchedJetId;
 
    TBranch        *b_el_hasMCMatch;
-   TBranch        *b_el_hasChargeMCMatch;
-   TBranch        *b_el_hasPhotonMCMatch;
    TBranch        *b_el_gen_pt;
    TBranch        *b_el_gen_eta;
    TBranch        *b_el_gen_phi;
@@ -1053,8 +1064,17 @@ class Tree {
    TBranch        *b_el_gen_E;
    TBranch        *b_el_gen_status;
    TBranch        *b_el_gen_id;
-   TBranch        *b_el_gen_charge;
    TBranch        *b_el_gen_dr;
+   
+   TBranch        *b_el_hasPhotonMCMatch;
+   TBranch        *b_el_genConv_pt;
+   TBranch        *b_el_genConv_eta;
+   TBranch        *b_el_genConv_phi;
+   TBranch        *b_el_genConv_m;
+   TBranch        *b_el_genConv_E;
+   TBranch        *b_el_genConv_status;
+   TBranch        *b_el_genConv_id;
+   TBranch        *b_el_genConv_dr;
    
    TBranch        *b_mu_n;   //!
    TBranch        *b_mu_pt;   //!
@@ -1137,7 +1157,6 @@ class Tree {
    TBranch        *b_mu_innerTrack_ptError;   //!
 
    TBranch        *b_mu_hasMCMatch;
-   TBranch        *b_mu_hasChargeMCMatch;
    TBranch        *b_mu_gen_pt;
    TBranch        *b_mu_gen_eta;
    TBranch        *b_mu_gen_phi;
@@ -1145,7 +1164,6 @@ class Tree {
    TBranch        *b_mu_gen_E;
    TBranch        *b_mu_gen_status;
    TBranch        *b_mu_gen_id;
-   TBranch        *b_mu_gen_charge;
    TBranch        *b_mu_gen_dr;
    
    TBranch   *b_tau_n;
@@ -1205,7 +1223,6 @@ class Tree {
    TBranch   *b_tau_matchedJetId;
 
    TBranch        *b_tau_hasMCMatch;
-   TBranch        *b_tau_hasChargeMCMatch;
    TBranch        *b_tau_gen_pt;
    TBranch        *b_tau_gen_eta;
    TBranch        *b_tau_gen_phi;
@@ -1213,8 +1230,17 @@ class Tree {
    TBranch        *b_tau_gen_E;
    TBranch        *b_tau_gen_status;
    TBranch        *b_tau_gen_id;
-   TBranch        *b_tau_gen_charge;
    TBranch        *b_tau_gen_dr;
+
+   TBranch        *b_tau_hasMCMatchTau;
+   TBranch        *b_tau_genTau_pt;
+   TBranch        *b_tau_genTau_eta;
+   TBranch        *b_tau_genTau_phi;
+   TBranch        *b_tau_genTau_m;
+   TBranch        *b_tau_genTau_E;
+   TBranch        *b_tau_genTau_status;
+   TBranch        *b_tau_genTau_id;
+   TBranch        *b_tau_genTau_dr;
    
    TBranch        *b_jet_n;   //!
    TBranch        *b_jet_pt;   //!

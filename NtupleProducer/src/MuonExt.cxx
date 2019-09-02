@@ -64,7 +64,7 @@ void MuonExt::read(bool isdata)
    if( !isdata )
    {
       hasMCMatch = ntP->mu_hasMCMatch->at(idx);
-      hasChargeMCMatch = ntP->mu_hasChargeMCMatch->at(idx);
+      hasChargeMCMatch = (ntP->mu_gen_id->at(idx) == id);
       gen_pt = ntP->mu_gen_pt->at(idx);
       gen_eta = ntP->mu_gen_eta->at(idx);
       gen_phi = ntP->mu_gen_phi->at(idx);
@@ -72,7 +72,6 @@ void MuonExt::read(bool isdata)
       gen_E = ntP->mu_gen_E->at(idx);
       gen_status = ntP->mu_gen_status->at(idx);
       gen_id = ntP->mu_gen_id->at(idx);
-      gen_charge = ntP->mu_gen_charge->at(idx);
       gen_dr = ntP->mu_gen_dr->at(idx);
    }
    
@@ -145,7 +144,6 @@ void MuonExt::init()
    gen_E = -100;
    gen_status = -100;
    gen_id = -100;
-   gen_charge = -100;
    gen_dr = -100;
 }
 
@@ -244,6 +242,7 @@ void MuonExt::sel(bool DEBUG,int year)
 	     std::cout << "  isMedium = " << isMedium << std::endl;
 	     std::cout << "  isTightTTH = " << isTightTTH << std::endl;
 	     std::cout << "  hasMCMatch = " << hasMCMatch << std::endl;
+	     std::cout << "  hasChargeMCMatch = " << hasChargeMCMatch << std::endl;
  	}		  
 }
 

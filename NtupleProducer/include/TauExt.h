@@ -77,15 +77,16 @@ class TauExt : public Tau
    bool againstMuonLoose3;
    bool againstMuonTight3;
 
-   float gen_pt;
-   float gen_eta;
-   float gen_phi;
-   float gen_m;
-   float gen_E;
-   int gen_status;
-   int gen_id;
-   int gen_charge;
-   float gen_dr;
+   bool  hasMCMatchTau;
+   float genTau_pt;
+   float genTau_eta;
+   float genTau_phi;
+   float genTau_m;
+   float genTau_E;
+   int genTau_status;
+   int genTau_id;
+   int genTau_charge;
+   float genTau_dr;
    
    ClassDef(TauExt,1)
 };

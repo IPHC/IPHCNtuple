@@ -1019,7 +1019,7 @@ void Sync::get(Ntuple *nt,int npresel_el,int npresel_mu,int npresel_tau,int npre
 	tau1_againstElectronLooseMVA6                         = tau.againstElectronLooseMVA6;
 	tau1_againstElectronMediumMVA6                        = tau.againstElectronMediumMVA6;
 	tau1_againstElectronTightMVA6                         = tau.againstElectronTightMVA6;
-	tau1_isGenMatched                                     = tau.hasMCMatch;
+	tau1_isGenMatched                                     = tau.hasMCMatchTau;
      }
 
    if( nTau > 1 )
@@ -1054,7 +1054,7 @@ void Sync::get(Ntuple *nt,int npresel_el,int npresel_mu,int npresel_tau,int npre
 	tau2_againstElectronLooseMVA6                         = tau.againstElectronLooseMVA6;
 	tau2_againstElectronMediumMVA6                        = tau.againstElectronMediumMVA6;
 	tau2_againstElectronTightMVA6                         = tau.againstElectronTightMVA6;
-	tau2_isGenMatched                                     = tau.hasMCMatch;
+	tau2_isGenMatched                                     = tau.hasMCMatchTau;
      }
 
    int nJet = nt->NtJetLooseExt->size();
@@ -1195,7 +1195,7 @@ void Sync::get(Ntuple *nt,int npresel_el,int npresel_mu,int npresel_tau,int npre
 		tmp_px += tmp.Px();
 		tmp_py += tmp.Py();
 
-		if(nt->NtTauFakeableExt->at(ij).hasMCMatch ) {isGenMatched = 1;}
+		if(nt->NtTauFakeableExt->at(ij).hasMCMatchTau ) {isGenMatched = 1;}
 		if(nt->NtTauFakeableExt->at(ij).hasChargeMCMatch ) {isGenChargeMatched = 1;}
 	}
 
@@ -1550,7 +1550,7 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 				      nt->NtTauFakeableExt->at(1).isMediumTTH);
 		  bool pass_tau_charge = (nt->NtTauFakeableExt->at(0).charge*nt->NtTauFakeableExt->at(1).charge < 0);
 		  bool pass_truth = (elmuFakeable->at(0).hasMCMatch &&
-				     nt->NtTauFakeableExt->at(0).hasMCMatch && nt->NtTauFakeableExt->at(1).hasMCMatch);
+				     nt->NtTauFakeableExt->at(0).hasMCMatchTau && nt->NtTauFakeableExt->at(1).hasMCMatchTau);
 
 		  bool pass_fake_os = (nt->NtTauFakeableExt->at(0).charge*nt->NtTauFakeableExt->at(1).charge < 0);
 
@@ -1607,7 +1607,7 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 		  
 		  bool pass_tau_charge = (nt->NtTauFakeableExt->at(0).charge*nt->NtTauFakeableExt->at(1).charge < 0);
 		  
-		  bool pass_truth = (nt->NtTauFakeableExt->at(0).hasMCMatch && nt->NtTauFakeableExt->at(1).hasMCMatch);
+		  bool pass_truth = (nt->NtTauFakeableExt->at(0).hasMCMatchTau && nt->NtTauFakeableExt->at(1).hasMCMatchTau);
 		  
 		  bool pass_os = (nt->NtTauFakeableExt->at(0).charge*nt->NtTauFakeableExt->at(1).charge < 0);
 
@@ -1668,7 +1668,10 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 		  bool pass_tau_id = (nt->NtTauFakeableExt->at(0).isMediumTTH && nTauMedium == 1);
 		  bool pass_id = (elmuFakeable->at(0).isTightTTH);
 
-		  bool pass_truth = (elmuFakeable->at(0).hasChargeMCMatch && nt->NtTauFakeableExt->at(0).hasChargeMCMatch);
+		  bool pass_truth = (elmuFakeable->at(0).hasMCMatch && nt->NtTauFakeableExt->at(0).hasMCMatchTau);
+		  bool pass_truth_charge_lep = (elmuFakeable->at(0).hasChargeMCMatch);
+		  bool pass_truth_charge_tau = (nt->NtTauFakeableExt->at(0).hasChargeMCMatch);
+		  bool pass_truth_charge = (pass_truth_charge_lep && pass_truth_charge_tau);
 
 		  bool pass_os = (nt->NtTauFakeableExt->at(0).charge*elmuFakeable->at(0).charge < 0);
 
@@ -1677,11 +1680,11 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 		  pass_1l1tau_SR_Data = (pass_1l1tau &&
 					 pass_tight && pass_tau_id);
 
-		  pass_1l1tau_SR = (pass_1l1tau_SR_Data && pass_truth);
+		  pass_1l1tau_SR = (pass_1l1tau_SR_Data && pass_truth_charge);
 
-		  pass_1l1tau_Fake = (pass_1l1tau && (!(elmuFakeable->at(0).isTightTTH) || !(nt->NtTauFakeableExt->at(0).isMediumTTH)));
+		  pass_1l1tau_Fake = (pass_1l1tau && pass_truth_charge && (!(elmuFakeable->at(0).isTightTTH) || !(nt->NtTauFakeableExt->at(0).isMediumTTH)));
 
-		  pass_1l1tau_Flip = (pass_1l1tau_SR_Data && !(pass_truth));
+		  pass_1l1tau_Flip = (pass_1l1tau_SR_Data && pass_truth && !(pass_truth_charge));
 
 		  if(DEBUG)
 		    {
@@ -1694,10 +1697,15 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 		       std::cout << "  pass_tau_pt = " << pass_tau_pt << std::endl;
 		       std::cout << "  pass_njet = " << pass_njet << std::endl;
 		       std::cout << "  pass_mll = " << pass_mll << std::endl;
+		       std::cout << "  pass_pretight = " << pass_pretight << std::endl;
+		       std::cout << "  pass_pretautight = " << pass_pretautight << std::endl;
 		       std::cout << "  mll_min = " << mll_min << std::endl;
 		       std::cout << "  && pass_tight = " << pass_tight << std::endl;
 		       std::cout << "  && pass_tau_id = " << pass_tau_id << std::endl;
 		       std::cout << "  && pass_truth = " << pass_truth << std::endl;
+		       std::cout << "  && pass_truth_charge_lep = " << pass_truth_charge_lep << std::endl;
+		       std::cout << "  && pass_truth_charge_tau = " << pass_truth_charge_tau << std::endl;
+		       std::cout << "  && pass_truth_charge = " << pass_truth_charge << std::endl;
 		       std::cout << "  = pass_1l1tau_SR = " << pass_1l1tau_SR << std::endl;
 		       std::cout << "  && !pass_truth = " << !pass_truth << std::endl;
 		       std::cout << "  = pass_1l1tau_Flip = " << pass_1l1tau_Flip << std::endl;
@@ -2095,7 +2103,7 @@ bool Sync::fill(Ntuple *nt,EventExt *ev, bool DEBUG)
 
 		  bool pass_tight = (elmuFakeable->at(0).isTightTTH && elmuFakeable->at(1).isTightTTH);
 		  bool pass_tau_tight = (nt->NtTauFakeableExt->at(0).isMediumTTH && nt->NtTauFakeableExt->at(1).isMediumTTH);
-		  bool pass_truth = (elmuFakeable->at(0).hasMCMatch && elmuFakeable->at(1).hasMCMatch && nt->NtTauFakeableExt->at(0).hasMCMatch && nt->NtTauFakeableExt->at(1).hasMCMatch);
+		  bool pass_truth = (elmuFakeable->at(0).hasMCMatch && elmuFakeable->at(1).hasMCMatch && nt->NtTauFakeableExt->at(0).hasMCMatchTau && nt->NtTauFakeableExt->at(1).hasMCMatchTau);
 
 		  pass_2l2tau = (pass_trig && pass_fakeable_pt && pass_mll && pass_Z_veto && pass_metLD && pass_charge && pass_njet);
 
